@@ -6,6 +6,8 @@
   <title>Event Quote Pro™ | EventPro Suite™</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -743,6 +745,48 @@
       line-height: 1.6;
     }
 
+    /* ── PAY DEPOSIT BOX ── */
+    .qp-pay-box {
+      background: linear-gradient(135deg, #1e8c5a 0%, #2ea870 100%);
+      border-radius: 12px;
+      padding: 1.3rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 14px rgba(30,140,90,0.25);
+    }
+    .qp-pay-text { flex: 1; min-width: 200px; }
+    .qp-pay-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.25rem;
+    }
+    .qp-pay-sub {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.92);
+      line-height: 1.5;
+    }
+    .qp-pay-btn {
+      display: inline-block;
+      background: white;
+      color: #1e8c5a;
+      padding: 0.75rem 1.4rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: transform 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .qp-pay-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
     .qp-notes-box {
       background: var(--gold-light);
       border-left: 4px solid var(--gold-muted);
@@ -813,11 +857,28 @@
 
     /* ── PRINT ── */
     @media print {
-      .app-header, .progress-wrap, .btn-row, .panel-header { display: none !important; }
-      .app-main { padding: 0; max-width: 100%; }
-      #quotePreview { box-shadow: none; border: none; }
-      body { background: white; }
-      .qp-table tbody tr:hover { background: unset; }
+      @page { margin: 0.4in; size: letter; }
+      /* Hide EVERYTHING by default */
+      body * { visibility: hidden !important; }
+      /* Then show only the quote preview and its children */
+      #panel4, #panel4 *, #quotePreview, #quotePreview * { visibility: visible !important; }
+      /* Position the quote at the top-left of the page */
+      #panel4 {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      /* Hide buttons/headers inside the quote panel */
+      .btn-row, .panel-header { display: none !important; }
+      /* Clean quote styling */
+      #quotePreview { box-shadow: none !important; border: none !important; margin: 0 !important; }
+      body { background: white !important; }
+      .qp-table tbody tr:hover { background: unset !important; }
+      /* Prevent awkward page breaks */
+      .qp-card, .qp-deposit-strip, .qp-pay-box, .qp-footer { page-break-inside: avoid; }
     }
 
     /* ── RESPONSIVE ── */
@@ -1075,6 +1136,39 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Stripe Deposit Payment Links <span style="font-size:0.7rem;font-weight:500;color:var(--muted);margin-left:0.5rem;">Optional</span></div>
+      <div style="padding:0.9rem 1rem;background:var(--gold-light);border:1px solid var(--gold);border-radius:9px;margin-bottom:1.1rem;font-size:0.8rem;line-height:1.6;color:var(--navy);">
+        <strong>💳 How this works:</strong> Create <strong>3 Payment Links</strong> in your Stripe dashboard for your most common deposit amounts (small, medium, large events). Paste them here once, and every quote you generate will show a <strong>"Pay Deposit Now"</strong> button that sends your client to Stripe checkout. Your client pays their deposit in one click.<br><br>
+        <strong>How to get a Stripe Payment Link:</strong> Log in to Stripe → <em>Payment Links</em> (left menu) → <em>+ New</em> → set price → copy the URL that starts with <code style="background:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">https://buy.stripe.com/...</code>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Small Deposit Link <span style="color:var(--muted);font-weight:400;">(e.g. $100 — for parties under $500)</span></label>
+          <input type="url" id="stripeSmall" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Used when deposit is up to $150</div>
+        </div>
+        <div class="field">
+          <label>Medium Deposit Link <span style="color:var(--muted);font-weight:400;">(e.g. $250 — for parties $500–$1,200)</span></label>
+          <input type="url" id="stripeMedium" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Used when deposit is $150–$350</div>
+        </div>
+        <div class="field">
+          <label>Large Deposit Link <span style="color:var(--muted);font-weight:400;">(e.g. $500 — for parties $1,200+)</span></label>
+          <input type="url" id="stripeLarge" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Used when deposit is over $350</div>
+        </div>
+        <div class="field">
+          <label>Custom / General Stripe Link <span style="color:var(--muted);font-weight:400;">(Optional fallback)</span></label>
+          <input type="url" id="stripeCustom" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Shown when no tier matches, or use your Stripe invoicing page</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding:0.8rem 1rem;background:#e8f5e9;border:1px solid #4caf50;border-radius:9px;font-size:0.78rem;color:#1b5e20;line-height:1.6;">
+        💡 <strong>Pro tip:</strong> Leave all fields blank if you're not using Stripe yet — the quote will still print normally without a payment button.
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-gold" onclick="goToStep(2)">Continue to Client Details →</button>
     </div>
@@ -1139,7 +1233,16 @@
     </div>
 
     <div class="services-layout">
-      <div id="servicesList"></div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.9rem;padding:0.7rem 1rem;background:var(--navy-pale);border-radius:9px;">
+          <span style="font-size:0.8rem;color:var(--mid);font-weight:500;">👇 Click any category to expand services</span>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-outline btn-sm" type="button" onclick="expandAllCats()" style="font-size:0.72rem;padding:0.35rem 0.7rem;">Expand All</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="collapseAllCats()" style="font-size:0.72rem;padding:0.35rem 0.7rem;">Collapse All</button>
+          </div>
+        </div>
+        <div id="servicesList"></div>
+      </div>
       <div class="quote-live">
         <div class="totals-card">
           <div class="totals-header">Live Quote Total</div>
@@ -1169,7 +1272,8 @@
     <div id="quotePreview"></div>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="goToStep(3)">← Edit Services</button>
-      <button class="btn btn-navy" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <button class="btn btn-navy" onclick="downloadQuotePDF()" id="dlPdfBtn">📄 Download PDF</button>
+      <button class="btn btn-outline btn-sm" onclick="window.print()" style="font-size:0.78rem;">🖨️ Print</button>
       <button class="btn btn-gold" onclick="copyQuoteText()">📋 Copy as Text</button>
       <button class="btn btn-outline btn-sm" onclick="newQuote()">+ New Quote</button>
     </div>
@@ -1233,7 +1337,7 @@ async function loadProfileFromSupabase(userId) {
     const { data } = await sb.from('profiles').select('profile_data').eq('id', userId).single();
     if (data && data.profile_data) {
       const p = data.profile_data;
-      const fields = ['bizName','ownerName','bizEmail','bizPhone','bizWebsite','bizCity','paymentTerms','termsText','customCurrency'];
+      const fields = ['bizName','ownerName','bizEmail','bizPhone','bizWebsite','bizCity','paymentTerms','termsText','customCurrency','stripeSmall','stripeMedium','stripeLarge','stripeCustom'];
       fields.forEach(id => { const el = document.getElementById(id); if(el && p[id]) el.value = p[id]; });
       if (p.depositPct) setDeposit(p.depositPct);
       if (p.bizCurrency) { const sel = document.getElementById('bizCurrency'); if(sel) { sel.value = p.bizCurrency; updateCurrencyDisplay(); } }
@@ -1261,7 +1365,9 @@ async function saveProfileToSupabase() {
       brandPrimary: document.getElementById('brandPrimary')?.value || '#0d1b3e',
       brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
       depositPct, taxMode,
-      taxRate: v('taxRate'), taxLabel: v('taxLabel'), logoDataURL
+      taxRate: v('taxRate'), taxLabel: v('taxLabel'), logoDataURL,
+      stripeSmall: v('stripeSmall'), stripeMedium: v('stripeMedium'),
+      stripeLarge: v('stripeLarge'), stripeCustom: v('stripeCustom')
     };
     await sb.from('profiles').update({ profile_data: profileData }).eq('id', session.user.id);
   } catch(e) { console.log('Save error:', e); }
@@ -1453,13 +1559,13 @@ function buildServicesList() {
     const d = document.createElement('div');
     d.className = 'service-category';
     d.innerHTML = `
-      <div class="category-header" onclick="toggleCat(this)">
+      <div class="category-header collapsed" onclick="toggleCat(this)">
         <span class="cat-icon">${cat.icon}</span>
         <span class="cat-name">${cat.cat}</span>
         <span class="cat-count">${cat.items.length} services</span>
         <span class="cat-toggle">▼</span>
       </div>
-      <div class="service-items" id="cat_${ci}">
+      <div class="service-items hidden" id="cat_${ci}">
         ${cat.items.map((item,ii)=>`
           <div class="service-item" id="si_${ci}_${ii}" onclick="toggleSvc(${ci},${ii})">
             <div class="service-check" id="ck_${ci}_${ii}"></div>
@@ -1488,6 +1594,20 @@ function buildServicesList() {
 function toggleCat(h) {
   h.classList.toggle('collapsed');
   h.nextElementSibling.classList.toggle('hidden');
+}
+
+function expandAllCats() {
+  document.querySelectorAll('.category-header').forEach(h => {
+    h.classList.remove('collapsed');
+    if (h.nextElementSibling) h.nextElementSibling.classList.remove('hidden');
+  });
+}
+
+function collapseAllCats() {
+  document.querySelectorAll('.category-header').forEach(h => {
+    h.classList.add('collapsed');
+    if (h.nextElementSibling) h.nextElementSibling.classList.add('hidden');
+  });
 }
 function toggleSvc(ci,ii) {
   const el = document.getElementById(`si_${ci}_${ii}`);
@@ -1559,6 +1679,19 @@ function goToStep(s) {
 }
 
 // ── BUILD QUOTE ───────────────────────────────────────────────
+function pickStripeLink(depositAmount) {
+  const small = v('stripeSmall');
+  const medium = v('stripeMedium');
+  const large = v('stripeLarge');
+  const custom = v('stripeCustom');
+  // Tier logic: <= $150 small, $150-$350 medium, > $350 large
+  if (depositAmount <= 150 && small) return small;
+  if (depositAmount <= 350 && medium) return medium;
+  if (depositAmount > 350 && large) return large;
+  // Fallback chain if preferred tier is empty
+  return medium || small || large || custom || '';
+}
+
 function buildQuote() {
   const sel = getSelected();
   const sub = sel.reduce((s,i)=>s+i.total,0);
@@ -1693,6 +1826,20 @@ function buildQuote() {
         </div>
       </div>
 
+      ${(()=>{
+        const sLink = pickStripeLink(dep);
+        if (!sLink) return '';
+        return `
+          <div class="qp-pay-box">
+            <div class="qp-pay-text">
+              <div class="qp-pay-title">💳 Ready to book?</div>
+              <div class="qp-pay-sub">Click below to pay your ${cur}${dep.toFixed(2)} deposit securely via Stripe and lock in your event date.</div>
+            </div>
+            <a href="${sLink}" target="_blank" rel="noopener" class="qp-pay-btn">Pay Deposit Now →</a>
+          </div>
+        `;
+      })()}
+
       ${notes?`<div class="qp-notes-box"><strong style="color:var(--navy)">Special Notes:</strong> ${notes}</div>`:''}
       ${tcs?`<div class="qp-terms-box"><strong>Terms & Conditions:</strong> ${tcs}</div>`:''}
 
@@ -1707,6 +1854,82 @@ function buildQuote() {
       <div>Quote #${qNum}</div>
     </div>
   `;
+}
+
+// ── DOWNLOAD PDF (real one-click) ─────────────────────────────
+async function downloadQuotePDF() {
+  const btn = document.getElementById('dlPdfBtn');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Generating PDF...';
+
+  try {
+    const preview = document.getElementById('quotePreview');
+    if (!preview || !preview.innerHTML.trim()) {
+      throw new Error('Quote preview is empty');
+    }
+
+    // Render the quote to canvas
+    const canvas = await html2canvas(preview, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: preview.scrollWidth
+    });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'pt', format: 'letter', orientation: 'portrait' });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 28;
+    const maxW = pageWidth - margin * 2;
+
+    const imgProps = { w: canvas.width, h: canvas.height };
+    const ratio = imgProps.h / imgProps.w;
+    const renderW = maxW;
+    const renderH = renderW * ratio;
+
+    // Multi-page handling for long quotes
+    if (renderH <= pageHeight - margin * 2) {
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', margin, margin, renderW, renderH, undefined, 'FAST');
+    } else {
+      // Slice the canvas across pages
+      const pxPerPt = canvas.width / renderW;
+      const pageHeightPx = (pageHeight - margin * 2) * pxPerPt;
+      let yOffset = 0;
+      let pageNum = 0;
+      while (yOffset < canvas.height) {
+        const sliceHeight = Math.min(pageHeightPx, canvas.height - yOffset);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceHeight;
+        const ctx = sliceCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+        const sliceData = sliceCanvas.toDataURL('image/png');
+        const slicePtH = sliceHeight / pxPerPt;
+        if (pageNum > 0) pdf.addPage();
+        pdf.addImage(sliceData, 'PNG', margin, margin, renderW, slicePtH, undefined, 'FAST');
+        yOffset += sliceHeight;
+        pageNum++;
+      }
+    }
+
+    // Build filename from client name + date
+    const clientName = (v('clientName') || 'Client').replace(/[^a-z0-9]/gi,'_');
+    const today = new Date().toISOString().slice(0,10);
+    pdf.save(`Quote_${clientName}_${today}.pdf`);
+
+    showToast('PDF downloaded ✓');
+  } catch (err) {
+    console.error('PDF error:', err);
+    alert('Could not generate PDF. Try the Print button as a backup.\n\nError: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
 }
 
 // ── COPY TEXT ─────────────────────────────────────────────────
@@ -1728,6 +1951,10 @@ function copyQuoteText() {
   t += `${'─'.repeat(42)}\nTOTAL: ${cur}${sub.toFixed(2)}\n\n`;
   t += `DEPOSIT REQUIRED (${depositPct}%): ${cur}${dep.toFixed(2)}\n`;
   t += `BALANCE DUE: ${cur}${bal.toFixed(2)}\n\n`;
+  const payLink = pickStripeLink(dep);
+  if (payLink) {
+    t += `💳 PAY DEPOSIT ONLINE:\n${payLink}\n\n`;
+  }
   t += `${v('paymentTerms')||''}\n\nThank you for choosing ${biz}!\n`;
   t += [v('bizPhone'),v('bizEmail')].filter(Boolean).join(' | ');
 
@@ -1853,6 +2080,8 @@ function saveProfile() {
       brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
       taxMode,
       taxRate: v('taxRate'), taxLabel: v('taxLabel'),
+      stripeSmall: v('stripeSmall'), stripeMedium: v('stripeMedium'),
+      stripeLarge: v('stripeLarge'), stripeCustom: v('stripeCustom')
     };
     localStorage.setItem('eqp_v1', JSON.stringify(p));
   } catch(e) {}
