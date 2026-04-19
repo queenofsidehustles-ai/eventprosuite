@@ -338,32 +338,33 @@
       align-items: center;
       gap: 0.75rem;
       padding: 0.8rem 1.1rem;
-      background: var(--navy);
+      background: var(--user-primary);
       border-radius: 10px;
       margin-bottom: 0.65rem;
       cursor: pointer;
       user-select: none;
       transition: background 0.18s;
     }
-    .category-header:hover { background: var(--navy-mid); }
+    .category-header:hover { background: var(--user-primary-dark); }
     .cat-icon { font-size: 1rem; }
     .cat-name {
       font-size: 0.82rem;
       font-weight: 700;
-      color: white;
+      color: var(--user-primary-contrast);
       letter-spacing: 0.03em;
       flex: 1;
     }
     .cat-count {
       font-size: 0.78rem;
-      color: var(--gold-bright);
+      color: var(--user-accent);
       font-weight: 600;
-      background: rgba(201,168,76,0.15);
+      background: var(--user-accent-soft);
       padding: 0.15rem 0.5rem;
       border-radius: 10px;
     }
     .cat-toggle {
-      color: rgba(255,255,255,0.5);
+      color: var(--user-primary-contrast);
+      opacity: 0.6;
       font-size: 0.8rem;
       transition: transform 0.2s;
     }
@@ -383,10 +384,10 @@
       transition: all 0.18s;
       cursor: pointer;
     }
-    .service-item:hover { border-color: var(--navy-light); background: var(--navy-pale); }
+    .service-item:hover { border-color: var(--user-primary); background: var(--user-primary-soft); }
     .service-item.selected {
-      border-color: var(--gold);
-      background: var(--gold-light);
+      border-color: var(--user-accent);
+      background: var(--user-accent-soft);
     }
 
     .service-check {
@@ -398,11 +399,11 @@
       flex-shrink: 0;
       font-size: 0.8rem;
       font-weight: 700;
-      color: white;
+      color: var(--user-primary-contrast);
     }
     .service-item.selected .service-check {
-      background: var(--navy);
-      border-color: var(--navy);
+      background: var(--user-primary);
+      border-color: var(--user-primary);
     }
 
     .service-info { flex:1; min-width:0; }
@@ -463,10 +464,10 @@
     }
     .service-item.selected .service-qty,
     .service-item.selected .service-price {
-      border-color: rgba(15,31,61,0.3);
+      border-color: var(--user-primary);
     }
     .service-qty:focus, .service-price:focus {
-      border-color: var(--navy-light);
+      border-color: var(--user-primary);
       outline: none;
     }
     .col-label {
@@ -480,15 +481,15 @@
     /* ── LIVE TOTALS ── */
     .quote-live { position: sticky; top: 78px; }
     .totals-card {
-      background: var(--navy);
+      background: var(--user-primary);
       border-radius: var(--radius);
       padding: 1.5rem;
-      border: 1px solid var(--navy-light);
+      border: 1px solid var(--user-primary-dark);
     }
     .totals-header {
       font-family: 'DM Serif Display', serif;
       font-size: 1.1rem;
-      color: var(--gold-bright);
+      color: var(--user-accent);
       margin-bottom: 1rem;
       padding-bottom: 0.75rem;
       border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -498,13 +499,15 @@
       justify-content: space-between;
       font-size: 0.82rem;
       padding: 0.35rem 0;
-      color: rgba(255,255,255,0.75);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: var(--user-primary-contrast);
+      opacity: 0.85;
+      border-bottom: 1px solid rgba(128,128,128,0.15);
     }
     .totals-line.grand {
       font-size: 1rem;
       font-weight: 700;
       color: var(--user-accent);
+      opacity: 1;
       padding-top: 0.7rem;
       margin-top: 0.2rem;
       border-top: 1px solid var(--user-accent-soft);
@@ -517,10 +520,11 @@
       padding: 0.7rem 0.9rem;
       margin-top: 0.9rem;
       font-size: 0.78rem;
-      color: rgba(255,255,255,0.8);
+      color: var(--user-primary-contrast);
+      opacity: 0.92;
       line-height: 1.6;
     }
-    .totals-deposit-box strong { color: var(--user-accent); }
+    .totals-deposit-box strong { color: var(--user-accent); opacity: 1; }
     .tier-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -533,7 +537,7 @@
       border-radius: 7px;
       font-weight: 600;
       font-size: 0.82rem;
-      color: var(--navy);
+      color: var(--user-primary);
       cursor: pointer;
       transition: all 0.15s;
       font-family: inherit;
@@ -555,14 +559,15 @@
     .selected-count {
       text-align: center;
       font-size: 0.8rem;
-      color: rgba(255,255,255,0.4);
+      color: var(--user-primary-contrast);
+      opacity: 0.55;
       margin-top: 0.8rem;
     }
     .totals-empty {
       text-align: center;
       padding: 1.5rem 0;
     }
-    .totals-empty p { font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.6; }
+    .totals-empty p { font-size: 0.78rem; color: var(--user-primary-contrast); opacity: 0.55; line-height: 1.6; }
 
     /* ── BUTTONS ── */
     .btn {
@@ -996,6 +1001,191 @@
       transition: all 0.18s;
     }
     .suite-logout:hover { color: white; border-color: rgba(255,255,255,0.4); }
+    .suite-nav-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 0.8rem;
+      transition: all 0.15s;
+    }
+    .suite-nav-btn:hover { background: rgba(255,255,255,0.15); }
+
+    /* ── MY QUOTES ── */
+    .quotes-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      margin-bottom: 1.2rem;
+    }
+    #quotesSearch {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--slate-900);
+    }
+    #quotesSearch:focus { border-color: var(--user-primary); outline: none; }
+    .quotes-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .filter-btn {
+      padding: 0.45rem 0.9rem;
+      border: 1.5px solid var(--border);
+      background: white;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .filter-btn:hover { border-color: var(--user-primary); }
+    .filter-btn.active {
+      background: var(--user-primary);
+      color: var(--user-primary-contrast);
+      border-color: var(--user-primary);
+    }
+    .quotes-summary {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .summary-card {
+      flex: 1;
+      min-width: 140px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+    }
+    .summary-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--slate-600);
+      margin-bottom: 0.2rem;
+    }
+    .summary-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--user-primary);
+    }
+    .quotes-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .quotes-table thead tr { background: var(--user-primary); }
+    .quotes-table thead th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--user-primary-contrast);
+    }
+    .quotes-table tbody tr {
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .quotes-table tbody tr:hover { background: var(--user-primary-soft); }
+    .quotes-table tbody td {
+      padding: 0.8rem 1rem;
+      color: var(--slate-900);
+      vertical-align: middle;
+    }
+    .quotes-table tbody td.mono {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .status-sent { background: #fef3c7; color: #92400e; }
+    .status-deposit { background: #dbeafe; color: #1e40af; }
+    .status-balance { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #e0e7ff; color: #3730a3; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-select {
+      padding: 0.35rem 0.6rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+      color: var(--slate-900);
+    }
+    .row-actions {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .icon-btn {
+      background: transparent;
+      border: none;
+      padding: 0.4rem;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 0.95rem;
+      transition: background 0.15s;
+    }
+    .icon-btn:hover { background: var(--user-primary-soft); }
+    .quotes-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      background: white;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+    @media (max-width: 640px) {
+      .quotes-table thead { display: none; }
+      .quotes-table, .quotes-table tbody, .quotes-table tr, .quotes-table td { display: block; width: 100%; }
+      .quotes-table tbody tr {
+        padding: 0.8rem 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 0.6rem;
+      }
+      .quotes-table tbody td {
+        padding: 0.3rem 1rem;
+        display: flex;
+        justify-content: space-between;
+      }
+      .quotes-table tbody td:before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--slate-600);
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+    }
 
     /* Auth gate overlay */
     .auth-gate {
@@ -1032,6 +1222,7 @@
 <div class="suite-bar" id="suiteBar" style="display:none;">
   <div class="suite-bar-left"><span>EventPro Suite™</span> &nbsp;·&nbsp; Event Quote Pro™</div>
   <div class="suite-bar-right">
+    <button class="suite-nav-btn" onclick="showMyQuotes()">📋 My Quotes</button>
     <div class="user-name" id="userName">Welcome</div>
     <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
   </div>
@@ -1341,6 +1532,41 @@
       <button class="btn btn-outline btn-sm" onclick="window.print()" style="font-size:0.78rem;">🖨️ Print</button>
       <button class="btn btn-gold" onclick="copyQuoteText()">📋 Copy as Text</button>
       <button class="btn btn-outline btn-sm" onclick="newQuote()">+ New Quote</button>
+    </div>
+  </div>
+
+  <!-- MY QUOTES PANEL -->
+  <div class="panel" id="panelQuotes">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Quote History</div>
+      <h1 class="panel-title">📋 My Quotes</h1>
+      <p class="panel-sub">Every quote you've generated, saved to your account. Click any row to reload the quote.</p>
+    </div>
+
+    <div class="quotes-controls">
+      <input type="text" id="quotesSearch" placeholder="🔍 Search by client name..." oninput="renderQuotesList()"/>
+      <div class="quotes-filters">
+        <button class="filter-btn active" data-filter="all" onclick="setQuotesFilter('all',this)">All</button>
+        <button class="filter-btn" data-filter="Sent" onclick="setQuotesFilter('Sent',this)">Sent</button>
+        <button class="filter-btn" data-filter="Deposit Paid" onclick="setQuotesFilter('Deposit Paid',this)">Deposit Paid</button>
+        <button class="filter-btn" data-filter="Balance Paid" onclick="setQuotesFilter('Balance Paid',this)">Paid in Full</button>
+        <button class="filter-btn" data-filter="Completed" onclick="setQuotesFilter('Completed',this)">Completed</button>
+        <button class="filter-btn" data-filter="Cancelled" onclick="setQuotesFilter('Cancelled',this)">Cancelled</button>
+      </div>
+    </div>
+
+    <div class="quotes-summary" id="quotesSummary"></div>
+
+    <div id="quotesListWrap">
+      <div class="quotes-empty">
+        <div style="font-size:2.5rem;margin-bottom:0.5rem;">📋</div>
+        <h3 style="color:var(--user-primary);margin-bottom:0.4rem;">Loading your quotes...</h3>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(1)">← Back to Business Setup</button>
+      <button class="btn btn-gold" onclick="newQuote()">+ Create New Quote</button>
     </div>
   </div>
 
@@ -1800,7 +2026,14 @@ function goToStep(s) {
     if (i+1<s) ps.classList.add('done');
     if (i+1===s) ps.classList.add('active');
   });
-  if (s===4) buildQuote();
+  if (s===4) {
+    buildQuote();
+    // Save to My Quotes after a moment (fire-and-forget)
+    setTimeout(async () => {
+      const saved = await saveCurrentQuoteToSupabase();
+      if (saved) showToast('✓ Saved to My Quotes');
+    }, 600);
+  }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1985,6 +2218,248 @@ function buildQuote() {
       <div>Quote #${qNum}</div>
     </div>
   `;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MY QUOTES — save, load, list, filter, update status
+// ══════════════════════════════════════════════════════════════
+let myQuotesCache = [];
+let quotesFilter = 'all';
+
+async function saveCurrentQuoteToSupabase() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return false;
+
+    const sel = getSelected();
+    if (!sel.length) return false;
+
+    const sub = sel.reduce((s,i)=>s+i.total,0);
+    const taxInfo = calcTax(sub);
+    const total = taxInfo.mode === 'added' ? sub + taxInfo.taxAmount : sub;
+    const deposit = total * (depositPct / 100);
+
+    // Collect the full quote state so it can be reloaded
+    const quoteData = {
+      biz: {
+        bizName: v('bizName'), ownerName: v('ownerName'), bizEmail: v('bizEmail'),
+        bizPhone: v('bizPhone'), bizWebsite: v('bizWebsite'), bizCity: v('bizCity'),
+        bizCurrency: document.getElementById('bizCurrency')?.value,
+        customCurrency: v('customCurrency'),
+        brandPrimary: document.getElementById('brandPrimary')?.value,
+        brandAccent: document.getElementById('brandAccent')?.value,
+        paymentTerms: v('paymentTerms'), termsText: v('termsText'),
+        taxMode, taxRate: v('taxRate'), taxLabel: v('taxLabel'),
+        logoDataURL, depositPct
+      },
+      client: {
+        clientName: v('clientName'), clientEmail: v('clientEmail'), clientPhone: v('clientPhone'),
+        eventDate: v('eventDate'), eventTime: v('eventTime'), eventDuration: v('eventDuration'),
+        guestCount: v('guestCount'), venueAddress: v('venueAddress'),
+        partyTheme: v('partyTheme'), colorScheme: v('colorScheme'),
+        childName: v('childName'), childAge: v('childAge'), specialNotes: v('specialNotes')
+      },
+      services: sel,
+      selectedDepositTier,
+      totalCalc: total,
+      depositCalc: deposit
+    };
+
+    const quoteNum = 'Q' + Date.now().toString().slice(-6);
+
+    const payload = {
+      user_id: session.user.id,
+      quote_number: quoteNum,
+      client_name: v('clientName') || null,
+      client_email: v('clientEmail') || null,
+      event_date: v('eventDate') || null,
+      total: total.toFixed(2),
+      deposit: deposit.toFixed(2),
+      currency: getCurrencySymbol(),
+      status: 'Sent',
+      quote_data: quoteData
+    };
+
+    const { error } = await sb.from('quotes').insert(payload);
+    if (error) { console.error('Quote save error:', error); return false; }
+    return true;
+  } catch(e) {
+    console.error('Save quote exception:', e);
+    return false;
+  }
+}
+
+async function loadMyQuotes() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return [];
+    const { data, error } = await sb.from('quotes')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+    if (error) { console.error('Load quotes error:', error); return []; }
+    myQuotesCache = data || [];
+    return myQuotesCache;
+  } catch(e) {
+    console.error('Load quotes exception:', e);
+    return [];
+  }
+}
+
+async function showMyQuotes() {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panelQuotes').classList.add('active');
+  document.querySelectorAll('.prog-step').forEach(ps=>ps.classList.remove('active','done'));
+  window.scrollTo({top:0,behavior:'smooth'});
+  await loadMyQuotes();
+  renderQuotesList();
+}
+
+function setQuotesFilter(f, btnEl) {
+  quotesFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  renderQuotesList();
+}
+
+function renderQuotesList() {
+  const wrap = document.getElementById('quotesListWrap');
+  const summary = document.getElementById('quotesSummary');
+  const searchTerm = (document.getElementById('quotesSearch')?.value || '').toLowerCase().trim();
+
+  let filtered = myQuotesCache;
+  if (quotesFilter !== 'all') filtered = filtered.filter(q => q.status === quotesFilter);
+  if (searchTerm) filtered = filtered.filter(q => (q.client_name || '').toLowerCase().includes(searchTerm));
+
+  // Summary stats
+  const totalCount = myQuotesCache.length;
+  const sentCount = myQuotesCache.filter(q => q.status === 'Sent').length;
+  const paidCount = myQuotesCache.filter(q => q.status === 'Deposit Paid' || q.status === 'Balance Paid' || q.status === 'Completed').length;
+  const totalValue = myQuotesCache.reduce((s,q) => s + parseFloat(q.total || 0), 0);
+  const firstCur = myQuotesCache[0]?.currency || '$';
+
+  summary.innerHTML = `
+    <div class="summary-card"><div class="summary-label">Total Quotes</div><div class="summary-value">${totalCount}</div></div>
+    <div class="summary-card"><div class="summary-label">Pending</div><div class="summary-value">${sentCount}</div></div>
+    <div class="summary-card"><div class="summary-label">Paid / In Progress</div><div class="summary-value">${paidCount}</div></div>
+    <div class="summary-card"><div class="summary-label">Total Quoted</div><div class="summary-value">${firstCur}${totalValue.toFixed(0)}</div></div>
+  `;
+
+  if (!filtered.length) {
+    wrap.innerHTML = `
+      <div class="quotes-empty">
+        <div style="font-size:2.5rem;margin-bottom:0.5rem;">📋</div>
+        <h3 style="color:var(--user-primary);margin-bottom:0.4rem;">${totalCount === 0 ? 'No quotes yet' : 'No matching quotes'}</h3>
+        <p style="color:var(--slate-600);font-size:0.85rem;">
+          ${totalCount === 0 ? 'Generate your first quote and it will save here automatically.' : 'Try a different filter or search term.'}
+        </p>
+      </div>`;
+    return;
+  }
+
+  const rows = filtered.map(q => {
+    const d = new Date(q.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+    const ed = q.event_date ? new Date(q.event_date + 'T00:00').toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+    const statusClass = {
+      'Sent':'status-sent', 'Deposit Paid':'status-deposit',
+      'Balance Paid':'status-balance', 'Completed':'status-completed', 'Cancelled':'status-cancelled'
+    }[q.status] || 'status-sent';
+    return `
+      <tr data-id="${q.id}">
+        <td data-label="Created" onclick="reloadQuote('${q.id}')">${d}</td>
+        <td data-label="Client" onclick="reloadQuote('${q.id}')"><strong>${escapeHtml(q.client_name || '—')}</strong><br><span style="font-size:0.75rem;color:var(--slate-600)">${escapeHtml(q.client_email || '')}</span></td>
+        <td data-label="Event" onclick="reloadQuote('${q.id}')">${ed}</td>
+        <td data-label="Total" class="mono" onclick="reloadQuote('${q.id}')">${q.currency || '$'}${parseFloat(q.total).toFixed(2)}</td>
+        <td data-label="Deposit" class="mono" onclick="reloadQuote('${q.id}')">${q.currency || '$'}${parseFloat(q.deposit).toFixed(2)}</td>
+        <td data-label="Status">
+          <select class="status-select" onchange="updateQuoteStatus('${q.id}', this.value)" onclick="event.stopPropagation()">
+            <option ${q.status==='Sent'?'selected':''}>Sent</option>
+            <option ${q.status==='Deposit Paid'?'selected':''}>Deposit Paid</option>
+            <option ${q.status==='Balance Paid'?'selected':''}>Balance Paid</option>
+            <option ${q.status==='Completed'?'selected':''}>Completed</option>
+            <option ${q.status==='Cancelled'?'selected':''}>Cancelled</option>
+          </select>
+        </td>
+        <td data-label="Actions">
+          <div class="row-actions" onclick="event.stopPropagation()">
+            <button class="icon-btn" title="Re-open quote" onclick="reloadQuote('${q.id}')">↗️</button>
+            <button class="icon-btn" title="Delete" onclick="deleteQuote('${q.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table class="quotes-table">
+      <thead><tr>
+        <th>Created</th><th>Client</th><th>Event</th><th>Total</th><th>Deposit</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function updateQuoteStatus(id, newStatus) {
+  try {
+    const { error } = await sb.from('quotes').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) { alert('Could not update status: ' + error.message); return; }
+    const q = myQuotesCache.find(x => x.id === id);
+    if (q) q.status = newStatus;
+    showToast('Status updated ✓');
+    renderQuotesList();
+  } catch(e) { console.error(e); }
+}
+
+async function deleteQuote(id) {
+  if (!confirm('Delete this quote permanently? This cannot be undone.')) return;
+  try {
+    const { error } = await sb.from('quotes').delete().eq('id', id);
+    if (error) { alert('Could not delete: ' + error.message); return; }
+    myQuotesCache = myQuotesCache.filter(x => x.id !== id);
+    showToast('Quote deleted');
+    renderQuotesList();
+  } catch(e) { console.error(e); }
+}
+
+async function reloadQuote(id) {
+  const q = myQuotesCache.find(x => x.id === id);
+  if (!q || !q.quote_data) { alert('Could not reload quote.'); return; }
+
+  const d = q.quote_data;
+  // Restore client fields
+  if (d.client) Object.entries(d.client).forEach(([k,val]) => sv(k, val));
+  // Restore deposit + tier
+  if (d.biz && d.biz.depositPct) setDeposit(d.biz.depositPct);
+  if (d.selectedDepositTier) selectedDepositTier = d.selectedDepositTier;
+
+  // Rebuild services list + mark selections + set qty/price
+  buildServicesList();
+  if (d.services && d.services.length) {
+    d.services.forEach(svc => {
+      // Find matching index in SERVICES
+      for (let ci = 0; ci < SERVICES.length; ci++) {
+        for (let ii = 0; ii < SERVICES[ci].items.length; ii++) {
+          if (SERVICES[ci].items[ii].name === svc.name) {
+            const el = document.getElementById(`si_${ci}_${ii}`);
+            const ck = document.getElementById(`ck_${ci}_${ii}`);
+            const qty = document.getElementById(`qty_${ci}_${ii}`);
+            const price = document.getElementById(`pr_${ci}_${ii}`);
+            if (el) el.classList.add('selected');
+            if (ck) ck.textContent = '✓';
+            if (qty) qty.value = svc.qty;
+            if (price) price.value = svc.price;
+          }
+        }
+      }
+    });
+  }
+  updateLiveTotals();
+  goToStep(4);
+  showToast('Quote loaded ✓');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ── DOWNLOAD PDF (real one-click) ─────────────────────────────
