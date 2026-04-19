@@ -505,6 +505,37 @@
       line-height: 1.6;
     }
     .totals-deposit-box strong { color: var(--gold-bright); }
+    .tier-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.45rem;
+    }
+    .tier-btn {
+      padding: 0.55rem 0.4rem;
+      border: 1.5px solid var(--border);
+      background: white;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .tier-btn:hover { border-color: var(--gold); }
+    .tier-btn.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: white;
+    }
+    .tier-btn.suggested {
+      border-color: var(--gold);
+      border-width: 2px;
+    }
+    .tier-btn.missing {
+      opacity: 0.55;
+      background: #fef2f2;
+    }
     .selected-count {
       text-align: center;
       font-size: 0.8rem;
@@ -584,7 +615,9 @@
       max-height: 52px;
       max-width: 160px;
       object-fit: contain;
-      filter: brightness(0) invert(1);
+      background: white;
+      padding: 6px 10px;
+      border-radius: 6px;
     }
     .qp-logo-name {
       font-family: 'DM Serif Display', serif;
@@ -1139,33 +1172,33 @@
     <div class="card">
       <div class="card-title"><div class="card-title-dot"></div>Stripe Deposit Payment Links <span style="font-size:0.7rem;font-weight:500;color:var(--muted);margin-left:0.5rem;">Optional</span></div>
       <div style="padding:0.9rem 1rem;background:var(--gold-light);border:1px solid var(--gold);border-radius:9px;margin-bottom:1.1rem;font-size:0.8rem;line-height:1.6;color:var(--navy);">
-        <strong>💳 How this works:</strong> Create <strong>3 Payment Links</strong> in your Stripe dashboard for your most common deposit amounts (small, medium, large events). Paste them here once, and every quote you generate will show a <strong>"Pay Deposit Now"</strong> button that sends your client to Stripe checkout. Your client pays their deposit in one click.<br><br>
-        <strong>How to get a Stripe Payment Link:</strong> Log in to Stripe → <em>Payment Links</em> (left menu) → <em>+ New</em> → set price → copy the URL that starts with <code style="background:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">https://buy.stripe.com/...</code>
+        <strong>💳 How this works:</strong> Create <strong>4 Payment Links in Stripe</strong>, one for each tier below ($100, $250, $500, $1,000). Paste the URLs here once. When you build a quote, you'll pick the tier closest to your client's deposit on Step 3 — and the "Pay Deposit Now" button on the final quote will link to that Stripe checkout.<br><br>
+        <strong>Create each link in Stripe:</strong> Log in to Stripe → <em>Payment Links</em> → <em>+ New</em> → set the exact price → copy the URL (<code style="background:white;padding:2px 6px;border-radius:4px;font-size:0.75rem;">https://buy.stripe.com/...</code>)
       </div>
       <div class="form-grid">
         <div class="field">
-          <label>Small Deposit Link <span style="color:var(--muted);font-weight:400;">(e.g. $100 — for parties under $500)</span></label>
-          <input type="url" id="stripeSmall" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Used when deposit is up to $150</div>
+          <label>$100 Deposit Link</label>
+          <input type="url" id="stripe100" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">For small parties / low-ticket deposits</div>
         </div>
         <div class="field">
-          <label>Medium Deposit Link <span style="color:var(--muted);font-weight:400;">(e.g. $250 — for parties $500–$1,200)</span></label>
-          <input type="url" id="stripeMedium" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Used when deposit is $150–$350</div>
+          <label>$250 Deposit Link</label>
+          <input type="url" id="stripe250" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">For mid-range parties ($800–$1,500 total)</div>
         </div>
         <div class="field">
-          <label>Large Deposit Link <span style="color:var(--muted);font-weight:400;">(e.g. $500 — for parties $1,200+)</span></label>
-          <input type="url" id="stripeLarge" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Used when deposit is over $350</div>
+          <label>$500 Deposit Link</label>
+          <input type="url" id="stripe500" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">For premium events ($1,500–$3,000 total)</div>
         </div>
         <div class="field">
-          <label>Custom / General Stripe Link <span style="color:var(--muted);font-weight:400;">(Optional fallback)</span></label>
-          <input type="url" id="stripeCustom" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">Shown when no tier matches, or use your Stripe invoicing page</div>
+          <label>$1,000 Deposit Link</label>
+          <input type="url" id="stripe1000" placeholder="https://buy.stripe.com/..." oninput="saveProfile()"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.35rem;">For large events ($3,000+ total)</div>
         </div>
       </div>
       <div style="margin-top:1rem;padding:0.8rem 1rem;background:#e8f5e9;border:1px solid #4caf50;border-radius:9px;font-size:0.78rem;color:#1b5e20;line-height:1.6;">
-        💡 <strong>Pro tip:</strong> Leave all fields blank if you're not using Stripe yet — the quote will still print normally without a payment button.
+        💡 <strong>Leave blank if not using Stripe yet.</strong> Quotes will still work perfectly — the Pay Deposit button just won't appear.
       </div>
     </div>
 
@@ -1253,6 +1286,20 @@
           </div>
           <div class="selected-count" id="selectedCount">0 services selected</div>
         </div>
+
+        <div class="totals-card" id="tierPickerCard" style="margin-top:1rem;display:none;">
+          <div class="totals-header">💳 Stripe Deposit Link</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin:0.4rem 0 0.75rem;line-height:1.5;">
+            Pick the tier closest to <strong id="tierDepositAmount" style="color:var(--navy);">$0</strong>. This determines the "Pay Deposit Now" button on your final quote.
+          </div>
+          <div class="tier-grid">
+            <button type="button" class="tier-btn" data-tier="100" onclick="setDepositTier(100,this)">$100</button>
+            <button type="button" class="tier-btn" data-tier="250" onclick="setDepositTier(250,this)">$250</button>
+            <button type="button" class="tier-btn" data-tier="500" onclick="setDepositTier(500,this)">$500</button>
+            <button type="button" class="tier-btn" data-tier="1000" onclick="setDepositTier(1000,this)">$1,000</button>
+          </div>
+          <div id="tierStatus" style="font-size:0.7rem;color:var(--muted);margin-top:0.6rem;line-height:1.5;"></div>
+        </div>
       </div>
     </div>
 
@@ -1337,7 +1384,7 @@ async function loadProfileFromSupabase(userId) {
     const { data } = await sb.from('profiles').select('profile_data').eq('id', userId).single();
     if (data && data.profile_data) {
       const p = data.profile_data;
-      const fields = ['bizName','ownerName','bizEmail','bizPhone','bizWebsite','bizCity','paymentTerms','termsText','customCurrency','stripeSmall','stripeMedium','stripeLarge','stripeCustom'];
+      const fields = ['bizName','ownerName','bizEmail','bizPhone','bizWebsite','bizCity','paymentTerms','termsText','customCurrency','stripe100','stripe250','stripe500','stripe1000'];
       fields.forEach(id => { const el = document.getElementById(id); if(el && p[id]) el.value = p[id]; });
       if (p.depositPct) setDeposit(p.depositPct);
       if (p.bizCurrency) { const sel = document.getElementById('bizCurrency'); if(sel) { sel.value = p.bizCurrency; updateCurrencyDisplay(); } }
@@ -1347,6 +1394,7 @@ async function loadProfileFromSupabase(userId) {
       if (p.taxRate) { const el = document.getElementById('taxRate'); if(el) el.value = p.taxRate; }
       if (p.taxLabel) { const el = document.getElementById('taxLabel'); if(el) el.value = p.taxLabel; }
       if (p.logoDataURL) { logoDataURL = p.logoDataURL; showLogo(p.logoDataURL); }
+      if (p.selectedDepositTier) selectedDepositTier = p.selectedDepositTier;
     }
   } catch(e) { console.log('Profile load error:', e); }
 }
@@ -1366,8 +1414,9 @@ async function saveProfileToSupabase() {
       brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
       depositPct, taxMode,
       taxRate: v('taxRate'), taxLabel: v('taxLabel'), logoDataURL,
-      stripeSmall: v('stripeSmall'), stripeMedium: v('stripeMedium'),
-      stripeLarge: v('stripeLarge'), stripeCustom: v('stripeCustom')
+      stripe100: v('stripe100'), stripe250: v('stripe250'),
+      stripe500: v('stripe500'), stripe1000: v('stripe1000'),
+      selectedDepositTier
     };
     await sb.from('profiles').update({ profile_data: profileData }).eq('id', session.user.id);
   } catch(e) { console.log('Save error:', e); }
@@ -1386,6 +1435,7 @@ async function handleLogout() {
 // ── DATA ──────────────────────────────────────────────────────
 let depositPct = 25;
 let logoDataURL = null;
+let selectedDepositTier = null; // 100 | 250 | 500 | 1000 | null (auto)
 
 const SERVICES = [
   { cat:"Party Setup & Styling", icon:"🎀", items:[
@@ -1663,6 +1713,59 @@ function updateLiveTotals() {
        Deposit (${depositPct}%): <strong>${cur}${depAmount.toFixed(2)}</strong><br>
        Balance due: <strong>${cur}${balAmount.toFixed(2)}</strong>
      </div>`;
+
+  refreshTierPicker(depAmount);
+}
+
+// ── STRIPE TIER PICKER ────────────────────────────────────────
+function setDepositTier(tier, btnEl) {
+  selectedDepositTier = tier;
+  document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  updateTierStatus();
+  saveProfile();
+}
+
+function refreshTierPicker(depositAmount) {
+  const card = document.getElementById('tierPickerCard');
+  if (!card) return;
+
+  // Only show the picker if at least one Stripe link is filled in
+  const hasAnyLink = !!(v('stripe100') || v('stripe250') || v('stripe500') || v('stripe1000'));
+  if (!hasAnyLink) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+
+  const cur = getCurrencySymbol();
+  document.getElementById('tierDepositAmount').textContent = `${cur}${depositAmount.toFixed(2)}`;
+
+  const suggested = suggestTier(depositAmount);
+  const activeTier = selectedDepositTier || suggested;
+
+  document.querySelectorAll('.tier-btn').forEach(b => {
+    const t = parseInt(b.dataset.tier, 10);
+    b.classList.remove('active','suggested','missing');
+    if (!v('stripe' + t)) b.classList.add('missing');
+    if (t === suggested) b.classList.add('suggested');
+    if (t === activeTier) b.classList.add('active');
+  });
+
+  updateTierStatus();
+}
+
+function updateTierStatus() {
+  const status = document.getElementById('tierStatus');
+  if (!status) return;
+  const tier = selectedDepositTier || suggestTier(parseFloat(document.getElementById('tierDepositAmount')?.textContent.replace(/[^0-9.]/g,'')) || 0);
+  const link = v('stripe' + tier);
+  if (!link) {
+    status.innerHTML = `⚠️ <span style="color:#c62828">No link saved for $${tier.toLocaleString()} tier.</span> Add it in Business Setup, or pick a different tier.`;
+  } else {
+    const auto = !selectedDepositTier ? ' <em>(auto-suggested)</em>' : '';
+    status.innerHTML = `✅ <span style="color:#1b5e20">Using your $${tier.toLocaleString()} Stripe link${auto}</span>`;
+  }
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
@@ -1680,16 +1783,21 @@ function goToStep(s) {
 
 // ── BUILD QUOTE ───────────────────────────────────────────────
 function pickStripeLink(depositAmount) {
-  const small = v('stripeSmall');
-  const medium = v('stripeMedium');
-  const large = v('stripeLarge');
-  const custom = v('stripeCustom');
-  // Tier logic: <= $150 small, $150-$350 medium, > $350 large
-  if (depositAmount <= 150 && small) return small;
-  if (depositAmount <= 350 && medium) return medium;
-  if (depositAmount > 350 && large) return large;
-  // Fallback chain if preferred tier is empty
-  return medium || small || large || custom || '';
+  const tier = selectedDepositTier || suggestTier(depositAmount);
+  const id = 'stripe' + tier;
+  return v(id) || '';
+}
+
+function suggestTier(depositAmount) {
+  // Return the closest tier (by absolute distance)
+  const tiers = [100, 250, 500, 1000];
+  let best = tiers[0];
+  let bestDiff = Math.abs(depositAmount - best);
+  for (const t of tiers) {
+    const d = Math.abs(depositAmount - t);
+    if (d < bestDiff) { bestDiff = d; best = t; }
+  }
+  return best;
 }
 
 function buildQuote() {
@@ -1967,6 +2075,7 @@ function newQuote() {
    'venueAddress','partyTheme','colorScheme','childName','childAge','specialNotes'].forEach(id=>{
     const el = document.getElementById(id); if(el) el.value='';
   });
+  selectedDepositTier = null;
   buildServicesList();
   goToStep(2);
 }
@@ -2080,8 +2189,9 @@ function saveProfile() {
       brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
       taxMode,
       taxRate: v('taxRate'), taxLabel: v('taxLabel'),
-      stripeSmall: v('stripeSmall'), stripeMedium: v('stripeMedium'),
-      stripeLarge: v('stripeLarge'), stripeCustom: v('stripeCustom')
+      stripe100: v('stripe100'), stripe250: v('stripe250'),
+      stripe500: v('stripe500'), stripe1000: v('stripe1000'),
+      selectedDepositTier
     };
     localStorage.setItem('eqp_v1', JSON.stringify(p));
   } catch(e) {}
