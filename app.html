@@ -33,6 +33,22 @@
       --radius: 14px;
       --shadow: 0 4px 20px rgba(15,31,61,0.08);
       --shadow-lg: 0 12px 48px rgba(15,31,61,0.14);
+      /* User brand theme (injected via applyBrandTheme) */
+      --user-primary: #0d1b3e;
+      --user-accent: #c9a84c;
+      --user-primary-dark: #091530;
+      --user-primary-contrast: #ffffff;
+      --user-accent-contrast: #1a1a1a;
+      --user-primary-soft: rgba(13,27,62,0.08);
+      --user-accent-soft: rgba(201,168,76,0.12);
+      /* Neutral slate palette for quote body */
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-400: #94a3b8;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
     }
 
     html { scroll-behavior: smooth; }
@@ -136,7 +152,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .prog-step.active { color: var(--navy-mid); border-bottom-color: var(--gold); font-weight: 700; }
+    .prog-step.active { color: var(--user-primary); border-bottom-color: var(--user-accent); font-weight: 700; }
     .prog-step.done { color: var(--success); border-bottom-color: var(--success); }
     .step-num {
       display: inline-flex;
@@ -150,7 +166,7 @@
       margin-right: 0.35rem;
       transition: all 0.2s;
     }
-    .prog-step.active .step-num { background: var(--gold); color: var(--navy); }
+    .prog-step.active .step-num { background: var(--user-accent); color: var(--user-accent-contrast); }
     .prog-step.done .step-num { background: var(--success); color: white; }
 
     /* ── MAIN ── */
@@ -220,7 +236,7 @@
     .card-title-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: var(--gold-bright);
+      background: var(--user-accent);
       flex-shrink: 0;
     }
 
@@ -488,15 +504,15 @@
     .totals-line.grand {
       font-size: 1rem;
       font-weight: 700;
-      color: var(--gold-bright);
+      color: var(--user-accent);
       padding-top: 0.7rem;
       margin-top: 0.2rem;
-      border-top: 1px solid rgba(201,168,76,0.3);
+      border-top: 1px solid var(--user-accent-soft);
       border-bottom: none;
     }
     .totals-deposit-box {
-      background: rgba(201,168,76,0.12);
-      border: 1px solid rgba(201,168,76,0.25);
+      background: var(--user-accent-soft);
+      border: 1px solid var(--user-accent-soft);
       border-radius: 8px;
       padding: 0.7rem 0.9rem;
       margin-top: 0.9rem;
@@ -504,7 +520,7 @@
       color: rgba(255,255,255,0.8);
       line-height: 1.6;
     }
-    .totals-deposit-box strong { color: var(--gold-bright); }
+    .totals-deposit-box strong { color: var(--user-accent); }
     .tier-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -522,14 +538,14 @@
       transition: all 0.15s;
       font-family: inherit;
     }
-    .tier-btn:hover { border-color: var(--gold); }
+    .tier-btn:hover { border-color: var(--user-accent); }
     .tier-btn.active {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: white;
+      background: var(--user-accent);
+      border-color: var(--user-accent);
+      color: var(--user-accent-contrast);
     }
     .tier-btn.suggested {
-      border-color: var(--gold);
+      border-color: var(--user-accent);
       border-width: 2px;
     }
     .tier-btn.missing {
@@ -565,23 +581,23 @@
       letter-spacing: 0.01em;
     }
     .btn-gold {
-      background: linear-gradient(135deg, var(--gold), var(--gold-bright));
-      color: var(--navy);
-      box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+      background: linear-gradient(135deg, var(--user-accent), var(--user-accent));
+      color: var(--user-accent-contrast);
+      box-shadow: 0 4px 16px var(--user-accent-soft);
     }
-    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.45); }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--user-accent-soft); filter: brightness(1.05); }
     .btn-navy {
-      background: var(--navy);
-      color: white;
-      box-shadow: 0 4px 16px rgba(15,31,61,0.25);
+      background: var(--user-primary);
+      color: var(--user-primary-contrast);
+      box-shadow: 0 4px 16px var(--user-primary-soft);
     }
-    .btn-navy:hover { background: var(--navy-mid); transform: translateY(-2px); }
+    .btn-navy:hover { background: var(--user-primary-dark); transform: translateY(-2px); }
     .btn-outline {
       background: white;
-      color: var(--navy);
-      border: 2px solid var(--navy);
+      color: var(--user-primary);
+      border: 2px solid var(--user-primary);
     }
-    .btn-outline:hover { background: var(--navy-pale); }
+    .btn-outline:hover { background: var(--user-primary-soft); }
     .btn-sm {
       padding: 0.5rem 1.1rem;
       font-size: 0.8rem;
@@ -604,12 +620,12 @@
     }
 
     .qp-header {
-      background: var(--navy);
+      background: var(--user-primary);
       padding: 2rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 3px solid var(--gold-muted);
+      border-bottom: 3px solid var(--user-accent);
     }
     .qp-logo-area img {
       max-height: 52px;
@@ -622,29 +638,29 @@
     .qp-logo-name {
       font-family: 'DM Serif Display', serif;
       font-size: 1.6rem;
-      color: var(--gold-bright);
+      color: var(--user-accent);
     }
     .qp-contact-block {
       text-align: right;
       font-size: 0.78rem;
-      color: rgba(255,255,255,0.75);
+      color: rgba(255,255,255,0.8);
       line-height: 1.8;
     }
-    .qp-contact-block strong { color: white; font-size: 0.9rem; display: block; margin-bottom: 2px; }
+    .qp-contact-block strong { color: var(--user-primary-contrast); font-size: 0.9rem; display: block; margin-bottom: 2px; }
 
     .qp-meta-bar {
-      background: var(--navy-pale);
+      background: var(--slate-50);
       padding: 0.75rem 2.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--slate-200);
     }
     .qp-meta-left {
       font-family: 'Playfair Display', serif;
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--navy);
+      color: var(--slate-900);
     }
     .qp-meta-right {
       display: flex;
@@ -654,13 +670,13 @@
     }
     .qp-quote-num {
       font-size: 0.8rem;
-      color: var(--muted);
+      color: var(--slate-600);
       font-weight: 600;
       letter-spacing: 0.06em;
     }
     .qp-event-badge {
-      background: var(--navy);
-      color: var(--gold-bright);
+      background: var(--user-primary);
+      color: var(--user-accent);
       font-size: 0.82rem;
       font-weight: 700;
       padding: 0.3rem 0.85rem;
@@ -675,7 +691,7 @@
       gap: 1.2rem;
       margin-bottom: 2rem;
       padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--slate-200);
     }
     @media (max-width: 560px) { .qp-client-grid { grid-template-columns: 1fr; } }
     .qp-info-label {
@@ -683,13 +699,13 @@
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--slate-600);
       margin-bottom: 0.25rem;
     }
     .qp-info-value {
       font-size: 0.88rem;
       font-weight: 600;
-      color: var(--dark);
+      color: var(--slate-900);
       line-height: 1.4;
     }
 
@@ -699,7 +715,7 @@
       margin-bottom: 1.5rem;
       font-size: 0.85rem;
     }
-    .qp-table thead tr { background: var(--navy); }
+    .qp-table thead tr { background: var(--slate-700); }
     .qp-table thead th {
       padding: 0.7rem 1rem;
       text-align: left;
@@ -707,17 +723,17 @@
       font-weight: 700;
       letter-spacing: 0.09em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.8);
+      color: rgba(255,255,255,0.9);
     }
     .qp-table thead th:nth-child(2),
     .qp-table thead th:nth-child(3),
     .qp-table thead th:nth-child(4) { text-align: right; }
-    .qp-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-    .qp-table tbody tr:nth-child(even) { background: var(--off-white); }
-    .qp-table tbody tr:hover { background: var(--navy-pale); }
+    .qp-table tbody tr { border-bottom: 1px solid var(--slate-200); transition: background 0.15s; }
+    .qp-table tbody tr:nth-child(even) { background: var(--slate-50); }
+    .qp-table tbody tr:hover { background: var(--slate-100); }
     .qp-table tbody td {
       padding: 0.7rem 1rem;
-      color: var(--dark);
+      color: var(--slate-900);
       vertical-align: middle;
     }
     .qp-table tbody td:nth-child(2),
@@ -727,7 +743,7 @@
       font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
-    .qp-table tbody td:nth-child(4) { color: var(--navy); }
+    .qp-table tbody td:nth-child(4) { color: var(--user-primary); }
 
     .qp-totals-row {
       display: flex;
@@ -736,30 +752,30 @@
     }
     .qp-totals-box {
       width: 300px;
-      background: var(--off-white);
+      background: var(--slate-50);
       border-radius: 10px;
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--slate-200);
     }
     .qp-total-line {
       display: flex;
       justify-content: space-between;
       padding: 0.55rem 1.1rem;
       font-size: 0.85rem;
-      color: var(--mid);
-      border-bottom: 1px solid var(--border);
+      color: var(--slate-700);
+      border-bottom: 1px solid var(--slate-200);
     }
     .qp-total-line:last-child { border-bottom: none; }
     .qp-total-line.grand {
-      background: var(--navy);
-      color: var(--gold-bright);
+      background: var(--user-primary);
+      color: var(--user-primary-contrast);
       font-size: 1rem;
       font-weight: 700;
       padding: 0.75rem 1.1rem;
     }
 
     .qp-deposit-strip {
-      background: var(--navy);
+      background: var(--slate-700);
       border-radius: 10px;
       padding: 1.1rem 1.4rem;
       margin-bottom: 1.5rem;
@@ -769,18 +785,18 @@
       flex-wrap: wrap;
       gap: 0.75rem;
     }
-    .qp-deposit-left { font-size: 0.82rem; color: rgba(255,255,255,0.8); line-height: 1.6; }
-    .qp-deposit-left strong { color: var(--gold-bright); }
+    .qp-deposit-left { font-size: 0.82rem; color: rgba(255,255,255,0.85); line-height: 1.6; }
+    .qp-deposit-left strong { color: var(--user-accent); }
     .qp-deposit-right {
       text-align: right;
       font-size: 0.78rem;
-      color: rgba(255,255,255,0.6);
+      color: rgba(255,255,255,0.7);
       line-height: 1.6;
     }
 
     /* ── PAY DEPOSIT BOX ── */
     .qp-pay-box {
-      background: linear-gradient(135deg, #1e8c5a 0%, #2ea870 100%);
+      background: var(--user-primary);
       border-radius: 12px;
       padding: 1.3rem 1.5rem;
       margin-bottom: 1.5rem;
@@ -789,54 +805,56 @@
       justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
-      box-shadow: 0 4px 14px rgba(30,140,90,0.25);
+      box-shadow: 0 4px 14px var(--user-primary-soft);
     }
     .qp-pay-text { flex: 1; min-width: 200px; }
     .qp-pay-title {
       font-size: 1rem;
       font-weight: 700;
-      color: white;
+      color: var(--user-primary-contrast);
       margin-bottom: 0.25rem;
     }
     .qp-pay-sub {
       font-size: 0.8rem;
-      color: rgba(255,255,255,0.92);
+      color: var(--user-primary-contrast);
+      opacity: 0.9;
       line-height: 1.5;
     }
     .qp-pay-btn {
       display: inline-block;
-      background: white;
-      color: #1e8c5a;
+      background: var(--user-accent);
+      color: var(--user-accent-contrast);
       padding: 0.75rem 1.4rem;
       border-radius: 8px;
       font-weight: 700;
       font-size: 0.9rem;
       text-decoration: none;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      transition: transform 0.15s, box-shadow 0.15s;
+      transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
       white-space: nowrap;
     }
     .qp-pay-btn:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      filter: brightness(1.05);
     }
     .qp-notes-box {
-      background: var(--gold-light);
-      border-left: 4px solid var(--gold-muted);
+      background: var(--user-accent-soft);
+      border-left: 4px solid var(--user-accent);
       border-radius: 0 9px 9px 0;
       padding: 1rem 1.2rem;
       font-size: 0.83rem;
-      color: var(--mid);
+      color: var(--slate-700);
       line-height: 1.7;
       margin-bottom: 1.2rem;
     }
     .qp-terms-box {
-      background: var(--off-white);
-      border: 1px solid var(--border);
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
       border-radius: 9px;
       padding: 1rem 1.2rem;
       font-size: 0.8rem;
-      color: var(--muted);
+      color: var(--slate-600);
       line-height: 1.7;
       margin-bottom: 1.5rem;
     }
@@ -846,28 +864,28 @@
       padding: 1.2rem 0 0.5rem;
       font-family: 'DM Serif Display', serif;
       font-size: 1rem;
-      color: var(--navy-mid);
+      color: var(--slate-700);
       font-style: italic;
     }
 
     .qp-footer {
-      background: var(--navy-pale);
-      border-top: 1px solid var(--border);
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-200);
       padding: 0.9rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 0.8rem;
-      color: var(--muted);
+      color: var(--slate-600);
       flex-wrap: wrap;
       gap: 0.5rem;
     }
     .qp-powered {
       font-family: 'DM Serif Display', serif;
       font-size: 0.78rem;
-      color: var(--navy-mid);
+      color: var(--slate-700);
     }
-    .qp-powered span { color: var(--gold-muted); }
+    .qp-powered span { color: var(--user-accent); }
 
     /* ── TOAST ── */
     .toast {
@@ -1096,15 +1114,15 @@
         <div class="field">
           <label>Brand Primary Color</label>
           <div style="display:flex;gap:0.6rem;align-items:center;">
-            <input type="color" id="brandPrimary" value="#0d1b3e" oninput="saveProfile()" style="width:48px;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"/>
-            <input type="text" id="brandPrimaryHex" placeholder="#0d1b3e" maxlength="7" oninput="syncColor('brandPrimary','brandPrimaryHex');saveProfile()" style="flex:1;"/>
+            <input type="color" id="brandPrimary" value="#0d1b3e" oninput="applyBrandTheme();saveProfile()" style="width:48px;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"/>
+            <input type="text" id="brandPrimaryHex" placeholder="#0d1b3e" maxlength="7" oninput="syncColor('brandPrimary','brandPrimaryHex');applyBrandTheme();saveProfile()" style="flex:1;"/>
           </div>
         </div>
         <div class="field">
           <label>Brand Accent Color</label>
           <div style="display:flex;gap:0.6rem;align-items:center;">
-            <input type="color" id="brandAccent" value="#c9a84c" oninput="saveProfile()" style="width:48px;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"/>
-            <input type="text" id="brandAccentHex" placeholder="#c9a84c" maxlength="7" oninput="syncColor('brandAccent','brandAccentHex');saveProfile()" style="flex:1;"/>
+            <input type="color" id="brandAccent" value="#c9a84c" oninput="applyBrandTheme();saveProfile()" style="width:48px;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"/>
+            <input type="text" id="brandAccentHex" placeholder="#c9a84c" maxlength="7" oninput="syncColor('brandAccent','brandAccentHex');applyBrandTheme();saveProfile()" style="flex:1;"/>
           </div>
         </div>
       </div>
@@ -1371,12 +1389,17 @@ async function checkAuth() {
   }
 }
 
-function showApp(profile, session) {
+async function showApp(profile, session) {
   document.getElementById('authGate').classList.add('hidden');
   document.getElementById('suiteBar').style.display = 'flex';
   const name = profile.full_name || session.user.email;
   document.getElementById('userName').innerHTML = 'Welcome, <strong>' + name.split(' ')[0] + '</strong>';
-  loadProfileFromSupabase(session.user.id);
+  await loadProfileFromSupabase(session.user.id);
+  // Apply brand theme from loaded profile
+  applyBrandTheme();
+  // Route: returning users (business already set up) skip to Step 2
+  const isReturningUser = !!v('bizName');
+  if (isReturningUser) goToStep(2);
 }
 
 async function loadProfileFromSupabase(userId) {
@@ -1860,7 +1883,7 @@ function buildQuote() {
     : `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--muted)">No services selected — go back to add services</td></tr>`;
 
   document.getElementById('quotePreview').innerHTML = `
-    <div class="qp-header" style="background:linear-gradient(135deg, ${brandColors.primary}, ${brandColors.primary}dd);">
+    <div class="qp-header">
       <div class="qp-logo-area">${logoHTML}</div>
       <div class="qp-contact-block">
         <strong>${biz}</strong>
@@ -2152,6 +2175,40 @@ function updateCurrencyDisplay() {
     customField.style.display = 'none';
   }
   updateLiveTotals();
+}
+
+// ── BRAND THEMING ─────────────────────────────────────────────
+function applyBrandTheme() {
+  const primary = document.getElementById('brandPrimary')?.value || '#0d1b3e';
+  const accent = document.getElementById('brandAccent')?.value || '#c9a84c';
+  const root = document.documentElement;
+  root.style.setProperty('--user-primary', primary);
+  root.style.setProperty('--user-accent', accent);
+  root.style.setProperty('--user-primary-dark', darken(primary, 0.18));
+  root.style.setProperty('--user-primary-contrast', readableText(primary));
+  root.style.setProperty('--user-accent-contrast', readableText(accent));
+  root.style.setProperty('--user-primary-soft', primary + '14');
+  root.style.setProperty('--user-accent-soft', accent + '20');
+}
+
+// Return black or white depending on which has better contrast against bg
+function readableText(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '#ffffff';
+  const yiq = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+  return yiq >= 145 ? '#1a1a1a' : '#ffffff';
+}
+
+function hexToRgb(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return m ? { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) } : null;
+}
+
+function darken(hex, amt) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  const f = (n) => Math.max(0, Math.min(255, Math.round(n * (1 - amt))));
+  return '#' + [f(rgb.r), f(rgb.g), f(rgb.b)].map(x => x.toString(16).padStart(2,'0')).join('');
 }
 
 function syncColor(colorId, hexId) {
