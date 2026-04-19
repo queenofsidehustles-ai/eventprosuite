@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -851,104 +851,79 @@
     }
   
 
-    /* ── SUITE TOPBAR ── */
+    /* Suite topbar */
     .suite-bar {
       background: #080f1e;
       padding: 0 1.5rem;
-      height: 42px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(201,168,76,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 200;
     }
     .suite-bar-left {
-      font-family: 'DM Sans', sans-serif;
       font-size: 0.75rem;
       font-weight: 700;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.45);
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
     .suite-bar-left span { color: var(--gold-bright); }
-    .suite-bar-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .user-name {
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.5);
-      font-weight: 500;
-    }
+    .suite-bar-right { display: flex; align-items: center; gap: 1rem; }
+    .user-name { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
     .user-name strong { color: var(--gold-bright); }
     .suite-logout {
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.72rem; font-weight: 600;
       color: rgba(255,255,255,0.4);
-      cursor: pointer;
-      padding: 0.3rem 0.7rem;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer; padding: 0.28rem 0.65rem;
+      border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+      background: transparent; font-family: 'DM Sans', sans-serif;
       transition: all 0.18s;
-      background: transparent;
-      font-family: 'DM Sans', sans-serif;
     }
     .suite-logout:hover { color: white; border-color: rgba(255,255,255,0.4); }
 
-    /* Auth gate */
+    /* Auth gate overlay */
     .auth-gate {
-      display: none;
-      position: fixed;
-      inset: 0;
+      display: flex;
+      position: fixed; inset: 0;
       background: linear-gradient(160deg, #0d1b3e, #162d5e);
       z-index: 9999;
-      align-items: center;
-      justify-content: center;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
     }
-    .auth-gate.show { display: flex; }
-    .auth-gate-inner {
-      text-align: center;
-      color: white;
-      padding: 2rem;
-    }
+    .auth-gate.hidden { display: none; }
     .auth-spinner {
       width: 48px; height: 48px;
       border: 4px solid rgba(201,168,76,0.2);
-      border-top-color: var(--gold-bright);
+      border-top-color: #d4ae52;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1rem;
+      animation: authspin 0.8s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .auth-gate-text { font-size: 0.95rem; color: rgba(255,255,255,0.7); }
+    @keyframes authspin { to { transform: rotate(360deg); } }
+    .auth-gate-text { color: rgba(255,255,255,0.7); font-size: 0.95rem; }
 
-    /* Adjust app header top position */
-    .app-header { top: 42px; }
-    .progress-wrap { top: 0; }
+    .app-header { top: 44px; }
   </style>
 </head>
 <body>
 
 <!-- AUTH GATE -->
-<div class="auth-gate show" id="authGate">
-  <div class="auth-gate-inner">
-    <div class="auth-spinner"></div>
-    <div class="auth-gate-text">Verifying your access...</div>
-  </div>
+<div class="auth-gate" id="authGate">
+  <div class="auth-spinner"></div>
+  <div class="auth-gate-text" id="authGateText">Verifying your access...</div>
 </div>
 
 <!-- SUITE TOPBAR -->
 <div class="suite-bar" id="suiteBar" style="display:none;">
-  <div class="suite-bar-left">
-    <span>EventPro Suite™</span> &nbsp;·&nbsp; Event Quote Pro™
-  </div>
+  <div class="suite-bar-left"><span>EventPro Suite™</span> &nbsp;·&nbsp; Event Quote Pro™</div>
   <div class="suite-bar-right">
     <div class="user-name" id="userName">Welcome</div>
     <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
   </div>
 </div>
-
-
 
 <!-- HEADER -->
 <header class="app-header">
@@ -1205,718 +1180,102 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────
-let depositPct = 25;
-let logoDataURL = null;
 
-const SERVICES = [
-  { cat:"Party Setup & Styling", icon:"🎀", items:[
-    {name:"Full Balloon Garland Setup",suggested:"$150–$350",def:200},
-    {name:"Backdrop & Focal Wall",suggested:"$100–$250",def:150},
-    {name:"Dessert / Candy Table Styling",suggested:"$150–$400",def:225},
-    {name:"Tablescape & Centerpieces",suggested:"$75–$200",def:125},
-    {name:"Full Room Décor Package",suggested:"$300–$800",def:450},
-    {name:"Custom Balloon Bouquets",suggested:"$25–$60 each",def:35},
-    {name:"Number / Letter Balloons",suggested:"$20–$50 each",def:30},
-    {name:"Standalone Balloon Arch",suggested:"$100–$300",def:175},
-    {name:"Setup & Breakdown Fee",suggested:"$50–$150",def:75},
-  ]},
-  { cat:"Kids Experiences & Activities", icon:"🎪", items:[
-    {name:"Stuffed Animal / Bear Making Station",suggested:"$200–$500",def:300},
-    {name:"Kids Spa Party (per child)",suggested:"$25–$50/child",def:35},
-    {name:"Slime Making Station",suggested:"$150–$350",def:200},
-    {name:"Paint & Sip Activity",suggested:"$150–$300",def:200},
-    {name:"DIY Craft Activity Station",suggested:"$100–$250",def:150},
-    {name:"Face Painting (per hour)",suggested:"$75–$150/hr",def:100},
-    {name:"Balloon Twisting (per hour)",suggested:"$75–$150/hr",def:100},
-    {name:"Glitter Tattoos (per hour)",suggested:"$75–$125/hr",def:90},
-    {name:"Character Visit (per hour)",suggested:"$150–$400/hr",def:200},
-  ]},
-  { cat:"Rentals — Furniture & Structures", icon:"🪑", items:[
-    {name:"Bounce House Rental (per day)",suggested:"$150–$350/day",def:200},
-    {name:"Soft Play Set Rental",suggested:"$200–$500/day",def:300},
-    {name:"Teepee / Sleepover Setup (per tent)",suggested:"$50–$100/tent",def:65},
-    {name:"Tables (per table)",suggested:"$8–$15/table",def:10},
-    {name:"Chairs (per chair)",suggested:"$1.50–$3/chair",def:2},
-    {name:"Kids Table & Chair Set",suggested:"$35–$75/set",def:50},
-    {name:"Photo Booth Rental",suggested:"$300–$600",def:400},
-    {name:"Backdrop Stand (rental only)",suggested:"$25–$50",def:35},
-  ]},
-  { cat:"Rentals — Games & Activities", icon:"🎮", items:[
-    {name:"Nerf Battle Package",suggested:"$150–$300",def:200},
-    {name:"Outdoor Movie Night Setup",suggested:"$200–$500",def:300},
-    {name:"Carnival Games Set (3 games)",suggested:"$150–$350",def:200},
-    {name:"Giant Yard Games (Jenga, Connect 4)",suggested:"$75–$200",def:100},
-    {name:"Water Slide Rental (per day)",suggested:"$200–$500/day",def:300},
-    {name:"Obstacle Course Rental (per day)",suggested:"$250–$600/day",def:350},
-  ]},
-  { cat:"Concessions & Food Equipment", icon:"🍿", items:[
-    {name:"Popcorn Machine Rental",suggested:"$75–$150/day",def:100},
-    {name:"Cotton Candy Machine Rental",suggested:"$75–$150/day",def:100},
-    {name:"Snow Cone Machine Rental",suggested:"$75–$150/day",def:100},
-    {name:"Hot Dog Roller Rental",suggested:"$75–$125/day",def:90},
-    {name:"Nacho Warmer Rental",suggested:"$50–$100/day",def:65},
-    {name:"Lemonade Dispenser Rental",suggested:"$50–$100/day",def:65},
-    {name:"Full Food Cart Setup",suggested:"$200–$400/day",def:275},
-    {name:"Concession Supplies Package",suggested:"$50–$150",def:85},
-  ]},
-  { cat:"Photography & Keepsakes", icon:"📸", items:[
-    {name:"Event Photography (per hour)",suggested:"$100–$250/hr",def:150},
-    {name:"Photo Booth Props Package",suggested:"$35–$75",def:50},
-    {name:"Custom Photo Backdrop",suggested:"$75–$200",def:125},
-    {name:"Printed Photo Strip Service",suggested:"$150–$350",def:200},
-  ]},
-  { cat:"Coordination & Additional Fees", icon:"📋", items:[
-    {name:"Day-of Event Coordination",suggested:"$150–$400",def:250},
-    {name:"Full Event Planning Package",suggested:"$400–$1,200",def:600},
-    {name:"Vendor Coordination Fee",suggested:"$75–$200",def:100},
-    {name:"Consultation Fee",suggested:"$50–$150",def:75},
-    {name:"Travel Fee (per mile over 20mi)",suggested:"$0.65–$1.50/mi",def:1},
-    {name:"After-Hours / Holiday Surcharge",suggested:"$50–$200",def:75},
-    {name:"Rush Booking Fee (under 7 days)",suggested:"$50–$150",def:75},
-  ]},
-  { cat:"Wedding Services", icon:"💍", items:[
-    {name:"Wedding Ceremony Décor Setup",suggested:"$400–$1,500",def:750},
-    {name:"Wedding Reception Styling",suggested:"$500–$2,000",def:1000},
-    {name:"Floral Arrangements (per table)",suggested:"$50–$200/table",def:100},
-    {name:"Bridal Backdrop & Arch",suggested:"$300–$800",def:450},
-    {name:"Head Table Styling",suggested:"$150–$400",def:250},
-    {name:"Wedding Balloon Installation",suggested:"$300–$1,000",def:500},
-    {name:"Guest Table Centerpieces (per table)",suggested:"$40–$150/table",def:75},
-    {name:"Wedding Day Coordination",suggested:"$500–$1,500",def:800},
-    {name:"Bridal Shower Setup",suggested:"$200–$600",def:350},
-  ]},
-  { cat:"Baby Showers & Gender Reveals", icon:"🍼", items:[
-    {name:"Baby Shower Full Setup",suggested:"$200–$600",def:350},
-    {name:"Gender Reveal Styling Package",suggested:"$150–$400",def:250},
-    {name:"Balloon Garland & Backdrop",suggested:"$150–$350",def:200},
-    {name:"Dessert Table Styling",suggested:"$150–$400",def:225},
-    {name:"Custom Balloon Box Reveal",suggested:"$75–$200",def:125},
-    {name:"Confetti Cannon Setup",suggested:"$50–$150",def:75},
-    {name:"Diaper Raffle & Game Stations",suggested:"$50–$150",def:75},
-    {name:"Mommy-to-Be Floral Crown",suggested:"$35–$100",def:55},
-  ]},
-  { cat:"Corporate Events", icon:"🏢", items:[
-    {name:"Corporate Event Styling",suggested:"$500–$2,500",def:1000},
-    {name:"Stage / Podium Backdrop",suggested:"$300–$800",def:450},
-    {name:"Company Branding Balloon Display",suggested:"$300–$800",def:450},
-    {name:"Conference Room Décor",suggested:"$150–$500",def:300},
-    {name:"Product Launch Setup",suggested:"$500–$2,000",def:800},
-    {name:"Award Ceremony Styling",suggested:"$400–$1,200",def:600},
-    {name:"Corporate Photo Booth",suggested:"$400–$800",def:500},
-    {name:"Team Building Activity Setup",suggested:"$200–$600",def:350},
-    {name:"Corporate Catering Equipment Rental",suggested:"$300–$800",def:450},
-    {name:"Event A/V Equipment Rental",suggested:"$200–$600",def:350},
-    {name:"Full Corporate Event Coordination",suggested:"$800–$3,000",def:1200},
-  ]},
-  { cat:"Holiday & Themed Parties", icon:"🎄", items:[
-    {name:"Holiday Party Full Setup",suggested:"$300–$800",def:450},
-    {name:"Themed Photo Backdrop",suggested:"$150–$350",def:200},
-    {name:"Seasonal Balloon Installation",suggested:"$150–$400",def:250},
-    {name:"Themed Dessert Table",suggested:"$150–$400",def:225},
-    {name:"Masquerade / Gala Styling",suggested:"$500–$1,500",def:750},
-    {name:"Quinceanera / Sweet 16 Package",suggested:"$400–$1,200",def:700},
-    {name:"Graduation Party Setup",suggested:"$200–$600",def:350},
-    {name:"Retirement Party Setup",suggested:"$200–$600",def:350},
-  ]},
-];
-
-// ── INIT ─────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  loadProfile();
-  buildServicesList();
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('eventDate').min = today;
-});
-
-// ── PROFILE ──────────────────────────────────────────────────
-function saveProfile() {
-  const p = {
-    bizName:v('bizName'), ownerName:v('ownerName'), bizEmail:v('bizEmail'),
-    bizPhone:v('bizPhone'), bizWebsite:v('bizWebsite'), bizCity:v('bizCity'),
-    paymentTerms:v('paymentTerms'), termsText:v('termsText'),
-    depositPct, logoDataURL
-  };
-  try { localStorage.setItem('eqp_v1', JSON.stringify(p)); } catch(e){}
-}
-function loadProfile() {
-  try {
-    const s = JSON.parse(localStorage.getItem('eqp_v1'));
-    if (!s) return;
-    sv('bizName',s.bizName); sv('ownerName',s.ownerName); sv('bizEmail',s.bizEmail);
-    sv('bizPhone',s.bizPhone); sv('bizWebsite',s.bizWebsite); sv('bizCity',s.bizCity);
-    sv('paymentTerms',s.paymentTerms); sv('termsText',s.termsText);
-    if (s.depositPct) setDeposit(s.depositPct);
-    if (s.logoDataURL) { logoDataURL = s.logoDataURL; showLogo(logoDataURL); }
-  } catch(e){}
-}
-
-// ── LOGO ─────────────────────────────────────────────────────
-function handleLogo(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = ev => { logoDataURL = ev.target.result; showLogo(logoDataURL); saveProfile(); };
-  r.readAsDataURL(f);
-}
-function showLogo(src) {
-  document.getElementById('logoPreview').src = src;
-  document.getElementById('logoPreview').style.display = 'block';
-  document.getElementById('uploadPrompt').style.display = 'none';
-}
-
-// ── DEPOSIT ──────────────────────────────────────────────────
-function setDeposit(pct, el) {
-  depositPct = pct;
-  document.querySelectorAll('.deposit-btn').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
-  else {
-    document.querySelectorAll('.deposit-btn').forEach(b => {
-      if (parseInt(b.textContent) === pct || b.textContent === 'Full' && pct === 100) b.classList.add('active');
-    });
-  }
-  updateLiveTotals();
-  saveProfile();
-}
-
-// ── BUILD SERVICES ────────────────────────────────────────────
-function buildServicesList() {
-  const c = document.getElementById('servicesList');
-  c.innerHTML = '';
-  SERVICES.forEach((cat,ci) => {
-    const d = document.createElement('div');
-    d.className = 'service-category';
-    d.innerHTML = `
-      <div class="category-header" onclick="toggleCat(this)">
-        <span class="cat-icon">${cat.icon}</span>
-        <span class="cat-name">${cat.cat}</span>
-        <span class="cat-count">${cat.items.length} services</span>
-        <span class="cat-toggle">▼</span>
-      </div>
-      <div class="service-items" id="cat_${ci}">
-        ${cat.items.map((item,ii)=>`
-          <div class="service-item" id="si_${ci}_${ii}" onclick="toggleSvc(${ci},${ii})">
-            <div class="service-check" id="ck_${ci}_${ii}"></div>
-            <div class="service-info">
-              <div class="service-name">${item.name}</div>
-              <div class="service-suggested">${item.suggested}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end" onclick="event.stopPropagation()">
-              <div class="qty-price-col">
-                <input class="service-qty" type="number" id="qty_${ci}_${ii}" value="1" min="1"
-                  onclick="event.stopPropagation()" onchange="updateLiveTotals()"/>
-                <div class="col-label">Qty</div>
-              </div>
-              <div class="qty-price-col">
-                <input class="service-price" type="number" id="pr_${ci}_${ii}" value="${item.def}" min="0"
-                  onclick="event.stopPropagation()" onchange="updateLiveTotals()"/>
-                <div class="col-label">$ Each</div>
-              </div>
-            </div>
-          </div>`).join('')}
-      </div>`;
-    c.appendChild(d);
-  });
-}
-
-function toggleCat(h) {
-  h.classList.toggle('collapsed');
-  h.nextElementSibling.classList.toggle('hidden');
-}
-function toggleSvc(ci,ii) {
-  const el = document.getElementById(`si_${ci}_${ii}`);
-  const ck = document.getElementById(`ck_${ci}_${ii}`);
-  el.classList.toggle('selected');
-  ck.textContent = el.classList.contains('selected') ? '✓' : '';
-  updateLiveTotals();
-}
-
-// ── LIVE TOTALS ───────────────────────────────────────────────
-function getSelected() {
-  const out = [];
-  SERVICES.forEach((cat,ci) => cat.items.forEach((item,ii) => {
-    const el = document.getElementById(`si_${ci}_${ii}`);
-    if (el?.classList.contains('selected')) {
-      const qty = parseFloat(document.getElementById(`qty_${ci}_${ii}`).value)||1;
-      const price = parseFloat(document.getElementById(`pr_${ci}_${ii}`).value)||0;
-      out.push({ name:item.name, category:cat.cat, qty, price, total:qty*price, cur:getCurrencySymbol() });
-    }
-  }));
-  return out;
-}
-
-function updateLiveTotals() {
-  const sel = getSelected();
-  const sub = sel.reduce((s,i)=>s+i.total,0);
-  const dep = sub*(depositPct/100);
-  const bal = sub-dep;
-  document.getElementById('selectedCount').textContent =
-    `${sel.length} service${sel.length!==1?'s':''} selected`;
-  if (!sel.length) {
-    document.getElementById('liveTotals').innerHTML =
-      `<div class="totals-empty"><p>Select services on the left to see your quote build in real time</p></div>`;
-    return;
-  }
-  document.getElementById('liveTotals').innerHTML =
-    const cur = getCurrencySymbol();
-    const taxInfo = calcTax(sub);
-    const grandTotal = taxInfo.mode === 'added' ? sub + taxInfo.taxAmount : sub;
-    const depAmount = grandTotal * (depositPct / 100);
-    const balAmount = grandTotal - depAmount;
-
-    const taxLine = taxInfo.taxAmount > 0
-      ? (taxInfo.mode === 'added'
-          ? `<div class="totals-line"><span>${taxInfo.label} (added)</span><span>+ ${cur}${taxInfo.taxAmount.toFixed(2)}</span></div>`
-          : `<div class="totals-line"><span>${taxInfo.label} (included)</span><span>${cur}${taxInfo.taxAmount.toFixed(2)}</span></div>`)
-      : '';
-
-    sel.map(s=>`<div class="totals-line"><span>${s.name}</span><span>${cur}${s.total.toFixed(2)}</span></div>`).join('') +
-    taxLine +
-    `<div class="totals-line grand"><span>Total</span><span>${cur}${grandTotal.toFixed(2)}</span></div>
-     <div class="totals-deposit-box">
-       Deposit (${depositPct}%): <strong>${cur}${depAmount.toFixed(2)}</strong><br>
-       Balance due: <strong>${cur}${balAmount.toFixed(2)}</strong>
-     </div>`;
-}
-
-// ── NAVIGATION ────────────────────────────────────────────────
-function goToStep(s) {
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById(`panel${s}`).classList.add('active');
-  document.querySelectorAll('.prog-step').forEach((ps,i)=>{
-    ps.classList.remove('active','done');
-    if (i+1<s) ps.classList.add('done');
-    if (i+1===s) ps.classList.add('active');
-  });
-  if (s===4) buildQuote();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// ── BUILD QUOTE ───────────────────────────────────────────────
-function buildQuote() {
-  const sel = getSelected();
-  const sub = sel.reduce((s,i)=>s+i.total,0);
-  const dep = sub*(depositPct/100);
-  const bal = sub-dep;
-
-  const cur = getCurrencySymbol();
-  const colors = getBrandColors();
-  const biz    = v('bizName')||'Your Business';
-  const owner  = v('ownerName');
-  const email  = v('bizEmail');
-  const phone  = v('bizPhone');
-  const web    = v('bizWebsite');
-  const city   = v('bizCity');
-  const client = v('clientName')||'Valued Client';
-  const cEmail = v('clientEmail');
-  const rawDate= v('eventDate');
-  const eDate  = rawDate ? new Date(rawDate+'T00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '';
-  const eTime  = v('eventTime');
-  const eDur   = v('eventDuration');
-  const guests = v('guestCount');
-  const venue  = v('venueAddress');
-  const theme  = v('partyTheme');
-  const colors = v('colorScheme');
-  const child  = v('childName');
-  const age    = v('childAge');
-  const notes  = v('specialNotes');
-  const terms  = v('paymentTerms');
-  const tcs    = v('termsText');
-
-  const qNum  = 'Q'+Date.now().toString().slice(-6);
-  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-
-  const logoHTML = logoDataURL
-    ? `<img src="${logoDataURL}" alt="${biz}"/>`
-    : `<div class="qp-logo-name">${biz}</div>`;
-
-  const contactLines = [owner,phone,email,web,city].filter(Boolean);
-
-  const eventSummary = [
-    child?`Birthday Star: ${child}${age?', turning '+age:''}`:null,
-    eDate?`Date: ${eDate}`:null,
-    eTime?`Time: ${eTime}`:null,
-    eDur?`Duration: ${eDur}`:null,
-    guests?`Guests: ${guests}`:null,
-    theme?`Theme: ${theme}`:null,
-    colors?`Colors: ${colors}`:null,
-  ].filter(Boolean).join('<br>');
-
-  const rows = sel.length
-    ? sel.map(s=>`
-        <tr>
-          <td>${s.name}</td>
-          <td>${s.qty}</td>
-          <td>${cur}${s.price.toFixed(2)}</td>
-          <td>${cur}${s.total.toFixed(2)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--muted)">No services selected — go back to add services</td></tr>`;
-
-  document.getElementById('quotePreview').innerHTML = `
-    <div class="qp-header" style="background:linear-gradient(135deg, ${colors.primary}, ${colors.primary}dd);">
-      <div class="qp-logo-area">${logoHTML}</div>
-      <div class="qp-contact-block">
-        <strong>${biz}</strong>
-        ${contactLines.join('<br>')}
-      </div>
-    </div>
-
-    <div class="qp-meta-bar">
-      <div class="qp-meta-left">Event Quote</div>
-      <div class="qp-meta-right">
-        <div class="qp-quote-num">Quote #${qNum} &nbsp;·&nbsp; Prepared ${today}</div>
-        ${eDate?`<div class="qp-event-badge">📅 ${eDate}</div>`:''}
-      </div>
-    </div>
-
-    <div class="qp-body">
-      <div class="qp-client-grid">
-        <div>
-          <div class="qp-info-label">Prepared For</div>
-          <div class="qp-info-value">${client}</div>
-          ${cEmail?`<div style="font-size:0.78rem;color:var(--muted);margin-top:2px">${cEmail}</div>`:''}
-        </div>
-        <div>
-          <div class="qp-info-label">Venue / Location</div>
-          <div class="qp-info-value" style="font-size:0.85rem">${venue||'To be confirmed'}</div>
-        </div>
-        <div>
-          <div class="qp-info-label">Event Details</div>
-          <div style="font-size:0.8rem;color:var(--mid);line-height:1.65">${eventSummary||'See notes below'}</div>
-        </div>
-      </div>
-
-      <table class="qp-table">
-        <thead>
-          <tr>
-            <th>Service Description</th>
-            <th style="text-align:right">Qty</th>
-            <th style="text-align:right">Unit Price</th>
-            <th style="text-align:right">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-
-      <div class="qp-totals-row">
-        <div class="qp-totals-box">
-          <div class="qp-total-line"><span>Subtotal</span><span>${cur}${sub.toFixed(2)}</span></div>
-          ${(()=>{
-            const ti = calcTax(sub);
-            if (ti.taxAmount > 0 && ti.mode === 'added') return `<div class="qp-total-line"><span>${ti.label}</span><span>+ ${cur}${ti.taxAmount.toFixed(2)}</span></div>`;
-            if (ti.taxAmount > 0 && ti.mode === 'included') return `<div class="qp-total-line" style="font-size:0.78rem;color:var(--muted)"><span>${ti.label} (included in price)</span><span>${cur}${ti.taxAmount.toFixed(2)}</span></div>`;
-            return `<div class="qp-total-line"><span>Tax</span><span>${cur}0.00</span></div>`;
-          })()}
-          ${(()=>{
-            const ti = calcTax(sub);
-            const grand = ti.mode === 'added' ? sub + ti.taxAmount : sub;
-            return `<div class="qp-total-line grand"><span>TOTAL</span><span>${cur}${grand.toFixed(2)}</span></div>`;
-          })()}
-        </div>
-      </div>
-
-      <div class="qp-deposit-strip">
-        <div class="qp-deposit-left">
-          To secure your date, a <strong>${depositPct}% deposit of ${cur}${dep.toFixed(2)}</strong> is required at booking.<br>
-          ${terms}
-        </div>
-        <div class="qp-deposit-right">
-          Deposit due now<br>
-          <strong style="color:var(--gold-bright);font-size:1rem">${cur}${dep.toFixed(2)}</strong><br>
-          Balance: ${cur}${bal.toFixed(2)}
-        </div>
-      </div>
-
-      ${notes?`<div class="qp-notes-box"><strong style="color:var(--navy)">Special Notes:</strong> ${notes}</div>`:''}
-      ${tcs?`<div class="qp-terms-box"><strong>Terms & Conditions:</strong> ${tcs}</div>`:''}
-
-      <div class="qp-sign-off">
-        Thank you for choosing ${biz}. We look forward to making your event unforgettable. ✨
-      </div>
-    </div>
-
-    <div class="qp-footer">
-      <div>${biz}${city?' · '+city:''}</div>
-      <div class="qp-powered">Event Quote <span>Pro™</span></div>
-      <div>Quote #${qNum}</div>
-    </div>
-  `;
-}
-
-// ── COPY TEXT ─────────────────────────────────────────────────
-function copyQuoteText() {
-  const sel = getSelected();
-  const sub = sel.reduce((s,i)=>s+i.total,0);
-  const dep = sub*(depositPct/100);
-  const bal = sub-dep;
-  const biz = v('bizName')||'Your Business';
-  const client = v('clientName')||'Valued Client';
-  const rawDate = v('eventDate');
-  const eDate = rawDate ? new Date(rawDate+'T00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : 'TBD';
-
-  const cur = getCurrencySymbol();
-  let t = `QUOTE FROM ${biz.toUpperCase()}\n${'─'.repeat(42)}\n`;
-  t += `Client: ${client}\nEvent Date: ${eDate}\nVenue: ${v('venueAddress')||'TBD'}\n\n`;
-  t += `SERVICES\n${'─'.repeat(42)}\n`;
-  sel.forEach(s => { t += `${s.name} (x${s.qty}) ...... ${cur}${s.total.toFixed(2)}\n`; });
-  t += `${'─'.repeat(42)}\nTOTAL: ${cur}${sub.toFixed(2)}\n\n`;
-  t += `DEPOSIT REQUIRED (${depositPct}%): ${cur}${dep.toFixed(2)}\n`;
-  t += `BALANCE DUE: ${cur}${bal.toFixed(2)}\n\n`;
-  t += `${v('paymentTerms')||''}\n\nThank you for choosing ${biz}!\n`;
-  t += [v('bizPhone'),v('bizEmail')].filter(Boolean).join(' | ');
-
-  navigator.clipboard.writeText(t).then(()=>showToast('✓ Quote copied to clipboard'));
-}
-
-function newQuote() {
-  if (!confirm('Start a new quote? Your business profile will be saved.')) return;
-  ['clientName','clientEmail','clientPhone','eventDate','eventTime','guestCount',
-   'venueAddress','partyTheme','colorScheme','childName','childAge','specialNotes'].forEach(id=>{
-    const el = document.getElementById(id); if(el) el.value='';
-  });
-  buildServicesList();
-  goToStep(2);
-}
-
-// ── HELPERS ───────────────────────────────────────────────────
-function v(id) { const e=document.getElementById(id); return e?e.value.trim():''; }
-function sv(id,val) { const e=document.getElementById(id); if(e&&val) e.value=val; }
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// ── TAX ───────────────────────────────────────────────────────
-let taxMode = 'none'; // 'none' | 'included' | 'added'
-
-function setTax(mode, el) {
-  taxMode = mode;
-  document.querySelectorAll('#taxNone,#taxIncluded,#taxAdded').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
-  const rateField = document.getElementById('taxRateField');
-  const labelField = document.getElementById('taxLabelField');
-  if (mode === 'added') {
-    rateField.style.display = 'flex';
-    labelField.style.display = 'flex';
-  } else if (mode === 'included') {
-    rateField.style.display = 'flex';
-    labelField.style.display = 'flex';
-  } else {
-    rateField.style.display = 'none';
-    labelField.style.display = 'none';
-  }
-  updateLiveTotals();
-  saveProfile();
-}
-
-function getTaxInfo() {
-  const rate = parseFloat(document.getElementById('taxRate')?.value) || 0;
-  const label = document.getElementById('taxLabel')?.value.trim() || 'Tax';
-  const mode = taxMode;
-  return { rate, label, mode };
-}
-
-function calcTax(subtotal) {
-  const { rate, label, mode } = getTaxInfo();
-  if (mode === 'none' || rate === 0) return { taxAmount: 0, label, mode };
-  if (mode === 'added') {
-    return { taxAmount: subtotal * (rate / 100), label, mode };
-  }
-  if (mode === 'included') {
-    // Tax is already in the price - just show what portion is tax
-    const taxAmount = subtotal - (subtotal / (1 + rate / 100));
-    return { taxAmount, label, mode };
-  }
-  return { taxAmount: 0, label, mode };
-}
-
-// ── CURRENCY ──────────────────────────────────────────────────
-function getCurrencySymbol() {
-  const sel = document.getElementById('bizCurrency');
-  if (!sel) return '$';
-  if (sel.value === 'custom') {
-    return document.getElementById('customCurrency')?.value.trim() || '$';
-  }
-  return sel.value;
-}
-
-function updateCurrencyDisplay() {
-  const sel = document.getElementById('bizCurrency');
-  const customField = document.getElementById('customCurrencyField');
-  if (sel && sel.value === 'custom') {
-    customField.style.display = 'flex';
-  } else if (customField) {
-    customField.style.display = 'none';
-  }
-  updateLiveTotals();
-}
-
-function syncColor(colorId, hexId) {
-  const colorEl = document.getElementById(colorId);
-  const hexEl = document.getElementById(hexId);
-  if (!colorEl || !hexEl) return;
-  const val = hexEl.value;
-  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-    colorEl.value = val;
-  }
-}
-
-// ── BRAND COLORS IN QUOTE ─────────────────────────────────────
-function getBrandColors() {
-  const primary = document.getElementById('brandPrimary')?.value || '#0d1b3e';
-  const accent = document.getElementById('brandAccent')?.value || '#c9a84c';
-  return { primary, accent };
-}
-</script>
-
-
-<script>
+// ════════════════════════════════════════════════════════
+// SUPABASE AUTH
+// ════════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
+});
 
-// ── AUTH GUARD ────────────────────────────────────────────────
 async function checkAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-
-  if (!session) {
-    window.location.href = 'login.html';
-    return false;
-  }
-
-  // Check paid status
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('has_paid, full_name')
-    .eq('id', session.user.id)
-    .single();
-
-  if (!profile?.has_paid) {
-    await sb.auth.signOut();
-    window.location.href = 'login.html?msg=access_required';
-    return false;
-  }
-
-  // Show the app
-  document.getElementById('authGate').classList.remove('show');
-  document.getElementById('suiteBar').style.display = 'flex';
-
-  // Set user name
-  const name = profile.full_name || session.user.email;
-  document.getElementById('userName').innerHTML = `Welcome, <strong>${name.split(' ')[0]}</strong>`;
-
-  // Load saved profile from Supabase
-  loadSupabaseProfile(session.user.id);
-
-  return true;
-}
-
-// ── LOAD PROFILE FROM SUPABASE ────────────────────────────────
-async function loadSupabaseProfile(userId) {
-  const { data } = await sb
-    .from('profiles')
-    .select('profile_data')
-    .eq('id', userId)
-    .single();
-
-  if (data?.profile_data) {
-    const p = data.profile_data;
-    // Restore all profile fields
-    const fields = ['bizName','ownerName','bizEmail','bizPhone','bizWebsite','bizCity','paymentTerms','termsText','customCurrency'];
-    fields.forEach(id => { const el = document.getElementById(id); if(el && p[id]) el.value = p[id]; });
-
-    if (p.depositPct) setDeposit(p.depositPct);
-    if (p.bizCurrency) {
-      const sel = document.getElementById('bizCurrency');
-      if (sel) { sel.value = p.bizCurrency; updateCurrencyDisplay(); }
-    }
-    if (p.brandPrimary) {
-      const el = document.getElementById('brandPrimary');
-      if (el) { el.value = p.brandPrimary; document.getElementById('brandPrimaryHex').value = p.brandPrimary; }
-    }
-    if (p.brandAccent) {
-      const el = document.getElementById('brandAccent');
-      if (el) { el.value = p.brandAccent; document.getElementById('brandAccentHex').value = p.brandAccent; }
-    }
-    if (p.taxMode) {
-      const btn = document.getElementById(p.taxMode === 'added' ? 'taxAdded' : p.taxMode === 'included' ? 'taxIncluded' : 'taxNone');
-      setTax(p.taxMode, btn);
-    }
-    if (p.taxRate) document.getElementById('taxRate').value = p.taxRate;
-    if (p.taxLabel) document.getElementById('taxLabel').value = p.taxLabel;
-    if (p.logoDataURL) { logoDataURL = p.logoDataURL; showLogo(logoDataURL); }
-  }
-}
-
-// ── SAVE PROFILE TO SUPABASE ──────────────────────────────────
-async function saveProfileToSupabase() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
-
-  const sel = document.getElementById('bizCurrency');
-  const profileData = {
-    bizName: document.getElementById('bizName')?.value.trim(),
-    ownerName: document.getElementById('ownerName')?.value.trim(),
-    bizEmail: document.getElementById('bizEmail')?.value.trim(),
-    bizPhone: document.getElementById('bizPhone')?.value.trim(),
-    bizWebsite: document.getElementById('bizWebsite')?.value.trim(),
-    bizCity: document.getElementById('bizCity')?.value.trim(),
-    paymentTerms: document.getElementById('paymentTerms')?.value.trim(),
-    termsText: document.getElementById('termsText')?.value.trim(),
-    bizCurrency: sel?.value || '$',
-    customCurrency: document.getElementById('customCurrency')?.value.trim(),
-    brandPrimary: document.getElementById('brandPrimary')?.value || '#0d1b3e',
-    brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
-    depositPct,
-    taxMode,
-    taxRate: document.getElementById('taxRate')?.value,
-    taxLabel: document.getElementById('taxLabel')?.value.trim(),
-    logoDataURL,
-  };
-
-  await sb.from('profiles').update({ profile_data: profileData }).eq('id', session.user.id);
-}
-
-// Override saveProfile to also save to Supabase
-const _originalSaveProfile = typeof saveProfile === 'function' ? saveProfile : () => {};
-function saveProfile() {
-  // Save to localStorage as backup
   try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('has_paid, full_name')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profile || !profile.has_paid) {
+      // Retry after 2 seconds
+      await new Promise(r => setTimeout(r, 2000));
+      const { data: p2 } = await sb.from('profiles').select('has_paid,full_name').eq('id', session.user.id).single();
+      if (!p2 || !p2.has_paid) {
+        document.getElementById('authGateText').textContent = 'Access not found. Redirecting...';
+        setTimeout(() => window.location.href = 'login.html', 2000);
+        return;
+      }
+      showApp(p2, session);
+    } else {
+      showApp(profile, session);
+    }
+  } catch(e) {
+    console.error('Auth error:', e);
+    window.location.href = 'login.html';
+  }
+}
+
+function showApp(profile, session) {
+  document.getElementById('authGate').classList.add('hidden');
+  document.getElementById('suiteBar').style.display = 'flex';
+  const name = profile.full_name || session.user.email;
+  document.getElementById('userName').innerHTML = 'Welcome, <strong>' + name.split(' ')[0] + '</strong>';
+  loadProfileFromSupabase(session.user.id);
+}
+
+async function loadProfileFromSupabase(userId) {
+  try {
+    const { data } = await sb.from('profiles').select('profile_data').eq('id', userId).single();
+    if (data && data.profile_data) {
+      const p = data.profile_data;
+      const fields = ['bizName','ownerName','bizEmail','bizPhone','bizWebsite','bizCity','paymentTerms','termsText','customCurrency'];
+      fields.forEach(id => { const el = document.getElementById(id); if(el && p[id]) el.value = p[id]; });
+      if (p.depositPct) setDeposit(p.depositPct);
+      if (p.bizCurrency) { const sel = document.getElementById('bizCurrency'); if(sel) { sel.value = p.bizCurrency; updateCurrencyDisplay(); } }
+      if (p.brandPrimary) { const el = document.getElementById('brandPrimary'); if(el) { el.value = p.brandPrimary; const hex = document.getElementById('brandPrimaryHex'); if(hex) hex.value = p.brandPrimary; } }
+      if (p.brandAccent) { const el = document.getElementById('brandAccent'); if(el) { el.value = p.brandAccent; const hex = document.getElementById('brandAccentHex'); if(hex) hex.value = p.brandAccent; } }
+      if (p.taxMode) { const btn = document.getElementById(p.taxMode==='added'?'taxAdded':p.taxMode==='included'?'taxIncluded':'taxNone'); setTax(p.taxMode, btn); }
+      if (p.taxRate) { const el = document.getElementById('taxRate'); if(el) el.value = p.taxRate; }
+      if (p.taxLabel) { const el = document.getElementById('taxLabel'); if(el) el.value = p.taxLabel; }
+      if (p.logoDataURL) { logoDataURL = p.logoDataURL; showLogo(p.logoDataURL); }
+    }
+  } catch(e) { console.log('Profile load error:', e); }
+}
+
+async function saveProfileToSupabase() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
     const sel = document.getElementById('bizCurrency');
-    const p = {
-      bizName: document.getElementById('bizName')?.value.trim(),
-      ownerName: document.getElementById('ownerName')?.value.trim(),
-      bizEmail: document.getElementById('bizEmail')?.value.trim(),
-      bizPhone: document.getElementById('bizPhone')?.value.trim(),
-      bizWebsite: document.getElementById('bizWebsite')?.value.trim(),
-      bizCity: document.getElementById('bizCity')?.value.trim(),
-      paymentTerms: document.getElementById('paymentTerms')?.value.trim(),
-      termsText: document.getElementById('termsText')?.value.trim(),
-      depositPct, logoDataURL,
-      bizCurrency: sel?.value || '$',
-      customCurrency: document.getElementById('customCurrency')?.value.trim(),
+    const profileData = {
+      bizName: v('bizName'), ownerName: v('ownerName'), bizEmail: v('bizEmail'),
+      bizPhone: v('bizPhone'), bizWebsite: v('bizWebsite'), bizCity: v('bizCity'),
+      paymentTerms: v('paymentTerms'), termsText: v('termsText'),
+      bizCurrency: sel ? sel.value : '$',
+      customCurrency: v('customCurrency'),
       brandPrimary: document.getElementById('brandPrimary')?.value || '#0d1b3e',
       brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
-      taxMode,
-      taxRate: document.getElementById('taxRate')?.value,
-      taxLabel: document.getElementById('taxLabel')?.value.trim(),
+      depositPct, taxMode,
+      taxRate: v('taxRate'), taxLabel: v('taxLabel'), logoDataURL
     };
-    localStorage.setItem('eqp_v1', JSON.stringify(p));
-  } catch(e){}
-  // Debounce Supabase save
-  clearTimeout(window._saveTimer);
-  window._saveTimer = setTimeout(saveProfileToSupabase, 1500);
+    await sb.from('profiles').update({ profile_data: profileData }).eq('id', session.user.id);
+  } catch(e) { console.log('Save error:', e); }
 }
 
-// ── LOGOUT ────────────────────────────────────────────────────
 async function handleLogout() {
   await saveProfileToSupabase();
   await sb.auth.signOut();
   window.location.href = 'login.html';
 }
 
-// ── TOOL JS ───────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+// TOOL JAVASCRIPT
+// ════════════════════════════════════════════════════════
 
 // ── DATA ──────────────────────────────────────────────────────
 let depositPct = 25;
@@ -2035,12 +1394,7 @@ const SERVICES = [
 ];
 
 // ── INIT ─────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  loadProfile();
-  buildServicesList();
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('eventDate').min = today;
-});
+// init handled by checkAuth
 
 // ── PROFILE ──────────────────────────────────────────────────
 function saveProfile() {
@@ -2169,19 +1523,19 @@ function updateLiveTotals() {
       `<div class="totals-empty"><p>Select services on the left to see your quote build in real time</p></div>`;
     return;
   }
+  const cur = getCurrencySymbol();
+  const taxInfo = calcTax(sub);
+  const grandTotal = taxInfo.mode === 'added' ? sub + taxInfo.taxAmount : sub;
+  const depAmount = grandTotal * (depositPct / 100);
+  const balAmount = grandTotal - depAmount;
+
+  const taxLine = taxInfo.taxAmount > 0
+    ? (taxInfo.mode === 'added'
+        ? `<div class="totals-line"><span>${taxInfo.label} (added)</span><span>+ ${cur}${taxInfo.taxAmount.toFixed(2)}</span></div>`
+        : `<div class="totals-line"><span>${taxInfo.label} (included)</span><span>${cur}${taxInfo.taxAmount.toFixed(2)}</span></div>`)
+    : '';
+
   document.getElementById('liveTotals').innerHTML =
-    const cur = getCurrencySymbol();
-    const taxInfo = calcTax(sub);
-    const grandTotal = taxInfo.mode === 'added' ? sub + taxInfo.taxAmount : sub;
-    const depAmount = grandTotal * (depositPct / 100);
-    const balAmount = grandTotal - depAmount;
-
-    const taxLine = taxInfo.taxAmount > 0
-      ? (taxInfo.mode === 'added'
-          ? `<div class="totals-line"><span>${taxInfo.label} (added)</span><span>+ ${cur}${taxInfo.taxAmount.toFixed(2)}</span></div>`
-          : `<div class="totals-line"><span>${taxInfo.label} (included)</span><span>${cur}${taxInfo.taxAmount.toFixed(2)}</span></div>`)
-      : '';
-
     sel.map(s=>`<div class="totals-line"><span>${s.name}</span><span>${cur}${s.total.toFixed(2)}</span></div>`).join('') +
     taxLine +
     `<div class="totals-line grand"><span>Total</span><span>${cur}${grandTotal.toFixed(2)}</span></div>
@@ -2212,7 +1566,7 @@ function buildQuote() {
   const bal = sub-dep;
 
   const cur = getCurrencySymbol();
-  const colors = getBrandColors();
+  const brandColors = getBrandColors();
   const biz    = v('bizName')||'Your Business';
   const owner  = v('ownerName');
   const email  = v('bizEmail');
@@ -2228,7 +1582,7 @@ function buildQuote() {
   const guests = v('guestCount');
   const venue  = v('venueAddress');
   const theme  = v('partyTheme');
-  const colors = v('colorScheme');
+  const colorScheme = v('colorScheme');
   const child  = v('childName');
   const age    = v('childAge');
   const notes  = v('specialNotes');
@@ -2482,15 +1836,38 @@ function getBrandColors() {
 }
 
 
-// ── INIT ─────────────────────────────────────────────────────
-checkAuth().then(ok => {
-  if (ok) {
-    buildServicesList();
-    const today = new Date().toISOString().split('T')[0];
-    const dateEl = document.getElementById('eventDate');
-    if (dateEl) dateEl.min = today;
-  }
+// ════════════════════════════════════════════════════════
+// INIT — runs after auth confirms access
+// ════════════════════════════════════════════════════════
+function saveProfile() {
+  try {
+    const sel = document.getElementById('bizCurrency');
+    const p = {
+      bizName: v('bizName'), ownerName: v('ownerName'), bizEmail: v('bizEmail'),
+      bizPhone: v('bizPhone'), bizWebsite: v('bizWebsite'), bizCity: v('bizCity'),
+      paymentTerms: v('paymentTerms'), termsText: v('termsText'),
+      depositPct, logoDataURL,
+      bizCurrency: sel ? sel.value : '$',
+      customCurrency: v('customCurrency'),
+      brandPrimary: document.getElementById('brandPrimary')?.value || '#0d1b3e',
+      brandAccent: document.getElementById('brandAccent')?.value || '#c9a84c',
+      taxMode,
+      taxRate: v('taxRate'), taxLabel: v('taxLabel'),
+    };
+    localStorage.setItem('eqp_v1', JSON.stringify(p));
+  } catch(e) {}
+  clearTimeout(window._saveTimer);
+  window._saveTimer = setTimeout(saveProfileToSupabase, 1500);
+}
+
+// Start auth check
+checkAuth().then(() => {
+  buildServicesList();
+  const today = new Date().toISOString().split('T')[0];
+  const dateEl = document.getElementById('eventDate');
+  if (dateEl) dateEl.min = today;
 });
+
 </script>
 </body>
 </html>
