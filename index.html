@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EventPro Suite™ | Everything Event Professionals Need</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <script src="https://js.stripe.com/v3/"></script>
+  
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -559,12 +559,7 @@
     .footer-links a:hover { color: var(--gold-bright); }
     .footer-copy { font-size: 0.72rem; color: rgba(255,255,255,0.25); }
 
-    /* Loading */
-    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(13,27,62,0.9); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
-    .loading-overlay.show { display: flex; }
-    .spinner { width: 40px; height: 40px; border: 3px solid rgba(201,168,76,0.2); border-top-color: var(--gold-bright); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { color: rgba(255,255,255,0.7); font-size: 0.88rem; }
+
   </style>
 </head>
 <body>
@@ -592,7 +587,7 @@
       <p class="hero-sub">EventPro Suite™ is the complete business toolkit built for event planners, party businesses, and event operators worldwide.</p>
       <p class="hero-tagline">Quote it · Contract it · Price it · Run it</p>
       <div class="hero-actions">
-        <button class="btn-primary" onclick="startCheckout()">Get Early Access — $37 →</button>
+        <button class="btn-primary" onclick="window.location.href='https://buy.stripe.com/28E4gzggl1GD2Wac4X7bW04'">Get Early Access — $37 →</button>
         <a href="#tools" class="btn-ghost">See all tools ↓</a>
       </div>
       <p class="hero-note">First 100 spots locked at $37 · <strong>23 claimed</strong> · Rises to $29/mo after launch</p>
@@ -614,7 +609,7 @@
           <li>Vendor Finder Pro™ — coming soon</li>
           <li>Multi-currency · Your brand on every doc</li>
         </ul>
-        <button class="hc-btn" onclick="startCheckout()">Claim Your Spot →</button>
+        <button class="hc-btn" onclick="window.location.href='https://buy.stripe.com/28E4gzggl1GD2Wac4X7bW04'">Claim Your Spot →</button>
         <div class="hc-note">Stripe secure checkout · Instant access · 30-day guarantee</div>
       </div>
     </div>
@@ -780,7 +775,7 @@
         <div class="pc-spots-text"><span>Spots claimed</span><strong>23 of 100</strong></div>
         <div class="pc-bar"><div class="pc-fill"></div></div>
       </div>
-      <button class="pc-btn" onclick="startCheckout()">Get Lifetime Access — $37 →</button>
+      <button class="pc-btn" onclick="window.location.href='https://buy.stripe.com/28E4gzggl1GD2Wac4X7bW04'">Get Lifetime Access — $37 →</button>
       <p class="pc-note">Secure checkout via Stripe · Instant access after payment<br/>Price rises to $29/mo after first 100 members</p>
     </div>
   </div>
@@ -798,35 +793,10 @@
   <div class="footer-copy">© 2025 EventPro Suite™ · All rights reserved</div>
 </footer>
 
-<!-- LOADING -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text">Redirecting to secure checkout...</div>
-</div>
+
 
 <script>
-const STRIPE_KEY = 'pk_live_51PxC8bExhYiuKa6wROIIirwqEPEUFqTtZ4F3bVPKARBWpxSLyavhaB1Ft82qLRZHiExkBARTVEBlZrds6SNW2NmP00aNsPUTx0';
-const PRICE_ID = 'price_1TNiVnExhYiuKa6wIDtN50Aw';
-
-async function startCheckout() {
-  document.getElementById('loadingOverlay').classList.add('show');
-  try {
-    const stripe = Stripe(STRIPE_KEY);
-    const result = await stripe.redirectToCheckout({
-      lineItems: [{ price: PRICE_ID, quantity: 1 }],
-      mode: 'payment',
-      successUrl: window.location.origin + '/success.html?session_id={CHECKOUT_SESSION_ID}',
-      cancelUrl: window.location.href,
-    });
-    if (result.error) {
-      alert(result.error.message);
-      document.getElementById('loadingOverlay').classList.remove('show');
-    }
-  } catch(e) {
-    document.getElementById('loadingOverlay').classList.remove('show');
-    alert('Something went wrong. Please try again.');
-  }
-}
+// Direct Stripe payment link — no SDK needed
 </script>
 </body>
 </html>
