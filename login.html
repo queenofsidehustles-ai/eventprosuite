@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | EventPro Suite™</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0d1b3e;
+      --navy-mid: #162d5e;
+      --gold: #c9a84c;
+      --gold-bright: #d4ae52;
+      --gold-light: #fdf8ec;
+      --white: #ffffff;
+      --border: #dde3ef;
+      --mid: #3d4f6e;
+      --muted: #7a8aaa;
+      --error: #c0392b;
+      --success: #1e8c5a;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(160deg, #0d1b3e 0%, #162d5e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .auth-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.8rem 2.5rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--navy), var(--gold));
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+    .auth-logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .auth-logo-text span { color: var(--gold); }
+    .auth-logo-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .auth-tabs {
+      display: flex;
+      background: #f4f6fb;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 2rem;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 0.65rem;
+      text-align: center;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .auth-tab.active {
+      background: white;
+      color: var(--navy);
+      box-shadow: 0 2px 8px rgba(13,27,62,0.1);
+    }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+    label { font-size: 0.8rem; font-weight: 600; color: var(--mid); }
+    input {
+      padding: 0.72rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      width: 100%;
+    }
+    input:focus {
+      border-color: var(--navy-mid);
+      box-shadow: 0 0 0 3px rgba(22,45,94,0.1);
+    }
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.95rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,27,62,0.25); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.2rem 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .forgot-link {
+      text-align: right;
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+    }
+    .forgot-link a {
+      font-size: 0.8rem;
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .forgot-link a:hover { text-decoration: underline; }
+    .message {
+      padding: 0.75rem 1rem;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+      line-height: 1.5;
+    }
+    .message.error { background: #fdecea; color: var(--error); border: 1px solid rgba(192,57,43,0.2); display: block; }
+    .message.success { background: rgba(30,140,90,0.08); color: var(--success); border: 1px solid rgba(30,140,90,0.2); display: block; }
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .auth-footer a { color: var(--navy); font-weight: 600; text-decoration: none; }
+    .auth-footer a:hover { color: var(--gold); }
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 1.5rem;
+      transition: color 0.18s;
+    }
+    .back-link:hover { color: var(--navy); }
+    .spinner-sm {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Reset password panel */
+    #resetPanel { display: none; }
+    #resetPanel.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="auth-card">
+  <a href="index.html" class="back-link">← Back to EventPro Suite™</a>
+
+  <div class="auth-logo">
+    <div class="auth-logo-text">EventPro <span>Suite™</span></div>
+    <div class="auth-logo-sub">Professional Event Business Tools</div>
+  </div>
+
+  <!-- MESSAGE BOX -->
+  <div class="message" id="authMessage"></div>
+
+  <!-- LOGIN / SIGNUP TABS -->
+  <div id="mainAuth">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')" id="tabLogin">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('signup')" id="tabSignup">Create Account</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form-panel active" id="loginPanel">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@yourbusiness.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')handleLogin()"/>
+      </div>
+      <div class="forgot-link"><a href="#" onclick="showReset()">Forgot password?</a></div>
+      <button class="btn-submit" onclick="handleLogin()" id="loginBtn">Sign In to EventPro Suite™</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="form-panel" id="signupPanel">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="signupName" placeholder="Your full name" autocomplete="name"/>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="signupEmail" placeholder="you@yourbusiness.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Create a password (min 8 chars)" autocomplete="new-password"/>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="signupConfirm" placeholder="Confirm your password" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')handleSignup()"/>
+      </div>
+      <button class="btn-submit" onclick="handleSignup()" id="signupBtn">Create My Account</button>
+      <p style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:0.75rem;line-height:1.6;">
+        By creating an account you agree to our terms of service. Already purchased? Use the same email you used at checkout.
+      </p>
+    </div>
+  </div>
+
+  <!-- RESET PASSWORD -->
+  <div id="resetPanel">
+    <h3 style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:0.5rem;">Reset Password</h3>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.6;">Enter your email and we will send you a password reset link.</p>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="resetEmail" placeholder="you@yourbusiness.com"/>
+    </div>
+    <button class="btn-submit" onclick="handleReset()" id="resetBtn">Send Reset Link</button>
+    <div style="text-align:center;margin-top:1rem;">
+      <a href="#" onclick="hideReset()" style="font-size:0.82rem;color:var(--muted);">← Back to sign in</a>
+    </div>
+  </div>
+
+  <div class="auth-footer">
+    Don't have access yet? <a href="index.html#pricing">Get EventPro Suite™ →</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Check if already logged in
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = 'app.html';
+});
+
+function switchTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+  document.getElementById('loginPanel').classList.toggle('active', tab === 'login');
+  document.getElementById('signupPanel').classList.toggle('active', tab === 'signup');
+  clearMessage();
+}
+
+function showMessage(msg, type) {
+  const el = document.getElementById('authMessage');
+  el.textContent = msg;
+  el.className = `message ${type}`;
+}
+function clearMessage() {
+  const el = document.getElementById('authMessage');
+  el.className = 'message';
+  el.textContent = '';
+}
+
+function setLoading(btnId, loading, defaultText) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<span class="spinner-sm"></span> Please wait...`
+    : defaultText;
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return showMessage('Please enter your email and password.', 'error');
+
+  setLoading('loginBtn', true, 'Sign In to EventPro Suite™');
+  clearMessage();
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    setLoading('loginBtn', false, 'Sign In to EventPro Suite™');
+    if (error.message.includes('Invalid login')) {
+      showMessage('Incorrect email or password. Please try again.', 'error');
+    } else if (error.message.includes('Email not confirmed')) {
+      showMessage('Please check your email and confirm your account before signing in.', 'error');
+    } else {
+      showMessage(error.message, 'error');
+    }
+    return;
+  }
+
+  // Check if user has paid
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('has_paid')
+    .eq('id', data.user.id)
+    .single();
+
+  if (!profile?.has_paid) {
+    await sb.auth.signOut();
+    setLoading('loginBtn', false, 'Sign In to EventPro Suite™');
+    showMessage('No active subscription found. Please purchase EventPro Suite™ to access the tools.', 'error');
+    return;
+  }
+
+  window.location.href = 'app.html';
+}
+
+async function handleSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const confirm = document.getElementById('signupConfirm').value;
+
+  if (!name || !email || !password) return showMessage('Please fill in all fields.', 'error');
+  if (password.length < 8) return showMessage('Password must be at least 8 characters.', 'error');
+  if (password !== confirm) return showMessage('Passwords do not match.', 'error');
+
+  setLoading('signupBtn', true, 'Create My Account');
+  clearMessage();
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: name } }
+  });
+
+  if (error) {
+    setLoading('signupBtn', false, 'Create My Account');
+    showMessage(error.message, 'error');
+    return;
+  }
+
+  setLoading('signupBtn', false, 'Create My Account');
+  showMessage('Account created! Please check your email to confirm your address, then sign in.', 'success');
+  setTimeout(() => switchTab('login'), 3000);
+}
+
+async function handleReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  if (!email) return showMessage('Please enter your email address.', 'error');
+
+  setLoading('resetBtn', true, 'Send Reset Link');
+  clearMessage();
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+
+  setLoading('resetBtn', false, 'Send Reset Link');
+
+  if (error) {
+    showMessage(error.message, 'error');
+  } else {
+    showMessage('Reset link sent! Check your email inbox.', 'success');
+    setTimeout(hideReset, 3000);
+  }
+}
+
+function showReset() {
+  document.getElementById('mainAuth').style.display = 'none';
+  document.getElementById('resetPanel').classList.add('show');
+  clearMessage();
+}
+function hideReset() {
+  document.getElementById('mainAuth').style.display = 'block';
+  document.getElementById('resetPanel').classList.remove('show');
+  clearMessage();
+}
+</script>
+</body>
+</html>

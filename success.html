@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to EventPro Suite™</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0d1b3e;
+      --navy-mid: #162d5e;
+      --gold: #c9a84c;
+      --gold-bright: #d4ae52;
+      --gold-light: #fdf8ec;
+      --white: #ffffff;
+      --border: #dde3ef;
+      --mid: #3d4f6e;
+      --muted: #7a8aaa;
+      --success: #1e8c5a;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(160deg, #0d1b3e 0%, #162d5e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--navy), var(--gold));
+    }
+
+    /* SETUP FORM */
+    #setupSection { display: block; }
+    #doneSection { display: none; }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-align: center;
+      margin-bottom: 0.3rem;
+    }
+    .logo-text span { color: var(--gold); }
+    .logo-sub { text-align: center; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2rem; }
+
+    .success-banner {
+      background: rgba(30,140,90,0.08);
+      border: 1px solid rgba(30,140,90,0.2);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+    .success-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .success-text { font-size: 0.88rem; color: var(--success); font-weight: 600; line-height: 1.5; }
+
+    h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; }
+    .setup-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.8rem; line-height: 1.6; }
+
+    .field { display: flex; flex-direction: column; gap: 0.38rem; margin-bottom: 1rem; }
+    label { font-size: 0.78rem; font-weight: 600; color: var(--mid); }
+    input {
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      width: 100%;
+    }
+    input:focus { border-color: var(--navy-mid); box-shadow: 0 0 0 3px rgba(22,45,94,0.1); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.75rem;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,27,62,0.25); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .message { padding: 0.75rem 1rem; border-radius: 9px; font-size: 0.85rem; margin-bottom: 1rem; line-height: 1.5; display: none; }
+    .message.error { background: #fdecea; color: #c0392b; border: 1px solid rgba(192,57,43,0.2); display: block; }
+
+    /* DONE STATE */
+    .done-icon { font-size: 3.5rem; text-align: center; margin-bottom: 1rem; }
+    .done-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--navy); text-align: center; margin-bottom: 0.5rem; }
+    .done-sub { font-size: 0.92rem; color: var(--muted); text-align: center; line-height: 1.7; margin-bottom: 2rem; }
+    .btn-gold {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 1rem;
+      border-radius: 50px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.45); }
+
+    .spinner-sm {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-text">EventPro <span>Suite™</span></div>
+  <div class="logo-sub">Professional Event Business Tools</div>
+
+  <div class="message error" id="errorMsg"></div>
+
+  <!-- SETUP SECTION -->
+  <div id="setupSection">
+    <div class="success-banner">
+      <div class="success-icon">✅</div>
+      <div class="success-text">Payment successful! Set up your account below to get instant access.</div>
+    </div>
+
+    <h2>Create Your Account</h2>
+    <p class="setup-sub">One last step. Create your password and you are inside EventPro Suite™ immediately.</p>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" id="firstName" placeholder="Monica"/>
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" id="lastName" placeholder="Lewis"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="setupEmail" placeholder="you@yourbusiness.com" autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Create Password</label>
+      <input type="password" id="setupPassword" placeholder="At least 8 characters" autocomplete="new-password"/>
+    </div>
+    <div class="field">
+      <label>Confirm Password</label>
+      <input type="password" id="setupConfirm" placeholder="Confirm your password" autocomplete="new-password"/>
+    </div>
+
+    <button class="btn-submit" onclick="createAccount()" id="setupBtn">
+      Create Account &amp; Access EventPro Suite™ →
+    </button>
+  </div>
+
+  <!-- DONE SECTION -->
+  <div id="doneSection">
+    <div class="done-icon">🎉</div>
+    <div class="done-title">You're in!</div>
+    <p class="done-sub">
+      Your EventPro Suite™ account is ready. You now have full access to Event Quote Pro™ and every tool we launch. Welcome to the suite.
+    </p>
+    <a href="app.html" class="btn-gold">Open EventPro Suite™ →</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearError() {
+  document.getElementById('errorMsg').style.display = 'none';
+}
+function setLoading(loading) {
+  const btn = document.getElementById('setupBtn');
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? '<span class="spinner-sm"></span> Creating your account...'
+    : 'Create Account &amp; Access EventPro Suite™ →';
+}
+
+async function createAccount() {
+  clearError();
+  const first = document.getElementById('firstName').value.trim();
+  const last = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('setupEmail').value.trim();
+  const password = document.getElementById('setupPassword').value;
+  const confirm = document.getElementById('setupConfirm').value;
+
+  if (!first || !email || !password) return showError('Please fill in all required fields.');
+  if (password.length < 8) return showError('Password must be at least 8 characters.');
+  if (password !== confirm) return showError('Passwords do not match.');
+
+  setLoading(true);
+
+  // Sign up the user
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: `${first} ${last}`.trim() },
+      emailRedirectTo: window.location.origin + '/app.html'
+    }
+  });
+
+  if (error) {
+    setLoading(false);
+    // If user already exists, try signing in
+    if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+      const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({ email, password });
+      if (signInError) { showError('Account already exists. Try signing in instead.'); return; }
+      await markUserAsPaid(signInData.user.id, first, last);
+      return;
+    }
+    showError(error.message);
+    return;
+  }
+
+  if (data.user) {
+    await markUserAsPaid(data.user.id, first, last);
+  } else {
+    setLoading(false);
+    showError('Something went wrong. Please try again or contact support.');
+  }
+}
+
+async function markUserAsPaid(userId, first, last) {
+  // Update profile with paid status and name
+  await sb.from('profiles').upsert({
+    id: userId,
+    has_paid: true,
+    full_name: `${first} ${last}`.trim(),
+  });
+
+  setLoading(false);
+  document.getElementById('setupSection').style.display = 'none';
+  document.getElementById('doneSection').style.display = 'block';
+}
+</script>
+</body>
+</html>

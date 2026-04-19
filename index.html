@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EventPro Suite™ | Everything Event Professionals Need</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0d1b3e;
+      --navy-mid: #162d5e;
+      --navy-light: #1e3d7a;
+      --navy-pale: #e6ebf5;
+      --gold: #c9a84c;
+      --gold-bright: #d4ae52;
+      --gold-light: #fdf8ec;
+      --white: #ffffff;
+      --off: #f7f8fc;
+      --mid: #3d4f6e;
+      --muted: #7a8aaa;
+      --border: #dde3ef;
+      --success: #1e8c5a;
+      --radius: 14px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--navy); overflow-x: hidden; }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--navy);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
+    }
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--gold-bright);
+      letter-spacing: 0.02em;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-link { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.82rem; font-weight: 500; transition: color 0.18s; }
+    .nav-link:hover { color: var(--gold-bright); }
+    .nav-cta {
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: all 0.18s;
+      letter-spacing: 0.02em;
+    }
+    .nav-cta:hover { background: var(--gold-bright); }
+    @media (max-width: 640px) {
+      nav { padding: 0 1.2rem; }
+      .nav-links { gap: 1rem; }
+      .nav-link:not(.nav-cta) { display: none; }
+    }
+
+    /* ── HERO — compact, editorial ── */
+    .hero {
+      background: var(--navy);
+      padding: 4rem 3rem 3.5rem;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 3rem;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem; gap: 2rem; }
+      .hero-right { order: -1; }
+    }
+    .hero-section { background: var(--navy); }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+    }
+    .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--gold); }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.12;
+      margin-bottom: 1rem;
+    }
+    .hero-title em { color: var(--gold-bright); font-style: italic; }
+
+    .hero-sub {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.8;
+      max-width: 460px;
+      margin-bottom: 1.8rem;
+    }
+    .hero-tagline {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .hero-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.18s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-ghost:hover { color: var(--gold-bright); }
+
+    .hero-note {
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.7;
+    }
+    .hero-note strong { color: rgba(201,168,76,0.8); }
+
+    /* Hero right — pricing card */
+    .hero-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: var(--radius);
+      padding: 2rem 1.8rem;
+      backdrop-filter: blur(8px);
+    }
+    .hc-badge {
+      display: inline-block;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid rgba(201,168,76,0.25);
+      color: var(--gold-bright);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.75rem;
+      border-radius: 20px;
+      margin-bottom: 1.2rem;
+    }
+    .hc-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.2rem;
+      font-weight: 700;
+      color: white;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .hc-price sup { font-size: 1.4rem; vertical-align: top; margin-top: 0.4rem; }
+    .hc-term { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 1.4rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .hc-features { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem; }
+    .hc-features li { font-size: 0.82rem; color: rgba(255,255,255,0.72); display: flex; align-items: flex-start; gap: 0.6rem; line-height: 1.45; }
+    .hc-features li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+    .hc-btn {
+      display: block;
+      width: 100%;
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.85rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      text-align: center;
+      transition: all 0.18s;
+      letter-spacing: 0.02em;
+    }
+    .hc-btn:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
+    .hc-note { font-size: 0.72rem; color: rgba(255,255,255,0.3); text-align: center; margin-top: 0.75rem; line-height: 1.6; }
+
+    /* Spots bar */
+    .spots-wrap { margin-bottom: 1.2rem; }
+    .spots-text { font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+    .spots-text strong { color: var(--gold-bright); }
+    .spots-bar { background: rgba(255,255,255,0.08); border-radius: 4px; height: 4px; overflow: hidden; }
+    .spots-fill { background: linear-gradient(90deg, var(--navy-light), var(--gold)); height: 100%; width: 23%; border-radius: 4px; }
+
+    /* ── STATS BAR ── */
+    .stats-wrap { background: var(--navy); border-top: 1px solid rgba(255,255,255,0.06); }
+    .stats-bar {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-top: 1px solid rgba(201,168,76,0.1);
+    }
+    .stat-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: rgba(255,255,255,0.5); }
+    .stat-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    @media (max-width: 640px) { .stats-bar { padding: 1rem 1.5rem; } }
+
+    /* ── TOOLS SECTION ── */
+    .tools-wrap { background: var(--white); }
+    .tools-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 3rem;
+    }
+    @media (max-width: 640px) { .tools-inner { padding: 3rem 1.5rem; } }
+
+    .section-header { margin-bottom: 2.5rem; }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.15;
+      margin-bottom: 0.5rem;
+    }
+    .section-sub { font-size: 0.9rem; color: var(--muted); line-height: 1.75; max-width: 560px; }
+
+    .tool-avail {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .avail-now { background: rgba(30,140,90,0.1); color: var(--success); border: 1px solid rgba(30,140,90,0.2); }
+    .avail-soon { background: var(--navy-pale); color: var(--muted); }
+    .tool-code { font-size: 0.68rem; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+    .tool-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; line-height: 1.2; }
+    .tool-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; }
+
+    /* Featured tool — full width hero card */
+    .tool-featured {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2.5rem;
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      margin-bottom: 1rem;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .tool-featured::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+    }
+    @media (max-width: 720px) {
+      .tool-featured { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.8rem; }
+      .tf-right { order: -1; }
+    }
+    .tf-code {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .tf-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 0.9rem;
+    }
+    .tf-desc {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.75;
+      margin-bottom: 1.2rem;
+      max-width: 480px;
+    }
+    .tf-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tf-tag {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.65);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+
+    /* Mock quote inside featured card */
+    .tf-mock {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .tf-mock-header {
+      background: var(--navy);
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--gold);
+    }
+    .tf-mock-body { padding: 0.9rem 1rem; }
+    .tf-mock-title { font-size: 0.72rem; font-weight: 700; color: var(--navy); margin-bottom: 0.6rem; }
+    .tf-mock-row {
+      display: flex; justify-content: space-between;
+      font-size: 0.72rem; color: var(--mid);
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .tf-mock-row:last-of-type { border-bottom: none; }
+    .tf-mock-total {
+      display: flex; justify-content: space-between;
+      background: var(--navy);
+      color: var(--gold-bright);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.55rem 0.8rem;
+      border-radius: 6px;
+      margin: 0.5rem 0 0.4rem;
+    }
+    .tf-mock-deposit {
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-align: center;
+      padding-bottom: 0.2rem;
+    }
+
+    /* 2x2 coming soon grid */
+    .coming-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    @media (max-width: 560px) { .coming-grid { grid-template-columns: 1fr; } }
+    .coming-item {
+      background: white;
+      padding: 1.5rem 1.4rem;
+      transition: background 0.18s;
+    }
+    .coming-item:hover { background: var(--off); }
+
+    /* ── FEATURES ── */
+    .features-wrap { background: var(--off); }
+    .features-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    @media (max-width: 720px) { .features-inner { grid-template-columns: 1fr; padding: 3rem 1.5rem; gap: 2rem; } }
+    .features-left {}
+    .features-list { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 2rem; }
+    .feat-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .feat-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: var(--navy);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .feat-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); margin-bottom: 0.2rem; }
+    .feat-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+    .features-right {
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      color: white;
+    }
+    .quote-preview-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--gold-bright);
+      margin-bottom: 1.2rem;
+    }
+    .qp-mock {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .qp-mock-header {
+      background: var(--navy);
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--gold);
+    }
+    .qp-mock-biz { font-size: 0.78rem; font-weight: 700; color: var(--gold-bright); }
+    .qp-mock-contact { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-align: right; }
+    .qp-mock-body { padding: 0.9rem 1rem; }
+    .qp-mock-row {
+      display: flex; justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.72rem;
+      color: var(--mid);
+    }
+    .qp-mock-row:last-child { border-bottom: none; }
+    .qp-mock-total {
+      display: flex; justify-content: space-between;
+      padding: 0.6rem 0.8rem;
+      background: var(--navy);
+      color: var(--gold-bright);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+      border-radius: 6px;
+    }
+
+    /* ── PRICING STRIP ── */
+    .pricing-wrap {
+      background: var(--navy);
+      padding: 4rem 3rem;
+    }
+    .pricing-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 3rem;
+      align-items: center;
+    }
+    @media (max-width: 800px) { .pricing-inner { grid-template-columns: 1fr; padding: 0; gap: 2rem; } }
+    .pricing-left .section-title { color: white; }
+    .pricing-left .section-sub { color: rgba(255,255,255,0.55); }
+    .pricing-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1.5rem; }
+    .pricing-bullets li { font-size: 0.85rem; color: rgba(255,255,255,0.65); display: flex; align-items: flex-start; gap: 0.65rem; line-height: 1.5; }
+    .pricing-bullets li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+
+    .pricing-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 2.2rem;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+    }
+    .pc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border); }
+    .pc-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+    .pc-price { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 700; color: var(--navy); line-height: 1; }
+    .pc-price sup { font-size: 1.3rem; vertical-align: top; margin-top: 0.3rem; }
+    .pc-term { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+    .pc-badge {
+      background: var(--navy);
+      color: var(--gold-bright);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .pc-spots { background: var(--off); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.2rem; }
+    .pc-spots-text { font-size: 0.75rem; color: var(--mid); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+    .pc-spots-text strong { color: var(--navy); }
+    .pc-bar { background: var(--border); border-radius: 4px; height: 4px; overflow: hidden; }
+    .pc-fill { background: linear-gradient(90deg, var(--navy), var(--gold)); height: 100%; width: 23%; border-radius: 4px; }
+    .pc-btn {
+      display: block; width: 100%;
+      background: var(--navy);
+      color: white;
+      font-weight: 700; font-size: 0.9rem;
+      padding: 0.9rem;
+      border-radius: 8px; border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      text-align: center;
+      transition: all 0.18s;
+      letter-spacing: 0.02em;
+    }
+    .pc-btn:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,27,62,0.25); }
+    .pc-note { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 0.75rem; line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #080f1e;
+      padding: 2.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-top: 1px solid rgba(201,168,76,0.15);
+    }
+    @media (max-width: 640px) { footer { padding: 2rem 1.5rem; flex-direction: column; text-align: center; } }
+    .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold-bright); }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { color: rgba(255,255,255,0.35); text-decoration: none; font-size: 0.78rem; transition: color 0.18s; }
+    .footer-links a:hover { color: var(--gold-bright); }
+    .footer-copy { font-size: 0.72rem; color: rgba(255,255,255,0.25); }
+
+    /* Loading */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(13,27,62,0.9); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
+    .loading-overlay.show { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(201,168,76,0.2); border-top-color: var(--gold-bright); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: rgba(255,255,255,0.7); font-size: 0.88rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">EventPro Suite™</div>
+  <div class="nav-links">
+    <a href="#tools" class="nav-link">Tools</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="login.html" class="nav-link">Sign In</a>
+    <a href="#pricing" class="nav-cta">Get Access</a>
+  </div>
+</nav>
+
+<!-- HERO — compact two-column -->
+<div style="background:var(--navy);">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Early Adopter — First 100 Members</div>
+      <h1 class="hero-title">
+        Everything event professionals need to run a
+        <em>profitable business</em>
+      </h1>
+      <p class="hero-sub">EventPro Suite™ is the complete business toolkit built for event planners, party businesses, and event operators worldwide.</p>
+      <p class="hero-tagline">Quote it · Contract it · Price it · Run it</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="startCheckout()">Get Early Access — $37 →</button>
+        <a href="#tools" class="btn-ghost">See all tools ↓</a>
+      </div>
+      <p class="hero-note">First 100 spots locked at $37 · <strong>23 claimed</strong> · Rises to $29/mo after launch</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="hc-badge">✦ Founder Pricing</div>
+        <div class="hc-price"><sup>$</sup>37</div>
+        <div class="hc-term">One-time · Lifetime access to all tools</div>
+        <div class="spots-wrap">
+          <div class="spots-text"><span>Early adopter spots</span><strong>23 / 100</strong></div>
+          <div class="spots-bar"><div class="spots-fill"></div></div>
+        </div>
+        <ul class="hc-features">
+          <li>Event Quote Pro™ — available now</li>
+          <li>Contract Builder Pro™ — coming soon</li>
+          <li>Profit Calculator Pro™ — coming soon</li>
+          <li>Event Prep Pro™ — coming soon</li>
+          <li>Vendor Finder Pro™ — coming soon</li>
+          <li>Multi-currency · Your brand on every doc</li>
+        </ul>
+        <button class="hc-btn" onclick="startCheckout()">Claim Your Spot →</button>
+        <div class="hc-note">Stripe secure checkout · Instant access · 30-day guarantee</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-wrap">
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-dot"></span>Professional quotes in minutes</div>
+    <div class="stat-item"><span class="stat-dot"></span>14 currencies supported</div>
+    <div class="stat-item"><span class="stat-dot"></span>80+ event services covered</div>
+    <div class="stat-item"><span class="stat-dot"></span>Your brand on every document</div>
+    <div class="stat-item"><span class="stat-dot"></span>Works on any device</div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="tools-wrap" id="tools">
+  <div class="tools-inner">
+    <div class="section-header">
+      <div class="section-label">The Suite</div>
+      <h2 class="section-title">Five tools. One platform.</h2>
+      <p class="section-sub">Every tool built specifically for event business operators. Your subscription covers everything — now and as new tools launch.</p>
+    </div>
+    <!-- FEATURED TOOL — spans full width -->
+    <div class="tool-featured">
+      <div class="tf-left">
+        <div class="tool-avail avail-now" style="margin-bottom:0.9rem;">✓ Available Now</div>
+        <div class="tf-code">EQ — Event Quote Pro™</div>
+        <div class="tf-name">Create fast, professional quotes<br/>that close clients quicker</div>
+        <p class="tf-desc">Generate fully branded, itemized event quotes with suggested market rates, multi-currency support, tax settings, and your logo — in minutes. Print as PDF or copy to send directly to clients.</p>
+        <div class="tf-tags">
+          <span class="tf-tag">80+ Services</span>
+          <span class="tf-tag">14 Currencies</span>
+          <span class="tf-tag">Your Brand</span>
+          <span class="tf-tag">Tax Settings</span>
+          <span class="tf-tag">PDF Export</span>
+        </div>
+      </div>
+      <div class="tf-right">
+        <div class="tf-mock">
+          <div class="tf-mock-header">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--gold-bright);">Bear Hug Events</div>
+            <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);text-align:right;">Orlando, FL</div>
+          </div>
+          <div class="tf-mock-body">
+            <div class="tf-mock-title">Event Quote — Sarah Johnson</div>
+            <div class="tf-mock-row"><span>Full Balloon Garland Setup</span><span>$200</span></div>
+            <div class="tf-mock-row"><span>Backdrop &amp; Focal Wall</span><span>$150</span></div>
+            <div class="tf-mock-row"><span>Dessert Table Styling</span><span>$225</span></div>
+            <div class="tf-mock-row"><span>Setup &amp; Breakdown Fee</span><span>$75</span></div>
+            <div class="tf-mock-total"><span>Total</span><span>$650.00</span></div>
+            <div class="tf-mock-deposit">50% deposit due: $325.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2x2 COMING SOON GRID -->
+    <div class="coming-grid">
+      <div class="coming-item">
+        <div class="tool-avail avail-soon" style="margin-bottom:0.75rem;">Coming Soon</div>
+        <div class="tool-code">CB</div>
+        <div class="tool-name">Contract Builder Pro™</div>
+        <p class="tool-desc">Generate contracts in minutes without legal confusion.</p>
+      </div>
+      <div class="coming-item">
+        <div class="tool-avail avail-soon" style="margin-bottom:0.75rem;">Coming Soon</div>
+        <div class="tool-code">PC</div>
+        <div class="tool-name">Profit Calculator Pro™</div>
+        <p class="tool-desc">Know exactly what to charge and how much you are making.</p>
+      </div>
+      <div class="coming-item">
+        <div class="tool-avail avail-soon" style="margin-bottom:0.75rem;">Coming Soon</div>
+        <div class="tool-code">EP</div>
+        <div class="tool-name">Event Prep Pro™</div>
+        <p class="tool-desc">Organize every event so nothing falls through the cracks.</p>
+      </div>
+      <div class="coming-item">
+        <div class="tool-avail avail-soon" style="margin-bottom:0.75rem;">Coming Soon</div>
+        <div class="tool-code">VF</div>
+        <div class="tool-name">Vendor Finder Pro™</div>
+        <p class="tool-desc">Find reliable vendors fast and build your professional network.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features-wrap">
+  <div class="features-inner">
+    <div class="features-left">
+      <div class="section-label">Why EventPro Suite™</div>
+      <h2 class="section-title">Built for the way you actually work</h2>
+      <div class="features-list">
+        <div class="feat-item">
+          <div class="feat-icon">🌍</div>
+          <div><div class="feat-title">Works Worldwide</div><div class="feat-desc">14 currencies supported. Your business, your market, your currency.</div></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">🎨</div>
+          <div><div class="feat-title">Fully Branded Documents</div><div class="feat-desc">Your logo, colors, and business name on every quote and contract you send.</div></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">💰</div>
+          <div><div class="feat-title">Market Rate Guidance</div><div class="feat-desc">Suggested pricing for 80+ event services so you never underprice again.</div></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon">🔒</div>
+          <div><div class="feat-title">Secure Cloud Account</div><div class="feat-desc">Your profile and quotes saved securely. Access from any device, anytime.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="features-right">
+      <div class="quote-preview-title">Sample Quote Output</div>
+      <div class="qp-mock">
+        <div class="qp-mock-header">
+          <div class="qp-mock-biz">Bear Hug Events</div>
+          <div class="qp-mock-contact">Orlando, FL<br/>bearhug.events</div>
+        </div>
+        <div class="qp-mock-body">
+          <div class="qp-mock-row" style="font-weight:600;color:var(--navy);font-size:0.75rem;padding-bottom:0.5rem;">Event Quote — Sarah Johnson · June 14, 2025</div>
+          <div class="qp-mock-row"><span>Full Balloon Garland Setup</span><span>$200.00</span></div>
+          <div class="qp-mock-row"><span>Backdrop &amp; Focal Wall</span><span>$150.00</span></div>
+          <div class="qp-mock-row"><span>Dessert Table Styling</span><span>$225.00</span></div>
+          <div class="qp-mock-row"><span>Setup &amp; Breakdown Fee</span><span>$75.00</span></div>
+          <div class="qp-mock-total"><span>Total</span><span>$650.00</span></div>
+          <div class="qp-mock-row" style="font-size:0.68rem;color:var(--muted)">Deposit (50%) due now: $325.00 · Balance: $325.00</div>
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:1rem;line-height:1.6;">Generated in under 2 minutes · Branded with your logo and colors · Print or copy to send</p>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing-wrap" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-left">
+      <div class="section-label" style="color:var(--gold)">Early Adopter Offer</div>
+      <h2 class="section-title" style="color:white;">Lock in lifetime access before the price changes</h2>
+      <p class="section-sub" style="color:rgba(255,255,255,0.55);">First 100 members get lifetime access at $37. After that it becomes a $29/month subscription. No exceptions once the spots are gone.</p>
+      <ul class="pricing-bullets">
+        <li>Full access to Event Quote Pro™ — right now</li>
+        <li>Every new tool added automatically at no extra cost</li>
+        <li>Multi-currency support for global businesses</li>
+        <li>Your brand on every document you generate</li>
+        <li>Secure account — profile saved across all devices</li>
+        <li>30-day money back guarantee — no questions asked</li>
+      </ul>
+    </div>
+    <div class="pricing-card">
+      <div class="pc-top">
+        <div>
+          <div class="pc-label">Early Adopter</div>
+          <div class="pc-price"><sup>$</sup>37</div>
+          <div class="pc-term">One-time payment · Lifetime access</div>
+        </div>
+        <div class="pc-badge">Limited</div>
+      </div>
+      <div class="pc-spots">
+        <div class="pc-spots-text"><span>Spots claimed</span><strong>23 of 100</strong></div>
+        <div class="pc-bar"><div class="pc-fill"></div></div>
+      </div>
+      <button class="pc-btn" onclick="startCheckout()">Get Lifetime Access — $37 →</button>
+      <p class="pc-note">Secure checkout via Stripe · Instant access after payment<br/>Price rises to $29/mo after first 100 members</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">EventPro Suite™</div>
+  <div class="footer-links">
+    <a href="#tools">Tools</a>
+    <a href="#pricing">Pricing</a>
+    <a href="login.html">Sign In</a>
+    <a href="mailto:support@eventprosuite.com">Support</a>
+  </div>
+  <div class="footer-copy">© 2025 EventPro Suite™ · All rights reserved</div>
+</footer>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Redirecting to secure checkout...</div>
+</div>
+
+<script>
+const STRIPE_KEY = 'pk_live_51PxC8bExhYiuKa6wROIIirwqEPEUFqTtZ4F3bVPKARBWpxSLyavhaB1Ft82qLRZHiExkBARTVEBlZrds6SNW2NmP00aNsPUTx0';
+const PRICE_ID = 'price_1TNiVnExhYiuKa6wIDtN50Aw';
+
+async function startCheckout() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  try {
+    const stripe = Stripe(STRIPE_KEY);
+    const result = await stripe.redirectToCheckout({
+      lineItems: [{ price: PRICE_ID, quantity: 1 }],
+      mode: 'payment',
+      successUrl: window.location.origin + '/success.html?session_id={CHECKOUT_SESSION_ID}',
+      cancelUrl: window.location.href,
+    });
+    if (result.error) {
+      alert(result.error.message);
+      document.getElementById('loadingOverlay').classList.remove('show');
+    }
+  } catch(e) {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    alert('Something went wrong. Please try again.');
+  }
+}
+</script>
+</body>
+</html>
