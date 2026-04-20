@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to EventPro Suite™ — You're a Founder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0d1b3e;
+      --navy-mid: #162d5e;
+      --navy-light: #1e3d7a;
+      --navy-pale: #e6ebf5;
+      --gold: #c9a84c;
+      --gold-bright: #d4ae52;
+      --gold-light: #fdf8ec;
+      --white: #ffffff;
+      --off: #f7f8fc;
+      --mid: #3d4f6e;
+      --muted: #7a8aaa;
+      --border: #dde3ef;
+      --success: #1e8c5a;
+      --radius: 14px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--navy);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
+    }
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--gold-bright);
+      letter-spacing: 0.02em;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    @media (max-width: 640px) { nav { padding: 0 1.2rem; } }
+
+    /* ── WELCOME HERO ── */
+    .welcome-wrap {
+      min-height: calc(100vh - 60px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 3rem 1.5rem 4rem;
+    }
+    .welcome-card {
+      max-width: 700px;
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: var(--radius);
+      padding: 3rem 2.5rem;
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .welcome-card { padding: 2rem 1.5rem; }
+    }
+
+    .success-icon {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 1.5rem;
+      background: rgba(30,140,90,0.15);
+      border: 2px solid var(--success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--success);
+      animation: popIn 0.5s ease-out;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      70% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .welcome-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .welcome-eyebrow::before, .welcome-eyebrow::after {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .welcome-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .welcome-title em { color: var(--gold-bright); font-style: italic; }
+
+    .welcome-sub {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.7;
+      max-width: 520px;
+      margin: 0 auto 2rem;
+    }
+
+    /* Steps */
+    .steps-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+    }
+    .steps {
+      text-align: left;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 1.5rem 1.8rem;
+      margin-bottom: 2rem;
+    }
+    .step {
+      display: flex;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .step:last-child { border-bottom: none; padding-bottom: 0; }
+    .step:first-child { padding-top: 0; }
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--gold);
+      color: var(--navy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .step-content { flex: 1; }
+    .step-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 0.2rem;
+    }
+    .step-desc {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.55;
+    }
+    .step-desc a { color: var(--gold-bright); text-decoration: underline; }
+
+    /* CTA */
+    .welcome-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 1rem 2.5rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: all 0.18s;
+    }
+    .welcome-cta:hover {
+      background: var(--gold-bright);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(201,168,76,0.35);
+    }
+
+    .welcome-meta {
+      margin-top: 1.8rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.7;
+    }
+    .welcome-meta strong { color: var(--gold-bright); }
+    .welcome-meta a { color: var(--gold-bright); text-decoration: none; }
+    .welcome-meta a:hover { text-decoration: underline; }
+
+    /* Founder badge */
+    .founder-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+      color: var(--navy);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">EventPro Suite™</div>
+  <a href="index.html" class="nav-link">← Home</a>
+</nav>
+
+<!-- WELCOME -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+
+    <div class="success-icon">✓</div>
+
+    <div class="founder-badge">✦ Founder Member</div>
+
+    <div class="welcome-eyebrow">Payment Confirmed</div>
+
+    <h1 class="welcome-title">Welcome to the <em>Founding 100</em></h1>
+
+    <p class="welcome-sub">
+      Your $97 founder payment went through. You now have a full year of EventPro Suite™ — and you've locked in the $29/mo founder rate for year two onward. Check your email for your receipt from Stripe.
+    </p>
+
+    <div class="steps-title">Your next 3 steps</div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Create your account</div>
+          <div class="step-desc">
+            Use the <strong>same email address</strong> you used for your Stripe payment. Click the button below to create your login.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Set up your business profile</div>
+          <div class="step-desc">
+            Add your business name, logo, colors, and currency. This takes about 3 minutes and every quote you send after that will be fully branded as yours.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Send your first quote</div>
+          <div class="step-desc">
+            Open Event Quote Pro™ and generate a real client quote in under 5 minutes. Pick your services, set your price, hit PDF or copy. Done.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <a href="login.html" class="welcome-cta">Create My Account →</a>
+
+    <div class="welcome-meta">
+      Need help? Email <a href="mailto:support@eventprosuite.com">support@eventprosuite.com</a><br/>
+      <strong>14-day money-back guarantee</strong> · Receipt sent to your email
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
