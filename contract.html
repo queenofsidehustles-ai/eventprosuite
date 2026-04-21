@@ -595,8 +595,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
 <div class="suite-bar" id="suiteBar" style="display:none;">
   <div class="suite-bar-left">EventPro Suite™ &nbsp;·&nbsp; Contract Builder Pro™</div>
   <div class="suite-bar-right">
-    <a href="index.html" class="suite-nav-btn">← Dashboard</a>
-    <a href="quote.html" class="suite-nav-btn">📄 Quote Pro</a>
+    <a href="app.html" class="suite-nav-btn">← Dashboard</a>
+    <a href="app.html" class="suite-nav-btn">📄 Quote Pro</a>
     <button class="suite-nav-btn" onclick="showMyContracts()">📋 My Contracts</button>
     <div class="user-name" id="userName">Welcome</div>
     <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
@@ -1043,18 +1043,26 @@ async function handleLogout() {
 // ══════════════════════════════════════════════════════════════
 function goToStep(n) {
   // Basic validation
-  if (n > 1 && currentStep === 1) {
-    // always allow forward from step 1
-  }
   if (n > 2 && currentStep === 2) {
-    if (!v('bizName') || !v('bizOwner') || !v('bizEmail') || !v('clientName') || !v('clientEmail')) {
-      showToast('Please fill in required fields (marked *)');
+    const missing = [];
+    if (!v('bizName')) missing.push('Business Name');
+    if (!v('bizOwner')) missing.push('Owner Name');
+    if (!v('bizEmail')) missing.push('Business Email');
+    if (!v('clientName')) missing.push('Client Name');
+    if (!v('clientEmail')) missing.push('Client Email');
+    if (missing.length) {
+      showToast('Please fill: ' + missing.join(', '));
       return;
     }
   }
   if (n > 3 && currentStep === 3) {
-    if (!v('eventDate') || !v('eventVenue') || !v('eventServices') || !v('totalPrice')) {
-      showToast('Please fill in required event details');
+    const missing = [];
+    if (!v('eventDate')) missing.push('Event Date');
+    if (!v('eventVenue')) missing.push('Venue');
+    if (!v('eventServices')) missing.push('Services');
+    if (!v('totalPrice')) missing.push('Total Price');
+    if (missing.length) {
+      showToast('Please fill: ' + missing.join(', '));
       return;
     }
   }
