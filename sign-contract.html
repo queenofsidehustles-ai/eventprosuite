@@ -336,11 +336,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
 // ══════════════════════════════════════════════════════════════
 // CONFIG (must match contract.html config)
 // ══════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
 
 let sb = null;
-try { if (SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE') sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase init error:', e); }
 
 const CLAUSES = {
   clauseDeposit: {
