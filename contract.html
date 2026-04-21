@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Contract Builder Pro™ | EventPro Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0d1b3e;
+  --navy-mid: #162d5e;
+  --navy-light: #1e3d7a;
+  --navy-pale: #e6ebf5;
+  --gold: #c9a84c;
+  --gold-bright: #d4ae52;
+  --gold-light: #fdf8ec;
+  --white: #ffffff;
+  --off: #f7f8fc;
+  --slate-900: #0f172a;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --muted: #7a8aaa;
+  --border: #dde3ef;
+  --success: #1e8c5a;
+  --danger: #dc2626;
+  --radius: 14px;
+  --user-primary: var(--navy);
+  --user-primary-dark: var(--navy-mid);
+  --user-primary-soft: var(--navy-pale);
+  --user-primary-contrast: #ffffff;
+  --user-accent: var(--gold);
+  --user-accent-soft: var(--gold-light);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--slate-900); overflow-x: hidden; min-height: 100vh; }
+
+/* ── SUITE BAR ── */
+.suite-bar {
+  background: var(--navy);
+  padding: 0.7rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+}
+.suite-bar-left { color: var(--gold-bright); font-weight: 600; letter-spacing: 0.02em; }
+.suite-bar-right { display: flex; align-items: center; gap: 1rem; }
+.user-name { color: rgba(255,255,255,0.75); font-size: 0.78rem; }
+.suite-nav-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  text-decoration: none;
+}
+.suite-nav-btn:hover { background: rgba(255,255,255,0.15); }
+.suite-logout {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+}
+.suite-logout:hover { color: white; border-color: rgba(255,255,255,0.4); }
+
+/* ── HEADER ── */
+.page-header {
+  background: var(--navy);
+  padding: 2rem 2rem 2.5rem;
+  color: white;
+  border-bottom: 3px solid var(--gold);
+}
+.page-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.page-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.4rem;
+  line-height: 1.15;
+}
+.page-sub {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.65);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* ── PROGRESS ── */
+.progress-wrap {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.progress {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.prog-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+.prog-step.active, .prog-step.done { opacity: 1; }
+.prog-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--slate-600);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.78rem;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.prog-step.active .prog-num { background: var(--navy); color: white; }
+.prog-step.done .prog-num { background: var(--gold); color: var(--navy); }
+.prog-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--slate-700);
+  white-space: nowrap;
+}
+@media (max-width: 720px) { .prog-label { display: none; } }
+
+/* ── MAIN ── */
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.panel {
+  display: none;
+  background: white;
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+}
+.panel.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) {
+  .wrap { padding: 1rem; }
+  .panel { padding: 1.5rem; }
+}
+.panel-header { margin-bottom: 1.8rem; }
+.panel-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.panel-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.2;
+  margin-bottom: 0.3rem;
+}
+.panel-sub {
+  font-size: 0.87rem;
+  color: var(--slate-600);
+  line-height: 1.65;
+}
+
+/* ── FORM ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+.form-grid.single { grid-template-columns: 1fr; }
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+.form-field { display: flex; flex-direction: column; gap: 0.35rem; }
+.form-field.full { grid-column: 1 / -1; }
+.form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--slate-700);
+  letter-spacing: 0.02em;
+}
+.form-label .req { color: var(--danger); }
+.form-input, .form-select, .form-textarea {
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--slate-900);
+  background: white;
+  transition: border-color 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--navy);
+  outline: none;
+}
+.form-textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+.form-help { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+
+/* ── CLAUSE SECTION ── */
+.clause-section { margin-top: 1.2rem; }
+.clause-group {
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 0.9rem;
+}
+.clause-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.clause-preview {
+  background: white;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 0.7rem 0.85rem;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--slate-600);
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* ── BUTTONS ── */
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.btn {
+  padding: 0.85rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-navy { background: var(--navy); color: white; }
+.btn-navy:hover { background: var(--navy-mid); transform: translateY(-1px); }
+.btn-gold { background: var(--gold); color: var(--navy); }
+.btn-gold:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,0.3); }
+.btn-outline {
+  background: white;
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--navy); }
+
+/* ── REVIEW / CONTRACT PREVIEW ── */
+.contract-preview {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.7;
+  color: var(--slate-900);
+  font-size: 0.88rem;
+}
+.contract-preview h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  color: var(--navy);
+}
+.contract-preview h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  color: var(--navy);
+  margin-top: 1.4rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 0.3rem;
+}
+.contract-preview p { margin-bottom: 0.7rem; }
+.contract-preview .meta {
+  text-align: center;
+  color: var(--slate-600);
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+.contract-preview .party-block {
+  background: var(--off);
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.8rem;
+}
+.contract-preview strong { color: var(--navy); }
+
+/* ── SIGNATURE ── */
+.sig-box {
+  background: var(--off);
+  border: 2px dashed var(--gold);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-top: 1.2rem;
+  text-align: center;
+}
+.sig-status {
+  font-size: 0.85rem;
+  color: var(--slate-700);
+  margin-bottom: 0.8rem;
+}
+.sig-link-box {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sig-link-text {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--navy);
+  word-break: break-all;
+  min-width: 200px;
+}
+.sig-copy-btn {
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sig-copy-btn:hover { background: var(--gold-bright); }
+.sig-pad {
+  background: white;
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+  width: 100%;
+  height: 180px;
+  touch-action: none;
+  cursor: crosshair;
+  display: block;
+}
+.sig-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.7rem;
+  gap: 0.6rem;
+}
+.sig-clear {
+  background: transparent;
+  color: var(--slate-600);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.esig-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  font-family: 'Dancing Script', 'Brush Script MT', cursive;
+  font-size: 1.6rem;
+  text-align: center;
+  background: white;
+  color: var(--navy);
+}
+.esig-input:focus { outline: none; border-color: var(--navy); }
+
+/* ── CONTRACTS LIST ── */
+.contracts-summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.summary-card {
+  flex: 1;
+  min-width: 140px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.summary-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slate-600);
+  margin-bottom: 0.2rem;
+}
+.summary-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+.contracts-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.contracts-table thead tr { background: var(--navy); }
+.contracts-table thead th {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: white;
+}
+.contracts-table tbody tr {
+  border-top: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.contracts-table tbody tr:hover { background: var(--off); }
+.contracts-table tbody td {
+  padding: 0.85rem 1rem;
+  color: var(--slate-900);
+}
+.status-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.status-draft { background: #e5e7eb; color: #374151; }
+.status-sent { background: #fef3c7; color: #92400e; }
+.status-signed { background: #d1fae5; color: #065f46; }
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 0.95rem;
+}
+.icon-btn:hover { background: var(--off); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: white;
+  padding: 0.9rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+.toast.show { opacity: 1; }
+
+/* ── AUTH GATE ── */
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+.auth-gate-inner { max-width: 400px; }
+.auth-gate h2 {
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--gold-bright);
+  margin-bottom: 0.8rem;
+}
+.auth-gate p { color: rgba(255,255,255,0.7); margin-bottom: 1.5rem; }
+.auth-gate a {
+  background: var(--gold);
+  color: var(--navy);
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-block;
+}
+
+/* Signature mode tabs */
+.sig-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+.sig-tab {
+  background: white;
+  border: 1.5px solid var(--border);
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-700);
+  cursor: pointer;
+  font-family: inherit;
+}
+.sig-tab.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE (hidden by default, shown if not logged in) -->
+<div class="auth-gate" id="authGate" style="display:none;">
+  <div class="auth-gate-inner">
+    <h2>Sign in required</h2>
+    <p>Contract Builder Pro is part of EventPro Suite. Please sign in to continue.</p>
+    <a href="login.html">Sign In →</a>
+  </div>
+</div>
+
+<!-- SUITE BAR -->
+<div class="suite-bar" id="suiteBar" style="display:none;">
+  <div class="suite-bar-left">EventPro Suite™ &nbsp;·&nbsp; Contract Builder Pro™</div>
+  <div class="suite-bar-right">
+    <a href="index.html" class="suite-nav-btn">← Dashboard</a>
+    <a href="quote.html" class="suite-nav-btn">📄 Quote Pro</a>
+    <button class="suite-nav-btn" onclick="showMyContracts()">📋 My Contracts</button>
+    <div class="user-name" id="userName">Welcome</div>
+    <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Contract Builder Pro™</div>
+    <h1 class="page-title">Professional contracts. In minutes. Fully branded.</h1>
+    <p class="page-sub">Generate client-ready event contracts with industry-standard clauses, your branding, and signature capture. Everything your business needs to look legit from day one.</p>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress">
+    <div class="prog-step active" id="ps1"><div class="prog-num">1</div><div class="prog-label">Contract Type</div></div>
+    <div class="prog-step" id="ps2"><div class="prog-num">2</div><div class="prog-label">Parties</div></div>
+    <div class="prog-step" id="ps3"><div class="prog-num">3</div><div class="prog-label">Event Details</div></div>
+    <div class="prog-step" id="ps4"><div class="prog-num">4</div><div class="prog-label">Clauses</div></div>
+    <div class="prog-step" id="ps5"><div class="prog-num">5</div><div class="prog-label">Review</div></div>
+    <div class="prog-step" id="ps6"><div class="prog-num">6</div><div class="prog-label">Sign</div></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STEP 1: CONTRACT TYPE -->
+  <div class="panel active" id="panel1">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Step 1</div>
+      <h2 class="panel-title">What type of contract do you need?</h2>
+      <p class="panel-sub">Pick one to start. You can change this later if needed.</p>
+    </div>
+
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="form-field full">
+        <label class="form-label">Contract Type <span class="req">*</span></label>
+        <select class="form-select" id="contractType">
+          <option value="service_agreement">Event Service Agreement (most common)</option>
+          <option value="deposit_cancellation">Deposit & Cancellation Policy</option>
+          <option value="liability_waiver">Liability Waiver / Hold Harmless</option>
+        </select>
+        <div class="form-help">Service Agreement is the standard "I'll provide X services for $Y" contract most party pros use.</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <div></div>
+      <button class="btn btn-navy" onclick="goToStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: PARTIES -->
+  <div class="panel" id="panel2">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Step 2</div>
+      <h2 class="panel-title">Who are the parties?</h2>
+      <p class="panel-sub">Your business info is pulled from your profile. Add the client info below.</p>
+    </div>
+
+    <h3 style="font-family:'Cormorant Garamond',serif;color:var(--navy);margin-top:1.2rem;margin-bottom:0.6rem;">Your Business</h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label">Business Name <span class="req">*</span></label>
+        <input type="text" class="form-input" id="bizName" placeholder="Bear Hug Events"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Owner Name <span class="req">*</span></label>
+        <input type="text" class="form-input" id="bizOwner" placeholder="Monica Smith"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Business Email <span class="req">*</span></label>
+        <input type="email" class="form-input" id="bizEmail" placeholder="hello@bearhug.events"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Business Phone</label>
+        <input type="tel" class="form-input" id="bizPhone" placeholder="(407) 555-0123"/>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Business Address</label>
+        <input type="text" class="form-input" id="bizAddress" placeholder="Orlando, FL"/>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Cormorant Garamond',serif;color:var(--navy);margin-top:1.8rem;margin-bottom:0.6rem;">Client</h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label">Client Name <span class="req">*</span></label>
+        <input type="text" class="form-input" id="clientName" placeholder="Sarah Johnson"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Client Email <span class="req">*</span></label>
+        <input type="email" class="form-input" id="clientEmail" placeholder="sarah@email.com"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Client Phone</label>
+        <input type="tel" class="form-input" id="clientPhone"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Client Address</label>
+        <input type="text" class="form-input" id="clientAddress"/>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(1)">← Back</button>
+      <button class="btn btn-navy" onclick="goToStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: EVENT DETAILS -->
+  <div class="panel" id="panel3">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Step 3</div>
+      <h2 class="panel-title">Event details</h2>
+      <p class="panel-sub">The specifics of what you're contracting for.</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label">Event Date <span class="req">*</span></label>
+        <input type="date" class="form-input" id="eventDate"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Event Time</label>
+        <input type="time" class="form-input" id="eventTime"/>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Event Location / Venue <span class="req">*</span></label>
+        <input type="text" class="form-input" id="eventVenue" placeholder="1234 Orange Ave, Orlando, FL"/>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Services Being Provided <span class="req">*</span></label>
+        <textarea class="form-textarea" id="eventServices" placeholder="Example: Full balloon garland (12ft), backdrop installation, dessert table styling, setup and breakdown. 4 hours on-site."></textarea>
+        <div class="form-help">Be specific. This becomes the core of the contract.</div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Total Price ($) <span class="req">*</span></label>
+        <input type="number" class="form-input" id="totalPrice" placeholder="650.00" step="0.01" min="0"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Deposit Amount ($)</label>
+        <input type="number" class="form-input" id="depositAmount" placeholder="325.00" step="0.01" min="0"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Deposit Due Date</label>
+        <input type="date" class="form-input" id="depositDue"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Balance Due Date</label>
+        <input type="date" class="form-input" id="balanceDue"/>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(2)">← Back</button>
+      <button class="btn btn-navy" onclick="goToStep(4)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CLAUSES -->
+  <div class="panel" id="panel4">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Step 4</div>
+      <h2 class="panel-title">Choose your clauses</h2>
+      <p class="panel-sub">Pick industry-standard policies that fit how you operate. Preview updates as you choose.</p>
+    </div>
+
+    <div class="clause-section">
+
+      <!-- DEPOSIT REFUND POLICY -->
+      <div class="clause-group">
+        <div class="clause-title">Deposit Refund Policy</div>
+        <select class="form-select" id="clauseDeposit" onchange="updatePreview('clauseDeposit')">
+          <option value="nonrefundable_all">Deposit is 100% non-refundable (strictest)</option>
+          <option value="nonrefundable_14" selected>Non-refundable within 14 days of event (recommended)</option>
+          <option value="nonrefundable_30">Non-refundable within 30 days of event</option>
+          <option value="refundable_partial">50% refundable if cancelled 30+ days in advance</option>
+          <option value="fully_refundable">Fully refundable up to 48 hours before event</option>
+        </select>
+        <div class="clause-preview" id="previewDeposit"></div>
+      </div>
+
+      <!-- CANCELLATION POLICY -->
+      <div class="clause-group">
+        <div class="clause-title">Cancellation Policy</div>
+        <select class="form-select" id="clauseCancellation" onchange="updatePreview('clauseCancellation')">
+          <option value="no_refund">No refunds after booking confirmed (strictest)</option>
+          <option value="tiered" selected>Tiered: 50% refund if cancelled 30+ days out, 25% if 14+ days out, no refund within 14 days (recommended)</option>
+          <option value="reschedule">Free reschedule within 6 months, no cash refunds</option>
+          <option value="full_refund_notice">Full refund with 60+ days notice</option>
+        </select>
+        <div class="clause-preview" id="previewCancellation"></div>
+      </div>
+
+      <!-- PAYMENT SCHEDULE -->
+      <div class="clause-group">
+        <div class="clause-title">Payment Schedule</div>
+        <select class="form-select" id="clausePayment" onchange="updatePreview('clausePayment')">
+          <option value="50_50" selected>50% deposit on signing, 50% balance due on event day (standard)</option>
+          <option value="50_50_before">50% deposit on signing, 50% balance due 7 days before event</option>
+          <option value="25_75">25% deposit on signing, 75% balance due 14 days before event</option>
+          <option value="full_upfront">Full payment due on signing</option>
+          <option value="three_pay">33% on signing, 33% at 30 days, 34% on event day</option>
+        </select>
+        <div class="clause-preview" id="previewPayment"></div>
+      </div>
+
+      <!-- LIABILITY -->
+      <div class="clause-group">
+        <div class="clause-title">Liability & Damage</div>
+        <select class="form-select" id="clauseLiability" onchange="updatePreview('clauseLiability')">
+          <option value="standard" selected>Standard: Business not liable for guest injury; client responsible for rental damage (recommended)</option>
+          <option value="strict">Strict: Client assumes all risk; liable for any equipment loss or damage at replacement cost</option>
+          <option value="shared">Shared: Both parties carry own insurance; damage handled case-by-case</option>
+        </select>
+        <div class="clause-preview" id="previewLiability"></div>
+      </div>
+
+      <!-- FORCE MAJEURE -->
+      <div class="clause-group">
+        <div class="clause-title">Weather & Unforeseen Events (Force Majeure)</div>
+        <select class="form-select" id="clauseForce" onchange="updatePreview('clauseForce')">
+          <option value="reschedule" selected>Free reschedule if cancelled due to weather, illness, or act of God (recommended)</option>
+          <option value="credit">Store credit issued, valid for 12 months</option>
+          <option value="no_provision">No provision — standard cancellation terms apply</option>
+        </select>
+        <div class="clause-preview" id="previewForce"></div>
+      </div>
+
+      <!-- CUSTOM -->
+      <div class="clause-group">
+        <div class="clause-title">Custom Clauses (Optional)</div>
+        <textarea class="form-textarea" id="clauseCustom" placeholder="Add any additional terms specific to your business. Example: 'Client to provide parking for vendor vehicle on event day.'"></textarea>
+      </div>
+
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(3)">← Back</button>
+      <button class="btn btn-navy" onclick="goToStep(5)">Review Contract →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: REVIEW -->
+  <div class="panel" id="panel5">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Step 5</div>
+      <h2 class="panel-title">Review your contract</h2>
+      <p class="panel-sub">This is what your client will see. Scroll through, then continue to signing.</p>
+    </div>
+
+    <div class="contract-preview" id="contractPreview"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(4)">← Edit Clauses</button>
+      <button class="btn btn-navy" onclick="goToStep(6)">Continue to Signing →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: SIGN -->
+  <div class="panel" id="panel6">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Step 6</div>
+      <h2 class="panel-title">Sign & send</h2>
+      <p class="panel-sub">You sign first, then send a secure link to your client to countersign.</p>
+    </div>
+
+    <div id="sigVendorSection">
+      <h3 style="font-family:'Cormorant Garamond',serif;color:var(--navy);margin-bottom:0.8rem;">Your signature (<span id="vendorNameLbl"></span>)</h3>
+
+      <div class="sig-tabs">
+        <button class="sig-tab active" onclick="switchSigMode('type')">Type</button>
+        <button class="sig-tab" onclick="switchSigMode('draw')">Draw</button>
+      </div>
+
+      <div id="sigTypeMode">
+        <input type="text" class="esig-input" id="vendorEsig" placeholder="Type your full name" oninput="updateSigDate()"/>
+        <div class="form-help" style="text-align:center;margin-top:0.5rem;">By typing your name, you are signing this contract electronically. This carries the same legal weight as a handwritten signature under the ESIGN Act.</div>
+      </div>
+
+      <div id="sigDrawMode" style="display:none;">
+        <canvas class="sig-pad" id="vendorCanvas" width="600" height="180"></canvas>
+        <div class="sig-controls">
+          <button class="sig-clear" onclick="clearCanvas('vendorCanvas')">Clear</button>
+          <div style="font-size:0.75rem;color:var(--muted);align-self:center;">Draw with your mouse or finger</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;font-size:0.85rem;color:var(--slate-700);">
+        Signed on: <strong id="vendorSigDate">—</strong>
+      </div>
+    </div>
+
+    <div class="sig-box" id="clientSigBox" style="margin-top:2rem;">
+      <div class="sig-status">📧 <strong>Client signature</strong> — send a secure link to your client to sign</div>
+      <button class="btn btn-gold" onclick="generateClientLink()">Generate Signing Link for Client</button>
+      <div id="clientLinkWrap" style="display:none;">
+        <div class="sig-link-box">
+          <div class="sig-link-text" id="clientLinkText"></div>
+          <button class="sig-copy-btn" onclick="copyClientLink()">Copy Link</button>
+        </div>
+        <div style="font-size:0.78rem;color:var(--slate-600);margin-top:0.8rem;line-height:1.6;">
+          Send this link to <strong id="clientNameLbl"></strong> via email, text, or DM. When they click it, they'll see the full contract and can sign directly. You'll get notified when they complete it.
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(5)">← Back to Review</button>
+      <div style="display:flex;gap:0.6rem;">
+        <button class="btn btn-outline" onclick="saveContractAsDraft()">💾 Save Draft</button>
+        <button class="btn btn-gold" onclick="finalizeContract()">✓ Finalize & Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY CONTRACTS PANEL -->
+  <div class="panel" id="panelContracts">
+    <div class="panel-header">
+      <div class="panel-eyebrow">Contract History</div>
+      <h2 class="panel-title">📋 My Contracts</h2>
+      <p class="panel-sub">Every contract you've created, saved to your account.</p>
+    </div>
+
+    <div class="contracts-summary" id="contractsSummary"></div>
+    <div id="contractsListWrap">
+      <div style="text-align:center;padding:2rem;color:var(--slate-600);">Loading...</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goToStep(1)">← New Contract</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG — set your Supabase credentials here
+// ══════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+
+let sb = null;
+let currentUser = null;
+let currentStep = 1;
+let vendorSignature = null;
+let sigMode = 'type';
+let currentContractId = null;
+
+// Initialize Supabase (gracefully handle missing config for demo)
+try {
+  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE') {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch(e) { console.warn('Supabase not configured — running in demo mode'); }
+
+// ══════════════════════════════════════════════════════════════
+// CLAUSE LIBRARY — the actual contract language
+// ══════════════════════════════════════════════════════════════
+const CLAUSES = {
+  clauseDeposit: {
+    nonrefundable_all: "All deposits paid are 100% non-refundable under any circumstances, including cancellation by the Client. The deposit secures the event date and covers preparation costs incurred prior to the event.",
+    nonrefundable_14: "Deposits are refundable if the contract is cancelled more than 14 days prior to the event date. Deposits become 100% non-refundable within 14 days of the event date, as the date has been reserved and preparation is underway.",
+    nonrefundable_30: "Deposits are refundable if the contract is cancelled more than 30 days prior to the event date. Within 30 days of the event, all deposits are 100% non-refundable.",
+    refundable_partial: "If the contract is cancelled 30 or more days before the event, 50% of the deposit will be refunded. Cancellations within 30 days of the event forfeit the full deposit.",
+    fully_refundable: "Deposits are fully refundable up to 48 hours before the event date. Cancellations within 48 hours of the event forfeit the deposit."
+  },
+  clauseCancellation: {
+    no_refund: "Once this contract is signed and the deposit is paid, no refunds will be issued for any reason except as specifically provided under the Weather & Unforeseen Events clause.",
+    tiered: "If the Client cancels 30 or more days before the event, 50% of amounts paid will be refunded. Cancellations 14–29 days before the event receive a 25% refund. Cancellations within 14 days of the event receive no refund.",
+    reschedule: "No cash refunds will be issued. If cancellation is necessary, the Client may reschedule the event one time within 6 months of the original date, subject to availability.",
+    full_refund_notice: "If the Client cancels 60 or more days before the event, a full refund will be issued minus a $50 administrative fee. Cancellations within 60 days will follow the Deposit Refund Policy above."
+  },
+  clausePayment: {
+    "50_50": "Payment is due as follows: 50% non-refundable deposit upon signing this contract to reserve the event date; remaining 50% balance due on the day of the event before services begin.",
+    "50_50_before": "Payment is due as follows: 50% non-refundable deposit upon signing; remaining 50% balance due no later than 7 days before the event date.",
+    "25_75": "Payment is due as follows: 25% non-refundable deposit upon signing; remaining 75% balance due no later than 14 days before the event date.",
+    "full_upfront": "Full payment is due upon signing this contract. Services will not be scheduled or reserved until payment is received in full.",
+    "three_pay": "Payment is due in three installments: 33% upon signing, 33% thirty (30) days before the event, and 34% on the day of the event before services begin."
+  },
+  clauseLiability: {
+    standard: "The Client assumes responsibility for the safety and supervision of all guests and attendees at the event. The Business is not liable for any injuries, accidents, or damages to persons or property occurring during the event, except in cases of gross negligence on the part of the Business. The Client is responsible for the cost of replacement or repair of any rental items lost or damaged during the event, except for normal wear and tear.",
+    strict: "The Client assumes all risk and liability for the event, including any injury, damage, or loss to any person or property. The Client agrees to indemnify and hold the Business harmless from any claims arising from the event. The Client is liable for the full replacement cost of any equipment or rental items damaged, lost, or stolen during the event.",
+    shared: "Both parties agree to carry their own liability insurance for the event. Damage to equipment or rentals will be assessed on a case-by-case basis and resolved in good faith between the parties."
+  },
+  clauseForce: {
+    reschedule: "In the event the event cannot take place due to weather conditions, illness, natural disaster, government mandate, or other circumstances beyond either party's reasonable control, the Business will work with the Client to reschedule the event to a mutually agreeable date within 12 months. No refunds will be issued in such cases; all funds paid will be credited toward the rescheduled event.",
+    credit: "If the event cannot proceed due to circumstances beyond either party's control (weather, illness, natural disaster, government mandate), the Client will receive a store credit for the full amount paid, valid for 12 months from the original event date.",
+    no_provision: "No special provisions apply for weather or unforeseen events. The standard Cancellation Policy above governs all cancellations regardless of cause."
+  }
+};
+
+// ══════════════════════════════════════════════════════════════
+// STARTUP
+// ══════════════════════════════════════════════════════════════
+async function init() {
+  // Auth check (only if Supabase configured)
+  if (sb) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      document.getElementById('authGate').style.display = 'flex';
+      return;
+    }
+    currentUser = session.user;
+    document.getElementById('userName').textContent = session.user.email || 'Welcome';
+    document.getElementById('suiteBar').style.display = 'flex';
+
+    // Try to load profile to pre-fill business info
+    try {
+      const { data: profile } = await sb.from('profiles').select('*').eq('user_id', session.user.id).single();
+      if (profile) {
+        if (profile.business_name) document.getElementById('bizName').value = profile.business_name;
+        if (profile.owner_name) document.getElementById('bizOwner').value = profile.owner_name;
+        if (profile.business_email) document.getElementById('bizEmail').value = profile.business_email;
+        if (profile.business_phone) document.getElementById('bizPhone').value = profile.business_phone;
+        if (profile.business_city) document.getElementById('bizAddress').value = profile.business_city;
+      }
+    } catch(e) { /* profile not set up yet — fine */ }
+  } else {
+    // Demo mode
+    document.getElementById('suiteBar').style.display = 'flex';
+    document.getElementById('userName').textContent = 'Demo Mode';
+  }
+
+  // Initialize clause previews
+  Object.keys(CLAUSES).forEach(updatePreview);
+
+  // Setup canvas drawing
+  setupCanvas('vendorCanvas');
+}
+
+async function handleLogout() {
+  if (sb) { await sb.auth.signOut(); }
+  window.location.href = 'login.html';
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function goToStep(n) {
+  // Basic validation
+  if (n > 1 && currentStep === 1) {
+    // always allow forward from step 1
+  }
+  if (n > 2 && currentStep === 2) {
+    if (!v('bizName') || !v('bizOwner') || !v('bizEmail') || !v('clientName') || !v('clientEmail')) {
+      showToast('Please fill in required fields (marked *)');
+      return;
+    }
+  }
+  if (n > 3 && currentStep === 3) {
+    if (!v('eventDate') || !v('eventVenue') || !v('eventServices') || !v('totalPrice')) {
+      showToast('Please fill in required event details');
+      return;
+    }
+  }
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const targetPanel = document.getElementById('panel' + n);
+  if (targetPanel) targetPanel.classList.add('active');
+
+  document.querySelectorAll('.prog-step').forEach((ps, idx) => {
+    ps.classList.remove('active', 'done');
+    if (idx + 1 < n) ps.classList.add('done');
+    if (idx + 1 === n) ps.classList.add('active');
+  });
+
+  currentStep = n;
+
+  if (n === 5) buildContractPreview();
+  if (n === 6) {
+    document.getElementById('vendorNameLbl').textContent = v('bizOwner');
+    document.getElementById('clientNameLbl').textContent = v('clientName');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso + 'T00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function fmtMoney(n) { return '$' + Number(n || 0).toFixed(2); }
+
+// ══════════════════════════════════════════════════════════════
+// CLAUSE PREVIEW
+// ══════════════════════════════════════════════════════════════
+function updatePreview(id) {
+  const sel = document.getElementById(id);
+  const previewId = 'preview' + id.replace('clause', '');
+  const preview = document.getElementById(previewId);
+  if (sel && preview && CLAUSES[id]) {
+    preview.textContent = CLAUSES[id][sel.value] || '';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CONTRACT BUILDER
+// ══════════════════════════════════════════════════════════════
+function getContractTypeTitle() {
+  const types = {
+    service_agreement: 'EVENT SERVICE AGREEMENT',
+    deposit_cancellation: 'DEPOSIT AND CANCELLATION AGREEMENT',
+    liability_waiver: 'LIABILITY WAIVER AND HOLD HARMLESS AGREEMENT'
+  };
+  return types[v('contractType')] || 'EVENT SERVICE AGREEMENT';
+}
+
+function buildContractPreview() {
+  const c = document.getElementById('contractPreview');
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const depositClause = CLAUSES.clauseDeposit[v('clauseDeposit')] || '';
+  const cancellationClause = CLAUSES.clauseCancellation[v('clauseCancellation')] || '';
+  const paymentClause = CLAUSES.clausePayment[v('clausePayment')] || '';
+  const liabilityClause = CLAUSES.clauseLiability[v('clauseLiability')] || '';
+  const forceClause = CLAUSES.clauseForce[v('clauseForce')] || '';
+  const custom = v('clauseCustom');
+
+  c.innerHTML = `
+    <h1>${getContractTypeTitle()}</h1>
+    <div class="meta">Contract Date: ${today}</div>
+
+    <h2>Parties</h2>
+    <div class="party-block">
+      <strong>Service Provider ("Business"):</strong><br/>
+      ${v('bizName') || '[Business Name]'}<br/>
+      ${v('bizOwner') ? 'Owner: ' + v('bizOwner') + '<br/>' : ''}
+      ${v('bizEmail') || ''} ${v('bizPhone') ? ' · ' + v('bizPhone') : ''}<br/>
+      ${v('bizAddress') || ''}
+    </div>
+    <div class="party-block">
+      <strong>Client:</strong><br/>
+      ${v('clientName') || '[Client Name]'}<br/>
+      ${v('clientEmail') || ''} ${v('clientPhone') ? ' · ' + v('clientPhone') : ''}<br/>
+      ${v('clientAddress') || ''}
+    </div>
+
+    <h2>1. Event Details</h2>
+    <p><strong>Event Date:</strong> ${fmtDate(v('eventDate'))} ${v('eventTime') ? 'at ' + v('eventTime') : ''}</p>
+    <p><strong>Venue / Location:</strong> ${v('eventVenue') || '—'}</p>
+    <p><strong>Services Provided:</strong><br/>${v('eventServices').replace(/\n/g, '<br/>') || '—'}</p>
+
+    <h2>2. Fees and Payment</h2>
+    <p><strong>Total Contract Price:</strong> ${fmtMoney(v('totalPrice'))}</p>
+    ${v('depositAmount') ? `<p><strong>Deposit Amount:</strong> ${fmtMoney(v('depositAmount'))} ${v('depositDue') ? ' · Due: ' + fmtDate(v('depositDue')) : ''}</p>` : ''}
+    ${v('balanceDue') ? `<p><strong>Balance Due Date:</strong> ${fmtDate(v('balanceDue'))}</p>` : ''}
+    <p>${paymentClause}</p>
+
+    <h2>3. Deposit Policy</h2>
+    <p>${depositClause}</p>
+
+    <h2>4. Cancellation Policy</h2>
+    <p>${cancellationClause}</p>
+
+    <h2>5. Liability and Damages</h2>
+    <p>${liabilityClause}</p>
+
+    <h2>6. Weather and Unforeseen Events</h2>
+    <p>${forceClause}</p>
+
+    ${custom ? `<h2>7. Additional Terms</h2><p>${custom.replace(/\n/g, '<br/>')}</p>` : ''}
+
+    <h2>${custom ? '8' : '7'}. Governing Law and Entire Agreement</h2>
+    <p>This Agreement constitutes the entire understanding between the parties and supersedes all prior agreements. Any modifications must be in writing and signed by both parties. This Agreement is governed by the laws of the state in which the Business operates.</p>
+
+    <h2>Signatures</h2>
+    <p>By signing below, both parties acknowledge they have read, understood, and agree to all terms of this Agreement. Electronic signatures carry the same legal weight as handwritten signatures under the ESIGN Act of 2000.</p>
+    <div style="display:flex;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;border-top:1px solid #333;padding-top:0.4rem;">
+        <strong>${v('bizOwner') || '[Business Owner]'}</strong><br/>
+        <span style="font-size:0.8rem;color:#666;">${v('bizName')}</span><br/>
+        <span style="font-size:0.8rem;color:#666;">Signed: _____________</span>
+      </div>
+      <div style="flex:1;min-width:200px;border-top:1px solid #333;padding-top:0.4rem;">
+        <strong>${v('clientName') || '[Client Name]'}</strong><br/>
+        <span style="font-size:0.8rem;color:#666;">Client</span><br/>
+        <span style="font-size:0.8rem;color:#666;">Signed: _____________</span>
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SIGNATURE
+// ══════════════════════════════════════════════════════════════
+function switchSigMode(mode) {
+  sigMode = mode;
+  document.querySelectorAll('.sig-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('sigTypeMode').style.display = mode === 'type' ? 'block' : 'none';
+  document.getElementById('sigDrawMode').style.display = mode === 'draw' ? 'block' : 'none';
+}
+
+function updateSigDate() {
+  if (v('vendorEsig')) {
+    document.getElementById('vendorSigDate').textContent = new Date().toLocaleString();
+  } else {
+    document.getElementById('vendorSigDate').textContent = '—';
+  }
+}
+
+function setupCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#0d1b3e';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  let drawing = false;
+  let last = null;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  }
+
+  function start(e) { e.preventDefault(); drawing = true; last = getPos(e); }
+  function move(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    last = pos;
+    document.getElementById('vendorSigDate').textContent = new Date().toLocaleString();
+  }
+  function end() { drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start);
+  canvas.addEventListener('touchmove', move);
+  canvas.addEventListener('touchend', end);
+}
+
+function clearCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById('vendorSigDate').textContent = '—';
+}
+
+function getVendorSignatureData() {
+  if (sigMode === 'type') {
+    const name = v('vendorEsig');
+    if (!name) return null;
+    return { type: 'typed', value: name, date: new Date().toISOString() };
+  } else {
+    const canvas = document.getElementById('vendorCanvas');
+    const ctx = canvas.getContext('2d');
+    const blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    if (canvas.toDataURL() === blank.toDataURL()) return null;
+    return { type: 'drawn', value: canvas.toDataURL('image/png'), date: new Date().toISOString() };
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CLIENT SIGNING LINK
+// ══════════════════════════════════════════════════════════════
+function generateClientLink() {
+  // Validate vendor signed first
+  const sig = getVendorSignatureData();
+  if (!sig) {
+    showToast('Please sign the contract yourself first, then generate the client link');
+    return;
+  }
+  vendorSignature = sig;
+
+  // Generate unique token
+  const token = 'CT' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9).toUpperCase();
+  const link = window.location.origin + '/sign-contract.html?token=' + token;
+
+  document.getElementById('clientLinkText').textContent = link;
+  document.getElementById('clientLinkWrap').style.display = 'block';
+
+  // Save contract + token to Supabase so sign-contract.html can retrieve it
+  saveContractForSigning(token);
+
+  showToast('✓ Link generated — copy and send to client');
+}
+
+function copyClientLink() {
+  const text = document.getElementById('clientLinkText').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('✓ Link copied to clipboard'));
+}
+
+async function saveContractForSigning(token) {
+  if (!sb) { return; } // demo mode
+  try {
+    const payload = buildContractPayload();
+    payload.sign_token = token;
+    payload.status = 'Sent to Client';
+    payload.vendor_signature = vendorSignature;
+
+    if (currentContractId) {
+      await sb.from('contracts').update(payload).eq('id', currentContractId);
+    } else {
+      const { data, error } = await sb.from('contracts').insert(payload).select().single();
+      if (!error && data) currentContractId = data.id;
+    }
+  } catch(e) { console.error('Save for signing error:', e); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SAVE / FINALIZE
+// ══════════════════════════════════════════════════════════════
+function buildContractPayload() {
+  return {
+    user_id: currentUser ? currentUser.id : null,
+    contract_number: 'C' + Date.now().toString().slice(-6),
+    contract_type: v('contractType'),
+    biz_name: v('bizName'),
+    biz_owner: v('bizOwner'),
+    biz_email: v('bizEmail'),
+    biz_phone: v('bizPhone'),
+    biz_address: v('bizAddress'),
+    client_name: v('clientName'),
+    client_email: v('clientEmail'),
+    client_phone: v('clientPhone'),
+    client_address: v('clientAddress'),
+    event_date: v('eventDate') || null,
+    event_time: v('eventTime'),
+    event_venue: v('eventVenue'),
+    event_services: v('eventServices'),
+    total_price: parseFloat(v('totalPrice')) || 0,
+    deposit_amount: parseFloat(v('depositAmount')) || 0,
+    deposit_due: v('depositDue') || null,
+    balance_due: v('balanceDue') || null,
+    clauses: {
+      deposit: v('clauseDeposit'),
+      cancellation: v('clauseCancellation'),
+      payment: v('clausePayment'),
+      liability: v('clauseLiability'),
+      force: v('clauseForce'),
+      custom: v('clauseCustom')
+    },
+    status: 'Draft'
+  };
+}
+
+async function saveContractAsDraft() {
+  if (!sb) { showToast('Draft saved (demo mode)'); return; }
+  try {
+    const payload = buildContractPayload();
+    if (currentContractId) {
+      await sb.from('contracts').update(payload).eq('id', currentContractId);
+    } else {
+      const { data, error } = await sb.from('contracts').insert(payload).select().single();
+      if (error) { showToast('Save error: ' + error.message); return; }
+      currentContractId = data.id;
+    }
+    showToast('✓ Draft saved');
+  } catch(e) { console.error(e); showToast('Save error'); }
+}
+
+async function finalizeContract() {
+  const sig = getVendorSignatureData();
+  if (!sig) {
+    showToast('Please sign the contract before finalizing');
+    return;
+  }
+  vendorSignature = sig;
+
+  // Save
+  if (sb) {
+    try {
+      const payload = buildContractPayload();
+      payload.vendor_signature = vendorSignature;
+      payload.status = 'Vendor Signed';
+      if (currentContractId) {
+        await sb.from('contracts').update(payload).eq('id', currentContractId);
+      } else {
+        await sb.from('contracts').insert(payload);
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  // Generate PDF
+  downloadContractPDF();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PDF GENERATION
+// ══════════════════════════════════════════════════════════════
+function downloadContractPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 54;
+  const contentW = pageWidth - (margin * 2);
+  let y = margin;
+
+  // Navy header bar
+  doc.setFillColor(13, 27, 62);
+  doc.rect(0, 0, pageWidth, 36, 'F');
+  doc.setFillColor(201, 168, 76);
+  doc.rect(0, 36, pageWidth, 3, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(v('bizName') || 'Business Name', margin, 22);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(201, 168, 76);
+  doc.text(v('bizAddress') || '', pageWidth - margin, 22, { align: 'right' });
+
+  y = 70;
+  doc.setTextColor(13, 27, 62);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text(getContractTypeTitle(), pageWidth / 2, y, { align: 'center' });
+
+  y += 18;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(90, 90, 90);
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  doc.text('Contract Date: ' + today, pageWidth / 2, y, { align: 'center' });
+
+  y += 24;
+
+  // Helper: add section header
+  const addSection = (title) => {
+    if (y > pageHeight - 80) { doc.addPage(); y = margin; }
+    doc.setTextColor(13, 27, 62);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(title, margin, y);
+    y += 4;
+    doc.setDrawColor(201, 168, 76);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, margin + contentW, y);
+    y += 12;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(40, 40, 40);
+  };
+
+  // Helper: add body text with wrapping
+  const addBody = (text, opts = {}) => {
+    if (!text) return;
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(40, 40, 40);
+    const lines = doc.splitTextToSize(text, contentW);
+    for (const line of lines) {
+      if (y > pageHeight - 60) { doc.addPage(); y = margin; }
+      doc.text(line, margin, y);
+      y += 13;
+    }
+  };
+
+  // PARTIES
+  addSection('PARTIES');
+  addBody('Service Provider ("Business"):', { bold: true });
+  addBody(v('bizName'));
+  if (v('bizOwner')) addBody('Owner: ' + v('bizOwner'));
+  addBody([v('bizEmail'), v('bizPhone')].filter(Boolean).join(' · '));
+  if (v('bizAddress')) addBody(v('bizAddress'));
+  y += 6;
+  addBody('Client:', { bold: true });
+  addBody(v('clientName'));
+  addBody([v('clientEmail'), v('clientPhone')].filter(Boolean).join(' · '));
+  if (v('clientAddress')) addBody(v('clientAddress'));
+  y += 8;
+
+  // EVENT DETAILS
+  addSection('1. EVENT DETAILS');
+  addBody('Event Date: ' + fmtDate(v('eventDate')) + (v('eventTime') ? ' at ' + v('eventTime') : ''));
+  addBody('Venue / Location: ' + (v('eventVenue') || '—'));
+  addBody('Services Provided:');
+  addBody(v('eventServices'));
+  y += 4;
+
+  // FEES
+  addSection('2. FEES AND PAYMENT');
+  addBody('Total Contract Price: ' + fmtMoney(v('totalPrice')));
+  if (v('depositAmount')) addBody('Deposit Amount: ' + fmtMoney(v('depositAmount')) + (v('depositDue') ? ' · Due: ' + fmtDate(v('depositDue')) : ''));
+  if (v('balanceDue')) addBody('Balance Due Date: ' + fmtDate(v('balanceDue')));
+  y += 2;
+  addBody(CLAUSES.clausePayment[v('clausePayment')]);
+  y += 4;
+
+  // DEPOSIT
+  addSection('3. DEPOSIT POLICY');
+  addBody(CLAUSES.clauseDeposit[v('clauseDeposit')]);
+  y += 4;
+
+  // CANCELLATION
+  addSection('4. CANCELLATION POLICY');
+  addBody(CLAUSES.clauseCancellation[v('clauseCancellation')]);
+  y += 4;
+
+  // LIABILITY
+  addSection('5. LIABILITY AND DAMAGES');
+  addBody(CLAUSES.clauseLiability[v('clauseLiability')]);
+  y += 4;
+
+  // FORCE MAJEURE
+  addSection('6. WEATHER AND UNFORESEEN EVENTS');
+  addBody(CLAUSES.clauseForce[v('clauseForce')]);
+  y += 4;
+
+  // CUSTOM
+  let sectionNum = 7;
+  if (v('clauseCustom')) {
+    addSection(sectionNum + '. ADDITIONAL TERMS');
+    addBody(v('clauseCustom'));
+    y += 4;
+    sectionNum++;
+  }
+
+  // GOVERNING
+  addSection(sectionNum + '. GOVERNING LAW AND ENTIRE AGREEMENT');
+  addBody('This Agreement constitutes the entire understanding between the parties and supersedes all prior agreements. Any modifications must be in writing and signed by both parties. This Agreement is governed by the laws of the state in which the Business operates.');
+  y += 8;
+
+  // SIGNATURES
+  if (y > pageHeight - 180) { doc.addPage(); y = margin; }
+  addSection('SIGNATURES');
+  addBody('By signing below, both parties acknowledge they have read, understood, and agree to all terms of this Agreement. Electronic signatures carry the same legal weight as handwritten signatures under the ESIGN Act of 2000.');
+  y += 16;
+
+  // Vendor signature
+  const sigY = y;
+  doc.setDrawColor(50, 50, 50);
+  doc.line(margin, sigY + 36, margin + 220, sigY + 36);
+
+  if (vendorSignature) {
+    if (vendorSignature.type === 'typed') {
+      doc.setFont('times', 'italic');
+      doc.setFontSize(18);
+      doc.setTextColor(13, 27, 62);
+      doc.text(vendorSignature.value, margin + 10, sigY + 30);
+    } else if (vendorSignature.type === 'drawn') {
+      try { doc.addImage(vendorSignature.value, 'PNG', margin, sigY, 180, 40); } catch(e) {}
+    }
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(40, 40, 40);
+  doc.text(v('bizOwner') || 'Business Owner', margin, sigY + 50);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text(v('bizName'), margin, sigY + 62);
+  doc.text('Signed: ' + (vendorSignature ? new Date(vendorSignature.date).toLocaleString() : '—'), margin, sigY + 74);
+
+  // Client signature line
+  doc.setDrawColor(50, 50, 50);
+  doc.line(margin + 260, sigY + 36, margin + 480, sigY + 36);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(40, 40, 40);
+  doc.text(v('clientName') || 'Client', margin + 260, sigY + 50);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Client', margin + 260, sigY + 62);
+  doc.text('Signed: ___________________', margin + 260, sigY + 74);
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Generated by EventPro Suite™ · Contract Builder Pro™', pageWidth / 2, pageHeight - 24, { align: 'center' });
+    doc.text('Page ' + i + ' of ' + pageCount, pageWidth - margin, pageHeight - 24, { align: 'right' });
+  }
+
+  const fileName = 'Contract_' + (v('clientName') || 'Client').replace(/\s+/g, '_') + '_' + (v('eventDate') || '').replace(/-/g, '') + '.pdf';
+  doc.save(fileName);
+  showToast('✓ Contract PDF downloaded');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MY CONTRACTS
+// ══════════════════════════════════════════════════════════════
+async function showMyContracts() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panelContracts').classList.add('active');
+  document.querySelectorAll('.prog-step').forEach(ps => ps.classList.remove('active', 'done'));
+
+  if (!sb) {
+    document.getElementById('contractsListWrap').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--slate-600);">Demo mode — contracts history requires Supabase config.</div>';
+    return;
+  }
+
+  try {
+    const { data, error } = await sb.from('contracts').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    if (error) throw error;
+
+    const total = data.length;
+    const drafts = data.filter(c => c.status === 'Draft').length;
+    const sent = data.filter(c => c.status === 'Sent to Client').length;
+    const signed = data.filter(c => c.status === 'Fully Signed' || c.status === 'Vendor Signed').length;
+
+    document.getElementById('contractsSummary').innerHTML = `
+      <div class="summary-card"><div class="summary-label">Total</div><div class="summary-value">${total}</div></div>
+      <div class="summary-card"><div class="summary-label">Drafts</div><div class="summary-value">${drafts}</div></div>
+      <div class="summary-card"><div class="summary-label">Awaiting Client</div><div class="summary-value">${sent}</div></div>
+      <div class="summary-card"><div class="summary-label">Signed</div><div class="summary-value">${signed}</div></div>
+    `;
+
+    if (!total) {
+      document.getElementById('contractsListWrap').innerHTML = '<div style="text-align:center;padding:3rem;background:white;border:1px dashed var(--border);border-radius:12px;"><div style="font-size:2.5rem;margin-bottom:0.5rem;">📋</div><h3 style="color:var(--navy);">No contracts yet</h3><p style="color:var(--slate-600);font-size:0.85rem;margin-top:0.5rem;">Create your first contract above.</p></div>';
+      return;
+    }
+
+    const rows = data.map(c => {
+      const statusClass = { 'Draft': 'status-draft', 'Sent to Client': 'status-sent', 'Vendor Signed': 'status-sent', 'Fully Signed': 'status-signed' }[c.status] || 'status-draft';
+      return `
+        <tr>
+          <td>${new Date(c.created_at).toLocaleDateString()}</td>
+          <td><strong>${c.client_name || '—'}</strong></td>
+          <td>${c.event_date ? fmtDate(c.event_date) : '—'}</td>
+          <td>${fmtMoney(c.total_price)}</td>
+          <td><span class="status-pill ${statusClass}">${c.status}</span></td>
+          <td><button class="icon-btn" onclick="deleteContract('${c.id}')" title="Delete">🗑️</button></td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('contractsListWrap').innerHTML = `
+      <table class="contracts-table">
+        <thead><tr><th>Created</th><th>Client</th><th>Event</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  } catch(e) {
+    document.getElementById('contractsListWrap').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--danger);">Error loading contracts: ' + e.message + '</div>';
+  }
+}
+
+async function deleteContract(id) {
+  if (!confirm('Delete this contract permanently?')) return;
+  if (!sb) return;
+  await sb.from('contracts').delete().eq('id', id);
+  showToast('Contract deleted');
+  showMyContracts();
+}
+
+// Init
+init();
+</script>
+</body>
+</html>
