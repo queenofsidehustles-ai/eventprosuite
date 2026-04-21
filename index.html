@@ -64,8 +64,9 @@
     .nav-cta:hover { background: var(--gold-bright); }
     @media (max-width: 640px) {
       nav { padding: 0 1.2rem; }
-      .nav-links { gap: 1rem; }
-      .nav-link:not(.nav-cta) { display: none; }
+      .nav-links { gap: 0.8rem; }
+      .nav-link:not(.nav-cta):not([href="login.html"]) { display: none; }
+      .nav-link[href="login.html"] { font-size: 0.78rem; }
     }
 
     /* ── HERO — compact, editorial ── */
