@@ -779,7 +779,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
           <option value="nonrefundable_30">Non-refundable within 30 days of event</option>
           <option value="refundable_partial">50% refundable if cancelled 30+ days in advance</option>
           <option value="fully_refundable">Fully refundable up to 48 hours before event</option>
+          <option value="custom">✍️ Write my own deposit policy</option>
         </select>
+        <textarea class="form-textarea" id="customDeposit" style="display:none;margin-top:0.6rem;" placeholder="Write your deposit refund policy in your own words..."></textarea>
         <div class="clause-preview" id="previewDeposit"></div>
       </div>
 
@@ -791,7 +793,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
           <option value="tiered" selected>Tiered: 50% refund if cancelled 30+ days out, 25% if 14+ days out, no refund within 14 days (recommended)</option>
           <option value="reschedule">Free reschedule within 6 months, no cash refunds</option>
           <option value="full_refund_notice">Full refund with 60+ days notice</option>
+          <option value="custom">✍️ Write my own cancellation policy</option>
         </select>
+        <textarea class="form-textarea" id="customCancellation" style="display:none;margin-top:0.6rem;" placeholder="Write your cancellation policy in your own words..."></textarea>
         <div class="clause-preview" id="previewCancellation"></div>
       </div>
 
@@ -804,7 +808,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
           <option value="25_75">25% deposit on signing, 75% balance due 14 days before event</option>
           <option value="full_upfront">Full payment due on signing</option>
           <option value="three_pay">33% on signing, 33% at 30 days, 34% on event day</option>
+          <option value="custom">✍️ Write my own payment schedule</option>
         </select>
+        <textarea class="form-textarea" id="customPayment" style="display:none;margin-top:0.6rem;" placeholder="Write your payment schedule in your own words..."></textarea>
         <div class="clause-preview" id="previewPayment"></div>
       </div>
 
@@ -815,7 +821,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
           <option value="standard" selected>Standard: Business not liable for guest injury; client responsible for rental damage (recommended)</option>
           <option value="strict">Strict: Client assumes all risk; liable for any equipment loss or damage at replacement cost</option>
           <option value="shared">Shared: Both parties carry own insurance; damage handled case-by-case</option>
+          <option value="custom">✍️ Write my own liability terms</option>
         </select>
+        <textarea class="form-textarea" id="customLiability" style="display:none;margin-top:0.6rem;" placeholder="Write your liability terms in your own words..."></textarea>
         <div class="clause-preview" id="previewLiability"></div>
       </div>
 
@@ -826,13 +834,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
           <option value="reschedule" selected>Free reschedule if cancelled due to weather, illness, or act of God (recommended)</option>
           <option value="credit">Store credit issued, valid for 12 months</option>
           <option value="no_provision">No provision — standard cancellation terms apply</option>
+          <option value="custom">✍️ Write my own weather/force majeure terms</option>
         </select>
+        <textarea class="form-textarea" id="customForce" style="display:none;margin-top:0.6rem;" placeholder="Write your weather/force majeure terms in your own words..."></textarea>
         <div class="clause-preview" id="previewForce"></div>
       </div>
 
       <!-- CUSTOM -->
       <div class="clause-group">
-        <div class="clause-title">Custom Clauses (Optional)</div>
+        <div class="clause-title">Additional Custom Clauses (Optional)</div>
         <textarea class="form-textarea" id="clauseCustom" placeholder="Add any additional terms specific to your business. Example: 'Client to provide parking for vendor vehicle on event day.'"></textarea>
       </div>
 
@@ -1010,20 +1020,32 @@ async function init() {
     document.getElementById('suiteBar').style.display = 'flex';
 
     // Try to load profile to pre-fill business info
+    // Try Supabase profile first, then fall back to localStorage cache
     try {
       const { data: profile } = await sb.from('profiles').select('*').eq('user_id', session.user.id).single();
       if (profile) {
-        if (profile.business_name) document.getElementById('bizName').value = profile.business_name;
-        if (profile.owner_name) document.getElementById('bizOwner').value = profile.owner_name;
-        if (profile.business_email) document.getElementById('bizEmail').value = profile.business_email;
-        if (profile.business_phone) document.getElementById('bizPhone').value = profile.business_phone;
-        if (profile.business_city) document.getElementById('bizAddress').value = profile.business_city;
+        // Try multiple possible column names (different profile tables use different schemas)
+        setIfEmpty('bizName', profile.business_name || profile.biz_name || profile.company_name);
+        setIfEmpty('bizOwner', profile.owner_name || profile.full_name || profile.name);
+        setIfEmpty('bizEmail', profile.business_email || profile.biz_email || profile.email || session.user.email);
+        setIfEmpty('bizPhone', profile.business_phone || profile.biz_phone || profile.phone);
+        setIfEmpty('bizAddress', profile.business_city || profile.biz_address || profile.address || profile.city);
       }
-    } catch(e) { /* profile not set up yet — fine */ }
+    } catch(e) { /* profile table may have a different schema — fall through to localStorage */ }
+
+    // ALSO load from localStorage (anything user typed last time on this device)
+    loadBusinessCache();
+
+    // Auto-save business info to localStorage as the user types
+    ['bizName', 'bizOwner', 'bizEmail', 'bizPhone', 'bizAddress'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('blur', saveBusinessCache);
+    });
   } else {
     // Demo mode
     document.getElementById('suiteBar').style.display = 'flex';
     document.getElementById('userName').textContent = 'Demo Mode';
+    loadBusinessCache();
   }
 
   // Initialize clause previews
@@ -1031,6 +1053,33 @@ async function init() {
 
   // Setup canvas drawing
   setupCanvas('vendorCanvas');
+}
+
+function setIfEmpty(id, value) {
+  const el = document.getElementById(id);
+  if (el && !el.value && value) el.value = value;
+}
+
+function saveBusinessCache() {
+  try {
+    const cache = {
+      bizName: v('bizName'),
+      bizOwner: v('bizOwner'),
+      bizEmail: v('bizEmail'),
+      bizPhone: v('bizPhone'),
+      bizAddress: v('bizAddress')
+    };
+    localStorage.setItem('eps_business_cache', JSON.stringify(cache));
+  } catch(e) {}
+}
+
+function loadBusinessCache() {
+  try {
+    const raw = localStorage.getItem('eps_business_cache');
+    if (!raw) return;
+    const cache = JSON.parse(raw);
+    Object.keys(cache).forEach(id => setIfEmpty(id, cache[id]));
+  } catch(e) {}
 }
 
 async function handleLogout() {
@@ -1111,9 +1160,37 @@ function updatePreview(id) {
   const sel = document.getElementById(id);
   const previewId = 'preview' + id.replace('clause', '');
   const preview = document.getElementById(previewId);
-  if (sel && preview && CLAUSES[id]) {
-    preview.textContent = CLAUSES[id][sel.value] || '';
+  const customId = 'custom' + id.replace('clause', '');
+  const customEl = document.getElementById(customId);
+
+  if (!sel || !preview) return;
+
+  if (sel.value === 'custom') {
+    // Show the custom textarea
+    if (customEl) {
+      customEl.style.display = 'block';
+      customEl.oninput = () => {
+        preview.textContent = customEl.value || '(Your custom clause will appear here as you type)';
+      };
+      preview.textContent = customEl.value || '(Your custom clause will appear here as you type)';
+    }
+  } else {
+    // Hide the textarea, show the preset
+    if (customEl) customEl.style.display = 'none';
+    if (CLAUSES[id]) preview.textContent = CLAUSES[id][sel.value] || '';
   }
+}
+
+// Resolve clause text: either preset OR user's custom text
+function getClauseText(clauseId) {
+  const sel = document.getElementById(clauseId);
+  if (!sel) return '';
+  if (sel.value === 'custom') {
+    const customId = 'custom' + clauseId.replace('clause', '');
+    const customEl = document.getElementById(customId);
+    return customEl ? customEl.value : '';
+  }
+  return CLAUSES[clauseId] ? (CLAUSES[clauseId][sel.value] || '') : '';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1132,11 +1209,11 @@ function buildContractPreview() {
   const c = document.getElementById('contractPreview');
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  const depositClause = CLAUSES.clauseDeposit[v('clauseDeposit')] || '';
-  const cancellationClause = CLAUSES.clauseCancellation[v('clauseCancellation')] || '';
-  const paymentClause = CLAUSES.clausePayment[v('clausePayment')] || '';
-  const liabilityClause = CLAUSES.clauseLiability[v('clauseLiability')] || '';
-  const forceClause = CLAUSES.clauseForce[v('clauseForce')] || '';
+  const depositClause = getClauseText('clauseDeposit');
+  const cancellationClause = getClauseText('clauseCancellation');
+  const paymentClause = getClauseText('clausePayment');
+  const liabilityClause = getClauseText('clauseLiability');
+  const forceClause = getClauseText('clauseForce');
   const custom = v('clauseCustom');
 
   c.innerHTML = `
@@ -1366,7 +1443,12 @@ function buildContractPayload() {
       payment: v('clausePayment'),
       liability: v('clauseLiability'),
       force: v('clauseForce'),
-      custom: v('clauseCustom')
+      custom: v('clauseCustom'),
+      customDeposit: v('customDeposit'),
+      customCancellation: v('customCancellation'),
+      customPayment: v('customPayment'),
+      customLiability: v('customLiability'),
+      customForce: v('customForce')
     },
     status: 'Draft'
   };
@@ -1515,27 +1597,27 @@ function downloadContractPDF() {
   if (v('depositAmount')) addBody('Deposit Amount: ' + fmtMoney(v('depositAmount')) + (v('depositDue') ? ' · Due: ' + fmtDate(v('depositDue')) : ''));
   if (v('balanceDue')) addBody('Balance Due Date: ' + fmtDate(v('balanceDue')));
   y += 2;
-  addBody(CLAUSES.clausePayment[v('clausePayment')]);
+  addBody(getClauseText('clausePayment'));
   y += 4;
 
   // DEPOSIT
   addSection('3. DEPOSIT POLICY');
-  addBody(CLAUSES.clauseDeposit[v('clauseDeposit')]);
+  addBody(getClauseText('clauseDeposit'));
   y += 4;
 
   // CANCELLATION
   addSection('4. CANCELLATION POLICY');
-  addBody(CLAUSES.clauseCancellation[v('clauseCancellation')]);
+  addBody(getClauseText('clauseCancellation'));
   y += 4;
 
   // LIABILITY
   addSection('5. LIABILITY AND DAMAGES');
-  addBody(CLAUSES.clauseLiability[v('clauseLiability')]);
+  addBody(getClauseText('clauseLiability'));
   y += 4;
 
   // FORCE MAJEURE
   addSection('6. WEATHER AND UNFORESEEN EVENTS');
-  addBody(CLAUSES.clauseForce[v('clauseForce')]);
+  addBody(getClauseText('clauseForce'));
   y += 4;
 
   // CUSTOM
