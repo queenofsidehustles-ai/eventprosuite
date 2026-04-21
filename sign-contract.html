@@ -378,6 +378,18 @@ const CLAUSES = {
 let contractData = null;
 let sigMode = 'type';
 
+// Resolve clause text — either from presets OR from custom text saved with the contract
+function resolveClause(clauseKey, selectedValue) {
+  if (!contractData || !contractData.clauses) return '';
+  if (selectedValue === 'custom') {
+    const customKey = 'custom' + clauseKey.charAt(0).toUpperCase() + clauseKey.slice(1);
+    return contractData.clauses[customKey] || '';
+  }
+  const clauseMap = { deposit: 'clauseDeposit', cancellation: 'clauseCancellation', payment: 'clausePayment', liability: 'clauseLiability', force: 'clauseForce' };
+  const dictKey = clauseMap[clauseKey];
+  return dictKey && CLAUSES[dictKey] ? (CLAUSES[dictKey][selectedValue] || '') : '';
+}
+
 function getToken() {
   const params = new URLSearchParams(window.location.search);
   return params.get('token');
@@ -479,19 +491,19 @@ function render() {
         <p><strong>Total Contract Price:</strong> ${fmtMoney(c.total_price)}</p>
         ${c.deposit_amount ? `<p><strong>Deposit:</strong> ${fmtMoney(c.deposit_amount)} ${c.deposit_due ? '· Due: ' + fmtDate(c.deposit_due) : ''}</p>` : ''}
         ${c.balance_due ? `<p><strong>Balance Due:</strong> ${fmtDate(c.balance_due)}</p>` : ''}
-        <p>${CLAUSES.clausePayment[c.clauses.payment] || ''}</p>
+        <p>${resolveClause('payment', c.clauses.payment)}</p>
 
         <h2>3. Deposit Policy</h2>
-        <p>${CLAUSES.clauseDeposit[c.clauses.deposit] || ''}</p>
+        <p>${resolveClause('deposit', c.clauses.deposit)}</p>
 
         <h2>4. Cancellation Policy</h2>
-        <p>${CLAUSES.clauseCancellation[c.clauses.cancellation] || ''}</p>
+        <p>${resolveClause('cancellation', c.clauses.cancellation)}</p>
 
         <h2>5. Liability and Damages</h2>
-        <p>${CLAUSES.clauseLiability[c.clauses.liability] || ''}</p>
+        <p>${resolveClause('liability', c.clauses.liability)}</p>
 
         <h2>6. Weather and Unforeseen Events</h2>
-        <p>${CLAUSES.clauseForce[c.clauses.force] || ''}</p>
+        <p>${resolveClause('force', c.clauses.force)}</p>
 
         ${c.clauses.custom ? `<h2>7. Additional Terms</h2><p>${c.clauses.custom.replace(/\n/g, '<br/>')}</p>` : ''}
 
@@ -737,23 +749,23 @@ function downloadPDF() {
   addSection('2. FEES AND PAYMENT');
   addBody('Total: ' + fmtMoney(c.total_price));
   if (c.deposit_amount) addBody('Deposit: ' + fmtMoney(c.deposit_amount) + (c.deposit_due ? ' · Due: ' + fmtDate(c.deposit_due) : ''));
-  addBody(CLAUSES.clausePayment[c.clauses.payment] || '');
+  addBody(resolveClause('payment', c.clauses.payment));
   y += 4;
 
   addSection('3. DEPOSIT POLICY');
-  addBody(CLAUSES.clauseDeposit[c.clauses.deposit] || '');
+  addBody(resolveClause('deposit', c.clauses.deposit));
   y += 4;
 
   addSection('4. CANCELLATION POLICY');
-  addBody(CLAUSES.clauseCancellation[c.clauses.cancellation] || '');
+  addBody(resolveClause('cancellation', c.clauses.cancellation));
   y += 4;
 
   addSection('5. LIABILITY AND DAMAGES');
-  addBody(CLAUSES.clauseLiability[c.clauses.liability] || '');
+  addBody(resolveClause('liability', c.clauses.liability));
   y += 4;
 
   addSection('6. WEATHER AND UNFORESEEN EVENTS');
-  addBody(CLAUSES.clauseForce[c.clauses.force] || '');
+  addBody(resolveClause('force', c.clauses.force));
   y += 4;
 
   if (c.clauses.custom) {
