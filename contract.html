@@ -943,8 +943,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
 // ══════════════════════════════════════════════════════════════
 // CONFIG — set your Supabase credentials here
 // ══════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
 
 let sb = null;
 let currentUser = null;
@@ -953,12 +953,10 @@ let vendorSignature = null;
 let sigMode = 'type';
 let currentContractId = null;
 
-// Initialize Supabase (gracefully handle missing config for demo)
+// Initialize Supabase
 try {
-  const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  }
-} catch(e) { console.warn('Supabase not configured — running in demo mode'); }
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) { console.warn('Supabase init error:', e); }
 
 // ══════════════════════════════════════════════════════════════
 // CLAUSE LIBRARY — the actual contract language
