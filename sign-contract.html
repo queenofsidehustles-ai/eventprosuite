@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sign Contract | EventPro Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0d1b3e;
+  --navy-mid: #162d5e;
+  --gold: #c9a84c;
+  --gold-bright: #d4ae52;
+  --white: #ffffff;
+  --off: #f7f8fc;
+  --slate-900: #0f172a;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --muted: #7a8aaa;
+  --border: #dde3ef;
+  --success: #1e8c5a;
+  --danger: #dc2626;
+  --radius: 14px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--slate-900); min-height: 100vh; }
+
+.top-bar {
+  background: var(--navy);
+  color: white;
+  padding: 0.9rem 2rem;
+  text-align: center;
+  border-bottom: 3px solid var(--gold);
+}
+.top-bar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+.top-bar-sub {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.6);
+  margin-top: 0.2rem;
+}
+
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.alert {
+  background: var(--gold-light, #fdf8ec);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.88rem;
+  color: var(--navy);
+  line-height: 1.6;
+}
+.alert strong { color: var(--navy); }
+
+.status-banner {
+  background: #d1fae5;
+  border: 1px solid var(--success);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.status-banner h2 {
+  font-family: 'Cormorant Garamond', serif;
+  color: #065f46;
+  font-size: 1.4rem;
+  margin-bottom: 0.3rem;
+}
+.status-banner p { color: #065f46; font-size: 0.88rem; }
+
+.contract-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.2rem 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+@media (max-width: 640px) { .contract-card { padding: 1.5rem 1.2rem; } }
+
+.contract-header {
+  text-align: center;
+  padding-bottom: 1.2rem;
+  border-bottom: 2px solid var(--gold);
+  margin-bottom: 1.5rem;
+}
+.contract-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.3rem;
+}
+.contract-date { color: var(--slate-600); font-size: 0.82rem; }
+
+.contract-body { font-family: Georgia, serif; line-height: 1.7; font-size: 0.9rem; color: var(--slate-900); }
+.contract-body h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin-top: 1.3rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 0.25rem;
+}
+.contract-body p { margin-bottom: 0.7rem; }
+.contract-body strong { color: var(--navy); }
+
+.party-block {
+  background: var(--off);
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.7rem;
+  font-size: 0.88rem;
+}
+
+.sig-section {
+  background: var(--off);
+  border: 2px dashed var(--gold);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+.sig-section h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.sig-section p.sig-intro {
+  font-size: 0.88rem;
+  color: var(--slate-700);
+  text-align: center;
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+.sig-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+.sig-tab {
+  background: white;
+  border: 1.5px solid var(--border);
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-700);
+  cursor: pointer;
+  font-family: inherit;
+}
+.sig-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+.esig-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  font-family: 'Brush Script MT', cursive;
+  font-size: 1.8rem;
+  text-align: center;
+  background: white;
+  color: var(--navy);
+}
+.esig-input:focus { outline: none; border-color: var(--navy); }
+
+.sig-pad {
+  background: white;
+  border: 2px solid var(--navy);
+  border-radius: 8px;
+  width: 100%;
+  height: 180px;
+  touch-action: none;
+  cursor: crosshair;
+  display: block;
+}
+.sig-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.7rem;
+  gap: 0.6rem;
+}
+.sig-clear {
+  background: transparent;
+  color: var(--slate-600);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.consent-box {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin: 1.2rem 0;
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  font-size: 0.82rem;
+  color: var(--slate-700);
+  line-height: 1.55;
+}
+.consent-box input[type="checkbox"] {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--navy);
+}
+
+.btn-sign {
+  display: block;
+  width: 100%;
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+  margin-top: 1rem;
+}
+.btn-sign:hover:not(:disabled) { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,76,0.3); }
+.btn-sign:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-download {
+  display: inline-block;
+  background: var(--navy);
+  color: white;
+  padding: 0.85rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.existing-sig {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.existing-sig-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slate-600);
+  margin-bottom: 0.4rem;
+}
+.existing-sig-value {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 1.4rem;
+  color: var(--navy);
+}
+.existing-sig-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+.loading, .error {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+.loading { color: var(--slate-600); }
+.error { color: var(--danger); }
+
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: white;
+  padding: 0.9rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-title">EventPro Suite™</div>
+  <div class="top-bar-sub">Secure Contract Signing</div>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="loading">
+    <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div>
+    Loading your contract...
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG (must match contract.html config)
+// ══════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+
+let sb = null;
+try { if (SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE') sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
+
+const CLAUSES = {
+  clauseDeposit: {
+    nonrefundable_all: "All deposits paid are 100% non-refundable under any circumstances, including cancellation by the Client. The deposit secures the event date and covers preparation costs incurred prior to the event.",
+    nonrefundable_14: "Deposits are refundable if the contract is cancelled more than 14 days prior to the event date. Deposits become 100% non-refundable within 14 days of the event date, as the date has been reserved and preparation is underway.",
+    nonrefundable_30: "Deposits are refundable if the contract is cancelled more than 30 days prior to the event date. Within 30 days of the event, all deposits are 100% non-refundable.",
+    refundable_partial: "If the contract is cancelled 30 or more days before the event, 50% of the deposit will be refunded. Cancellations within 30 days of the event forfeit the full deposit.",
+    fully_refundable: "Deposits are fully refundable up to 48 hours before the event date. Cancellations within 48 hours of the event forfeit the deposit."
+  },
+  clauseCancellation: {
+    no_refund: "Once this contract is signed and the deposit is paid, no refunds will be issued for any reason except as specifically provided under the Weather & Unforeseen Events clause.",
+    tiered: "If the Client cancels 30 or more days before the event, 50% of amounts paid will be refunded. Cancellations 14–29 days before the event receive a 25% refund. Cancellations within 14 days of the event receive no refund.",
+    reschedule: "No cash refunds will be issued. If cancellation is necessary, the Client may reschedule the event one time within 6 months of the original date, subject to availability.",
+    full_refund_notice: "If the Client cancels 60 or more days before the event, a full refund will be issued minus a $50 administrative fee. Cancellations within 60 days will follow the Deposit Refund Policy above."
+  },
+  clausePayment: {
+    "50_50": "Payment is due as follows: 50% non-refundable deposit upon signing this contract to reserve the event date; remaining 50% balance due on the day of the event before services begin.",
+    "50_50_before": "Payment is due as follows: 50% non-refundable deposit upon signing; remaining 50% balance due no later than 7 days before the event date.",
+    "25_75": "Payment is due as follows: 25% non-refundable deposit upon signing; remaining 75% balance due no later than 14 days before the event date.",
+    "full_upfront": "Full payment is due upon signing this contract. Services will not be scheduled or reserved until payment is received in full.",
+    "three_pay": "Payment is due in three installments: 33% upon signing, 33% thirty (30) days before the event, and 34% on the day of the event before services begin."
+  },
+  clauseLiability: {
+    standard: "The Client assumes responsibility for the safety and supervision of all guests and attendees at the event. The Business is not liable for any injuries, accidents, or damages to persons or property occurring during the event, except in cases of gross negligence on the part of the Business. The Client is responsible for the cost of replacement or repair of any rental items lost or damaged during the event, except for normal wear and tear.",
+    strict: "The Client assumes all risk and liability for the event, including any injury, damage, or loss to any person or property. The Client agrees to indemnify and hold the Business harmless from any claims arising from the event. The Client is liable for the full replacement cost of any equipment or rental items damaged, lost, or stolen during the event.",
+    shared: "Both parties agree to carry their own liability insurance for the event. Damage to equipment or rentals will be assessed on a case-by-case basis and resolved in good faith between the parties."
+  },
+  clauseForce: {
+    reschedule: "In the event the event cannot take place due to weather conditions, illness, natural disaster, government mandate, or other circumstances beyond either party's reasonable control, the Business will work with the Client to reschedule the event to a mutually agreeable date within 12 months. No refunds will be issued in such cases; all funds paid will be credited toward the rescheduled event.",
+    credit: "If the event cannot proceed due to circumstances beyond either party's control (weather, illness, natural disaster, government mandate), the Client will receive a store credit for the full amount paid, valid for 12 months from the original event date.",
+    no_provision: "No special provisions apply for weather or unforeseen events. The standard Cancellation Policy above governs all cancellations regardless of cause."
+  }
+};
+
+let contractData = null;
+let sigMode = 'type';
+
+function getToken() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('token');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso + 'T00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function fmtMoney(n) { return '$' + Number(n || 0).toFixed(2); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function getTypeTitle(t) {
+  return { service_agreement: 'EVENT SERVICE AGREEMENT', deposit_cancellation: 'DEPOSIT AND CANCELLATION AGREEMENT', liability_waiver: 'LIABILITY WAIVER AND HOLD HARMLESS AGREEMENT' }[t] || 'EVENT SERVICE AGREEMENT';
+}
+
+async function loadContract() {
+  const token = getToken();
+  if (!token) {
+    document.getElementById('wrap').innerHTML = '<div class="error"><h2>Invalid Link</h2><p>This signing link is missing its security token. Please ask the sender to generate a new link.</p></div>';
+    return;
+  }
+
+  if (!sb) {
+    document.getElementById('wrap').innerHTML = '<div class="error"><h2>Configuration Needed</h2><p>Supabase is not configured. Please set up your credentials in the HTML file.</p></div>';
+    return;
+  }
+
+  try {
+    const { data, error } = await sb.from('contracts').select('*').eq('sign_token', token).single();
+    if (error || !data) throw new Error('Contract not found');
+    contractData = data;
+    render();
+  } catch(e) {
+    document.getElementById('wrap').innerHTML = '<div class="error"><h2>Contract Not Found</h2><p>This signing link is invalid or has expired. Please request a new link from the sender.</p></div>';
+  }
+}
+
+function render() {
+  const c = contractData;
+  const isSigned = c.status === 'Fully Signed';
+
+  let html = '';
+
+  if (isSigned) {
+    html += `
+      <div class="status-banner">
+        <h2>✓ Contract Fully Signed</h2>
+        <p>This contract has been signed by both parties. You can download the final copy below.</p>
+      </div>
+      <div style="text-align:center;margin-bottom:2rem;">
+        <button class="btn-download" onclick="downloadPDF()">📥 Download Signed Contract (PDF)</button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="alert">
+        <strong>Hi ${c.client_name || 'there'}</strong> — ${c.biz_owner || 'your vendor'} from <strong>${c.biz_name || 'the business'}</strong> has prepared this contract for your event on <strong>${fmtDate(c.event_date)}</strong>. Please review it carefully, then sign at the bottom. Your signature is legally binding.
+      </div>
+    `;
+  }
+
+  // Contract body
+  html += `
+    <div class="contract-card">
+      <div class="contract-header">
+        <div class="contract-title">${getTypeTitle(c.contract_type)}</div>
+        <div class="contract-date">Contract Date: ${new Date(c.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+      </div>
+
+      <div class="contract-body">
+        <h2>Parties</h2>
+        <div class="party-block">
+          <strong>Service Provider:</strong><br/>
+          ${c.biz_name}<br/>
+          ${c.biz_owner ? 'Owner: ' + c.biz_owner + '<br/>' : ''}
+          ${[c.biz_email, c.biz_phone].filter(Boolean).join(' · ')}<br/>
+          ${c.biz_address || ''}
+        </div>
+        <div class="party-block">
+          <strong>Client:</strong><br/>
+          ${c.client_name}<br/>
+          ${[c.client_email, c.client_phone].filter(Boolean).join(' · ')}<br/>
+          ${c.client_address || ''}
+        </div>
+
+        <h2>1. Event Details</h2>
+        <p><strong>Event Date:</strong> ${fmtDate(c.event_date)} ${c.event_time ? 'at ' + c.event_time : ''}</p>
+        <p><strong>Venue / Location:</strong> ${c.event_venue || '—'}</p>
+        <p><strong>Services Provided:</strong><br/>${(c.event_services || '').replace(/\n/g, '<br/>')}</p>
+
+        <h2>2. Fees and Payment</h2>
+        <p><strong>Total Contract Price:</strong> ${fmtMoney(c.total_price)}</p>
+        ${c.deposit_amount ? `<p><strong>Deposit:</strong> ${fmtMoney(c.deposit_amount)} ${c.deposit_due ? '· Due: ' + fmtDate(c.deposit_due) : ''}</p>` : ''}
+        ${c.balance_due ? `<p><strong>Balance Due:</strong> ${fmtDate(c.balance_due)}</p>` : ''}
+        <p>${CLAUSES.clausePayment[c.clauses.payment] || ''}</p>
+
+        <h2>3. Deposit Policy</h2>
+        <p>${CLAUSES.clauseDeposit[c.clauses.deposit] || ''}</p>
+
+        <h2>4. Cancellation Policy</h2>
+        <p>${CLAUSES.clauseCancellation[c.clauses.cancellation] || ''}</p>
+
+        <h2>5. Liability and Damages</h2>
+        <p>${CLAUSES.clauseLiability[c.clauses.liability] || ''}</p>
+
+        <h2>6. Weather and Unforeseen Events</h2>
+        <p>${CLAUSES.clauseForce[c.clauses.force] || ''}</p>
+
+        ${c.clauses.custom ? `<h2>7. Additional Terms</h2><p>${c.clauses.custom.replace(/\n/g, '<br/>')}</p>` : ''}
+
+        <h2>Governing Law</h2>
+        <p>This Agreement constitutes the entire understanding between the parties. Any modifications must be in writing and signed by both parties. Electronic signatures carry the same legal weight as handwritten signatures under the ESIGN Act of 2000.</p>
+      </div>
+
+      ${c.vendor_signature ? `
+        <div class="existing-sig" style="margin-top:1.5rem;">
+          <div class="existing-sig-label">Signed by Service Provider</div>
+          <div class="existing-sig-value">${c.vendor_signature.type === 'typed' ? c.vendor_signature.value : `<img src="${c.vendor_signature.value}" style="max-height:60px;"/>`}</div>
+          <div class="existing-sig-meta">${c.biz_owner} · ${new Date(c.vendor_signature.date).toLocaleString()}</div>
+        </div>
+      ` : ''}
+
+      ${c.client_signature ? `
+        <div class="existing-sig">
+          <div class="existing-sig-label">Signed by Client</div>
+          <div class="existing-sig-value">${c.client_signature.type === 'typed' ? c.client_signature.value : `<img src="${c.client_signature.value}" style="max-height:60px;"/>`}</div>
+          <div class="existing-sig-meta">${c.client_name} · ${new Date(c.client_signature.date).toLocaleString()}</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  // Signature section (only if not yet signed by client)
+  if (!isSigned) {
+    html += `
+      <div class="sig-section">
+        <h3>Your Signature</h3>
+        <p class="sig-intro">By signing below, you (${c.client_name}) agree to all terms of this contract.</p>
+
+        <div class="sig-tabs">
+          <button class="sig-tab active" id="tabType" onclick="switchMode('type')">Type Signature</button>
+          <button class="sig-tab" id="tabDraw" onclick="switchMode('draw')">Draw Signature</button>
+        </div>
+
+        <div id="typeMode">
+          <input type="text" class="esig-input" id="clientEsig" placeholder="Type your full name" oninput="checkCanSign()"/>
+          <div style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:0.5rem;">Your typed name will serve as your electronic signature.</div>
+        </div>
+
+        <div id="drawMode" style="display:none;">
+          <canvas class="sig-pad" id="clientCanvas" width="600" height="180"></canvas>
+          <div class="sig-controls">
+            <button class="sig-clear" onclick="clearCanvas()">Clear</button>
+            <div style="font-size:0.75rem;color:var(--muted);align-self:center;">Draw with your mouse or finger</div>
+          </div>
+        </div>
+
+        <div class="consent-box">
+          <input type="checkbox" id="consentBox" onchange="checkCanSign()"/>
+          <label for="consentBox">I have read and agree to all terms of this contract. I understand that my electronic signature is legally binding under the ESIGN Act of 2000.</label>
+        </div>
+
+        <button class="btn-sign" id="signBtn" disabled onclick="submitSignature()">Sign Contract</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('wrap').innerHTML = html;
+
+  if (!isSigned) setupCanvas();
+}
+
+function switchMode(mode) {
+  sigMode = mode;
+  document.getElementById('tabType').classList.toggle('active', mode === 'type');
+  document.getElementById('tabDraw').classList.toggle('active', mode === 'draw');
+  document.getElementById('typeMode').style.display = mode === 'type' ? 'block' : 'none';
+  document.getElementById('drawMode').style.display = mode === 'draw' ? 'block' : 'none';
+  checkCanSign();
+}
+
+function checkCanSign() {
+  const consented = document.getElementById('consentBox').checked;
+  let hasSig = false;
+  if (sigMode === 'type') {
+    hasSig = !!document.getElementById('clientEsig').value.trim();
+  } else {
+    const canvas = document.getElementById('clientCanvas');
+    const blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    hasSig = canvas.toDataURL() !== blank.toDataURL();
+  }
+  document.getElementById('signBtn').disabled = !(consented && hasSig);
+}
+
+function setupCanvas() {
+  const canvas = document.getElementById('clientCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#0d1b3e';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  let drawing = false;
+  let last = null;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  }
+
+  function start(e) { e.preventDefault(); drawing = true; last = getPos(e); }
+  function move(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    last = pos;
+    checkCanSign();
+  }
+  function end() { drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start);
+  canvas.addEventListener('touchmove', move);
+  canvas.addEventListener('touchend', end);
+}
+
+function clearCanvas() {
+  const canvas = document.getElementById('clientCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  checkCanSign();
+}
+
+async function submitSignature() {
+  const btn = document.getElementById('signBtn');
+  btn.disabled = true;
+  btn.textContent = 'Signing...';
+
+  let sig;
+  if (sigMode === 'type') {
+    sig = { type: 'typed', value: document.getElementById('clientEsig').value.trim(), date: new Date().toISOString() };
+  } else {
+    const canvas = document.getElementById('clientCanvas');
+    sig = { type: 'drawn', value: canvas.toDataURL('image/png'), date: new Date().toISOString() };
+  }
+
+  try {
+    const { error } = await sb.from('contracts').update({
+      client_signature: sig,
+      status: 'Fully Signed',
+      signed_at: new Date().toISOString()
+    }).eq('id', contractData.id);
+
+    if (error) throw error;
+
+    contractData.client_signature = sig;
+    contractData.status = 'Fully Signed';
+    showToast('✓ Contract signed — download your copy below');
+    setTimeout(() => render(), 600);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Sign Contract';
+    showToast('Error signing: ' + e.message);
+  }
+}
+
+function downloadPDF() {
+  const c = contractData;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 54;
+  const contentW = pageWidth - (margin * 2);
+  let y = margin;
+
+  // Header
+  doc.setFillColor(13, 27, 62);
+  doc.rect(0, 0, pageWidth, 36, 'F');
+  doc.setFillColor(201, 168, 76);
+  doc.rect(0, 36, pageWidth, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(c.biz_name || '', margin, 22);
+
+  y = 70;
+  doc.setTextColor(13, 27, 62);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text(getTypeTitle(c.contract_type), pageWidth / 2, y, { align: 'center' });
+
+  y += 18;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(90, 90, 90);
+  doc.text('Contract Date: ' + new Date(c.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, y, { align: 'center' });
+  y += 24;
+
+  const addSection = (title) => {
+    if (y > pageHeight - 80) { doc.addPage(); y = margin; }
+    doc.setTextColor(13, 27, 62);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(title, margin, y);
+    y += 4;
+    doc.setDrawColor(201, 168, 76);
+    doc.line(margin, y, margin + contentW, y);
+    y += 12;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(40, 40, 40);
+  };
+  const addBody = (text) => {
+    if (!text) return;
+    const lines = doc.splitTextToSize(text, contentW);
+    for (const line of lines) {
+      if (y > pageHeight - 60) { doc.addPage(); y = margin; }
+      doc.text(line, margin, y);
+      y += 13;
+    }
+  };
+
+  addSection('PARTIES');
+  addBody('Business: ' + c.biz_name + (c.biz_owner ? ' (' + c.biz_owner + ')' : ''));
+  addBody([c.biz_email, c.biz_phone, c.biz_address].filter(Boolean).join(' · '));
+  y += 6;
+  addBody('Client: ' + c.client_name);
+  addBody([c.client_email, c.client_phone, c.client_address].filter(Boolean).join(' · '));
+  y += 8;
+
+  addSection('1. EVENT DETAILS');
+  addBody('Event Date: ' + fmtDate(c.event_date) + (c.event_time ? ' at ' + c.event_time : ''));
+  addBody('Venue: ' + (c.event_venue || '—'));
+  addBody('Services: ' + (c.event_services || '—'));
+  y += 4;
+
+  addSection('2. FEES AND PAYMENT');
+  addBody('Total: ' + fmtMoney(c.total_price));
+  if (c.deposit_amount) addBody('Deposit: ' + fmtMoney(c.deposit_amount) + (c.deposit_due ? ' · Due: ' + fmtDate(c.deposit_due) : ''));
+  addBody(CLAUSES.clausePayment[c.clauses.payment] || '');
+  y += 4;
+
+  addSection('3. DEPOSIT POLICY');
+  addBody(CLAUSES.clauseDeposit[c.clauses.deposit] || '');
+  y += 4;
+
+  addSection('4. CANCELLATION POLICY');
+  addBody(CLAUSES.clauseCancellation[c.clauses.cancellation] || '');
+  y += 4;
+
+  addSection('5. LIABILITY AND DAMAGES');
+  addBody(CLAUSES.clauseLiability[c.clauses.liability] || '');
+  y += 4;
+
+  addSection('6. WEATHER AND UNFORESEEN EVENTS');
+  addBody(CLAUSES.clauseForce[c.clauses.force] || '');
+  y += 4;
+
+  if (c.clauses.custom) {
+    addSection('7. ADDITIONAL TERMS');
+    addBody(c.clauses.custom);
+    y += 4;
+  }
+
+  // Signatures
+  if (y > pageHeight - 160) { doc.addPage(); y = margin; }
+  addSection('SIGNATURES');
+  y += 10;
+
+  const sigY = y;
+  doc.setDrawColor(50, 50, 50);
+  doc.line(margin, sigY + 36, margin + 220, sigY + 36);
+
+  if (c.vendor_signature) {
+    if (c.vendor_signature.type === 'typed') {
+      doc.setFont('times', 'italic');
+      doc.setFontSize(18);
+      doc.setTextColor(13, 27, 62);
+      doc.text(c.vendor_signature.value, margin + 10, sigY + 30);
+    } else {
+      try { doc.addImage(c.vendor_signature.value, 'PNG', margin, sigY, 180, 40); } catch(e) {}
+    }
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(40, 40, 40);
+  doc.text(c.biz_owner || 'Business Owner', margin, sigY + 50);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text(c.biz_name, margin, sigY + 62);
+  doc.text('Signed: ' + (c.vendor_signature ? new Date(c.vendor_signature.date).toLocaleString() : '—'), margin, sigY + 74);
+
+  doc.setDrawColor(50, 50, 50);
+  doc.line(margin + 260, sigY + 36, margin + 480, sigY + 36);
+
+  if (c.client_signature) {
+    if (c.client_signature.type === 'typed') {
+      doc.setFont('times', 'italic');
+      doc.setFontSize(18);
+      doc.setTextColor(13, 27, 62);
+      doc.text(c.client_signature.value, margin + 270, sigY + 30);
+    } else {
+      try { doc.addImage(c.client_signature.value, 'PNG', margin + 260, sigY, 180, 40); } catch(e) {}
+    }
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(40, 40, 40);
+  doc.text(c.client_name, margin + 260, sigY + 50);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Client', margin + 260, sigY + 62);
+  doc.text('Signed: ' + (c.client_signature ? new Date(c.client_signature.date).toLocaleString() : '—'), margin + 260, sigY + 74);
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Generated by EventPro Suite™ · Contract Builder Pro™', pageWidth / 2, pageHeight - 24, { align: 'center' });
+    doc.text('Page ' + i + ' of ' + pageCount, pageWidth - margin, pageHeight - 24, { align: 'right' });
+  }
+
+  doc.save('Contract_' + (c.client_name || 'Client').replace(/\s+/g, '_') + '_SIGNED.pdf');
+}
+
+loadContract();
+</script>
+</body>
+</html>
