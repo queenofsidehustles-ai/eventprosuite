@@ -454,23 +454,7 @@ function currency(){
   refreshAll();
 }
 function pkg(id){return packages.find(p=>p.id===id)}
-  function expandPackages(){
-  qs('packagePanel').classList.remove('collapsed');
-}
-
-function collapsePackages(){
-  qs('packagePanel').classList.add('collapsed');
-}
-
-function expandAllCats(){
-  catalogData.forEach(c => c.expanded = true);
-  renderCatalog();
-}
-
-function collapseAllCats(){
-  catalogData.forEach(c => c.expanded = false);
-  renderCatalog();
-}
+  
 function expandPackages(){qs('packagePanel').classList.remove('collapsed')}
 function collapsePackages(){qs('packagePanel').classList.add('collapsed')}
 function setActivePackage(id){activePackageId=id; renderPackages(); refreshAll()}
