@@ -2687,7 +2687,17 @@ function readableText(hex) {
   return yiq >= 145 ? '#1a1a1a' : '#ffffff';
 }
 
-function hexToRgb(hex) {
+function normalizeHex(hex) {
+  if (!hex) return '#0d1b3e';
+  let h = String(hex).trim().toLowerCase();
+  if (!h.startsWith('#')) h = '#' + h;
+  if (/^#[0-9a-f]{3}$/.test(h)) {
+    h = '#' + h[1]+h[1] + h[2]+h[2] + h[3]+h[3];
+  }
+  if (!/^#[0-9a-f]{6}$/.test(h)) return '#0d1b3e';
+  return h;
+}
+  function hexToRgb(hex) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return m ? { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) } : null;
 }
