@@ -1019,40 +1019,73 @@ async function init() {
     document.getElementById('userName').textContent = session.user.email || 'Welcome';
     document.getElementById('suiteBar').style.display = 'flex';
 
-    // Try to load profile to pre-fill business info
-    // Try Supabase profile first, then fall back to localStorage cache
+    // Load profile from Supabase (matches app.html schema: profile_data JSON blob)
     try {
-      const { data: profile } = await sb.from('profiles').select('*').eq('user_id', session.user.id).single();
-      if (profile) {
-        // Try multiple possible column names (different profile tables use different schemas)
-        setIfEmpty('bizName', profile.business_name || profile.biz_name || profile.company_name);
-        setIfEmpty('bizOwner', profile.owner_name || profile.full_name || profile.name);
-        setIfEmpty('bizEmail', profile.business_email || profile.biz_email || profile.email || session.user.email);
-        setIfEmpty('bizPhone', profile.business_phone || profile.biz_phone || profile.phone);
-        setIfEmpty('bizAddress', profile.business_city || profile.biz_address || profile.address || profile.city);
+      const { data: profile } = await sb.from('profiles').select('profile_data').eq('id', session.user.id).single();
+      if (profile && profile.profile_data) {
+        const p = profile.profile_data;
+        setIfEmpty('bizName', p.bizName);
+        setIfEmpty('bizOwner', p.ownerName);
+        setIfEmpty('bizEmail', p.bizEmail);
+        setIfEmpty('bizPhone', p.bizPhone);
+        setIfEmpty('bizAddress', p.bizCity);
+        // Apply brand theme from saved profile
+        if (p.brandPrimary || p.brandAccent) {
+          applyBrandTheme(p.brandPrimary || '#0d1b3e', p.brandAccent || '#c9a84c');
+        }
       }
-    } catch(e) { /* profile table may have a different schema — fall through to localStorage */ }
+    } catch(e) { console.log('Profile load error:', e); }
 
-    // ALSO load from localStorage (anything user typed last time on this device)
+    // ALSO load from localStorage
     loadBusinessCache();
 
-    // Auto-save business info to localStorage as the user types
+    // Auto-save as user types
     ['bizName', 'bizOwner', 'bizEmail', 'bizPhone', 'bizAddress'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('blur', saveBusinessCache);
     });
   } else {
-    // Demo mode
     document.getElementById('suiteBar').style.display = 'flex';
     document.getElementById('userName').textContent = 'Demo Mode';
     loadBusinessCache();
   }
 
-  // Initialize clause previews
   Object.keys(CLAUSES).forEach(updatePreview);
-
-  // Setup canvas drawing
   setupCanvas('vendorCanvas');
+}
+
+function applyBrandTheme(primary, accent) {
+  const root = document.documentElement;
+  root.style.setProperty('--user-primary', primary);
+  root.style.setProperty('--user-accent', accent);
+  root.style.setProperty('--navy', primary);
+  root.style.setProperty('--gold', accent);
+  root.style.setProperty('--gold-bright', accent);
+  // Derive darker shade for hover
+  const darker = darkenHex(primary, 0.18);
+  root.style.setProperty('--user-primary-dark', darker);
+  root.style.setProperty('--navy-mid', darker);
+  // Soft versions for backgrounds
+  root.style.setProperty('--user-primary-soft', primary + '14');
+  root.style.setProperty('--user-accent-soft', accent + '22');
+  root.style.setProperty('--navy-pale', primary + '14');
+  root.style.setProperty('--gold-light', accent + '22');
+  // Contrast text
+  root.style.setProperty('--user-primary-contrast', readableText(primary));
+}
+
+function darkenHex(hex, amt) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return hex;
+  const f = n => Math.max(0, Math.min(255, Math.round(parseInt(n,16) * (1 - amt))));
+  return '#' + [f(m[1]), f(m[2]), f(m[3])].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+function readableText(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return '#ffffff';
+  const yiq = (parseInt(m[1],16)*299 + parseInt(m[2],16)*587 + parseInt(m[3],16)*114) / 1000;
+  return yiq >= 145 ? '#1a1a1a' : '#ffffff';
 }
 
 function setIfEmpty(id, value) {
