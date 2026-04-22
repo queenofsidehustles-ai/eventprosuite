@@ -24,39 +24,11 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
-  margin:0;
-  font-family:'Inter',system-ui,sans-serif;
-  color:var(--ink);
-  background:
-    radial-gradient(circle at top right, rgba(230,162,190,.18), transparent 28%),
-    linear-gradient(180deg,#FFFDFC 0%, var(--cream) 55%, #FFFDFC 100%);
-}
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:100;
-  background:rgba(255,253,252,.82);
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(74,43,99,.08);
-}
-.topbar-inner{
-  max-width:1440px;
-  margin:0 auto;
-  padding:14px 24px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#FFFDFC 0%, var(--cream) 55%, #FFFDFC 100%)}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(255,253,252,.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,43,99,.08)}
+.topbar-inner{max-width:1440px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:18px}
 .brand-wrap{display:flex;align-items:center;gap:14px}
-.brand-mark{
-  width:42px;height:42px;border-radius:14px;
-  background:linear-gradient(135deg,#5A3476,#A67BB5 58%,#E6A2BE);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:18px;
-  box-shadow:0 10px 25px rgba(90,52,118,.22);
-}
+.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#5A3476,#A67BB5 58%,#E6A2BE);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:0 10px 25px rgba(90,52,118,.22)}
 .brand-name{font-family:'Playfair Display',serif;font-size:24px;line-height:1;color:var(--plum-900)}
 .brand-name span{color:var(--mauve-500)}
 .brand-sub{margin-top:4px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -64,32 +36,16 @@ body{
 .ghost-chip,.primary-chip{border-radius:999px;padding:9px 12px;font-size:12px;font-weight:700}
 .ghost-chip{background:#fff;border:1px solid rgba(74,43,99,.08);color:var(--muted)}
 .primary-chip{background:linear-gradient(135deg,#5A3476,#8E67A6);color:#fff;box-shadow:0 10px 25px rgba(90,52,118,.20)}
-.hero{max-width:1440px;margin:0 auto;padding:26px 24px 8px}
-.hero-card{
-  border-radius:28px;
-  background:
-    radial-gradient(circle at 82% 18%, rgba(230,162,190,.16), transparent 22%),
-    linear-gradient(135deg,#5A3476 0%,#6A417E 45%,#A67BB5 100%);
-  color:#fff;
-  padding:30px;
-  box-shadow:var(--shadow-lg);
-}
-.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:rgba(255,255,255,.78)}
-.eyebrow:before{content:'';width:26px;height:1px;background:rgba(255,255,255,.45)}
-.hero-grid{margin-top:18px;display:grid;grid-template-columns:1.35fr .95fr;gap:24px;align-items:end}
-.hero-title{margin:0;font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,54px);line-height:1.02;letter-spacing:-.03em;max-width:760px}
-.hero-copy{margin-top:14px;max-width:640px;color:rgba(255,255,255,.82);font-size:15px;line-height:1.8}
-.hero-notes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.note-card{border-radius:20px;padding:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12)}
-.note-card strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.72);margin-bottom:8px}
-.note-card span{display:block;font-size:14px;line-height:1.5;color:#fff}
 .builder-layout{max-width:1440px;margin:0 auto;padding:22px 24px 48px;display:grid;grid-template-columns:minmax(0,1.55fr) 420px;gap:22px;align-items:start}
 .workspace{display:flex;flex-direction:column;gap:18px}
-.panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);padding:22px}
+.panel{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);padding:22px}
 .panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
-.panel-title{font-family:'Playfair Display',serif;font-size:28px;color:var(--plum-900);line-height:1;margin:0}
+.panel-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--plum-900);line-height:1;margin:0}
 .panel-sub{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.7;max-width:680px}
 .section-badge{border-radius:999px;padding:8px 12px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.16));color:var(--plum-800);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.notice{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg, rgba(90,52,118,.05), rgba(230,162,190,.09));border:1px solid rgba(166,123,181,.14)}
+.notice strong{display:block;font-size:13px;color:var(--plum-900)}
+.notice span{display:block;font-size:13px;line-height:1.6;color:var(--muted)}
 .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field.full{grid-column:1/-1}
@@ -97,8 +53,11 @@ body{
 input,select,textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font:inherit;padding:14px 15px;outline:none;transition:.18s ease}
 textarea{min-height:94px;resize:vertical}
 input:focus,select:focus,textarea:focus{border-color:#CDB9D7;box-shadow:0 0 0 4px rgba(166,123,181,.10)}
-.package-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));border:1px solid rgba(166,123,181,.14)}
-.package-toolbar span{font-size:13px;color:var(--muted)}
+.package-toolbar,.helper-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));border:1px solid rgba(166,123,181,.14)}
+.package-toolbar span,.helper-row span{font-size:13px;color:var(--muted)}
+.helper-row strong,.package-toolbar strong{color:var(--plum-900)}
+.helper-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tiny-btn{border:none;cursor:pointer;background:#fff;color:var(--plum-800);border:1px solid var(--line-strong);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700}
 .package-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .package-panel.collapsed .package-grid{display:none}
 .package-panel.collapsed .package-toolbar{margin-bottom:0}
@@ -107,18 +66,14 @@ input:focus,select:focus,textarea:focus{border-color:#CDB9D7;box-shadow:0 0 0 4p
 .package-tier{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg, rgba(90,52,118,.10), rgba(230,162,190,.16));color:var(--plum-800);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
 .package-tier .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--plum-700),var(--pink-400))}
 .package-card h3{margin:14px 0 6px;font-size:20px;font-family:'Playfair Display',serif;color:var(--plum-900)}
-.package-card p{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.65}
-.package-price{display:flex;align-items:flex-end;gap:8px;margin-bottom:12px}
-.package-price strong{font-size:30px;font-family:'Playfair Display',serif;color:var(--plum-900)}
-.package-price span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.package-card p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.65}
+.package-total{margin-top:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg, rgba(201,162,39,.12), rgba(230,162,190,.10));border:1px solid rgba(201,162,39,.18);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.package-total strong{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.package-total span{font-size:18px;font-weight:800;color:var(--plum-900)}
+.package-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .btn{appearance:none;border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:14px;padding:13px 16px;transition:.18s ease}
 .btn-primary{color:#fff;background:linear-gradient(135deg,#5A3476 0%,#8E67A6 100%);box-shadow:0 12px 30px rgba(90,52,118,.22)}
 .btn-secondary{background:#fff;color:var(--plum-800);border:1px solid var(--line-strong)}
-.helper-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));border:1px solid rgba(166,123,181,.14)}
-.helper-row span{font-size:13px;color:var(--muted)}
-.helper-row strong{color:var(--plum-900)}
-.helper-actions{display:flex;gap:8px;flex-wrap:wrap}
-.tiny-btn{border:none;cursor:pointer;background:#fff;color:var(--plum-800);border:1px solid var(--line-strong);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700}
 .catalog{display:flex;flex-direction:column;gap:12px}
 .cat-card{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
 .cat-head{width:100%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.10));padding:16px 18px;text-align:left}
@@ -132,224 +87,69 @@ input:focus,select:focus,textarea:focus{border-color:#CDB9D7;box-shadow:0 0 0 4p
 .cat-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
 .service-item{border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;grid-template-columns:minmax(0,1.2fr) 90px 120px 104px;gap:12px;align-items:start;background:linear-gradient(180deg,#fff,#FFFEFD)}
 .service-item.selected{border-color:#D8C6E1;background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,239,248,.52));box-shadow:0 12px 30px rgba(90,52,118,.06)}
-.service-main{display:flex;gap:12px}
-.service-check{margin-top:2px;width:20px;height:20px;border-radius:6px;border:1.5px solid #C9BED0;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0;background:#fff}
-.service-item.selected .service-check{background:linear-gradient(135deg,#5A3476,#A67BB5);border-color:transparent}
+.service-main{display:flex;gap:12px}.service-check{margin-top:2px;width:20px;height:20px;border-radius:6px;border:1.5px solid #C9BED0;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0;background:#fff}.service-item.selected .service-check{background:linear-gradient(135deg,#5A3476,#A67BB5);border-color:transparent}
 .service-copy strong{display:block;color:var(--ink);font-size:14px;line-height:1.45}
 .service-copy .service-meta{margin-top:4px;font-size:12px;color:var(--muted);line-height:1.5}
 .service-copy .service-hint{display:inline-flex;align-items:center;gap:8px;margin-top:10px;border-radius:999px;padding:6px 10px;background:linear-gradient(135deg, rgba(30,140,90,.08), rgba(201,162,39,.10));color:#4F5B35;font-size:11px;font-weight:700}
 .qty-col label,.price-col label,.total-col label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;font-weight:700}
-.qty-col input,.price-col input{text-align:center;padding:12px 10px}
-.total-pill{margin-top:21px;min-height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));color:var(--plum-900);font-weight:700;font-size:14px;border:1px solid rgba(166,123,181,.14)}
+.qty-col input,.price-col input{text-align:center;padding:12px 10px}.total-pill{margin-top:21px;min-height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));color:var(--plum-900);font-weight:700;font-size:14px;border:1px solid rgba(166,123,181,.14)}
+.custom-wrap{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
 .custom-item-grid{display:grid;grid-template-columns:1.3fr 1fr 100px 110px auto;gap:10px;align-items:end}
 .side-rail{position:sticky;top:92px;display:flex;flex-direction:column;gap:16px}
 .summary-card{border-radius:28px;padding:22px;color:#fff;background:radial-gradient(circle at top left, rgba(255,255,255,.10), transparent 25%),radial-gradient(circle at bottom right, rgba(230,162,190,.16), transparent 24%),linear-gradient(155deg,#4A2B63 0%,#6A417E 55%,#A67BB5 100%);box-shadow:var(--shadow-lg)}
-.summary-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:16px}
-.summary-head h3{margin:0;font-size:24px;font-family:'Playfair Display',serif}
-.summary-head p{margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.75)}
-.summary-badge{border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.12);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
-.live-mini{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px}
-.live-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}
-.live-row strong{display:block;font-size:13px}
-.live-row small{display:block;margin-top:4px;color:rgba(255,255,255,.65);line-height:1.45}
-.live-row span{font-weight:700;white-space:nowrap}
+.summary-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:16px}.summary-head h3{margin:0;font-size:24px;font-family:'Playfair Display',serif}.summary-head p{margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.75)}.summary-badge{border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.12);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.live-mini{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px}.live-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}.live-row strong{display:block;font-size:13px}.live-row small{display:block;margin-top:4px;color:rgba(255,255,255,.65);line-height:1.45}.live-row span{font-weight:700;white-space:nowrap}
 .empty-state{border-radius:18px;padding:18px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.74);font-size:14px;line-height:1.75}
-.money-stack{margin-top:16px;display:grid;gap:10px}
-.money-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08)}
-.money-row strong{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66)}
-.money-row span{font-size:18px;font-weight:700}
-.money-row.total{background:linear-gradient(135deg, rgba(201,162,39,.18), rgba(255,255,255,.12));border:1px solid rgba(201,162,39,.28)}
-.money-row.total span{color:#F6E5A6}
-.deposit-block{margin-top:16px;border-radius:20px;padding:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}
-.deposit-block h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.72)}
-.tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tier-btn{border:none;border-radius:14px;padding:12px 10px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}
-.tier-btn.active{background:linear-gradient(135deg, rgba(201,162,39,.92), rgba(230,162,190,.40));color:#3A2A1A}
-.tier-btn.missing{opacity:.55}
-.tier-help{margin-top:10px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.70)}
-.preview-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);overflow:hidden}
-.preview-head{padding:22px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));border-bottom:1px solid var(--line)}
-.preview-head h3{margin:0;font-family:'Playfair Display',serif;font-size:28px;color:var(--plum-900)}
-.preview-head p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
-.preview-body{padding:22px}
-.invoice-shell{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}
-.invoice-top{padding:24px;background:linear-gradient(135deg,#5A3476 0%,#6A417E 55%,#A67BB5 100%);color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
-.invoice-top h4{margin:0;font-family:'Playfair Display',serif;font-size:26px}
-.invoice-top p{margin:8px 0 0;color:rgba(255,255,255,.74);line-height:1.6;font-size:13px}
-.invoice-meta{padding:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;border-bottom:1px solid var(--line)}
-.meta-box small{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
-.meta-box strong{display:block;margin-top:6px;font-size:14px;color:var(--ink);line-height:1.5}
-.invoice-table{padding:10px 22px 0}
-.invoice-row{display:grid;grid-template-columns:1.6fr .7fr .7fr .8fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
-.invoice-row.head strong{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.invoice-row span{font-size:14px;line-height:1.55}
-.invoice-totals{margin-left:auto;width:min(360px,100%);padding:18px 22px 22px}
-.invoice-total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
-.invoice-total-row.grand{font-weight:800;font-size:18px;color:var(--plum-900)}
-.invoice-deposit{margin-top:16px;border-radius:18px;padding:16px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.14));border:1px solid rgba(166,123,181,.14);color:var(--ink);line-height:1.7;font-size:14px}
-@media (max-width:1180px){.builder-layout{grid-template-columns:1fr}.side-rail{position:relative;top:0}}
-@media (max-width:960px){.hero-grid,.package-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}}
-@media (max-width:760px){.topbar-inner,.hero,.builder-layout{padding-left:16px;padding-right:16px}.hero-card{padding:24px 20px}.form-grid,.custom-item-grid,.invoice-meta,.invoice-row,.service-item{grid-template-columns:1fr}.invoice-totals{width:100%}}
+.money-stack{margin-top:16px;display:grid;gap:10px}.money-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08)}.money-row strong{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66)}.money-row span{font-size:18px;font-weight:700}.money-row.total{background:linear-gradient(135deg, rgba(201,162,39,.18), rgba(255,255,255,.12));border:1px solid rgba(201,162,39,.28)}.money-row.total span{color:#F6E5A6}
+.deposit-block{margin-top:16px;border-radius:20px;padding:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}.deposit-block h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.72)}.tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tier-btn{border:none;border-radius:14px;padding:12px 10px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}.tier-btn.active{background:linear-gradient(135deg, rgba(201,162,39,.92), rgba(230,162,190,.40));color:#3A2A1A}.tier-btn.missing{opacity:.55}.tier-help{margin-top:10px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.70)}
+.preview-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);overflow:hidden}.preview-head{padding:22px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));border-bottom:1px solid var(--line)}.preview-head h3{margin:0;font-family:'Playfair Display',serif;font-size:24px;color:var(--plum-900)}.preview-head p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.7}.preview-body{padding:22px}
+.invoice-shell{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}.invoice-top{padding:24px;background:linear-gradient(135deg,#5A3476 0%,#6A417E 55%,#A67BB5 100%);color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.invoice-top h4{margin:0;font-family:'Playfair Display',serif;font-size:26px}.invoice-top p{margin:8px 0 0;color:rgba(255,255,255,.74);line-height:1.6;font-size:13px}.invoice-meta{padding:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;border-bottom:1px solid var(--line)}.meta-box small{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}.meta-box strong{display:block;margin-top:6px;font-size:14px;color:var(--ink);line-height:1.5}.invoice-table{padding:10px 22px 0}.invoice-row{display:grid;grid-template-columns:1.6fr .7fr .7fr .8fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}.invoice-row.head strong{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.invoice-row span{font-size:14px;line-height:1.55}.invoice-totals{margin-left:auto;width:min(360px,100%);padding:18px 22px 22px}.invoice-total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.invoice-total-row.grand{font-weight:800;font-size:18px;color:var(--plum-900)}.invoice-deposit{margin-top:16px;border-radius:18px;padding:16px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.14));border:1px solid rgba(166,123,181,.14);color:var(--ink);line-height:1.7;font-size:14px}
+@media (max-width:1180px){.builder-layout{grid-template-columns:1fr}.side-rail{position:relative;top:0}}@media (max-width:960px){.package-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}}@media (max-width:760px){.topbar-inner,.builder-layout{padding-left:16px;padding-right:16px}.form-grid,.custom-item-grid,.invoice-meta,.invoice-row,.service-item{grid-template-columns:1fr}.invoice-totals{width:100%}}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="brand-wrap">
-      <div class="brand-mark">✨</div>
-      <div>
-        <div class="brand-name">Party <span>Biz Hub</span></div>
-        <div class="brand-sub">Build. Book. Be Paid.</div>
-      </div>
-    </div>
-    <div class="topbar-actions">
-      <div class="ghost-chip">Premium Branded Suite</div>
-      <div class="primary-chip">Quote Builder</div>
-    </div>
-  </div>
-</div>
-
-<section class="hero">
-  <div class="hero-card">
-    <div class="eyebrow">Founder's Quote Workspace</div>
-    <div class="hero-grid">
-      <div>
-        <h1 class="hero-title">Build premium quotes fast — with offers, real-time totals, and a catalog that actually feels complete.</h1>
-        <div class="hero-copy">This version keeps the premium suite direction you approved, tightens the structure, and makes the Offer Builder more concise. Start with your three KPP offers, then customize with the restored catalog below.</div>
-      </div>
-      <div class="hero-notes">
-        <div class="note-card"><strong>Designed For</strong><span>KPP students and party pros who need beautiful quotes that still feel practical and fast to build.</span></div>
-        <div class="note-card"><strong>Built Around</strong><span>Offers first when you need them. Catalog second. Live quote on the right. Final invoice preview below.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
+<div class="topbar"><div class="topbar-inner"><div class="brand-wrap"><div class="brand-mark">✨</div><div><div class="brand-name">Party <span>Biz Hub</span></div><div class="brand-sub">Build. Book. Be Paid.</div></div></div><div class="topbar-actions"><div class="ghost-chip">Premium Branded Suite</div><div class="primary-chip">Quote Builder</div></div></div></div>
 <main class="builder-layout">
   <div class="workspace">
     <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">Business & client details</h2>
-          <div class="panel-sub">Set the quote basics first. Your live panel on the right will update while you build so you never have to scroll blind.</div>
-        </div>
-        <div class="section-badge">Step 1</div>
-      </div>
+      <div class="notice"><div><strong>Business profile is handled at account setup</strong><span>Your business name, logo, colors, deposit links, and tax defaults should be stored once in Business Profile and reused across quotes and contracts. This page focuses only on client and quote building.</span></div><button class="tiny-btn" type="button">Profile synced</button></div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><div><h2 class="panel-title">Client & quote details</h2><div class="panel-sub">Back-office quote creation only. Your saved business profile should handle company identity outside this page.</div></div><div class="section-badge">Step 1</div></div>
       <div class="form-grid">
-        <div class="field"><label>Business name</label><input id="bizName" value="Party Biz Hub"></div>
         <div class="field"><label>Client name</label><input id="clientName"></div>
         <div class="field"><label>Event type</label><input id="eventType"></div>
+        <div class="field"><label>Currency</label><select id="currency" onchange="handleCurrencyChange(this.value)"><option value="$">USD ($)</option><option value="CA$">CAD (CA$)</option><option value="£">GBP (£)</option><option value="€">EUR (€)</option><option value="AED">AED</option><option value="₵">GHS (₵)</option><option value="₦">NGN (₦)</option><option value="R">ZAR (R)</option><option value="custom">Custom</option></select><input id="customCurrency" placeholder="Enter symbol (e.g. KSh, ¥)" style="margin-top:6px;display:none;" oninput="refreshAll()"></div>
         <div class="field"><label>Event date</label><input id="eventDate" type="date"></div>
         <div class="field"><label>Expiration date</label><input id="expiryDate" type="date"></div>
-        <div class="field"><label>Currency</label><select id="currency" onchange="handleCurrencyChange(this.value)">
-<option value="$">USD ($)</option>
-<option value="CA$">CAD (CA$)</option>
-<option value="£">GBP (£)</option>
-<option value="€">EUR (€)</option>
-<option value="AED">AED</option>
-<option value="₵">GHS (₵)</option>
-<option value="₦">NGN (₦)</option>
-<option value="R">ZAR (R)</option>
-<option value="custom">Custom</option>
-</select>
-<input id="customCurrency" placeholder="Enter symbol (e.g. KSh, ¥)" style="margin-top:6px;display:none;" oninput="refreshAll()"></div>
+        <div class="field"><label>Deposit link set</label><select id="depositProfile" onchange="refreshAll()"><option value="default">Default account deposit links</option><option value="manual">Manual follow-up invoice</option></select></div>
         <div class="field"><label>Tax mode</label><select id="taxMode"><option value="none">No tax</option><option value="included">Tax included</option><option value="added">Add tax</option></select></div>
         <div class="field"><label>Tax rate (%)</label><input id="taxRate" type="number" value="8"></div>
         <div class="field"><label>Tax label</label><input id="taxLabel" value="Sales Tax"></div>
         <div class="field full"><label>Event notes</label><textarea id="eventNotes"></textarea></div>
       </div>
     </section>
-
     <section class="panel package-panel collapsed" id="packagePanel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">Offer Builder</h2>
-          <div class="panel-sub">Build out your Basic, Premium, and Luxe offers, then customize below using the same service catalog if you need to.</div>
-        </div>
-        <div class="section-badge">Step 2</div>
-      </div>
-      <div class="package-toolbar">
-        <span><strong style="color:var(--plum-900)">KPP offer method:</strong> start with your three core offers, then drop into the catalog only when you need custom build-outs.</span>
-        <div class="helper-actions">
-          <button class="tiny-btn" onclick="expandPackages()">Expand offers</button>
-          <button class="tiny-btn" onclick="collapsePackages()">Collapse offers</button>
-        </div>
-      </div>
+      <div class="panel-header"><div><h2 class="panel-title">Offer Builder</h2><div class="panel-sub">Use this to build reusable Basic, Premium, and Luxe offers. Offer totals are item-based: the package value is calculated from the items you include inside it.</div></div><div class="section-badge">Step 2</div></div>
+      <div class="package-toolbar"><span><strong>KPP offer method:</strong> choose an active offer, add items from the catalog into that offer, and the offer total updates from the included items. No random default pricing logic.</span><div class="helper-actions"><button class="tiny-btn" onclick="expandPackages()">Expand offers</button><button class="tiny-btn" onclick="collapsePackages()">Collapse offers</button><button class="tiny-btn" onclick="savePackages()">Save offers</button></div></div>
       <div class="package-grid" id="packageGrid"></div>
     </section>
-
     <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">Service catalog</h2>
-          <div class="panel-sub">Comprehensive quote-builder strength restored: collapsible categories, suggested U.S. market rates, quantity controls, price overrides, and live totals.</div>
-        </div>
-        <div class="section-badge">Step 3</div>
-      </div>
-      <div class="helper-row">
-        <span><strong>Tip:</strong> Start with an offer, then use the catalog to customize, upsell, and fill in missing items fast.</span>
-        <div class="helper-actions">
-          <button class="tiny-btn" onclick="expandAllCats()">Expand all</button>
-          <button class="tiny-btn" onclick="collapseAllCats()">Collapse all</button>
-        </div>
-      </div>
-      <div style="margin-bottom:16px">
-        <div class="custom-item-grid">
-          <div class="field"><label>Custom item</label><input id="customName"></div>
-          <div class="field"><label>Category label</label><input id="customCategory"></div>
-          <div class="field"><label>Qty</label><input id="customQty" type="number" value="1"></div>
-          <div class="field"><label>Unit price</label><input id="customPrice" type="number"></div>
-          <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addCustomItem()">Add custom item</button></div>
-        </div>
-      </div>
+      <div class="panel-header"><div><h2 class="panel-title">Service catalog</h2><div class="panel-sub">Choose items from the catalog to add directly into the quote or add them into the active offer. The catalog is the engine. Custom item comes last.</div></div><div class="section-badge">Step 3</div></div>
+      <div class="helper-row"><span><strong>Tip:</strong> Use the active offer button on each service if you want that service stored inside the offer template. Use the service checkbox if you want it added directly into this quote.</span><div class="helper-actions"><button class="tiny-btn" onclick="expandAllCats()">Expand all</button><button class="tiny-btn" onclick="collapseAllCats()">Collapse all</button></div></div>
       <div class="catalog" id="catalog"></div>
+      <div class="custom-wrap"><div class="panel-sub" style="margin:0 0 12px;color:var(--muted)">Custom item is placed after the last category so it acts like a true fallback, not a primary path.</div><div class="custom-item-grid"><div class="field"><label>Custom item</label><input id="customName"></div><div class="field"><label>Category label</label><input id="customCategory"></div><div class="field"><label>Qty</label><input id="customQty" type="number" value="1"></div><div class="field"><label>Unit price</label><input id="customPrice" type="number"></div><div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addCustomItem()">Add custom item</button></div></div></div>
     </section>
-
-    <section class="preview-card">
-      <div class="preview-head">
-        <h3>Final quote preview</h3>
-        <p>The right rail stays live while you work, and this full preview gives you the final professional presentation before sending.</p>
-      </div>
-      <div class="preview-body" id="fullPreview"></div>
-    </section>
+    <section class="preview-card"><div class="preview-head"><h3>Final quote preview</h3><p>This should populate live before the user prints, downloads, copies, or emails the quote. The preview below updates from the selections on this page.</p></div><div class="preview-body" id="fullPreview"></div></section>
   </div>
-
-  <aside class="side-rail">
-    <section class="summary-card">
-      <div class="summary-head">
-        <div>
-          <h3>Live quote</h3>
-          <p>Always-on summary while you build. No more creating at the top and hunting for the quote at the bottom.</p>
-        </div>
-        <div class="summary-badge" id="quoteStatus">Draft</div>
-      </div>
-      <div class="live-mini" id="liveMini"><div class="empty-state">Select an offer, add catalog items, or build a custom line item to see your quote come together here in real time.</div></div>
-      <div class="money-stack">
-        <div class="money-row"><strong>Subtotal</strong><span id="subtotalVal">$0.00</span></div>
-        <div class="money-row"><strong id="taxLabelLive">Tax</strong><span id="taxVal">$0.00</span></div>
-        <div class="money-row total"><strong>Total</strong><span id="grandVal">$0.00</span></div>
-      </div>
-      <div class="deposit-block">
-        <h4>Deposit options</h4>
-        <div class="tier-grid" id="tierGrid"></div>
-        <div class="tier-help" id="tierHelp"></div>
-      </div>
-    </section>
-  </aside>
+  <aside class="side-rail"><section class="summary-card"><div class="summary-head"><div><h3>Live quote</h3><p>This updates as you add catalog items, offer items, and custom items. No dead right rail.</p></div><div class="summary-badge" id="quoteStatus">Draft</div></div><div class="live-mini" id="liveMini"><div class="empty-state">Select an offer, add catalog items, or create a custom line item to build the quote in real time.</div></div><div class="money-stack"><div class="money-row"><strong>Subtotal</strong><span id="subtotalVal">$0.00</span></div><div class="money-row"><strong id="taxLabelLive">Tax</strong><span id="taxVal">$0.00</span></div><div class="money-row total"><strong>Total</strong><span id="grandVal">$0.00</span></div></div><div class="deposit-block"><h4>Deposit options</h4><div class="tier-grid" id="tierGrid"></div><div class="tier-help" id="tierHelp"></div></div></section></aside>
 </main>
-
 <script>
 const depositOptions=[100,250,500,1000];
 let selectedDepositTier=250;
 let activePackageId='premium';
 let customItems=[];
-
-let packages=[
-  {id:'basic',tier:'Basic',name:'Basic Package',description:'Perfect for intimate parties that still need a polished, branded experience.',flatPrice:450,notes:'Starter package for smaller setups.',selectedItems:[]},
-  {id:'premium',tier:'Premium',name:'Premium Package',description:'A fuller event setup with more styling, stronger visual impact, and room for premium add-ons.',flatPrice:850,notes:'Best for clients who want more than the basics.',selectedItems:[]},
-  {id:'luxe',tier:'Luxe',name:'Luxe Package',description:'High-touch premium setup for clients who want the full elevated experience.',flatPrice:1450,notes:'Designed for your premium buyer.',selectedItems:[]}
-];
-
+let packages=loadPackages();
 let catalogData=[
   {cat:'Kids Experiences & Activities',icon:'🎪',expanded:true,items:[
     {name:'Teepee / Sleepover Setup (per tent)',suggested:'$50–$100/tent',def:65,min:2,taxable:true,desc:'Sleepover styling package for kids party experiences.',selected:false,qty:2,price:65},
@@ -433,52 +233,39 @@ let catalogData=[
     {name:'Rush Booking Fee (under 7 days)',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Short-notice booking surcharge.',selected:false,qty:1,price:75}
   ]}
 ];
-
+function defaultPackages(){return [{id:'basic',tier:'Basic',name:'Basic Offer',description:'Starter reusable offer for smaller bookings.',notes:'',selectedItems:[]},{id:'premium',tier:'Premium',name:'Premium Offer',description:'Middle offer with stronger value and visual impact.',notes:'',selectedItems:[]},{id:'luxe',tier:'Luxe',name:'Luxe Offer',description:'High-touch premium offer for premium buyers.',notes:'',selectedItems:[]}]} 
+function loadPackages(){try{return JSON.parse(localStorage.getItem('pbh_packages'))||defaultPackages()}catch(e){return defaultPackages()}}
+function savePackages(){localStorage.setItem('pbh_packages',JSON.stringify(packages)); alert('Offers saved in this browser for reuse.');}
 function qs(id){return document.getElementById(id)}
 function esc(s){return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function currency(){
-  const val = qs('currency').value;
-  if(val === 'custom'){
-    return qs('customCurrency').value || '';
-  }
-  return val;
-}
-function handleCurrencyChange(val){
-  const custom = qs('customCurrency');
-  if (val === 'custom'){
-    custom.style.display = 'block';
-  } else {
-    custom.style.display = 'none';
-  }
-  refreshAll();
-}
+function currency(){const val=qs('currency').value; return val==='custom' ? (qs('customCurrency').value||'') : val}
+function handleCurrencyChange(val){const custom=qs('customCurrency'); custom.style.display = val==='custom' ? 'block' : 'none'; refreshAll();}
+function taxCfg(){return {mode:qs('taxMode').value,rate:parseFloat(qs('taxRate').value||'0'),label:qs('taxLabel').value||'Tax'}}
 function pkg(id){return packages.find(p=>p.id===id)}
-
 function expandPackages(){qs('packagePanel').classList.remove('collapsed')}
 function collapsePackages(){qs('packagePanel').classList.add('collapsed')}
-function setActivePackage(id){activePackageId=id; renderPackages(); refreshAll()}
-function updatePackageField(id,field,val){const p=pkg(id); p[field]=field==='flatPrice'?parseFloat(val||'0'):val; refreshAll()}
-function addServiceToPackage(pid,ci,ii){const p=pkg(pid), key=`${ci}:${ii}`; if(!p.selectedItems.includes(key)) p.selectedItems.push(key); renderPackages(); refreshAll()}
-function renderPackages(){
-  qs('packageGrid').innerHTML=packages.map(p=>`<div class="package-card ${p.id===activePackageId?'active':''}"><div class="package-tier"><span class="dot"></span>${p.tier}</div><h3><input style="border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:20px;color:var(--plum-900)" value="${esc(p.name)}" onchange="updatePackageField('${p.id}','name',this.value)"></h3><p><textarea style="min-height:78px" onchange="updatePackageField('${p.id}','description',this.value)">${esc(p.description)}</textarea></p><div class="package-price"><strong>${currency()}<input type="number" value="${p.flatPrice}" style="width:130px;border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:30px;color:var(--plum-900)" onchange="updatePackageField('${p.id}','flatPrice',this.value)"></strong><span>flat offer</span></div><div class="field"><label>Offer notes</label><input value="${esc(p.notes)}" onchange="updatePackageField('${p.id}','notes',this.value)"></div><div style="margin-top:8px;color:var(--muted);font-size:13px">${p.selectedItems.length} included catalog items selected</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-primary" onclick="setActivePackage('${p.id}')">${p.id===activePackageId?'Active offer':'Use this offer'}</button><button class="btn btn-secondary" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">Build offer items</button></div></div>`).join('');
-}
 function expandAllCats(){catalogData.forEach(c=>c.expanded=true); renderCatalog()}
 function collapseAllCats(){catalogData.forEach(c=>c.expanded=false); renderCatalog()}
+function setActivePackage(id){activePackageId=id; renderPackages(); refreshAll()}
+function updatePackageField(id,field,val){const p=pkg(id); p[field]=val; savePackages(); refreshAll()}
+function addServiceToPackage(pid,ci,ii){const p=pkg(pid), key=`${ci}:${ii}`; if(!p.selectedItems.includes(key)) p.selectedItems.push(key); savePackages(); refreshAll()}
+function removeServiceFromPackage(pid,key){const p=pkg(pid); p.selectedItems=p.selectedItems.filter(x=>x!==key); savePackages(); refreshAll()}
+function packageCatalogItems(pid){const p=pkg(pid); return p.selectedItems.map(key=>{const [ci,ii]=key.split(':').map(Number), c=catalogData[ci], it=c.items[ii]; return {...it,key,category:c.cat,total:it.qty*it.price}})}
+function packageTotal(pid){return packageCatalogItems(pid).reduce((sum,it)=>sum+(it.qty*it.price),0)}
+function renderPackages(){qs('packageGrid').innerHTML=packages.map(p=>{const items=packageCatalogItems(p.id); return `<div class="package-card ${p.id===activePackageId?'active':''}"><div class="package-tier"><span class="dot"></span>${p.tier}</div><h3><input style="border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:20px;color:var(--plum-900)" value="${esc(p.name)}" onchange="updatePackageField('${p.id}','name',this.value)"></h3><p><textarea style="min-height:78px" onchange="updatePackageField('${p.id}','description',this.value)">${esc(p.description)}</textarea></p><div class="field"><label>Offer notes</label><input value="${esc(p.notes)}" onchange="updatePackageField('${p.id}','notes',this.value)"></div><div class="package-total"><strong>Offer total</strong><span>${currency()}${packageTotal(p.id).toFixed(2)}</span></div><div style="margin-top:10px;color:var(--muted);font-size:13px">${items.length} catalog items in this offer</div><div style="margin-top:8px;display:grid;gap:6px">${items.length?items.slice(0,3).map(it=>`<div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)"><span>${esc(it.name)}</span><span>${currency()}${(it.qty*it.price).toFixed(2)}</span></div>`).join(''):'<div style="font-size:12px;color:var(--muted)">No offer items added yet.</div>'}</div><div class="package-actions"><button class="btn btn-primary" onclick="setActivePackage('${p.id}')">${p.id===activePackageId?'Active offer':'Use this offer'}</button><button class="btn btn-secondary" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">Build offer items</button></div></div>`}).join('')}
 function toggleCategory(i){catalogData[i].expanded=!catalogData[i].expanded; renderCatalog()}
-function toggleService(ci,ii){const it=catalogData[ci].items[ii]; it.selected=!it.selected; if(it.qty<it.min) it.qty=it.min; renderCatalog(); refreshAll()}
+function toggleService(ci,ii){const it=catalogData[ci].items[ii]; it.selected=!it.selected; if(it.qty<it.min) it.qty=it.min; refreshAll(); renderCatalog()}
 function updateItem(ci,ii,f,v){const it=catalogData[ci].items[ii]; if(f==='qty') it.qty=Math.max(it.min,parseInt(v||it.min,10)); else it[f]=f==='price'?parseFloat(v||'0'):v; refreshAll(); renderCatalog()}
-function renderCatalog(){
-  qs('catalog').innerHTML=catalogData.map((c,ci)=>`<div class="cat-card ${c.expanded?'':'collapsed'}"><button class="cat-head" onclick="toggleCategory(${ci})"><div class="cat-left"><div class="cat-icon">${c.icon}</div><div class="cat-label"><strong>${esc(c.cat)}</strong><span>${c.items.length} services in this category</span></div></div><div class="cat-toggle">⌄</div></button><div class="cat-body">${c.items.map((it,ii)=>`<div class="service-item ${it.selected?'selected':''}"><div class="service-main"><button type="button" class="service-check" onclick="toggleService(${ci},${ii})">${it.selected?'✓':''}</button><div class="service-copy"><strong>${esc(it.name)}</strong><div class="service-meta">${esc(it.desc)}</div><div class="service-hint">Suggested U.S. market rate: ${esc(it.suggested)} · Minimum qty ${it.min}</div><div style="margin-top:10px"><button class="tiny-btn" onclick="addServiceToPackage('${activePackageId}',${ci},${ii})">Add to active offer</button></div></div></div><div class="qty-col"><label>Qty</label><input type="number" min="${it.min}" value="${it.qty}" onchange="updateItem(${ci},${ii},'qty',this.value)"></div><div class="price-col"><label>Unit price</label><input type="number" value="${it.price}" onchange="updateItem(${ci},${ii},'price',this.value)"></div><div class="total-col"><label>Total</label><div class="total-pill">${currency()}${(it.qty*it.price).toFixed(2)}</div></div></div>`).join('')}</div></div>`).join('');
-}
-function addCustomItem(){const n=qs('customName').value.trim(), c=qs('customCategory').value.trim(), q=Math.max(1,parseInt(qs('customQty').value||'1',10)), p=parseFloat(qs('customPrice').value||'0'); if(!n||!p)return; customItems.push({name:n,category:c,qty:q,price:p}); ['customName','customCategory','customPrice'].forEach(id=>qs(id).value=''); qs('customQty').value='1'; refreshAll()}
+function renderCatalog(){qs('catalog').innerHTML=catalogData.map((c,ci)=>`<div class="cat-card ${c.expanded?'':'collapsed'}"><button class="cat-head" onclick="toggleCategory(${ci})"><div class="cat-left"><div class="cat-icon">${c.icon}</div><div class="cat-label"><strong>${esc(c.cat)}</strong><span>${c.items.length} services in this category</span></div></div><div class="cat-toggle">⌄</div></button><div class="cat-body">${c.items.map((it,ii)=>{const key=`${ci}:${ii}`; const inActive=pkg(activePackageId).selectedItems.includes(key); return `<div class="service-item ${it.selected?'selected':''}"><div class="service-main"><button type="button" class="service-check" onclick="toggleService(${ci},${ii})">${it.selected?'✓':''}</button><div class="service-copy"><strong>${esc(it.name)}</strong><div class="service-meta">${esc(it.desc)}</div><div class="service-hint">Suggested U.S. market rate: ${esc(it.suggested)} · Minimum qty ${it.min}</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="tiny-btn" onclick="addServiceToPackage('${activePackageId}',${ci},${ii})">${inActive?'Added to active offer':'Add to active offer'}</button>${inActive?`<button class="tiny-btn" onclick="removeServiceFromPackage('${activePackageId}','${key}')">Remove from offer</button>`:''}</div></div></div><div class="qty-col"><label>Qty</label><input type="number" min="${it.min}" value="${it.qty}" onchange="updateItem(${ci},${ii},'qty',this.value)"></div><div class="price-col"><label>Unit price</label><input type="number" value="${it.price}" onchange="updateItem(${ci},${ii},'price',this.value)"></div><div class="total-col"><label>Total</label><div class="total-pill">${currency()}${(it.qty*it.price).toFixed(2)}</div></div></div>`}).join('')}</div></div>`).join('')}
+function addCustomItem(){const n=qs('customName').value.trim(), c=qs('customCategory').value.trim(), q=Math.max(1,parseInt(qs('customQty').value||'1',10)), p=parseFloat(qs('customPrice').value||'0'); if(!n||!p)return; customItems.push({name:n,category:c||'Custom item',qty:q,price:p,total:q*p,taxable:true}); ['customName','customCategory','customPrice'].forEach(id=>qs(id).value=''); qs('customQty').value='1'; refreshAll()}
 function selectedCatalog(){const out=[]; catalogData.forEach(c=>c.items.forEach(it=>{if(it.selected) out.push({category:c.cat,name:it.name,qty:it.qty,price:it.price,total:it.qty*it.price,taxable:it.taxable})})); return out}
-function packageItems(){const p=pkg(activePackageId); return p.selectedItems.map(key=>{const [ci,ii]=key.split(':').map(Number), c=catalogData[ci], it=c.items[ii]; return {category:`${p.name} · ${c.cat}`,name:it.name,qty:it.min,price:0,total:0,taxable:it.taxable,included:true}})}
-function allItems(){const p=pkg(activePackageId); return [{category:'Offer',name:p.name,qty:1,price:p.flatPrice,total:p.flatPrice,taxable:true,notes:p.notes||p.description}, ...packageItems(), ...selectedCatalog(), ...customItems.map(it=>({category:it.category||'Custom item',name:it.name,qty:it.qty,price:it.price,total:it.qty*it.price,taxable:true}))]}
-function totals(){const items=allItems(), sub=items.reduce((s,i)=>s+i.total,0), t=taxCfg(); const taxableBase=items.filter(i=>i.taxable&&i.total>0).reduce((s,i)=>s+i.total,0); let tax=0; if(t.mode==='added') tax=taxableBase*(t.rate/100); else if(t.mode==='included') tax=taxableBase*(t.rate/(100+t.rate)); const grand=t.mode==='added'?sub+tax:sub; return {items,sub,tax,grand,t}}
-function renderLive(){const {items,sub,tax,grand,t}=totals(); qs('quoteStatus').textContent=items.length?'In progress':'Draft'; qs('subtotalVal').textContent=`${currency()}${sub.toFixed(2)}`; qs('taxVal').textContent=`${currency()}${tax.toFixed(2)}`; qs('taxLabelLive').textContent=t.mode==='none'?'Tax':t.label; qs('grandVal').textContent=`${currency()}${grand.toFixed(2)}`; qs('liveMini').innerHTML=items.length?items.map(i=>`<div class="live-row"><div><strong>${esc(i.name)}</strong><small>${esc(i.category)}${i.included?' · Included in offer':''}</small></div><span>${i.included?'Included':`${currency()}${i.total.toFixed(2)}`}</span></div>`).join(''):`<div class="empty-state">Select an offer, add catalog items, or build a custom line item to see your quote come together here in real time.</div>`; qs('tierGrid').innerHTML=depositOptions.map(v=>`<button class="tier-btn ${selectedDepositTier===v?'active':''} ${currency()!=='$'?'missing':''}" onclick="selectedDepositTier=${v}; refreshAll()">${currency()}${v}</button>`).join(''); qs('tierHelp').textContent=currency()==='$'?`Suggested workflow: preset deposit tiers of $100, $250, $500, or $1,000.`:`For ${currency()} currency quotes, use manual custom invoicing for deposits right now.`}
-function renderPreview(){const {items,sub,tax,grand,t}=totals(); const depositText=currency()==='$'?`${currency()}${selectedDepositTier} preset deposit selected for the payment link flow.`:`Custom manual invoice required for deposit in ${currency()} currency flow.`; const rows=items.length?items.map(i=>`<div class="invoice-row"><span><strong>${esc(i.name)}</strong><br><small style="color:var(--muted)">${esc(i.category)}${i.included?' · Included in offer':''}</small></span><span>${i.included?'—':i.qty}</span><span>${i.included?'Included':`${currency()}${i.price.toFixed(2)}`}</span><span>${i.included?'Included':`${currency()}${i.total.toFixed(2)}`}</span></div>`).join(''):`<div class="empty-state" style="background:#fff;border:1px dashed var(--line);color:var(--muted)">Your quote preview will populate here as soon as you select offer and service items.</div>`; qs('fullPreview').innerHTML=`<div class="invoice-shell"><div class="invoice-top"><div><h4>${esc(qs('bizName').value||'Party Biz Hub')}</h4><p>Professional quote preview for premium event bookings.<br>Build. Book. Be Paid.</p></div><div style="text-align:right"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.74);font-weight:700">Quote preview</div><div style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.82)">Status: ${items.length?'Ready to review':'Draft'}</div></div></div><div class="invoice-meta"><div class="meta-box"><small>Client</small><strong>${esc(qs('clientName').value||'Client name')}</strong></div><div class="meta-box"><small>Event</small><strong>${esc(qs('eventType').value||'Event type')}</strong></div><div class="meta-box"><small>Event date</small><strong>${esc(qs('eventDate').value||'Event date')}</strong></div><div class="meta-box"><small>Expiration</small><strong>${esc(qs('expiryDate').value||'No expiration date set')}</strong></div></div><div class="invoice-table"><div class="invoice-row head"><strong>Item</strong><strong>Qty</strong><strong>Unit</strong><strong>Total</strong></div>${rows}</div><div class="invoice-totals"><div class="invoice-total-row"><span>Subtotal</span><span>${currency()}${sub.toFixed(2)}</span></div><div class="invoice-total-row"><span>${esc(t.label)}${t.mode==='added'?' (added)':t.mode==='included'?' (included)':''}</span><span>${currency()}${tax.toFixed(2)}</span></div><div class="invoice-total-row grand"><span>Total</span><span>${currency()}${grand.toFixed(2)}</span></div><div class="invoice-deposit"><strong>Deposit flow</strong><br>${depositText}<br><br><strong>Event notes:</strong> ${esc(qs('eventNotes').value||'No additional event notes added yet.')}</div></div></div>`}
+function activeOfferLine(){const p=pkg(activePackageId); return {category:'Offer',name:p.name,qty:1,price:packageTotal(p.id),total:packageTotal(p.id),taxable:true,notes:p.notes||p.description}}
+function allItems(){return [activeOfferLine(), ...selectedCatalog(), ...customItems]}
+function totals(){const items=allItems().filter(i=>i.total>0), sub=items.reduce((s,i)=>s+i.total,0), t=taxCfg(); const taxableBase=items.filter(i=>i.taxable).reduce((s,i)=>s+i.total,0); let tax=0; if(t.mode==='added') tax=taxableBase*(t.rate/100); else if(t.mode==='included') tax=taxableBase*(t.rate/(100+t.rate)); const grand=t.mode==='added'?sub+tax:sub; return {items,sub,tax,grand,t}}
+function renderLive(){const {items,sub,tax,grand,t}=totals(); qs('quoteStatus').textContent=items.length?'In progress':'Draft'; qs('subtotalVal').textContent=`${currency()}${sub.toFixed(2)}`; qs('taxVal').textContent=`${currency()}${tax.toFixed(2)}`; qs('taxLabelLive').textContent=t.mode==='none'?'Tax':t.label; qs('grandVal').textContent=`${currency()}${grand.toFixed(2)}`; qs('liveMini').innerHTML=items.length?items.map(i=>`<div class="live-row"><div><strong>${esc(i.name)}</strong><small>${esc(i.category)}</small></div><span>${currency()}${i.total.toFixed(2)}</span></div>`).join(''):`<div class="empty-state">Select an offer, add catalog items, or create a custom line item to build the quote in real time.</div>`; qs('tierGrid').innerHTML=depositOptions.map(v=>`<button class="tier-btn ${selectedDepositTier===v?'active':''} ${currency()!=='$'?'missing':''}" onclick="selectedDepositTier=${v}; refreshAll()">${currency()}${v}</button>`).join(''); qs('tierHelp').textContent=currency()==='$' ? (qs('depositProfile').value==='manual' ? 'Manual follow-up invoice selected for deposits.' : 'Preset account deposit links can connect to these default tiers.') : `For ${currency()} currency quotes, use manual custom invoicing for deposits right now.`}
+function renderPreview(){const {items,sub,tax,grand,t}=totals(); const rows=items.length?items.map(i=>`<div class="invoice-row"><span><strong>${esc(i.name)}</strong><br><small style="color:var(--muted)">${esc(i.category)}</small></span><span>${i.qty}</span><span>${currency()}${i.price.toFixed(2)}</span><span>${currency()}${i.total.toFixed(2)}</span></div>`).join(''):`<div class="empty-state" style="background:#fff;border:1px dashed var(--line);color:var(--muted)">Your quote preview will populate live here as soon as you build the quote.</div>`; qs('fullPreview').innerHTML=`<div class="invoice-shell"><div class="invoice-top"><div><h4>Party Biz Hub Quote Preview</h4><p>Back-office quote preview. Business profile branding should feed into this later from account settings.</p></div><div style="text-align:right"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.74);font-weight:700">Quote preview</div><div style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.82)">Status: ${items.length?'Ready to review':'Draft'}</div></div></div><div class="invoice-meta"><div class="meta-box"><small>Client</small><strong>${esc(qs('clientName').value||'Client name')}</strong></div><div class="meta-box"><small>Event</small><strong>${esc(qs('eventType').value||'Event type')}</strong></div><div class="meta-box"><small>Event date</small><strong>${esc(qs('eventDate').value||'Event date')}</strong></div><div class="meta-box"><small>Expiration</small><strong>${esc(qs('expiryDate').value||'No expiration date set')}</strong></div></div><div class="invoice-table"><div class="invoice-row head"><strong>Item</strong><strong>Qty</strong><strong>Unit</strong><strong>Total</strong></div>${rows}</div><div class="invoice-totals"><div class="invoice-total-row"><span>Subtotal</span><span>${currency()}${sub.toFixed(2)}</span></div><div class="invoice-total-row"><span>${esc(t.label)}${t.mode==='added'?' (added)':t.mode==='included'?' (included)':''}</span><span>${currency()}${tax.toFixed(2)}</span></div><div class="invoice-total-row grand"><span>Total</span><span>${currency()}${grand.toFixed(2)}</span></div><div class="invoice-deposit"><strong>Deposit flow</strong><br>${qs('depositProfile').value==='manual' ? 'Manual follow-up invoice selected for deposit collection.' : 'Default account deposit link profile selected.'}<br><br><strong>Event notes:</strong> ${esc(qs('eventNotes').value||'No additional event notes added yet.')}<br><br><strong>Next actions:</strong> Print, download as PDF, copy text, or wire email send in the next build layer.</div></div></div>`}
 function refreshAll(){renderPackages(); renderLive(); renderPreview()}
-window.addEventListener('DOMContentLoaded',()=>{const t=new Date(), e=new Date(t), x=new Date(t); e.setDate(t.getDate()+14); x.setDate(t.getDate()+7); qs('eventDate').value=e.toISOString().slice(0,10); qs('expiryDate').value=x.toISOString().slice(0,10); renderPackages(); renderCatalog(); refreshAll(); collapsePackages(); ['bizName','clientName','eventType','eventDate','expiryDate','currency','taxMode','taxRate','taxLabel','eventNotes'].forEach(id=>{qs(id).addEventListener('input',refreshAll); qs(id).addEventListener('change',refreshAll)})})
+window.addEventListener('DOMContentLoaded',()=>{const t=new Date(), e=new Date(t), x=new Date(t); e.setDate(t.getDate()+14); x.setDate(t.getDate()+7); qs('eventDate').value=e.toISOString().slice(0,10); qs('expiryDate').value=x.toISOString().slice(0,10); renderPackages(); renderCatalog(); refreshAll(); collapsePackages(); ['clientName','eventType','eventDate','expiryDate','currency','taxMode','taxRate','taxLabel','eventNotes','depositProfile'].forEach(id=>{qs(id).addEventListener('input',refreshAll); qs(id).addEventListener('change',refreshAll)})})
 </script>
 </body>
 </html>
