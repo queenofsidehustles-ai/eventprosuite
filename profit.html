@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Profit Calculator Pro™ | EventPro Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1b3e;--navy-mid:#162d5e;--gold:#c9a84c;--gold-bright:#d4ae52;
+  --off:#f7f8fc;--border:#dde3ef;--slate-900:#0f172a;--slate-700:#334155;--slate-600:#475569;
+  --muted:#7a8aaa;--success:#1e8c5a;--danger:#dc2626;--radius:14px;
+  --user-primary:var(--navy);--user-accent:var(--gold);--user-primary-soft:#e6ebf5;
+  --user-primary-contrast:#fff;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--slate-900);min-height:100vh}
+
+/* Shared suite bar */
+.suite-bar{background:var(--navy);padding:.7rem 2rem;display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:.82rem;border-bottom:1px solid rgba(201,168,76,.2);flex-wrap:wrap;gap:.5rem}
+.suite-bar-left{color:var(--gold-bright);font-weight:600}
+.suite-bar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.suite-nav-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:.72rem;font-weight:600;padding:.4rem .85rem;border-radius:6px;cursor:pointer;text-decoration:none;transition:all .15s}
+.suite-nav-btn:hover{background:rgba(255,255,255,.15)}
+.suite-nav-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.suite-logout{background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);padding:.35rem .8rem;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:inherit}
+.suite-logout:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.user-name{font-size:.75rem;color:rgba(255,255,255,.75)}
+
+/* Page header */
+.page-header{background:var(--navy);padding:2rem;color:#fff;border-bottom:3px solid var(--gold)}
+.page-header-inner{max-width:1100px;margin:0 auto}
+.page-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,4vw,2.5rem);font-weight:700;margin-bottom:.4rem;line-height:1.15}
+.page-sub{font-size:.9rem;color:rgba(255,255,255,.7);max-width:560px;line-height:1.7}
+
+/* Mode tabs */
+.mode-tabs{background:#fff;border-bottom:1px solid var(--border);padding:1rem 2rem;position:sticky;top:0;z-index:50}
+.mode-tabs-inner{max-width:1100px;margin:0 auto;display:flex;gap:.5rem;flex-wrap:wrap}
+.mode-tab{background:#fff;border:1.5px solid var(--border);padding:.6rem 1.3rem;border-radius:50px;font-size:.85rem;font-weight:600;color:var(--slate-700);cursor:pointer;font-family:inherit;transition:all .15s}
+.mode-tab:hover{border-color:var(--user-primary)}
+.mode-tab.active{background:var(--user-primary);color:#fff;border-color:var(--user-primary)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:2rem}
+.panel{display:none;background:#fff;border-radius:var(--radius);padding:2rem;border:1px solid var(--border);margin-bottom:1rem}
+.panel.active{display:block}
+.panel h2{font-family:'Cormorant Garamond',serif;color:var(--navy);font-size:1.5rem;margin-bottom:.4rem}
+.panel .sub{color:var(--slate-600);font-size:.88rem;margin-bottom:1.5rem}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-grid.thirds{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:640px){.form-grid,.form-grid.thirds{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:.35rem}
+.field.full{grid-column:1 / -1}
+.field label{font-size:.78rem;font-weight:700;color:var(--slate-700);letter-spacing:.02em}
+.field input,.field select,.field textarea{padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;font-family:inherit;color:var(--slate-900);background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--user-primary);outline:none}
+
+.section-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--user-primary);margin:1.5rem 0 .8rem;padding-bottom:.5rem;border-bottom:2px solid var(--user-accent)}
+
+.expense-row{display:grid;grid-template-columns:2fr 1fr 100px 40px;gap:.5rem;margin-bottom:.5rem;align-items:center}
+@media(max-width:640px){.expense-row{grid-template-columns:1fr 100px 40px}.expense-row select{grid-column:1 / -1}}
+.expense-row input,.expense-row select{padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;font-family:inherit}
+.btn-remove{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:1.1rem;padding:.4rem}
+.btn-add-row{background:transparent;border:1.5px dashed var(--user-primary);color:var(--user-primary);padding:.6rem 1rem;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;width:100%;margin-top:.5rem;font-family:inherit}
+.btn-add-row:hover{background:var(--user-primary-soft)}
+
+/* Results card */
+.results{background:var(--navy);color:#fff;border-radius:14px;padding:1.8rem;margin-top:1.5rem}
+.results h3{font-family:'Cormorant Garamond',serif;color:var(--gold-bright);font-size:1.3rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid rgba(255,255,255,.15)}
+.result-row{display:flex;justify-content:space-between;padding:.5rem 0;font-size:.9rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.result-row.expense{color:rgba(255,255,255,.75)}
+.result-row.grand{font-size:1.1rem;font-weight:700;color:var(--gold-bright);border-top:2px solid var(--gold);margin-top:.5rem;padding-top:.8rem;border-bottom:none}
+.result-row.margin{background:rgba(201,168,76,.15);padding:.7rem .9rem;border-radius:8px;margin-top:.8rem;border:none}
+.result-row.loss{color:#fca5a5}
+
+/* Summary cards monthly */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
+.summary-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem}
+.summary-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-600);margin-bottom:.3rem}
+.summary-value{font-size:1.4rem;font-weight:700;color:var(--user-primary);font-variant-numeric:tabular-nums}
+.summary-value.profit{color:var(--success)}
+.summary-value.loss{color:var(--danger)}
+
+/* Month selector */
+.month-bar{display:flex;gap:.5rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.month-bar select{padding:.5rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit}
+
+/* Buttons */
+.btn{padding:.8rem 1.6rem;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;letter-spacing:.02em;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none}
+.btn-navy{background:var(--user-primary);color:#fff}
+.btn-gold{background:var(--user-accent);color:var(--navy)}
+.btn-outline{background:#fff;color:var(--user-primary);border:1.5px solid var(--border)}
+.btn-row{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border)}
+
+/* Quote picker */
+.quote-picker{background:var(--user-primary-soft);border:1px solid var(--user-primary);border-radius:10px;padding:1rem;margin-bottom:1.5rem}
+.quote-picker-title{font-size:.8rem;font-weight:700;color:var(--user-primary);margin-bottom:.6rem}
+.quote-picker select{width:100%;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;background:#fff}
+
+/* Table for year summary */
+.year-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:1rem;font-size:.85rem}
+.year-table thead tr{background:var(--user-primary);color:#fff}
+.year-table th,.year-table td{padding:.7rem 1rem;text-align:left}
+.year-table th:not(:first-child),.year-table td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+.year-table tbody tr{border-top:1px solid var(--border)}
+.year-table tbody tr:hover{background:var(--off)}
+.year-table tfoot tr{background:var(--off);font-weight:700}
+.year-table tfoot td{padding:.85rem 1rem;border-top:2px solid var(--user-accent)}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:.9rem 1.5rem;border-radius:8px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1000}
+.toast.show{opacity:1}
+
+.auth-gate{position:fixed;inset:0;background:var(--navy);display:none;align-items:center;justify-content:center;z-index:9999;color:#fff;text-align:center;padding:2rem}
+.auth-gate.show{display:flex}
+.auth-gate a{background:var(--gold);color:var(--navy);padding:.8rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;margin-top:1.5rem;display:inline-block}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div><h2 style="font-family:'Cormorant Garamond',serif;color:var(--gold-bright);margin-bottom:.8rem">Sign in required</h2><p style="color:rgba(255,255,255,.7)">Please sign in to continue.</p><a href="login.html">Sign In →</a></div></div>
+
+<div class="suite-bar" id="suiteBar" style="display:none">
+  <div class="suite-bar-left">EventPro Suite™ · Profit Calculator Pro™</div>
+  <div class="suite-bar-right">
+    <a href="app.html" class="suite-nav-btn">📄 Quote</a>
+    <a href="contract.html" class="suite-nav-btn">📝 Contract</a>
+    <a href="profit.html" class="suite-nav-btn active">💰 Profit</a>
+    <a href="prep.html" class="suite-nav-btn">📋 Prep</a>
+    <a href="vendors.html" class="suite-nav-btn">🤝 Vendors</a>
+    <div class="user-name" id="userName">Welcome</div>
+    <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Profit Calculator Pro™</div>
+    <h1 class="page-title">Know your numbers. Price with confidence.</h1>
+    <p class="page-sub">Calculate per-event profit, track monthly income and expenses, and get year-end reports ready for your accountant.</p>
+  </div>
+</div>
+
+<div class="mode-tabs">
+  <div class="mode-tabs-inner">
+    <button class="mode-tab active" onclick="setMode('event')" id="tabEvent">📍 Per Event</button>
+    <button class="mode-tab" onclick="setMode('monthly')" id="tabMonthly">📅 Monthly Books</button>
+    <button class="mode-tab" onclick="setMode('year')" id="tabYear">📊 Year Summary</button>
+  </div>
+</div>
+
+<main class="wrap">
+
+<!-- PER EVENT MODE -->
+<div class="panel active" id="panelEvent">
+  <h2>Per-Event Profit Calculator</h2>
+  <p class="sub">Calculate exactly what you made (or will make) on one specific event.</p>
+
+  <div class="quote-picker" id="quotePicker" style="display:none">
+    <div class="quote-picker-title">💡 Auto-fill from an existing quote</div>
+    <select id="quoteSelect" onchange="loadFromQuote()">
+      <option value="">— Start fresh (manual entry) —</option>
+    </select>
+  </div>
+
+  <div class="form-grid">
+    <div class="field"><label>Event Name / Client</label><input type="text" id="evName" placeholder="Sarah's 5th Birthday"/></div>
+    <div class="field"><label>Event Date</label><input type="date" id="evDate"/></div>
+    <div class="field"><label>Total Charged to Client ($)</label><input type="number" id="evRevenue" placeholder="650.00" step="0.01" oninput="calcEvent()"/></div>
+    <div class="field"><label>Target Profit Margin (%)</label><input type="number" id="evTargetMargin" placeholder="40" value="40" step="1" oninput="calcEvent()"/></div>
+  </div>
+
+  <div class="section-title">Expenses</div>
+
+  <div id="expensesList"></div>
+  <button class="btn-add-row" onclick="addExpense()">+ Add Expense</button>
+
+  <div class="results" id="eventResults"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="clearEvent()">🗑️ Clear</button>
+    <button class="btn btn-navy" onclick="saveEventRecord()">💾 Save to My Books</button>
+    <button class="btn btn-gold" onclick="downloadEventPDF()">📄 Download PDF</button>
+  </div>
+</div>
+
+<!-- MONTHLY MODE -->
+<div class="panel" id="panelMonthly">
+  <h2>Monthly Bookkeeping</h2>
+  <p class="sub">Log all business income and expenses for the month. Perfect for bookkeeping and tax prep.</p>
+
+  <div class="month-bar">
+    <label style="font-size:.82rem;font-weight:700;color:var(--slate-700)">Month:</label>
+    <select id="monthSelect" onchange="loadMonth()"></select>
+    <select id="yearSelect" onchange="loadMonth()"></select>
+  </div>
+
+  <div class="summary-grid" id="monthSummary"></div>
+
+  <div class="section-title">Income This Month</div>
+  <div id="incomeList"></div>
+  <button class="btn-add-row" onclick="addIncome()">+ Add Income Entry</button>
+
+  <div class="section-title">Expenses This Month</div>
+  <div id="monthlyExpensesList"></div>
+  <button class="btn-add-row" onclick="addMonthlyExpense()">+ Add Expense</button>
+
+  <div class="btn-row">
+    <button class="btn btn-navy" onclick="saveMonth()">💾 Save Month</button>
+    <button class="btn btn-gold" onclick="downloadMonthPDF()">📄 Download Month Report</button>
+  </div>
+</div>
+
+<!-- YEAR SUMMARY MODE -->
+<div class="panel" id="panelYear">
+  <h2>Year Summary</h2>
+  <p class="sub">Total income, expenses, and profit for the year. Export and hand to your accountant.</p>
+
+  <div class="month-bar">
+    <label style="font-size:.82rem;font-weight:700;color:var(--slate-700)">Year:</label>
+    <select id="yearSummarySelect" onchange="loadYear()"></select>
+  </div>
+
+  <div class="summary-grid" id="yearSummary"></div>
+
+  <div id="yearBreakdown"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="downloadYearPDF()">📄 Download Year Report</button>
+    <button class="btn btn-outline" onclick="downloadYearCSV()">📊 Download CSV (for accountant)</button>
+  </div>
+</div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,currencySymbol='$',currentMode='event';
+const EXPENSE_CATEGORIES=['Supplies','Labor','Travel/Fuel','Rentals','Fees (platform/Stripe)','Marketing','Food/Catering','Other'];
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){document.getElementById('authGate').classList.add('show');return}
+  currentUser=session.user;
+  document.getElementById('suiteBar').style.display='flex';
+  document.getElementById('userName').textContent=session.user.email||'Welcome';
+
+  // Load profile for branding + currency
+  try{
+    const{data:p}=await sb.from('profiles').select('profile_data').eq('id',session.user.id).single();
+    if(p&&p.profile_data){
+      const d=p.profile_data;
+      if(d.brandPrimary||d.brandAccent)applyBrand(d.brandPrimary||'#0d1b3e',d.brandAccent||'#c9a84c');
+      if(d.bizCurrency&&d.bizCurrency!=='custom')currencySymbol=d.bizCurrency;
+      else if(d.customCurrency)currencySymbol=d.customCurrency;
+    }
+  }catch(e){}
+
+  initMonthYearSelects();
+  await loadQuotesForPicker();
+  addExpense();// start with one row
+  loadMonth();
+  loadYear();
+}
+
+function applyBrand(primary,accent){
+  const r=document.documentElement;
+  r.style.setProperty('--user-primary',primary);
+  r.style.setProperty('--user-accent',accent);
+  r.style.setProperty('--navy',primary);
+  r.style.setProperty('--gold',accent);
+  r.style.setProperty('--gold-bright',accent);
+  r.style.setProperty('--user-primary-soft',primary+'14');
+  const m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(primary);
+  if(m){const yiq=(parseInt(m[1],16)*299+parseInt(m[2],16)*587+parseInt(m[3],16)*114)/1000;r.style.setProperty('--user-primary-contrast',yiq>=145?'#1a1a1a':'#fff')}
+}
+
+function initMonthYearSelects(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const now=new Date();
+  const mSel=document.getElementById('monthSelect');
+  const ySel=document.getElementById('yearSelect');
+  const yS=document.getElementById('yearSummarySelect');
+  months.forEach((m,i)=>{mSel.innerHTML+=`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`});
+  for(let y=now.getFullYear();y>=now.getFullYear()-5;y--){
+    ySel.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
+    yS.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
+  }
+}
+
+async function loadQuotesForPicker(){
+  try{
+    const{data}=await sb.from('quotes').select('id,client_name,event_date,total,quote_data').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+    if(data&&data.length){
+      const sel=document.getElementById('quoteSelect');
+      data.forEach(q=>{
+        const d=q.event_date?new Date(q.event_date+'T00:00').toLocaleDateString():'';
+        sel.innerHTML+=`<option value="${q.id}" data-total="${q.total}" data-name="${(q.client_name||'').replace(/"/g,'&quot;')}" data-date="${q.event_date||''}">${q.client_name||'—'} · ${d} · ${currencySymbol}${parseFloat(q.total).toFixed(0)}</option>`;
+      });
+      document.getElementById('quotePicker').style.display='block';
+    }
+  }catch(e){console.log('no quotes yet')}
+}
+
+function loadFromQuote(){
+  const sel=document.getElementById('quoteSelect');
+  const opt=sel.options[sel.selectedIndex];
+  if(!opt.value){return}
+  document.getElementById('evName').value=opt.dataset.name;
+  document.getElementById('evDate').value=opt.dataset.date;
+  document.getElementById('evRevenue').value=opt.dataset.total;
+  calcEvent();
+  showToast('✓ Loaded from quote');
+}
+
+function setMode(m){
+  currentMode=m;
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
+  document.getElementById('panel'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
+  if(m==='monthly')loadMonth();
+  if(m==='year')loadYear();
+}
+
+// ===== PER EVENT =====
+function addExpense(name='',cat='Supplies',amt=''){
+  const div=document.createElement('div');
+  div.className='expense-row';
+  div.innerHTML=`<input type="text" placeholder="Description" value="${name}" oninput="calcEvent()"/>
+    <select oninput="calcEvent()">${EXPENSE_CATEGORIES.map(c=>`<option ${c===cat?'selected':''}>${c}</option>`).join('')}</select>
+    <input type="number" placeholder="0.00" step="0.01" value="${amt}" oninput="calcEvent()"/>
+    <button class="btn-remove" onclick="this.parentNode.remove();calcEvent()">×</button>`;
+  document.getElementById('expensesList').appendChild(div);
+}
+
+function getEventExpenses(){
+  const rows=document.querySelectorAll('#expensesList .expense-row');
+  const list=[];
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input');
+    const sel=r.querySelector('select');
+    const amt=parseFloat(inputs[1].value)||0;
+    if(amt>0||inputs[0].value)list.push({desc:inputs[0].value,cat:sel.value,amt});
+  });
+  return list;
+}
+
+function calcEvent(){
+  const revenue=parseFloat(document.getElementById('evRevenue').value)||0;
+  const targetMargin=parseFloat(document.getElementById('evTargetMargin').value)||0;
+  const expenses=getEventExpenses();
+  const totalExp=expenses.reduce((s,e)=>s+e.amt,0);
+  const profit=revenue-totalExp;
+  const margin=revenue>0?(profit/revenue*100):0;
+  const taxEst=profit>0?profit*0.25:0;// 25% tax estimate
+  const afterTax=profit-taxEst;
+
+  // Suggested price to hit target margin
+  const suggestedPrice=targetMargin<100&&totalExp>0?(totalExp/(1-targetMargin/100)):0;
+
+  // Group expenses by category
+  const byCat={};
+  expenses.forEach(e=>{byCat[e.cat]=(byCat[e.cat]||0)+e.amt});
+
+  const c=currencySymbol;
+  let html=`<h3>💰 Profit Breakdown</h3>
+    <div class="result-row"><span>Revenue (what client paid)</span><span>${c}${revenue.toFixed(2)}</span></div>`;
+  Object.entries(byCat).forEach(([k,v])=>{
+    html+=`<div class="result-row expense"><span>— ${k}</span><span>(${c}${v.toFixed(2)})</span></div>`;
+  });
+  html+=`<div class="result-row"><span><strong>Total Expenses</strong></span><span><strong>(${c}${totalExp.toFixed(2)})</strong></span></div>
+    <div class="result-row grand ${profit<0?'loss':''}"><span>Gross Profit</span><span>${c}${profit.toFixed(2)}</span></div>
+    <div class="result-row expense"><span>Est. tax (25%)</span><span>(${c}${taxEst.toFixed(2)})</span></div>
+    <div class="result-row grand ${afterTax<0?'loss':''}"><span>Net After Tax</span><span>${c}${afterTax.toFixed(2)}</span></div>
+    <div class="result-row margin ${margin<targetMargin?'loss':''}"><span>Profit Margin: <strong>${margin.toFixed(1)}%</strong></span><span>Target: ${targetMargin}%</span></div>`;
+
+  if(suggestedPrice>0&&Math.abs(revenue-suggestedPrice)>1){
+    html+=`<div class="result-row margin" style="background:rgba(30,140,90,.2)"><span>💡 To hit ${targetMargin}% margin, charge:</span><span><strong>${c}${suggestedPrice.toFixed(2)}</strong></span></div>`;
+  }
+
+  document.getElementById('eventResults').innerHTML=html;
+}
+
+function clearEvent(){
+  if(!confirm('Clear this event?'))return;
+  ['evName','evDate','evRevenue'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('expensesList').innerHTML='';
+  addExpense();
+  document.getElementById('eventResults').innerHTML='';
+}
+
+async function saveEventRecord(){
+  const name=document.getElementById('evName').value.trim();
+  const date=document.getElementById('evDate').value;
+  const revenue=parseFloat(document.getElementById('evRevenue').value)||0;
+  if(!name||!date||revenue<=0){alert('Fill in Event Name, Date, and Revenue first.');return}
+  const expenses=getEventExpenses();
+  const payload={
+    user_id:currentUser.id,
+    record_type:'event',
+    record_date:date,
+    title:name,
+    revenue,
+    expenses_json:expenses,
+    total_expenses:expenses.reduce((s,e)=>s+e.amt,0),
+    notes:null
+  };
+  try{
+    const{error}=await sb.from('profit_records').insert(payload);
+    if(error)throw error;
+    showToast('✓ Saved to My Books');
+  }catch(e){alert('Save failed: '+e.message)}
+}
+
+// ===== MONTHLY =====
+let monthIncomeList=[],monthExpensesList=[],currentMonthRecord=null;
+
+function addIncome(desc='',source='Event Booking',amt=''){
+  const div=document.createElement('div');
+  div.className='expense-row';
+  div.innerHTML=`<input type="text" placeholder="Description (e.g. Sarah Johnson deposit)" value="${desc}" oninput="recalcMonth()"/>
+    <select oninput="recalcMonth()">
+      <option ${source==='Event Booking'?'selected':''}>Event Booking</option>
+      <option ${source==='Rental'?'selected':''}>Rental</option>
+      <option ${source==='Deposit'?'selected':''}>Deposit</option>
+      <option ${source==='Final Payment'?'selected':''}>Final Payment</option>
+      <option ${source==='Other'?'selected':''}>Other</option>
+    </select>
+    <input type="number" placeholder="0.00" step="0.01" value="${amt}" oninput="recalcMonth()"/>
+    <button class="btn-remove" onclick="this.parentNode.remove();recalcMonth()">×</button>`;
+  document.getElementById('incomeList').appendChild(div);
+}
+
+function addMonthlyExpense(desc='',cat='Supplies',amt=''){
+  const div=document.createElement('div');
+  div.className='expense-row';
+  div.innerHTML=`<input type="text" placeholder="Description" value="${desc}" oninput="recalcMonth()"/>
+    <select oninput="recalcMonth()">${EXPENSE_CATEGORIES.map(c=>`<option ${c===cat?'selected':''}>${c}</option>`).join('')}</select>
+    <input type="number" placeholder="0.00" step="0.01" value="${amt}" oninput="recalcMonth()"/>
+    <button class="btn-remove" onclick="this.parentNode.remove();recalcMonth()">×</button>`;
+  document.getElementById('monthlyExpensesList').appendChild(div);
+}
+
+function getMonthEntries(selector){
+  const rows=document.querySelectorAll(selector+' .expense-row');
+  const list=[];
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input');
+    const sel=r.querySelector('select');
+    const amt=parseFloat(inputs[1].value)||0;
+    if(amt>0||inputs[0].value)list.push({desc:inputs[0].value,cat:sel.value,amt});
+  });
+  return list;
+}
+
+function recalcMonth(){
+  const income=getMonthEntries('#incomeList');
+  const expenses=getMonthEntries('#monthlyExpensesList');
+  const totalIn=income.reduce((s,e)=>s+e.amt,0);
+  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
+  const profit=totalIn-totalOut;
+  const taxEst=profit>0?profit*0.25:0;
+  const c=currencySymbol;
+  document.getElementById('monthSummary').innerHTML=`
+    <div class="summary-card"><div class="summary-label">Total Income</div><div class="summary-value profit">${c}${totalIn.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">Total Expenses</div><div class="summary-value loss">${c}${totalOut.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">Net Profit</div><div class="summary-value ${profit<0?'loss':'profit'}">${c}${profit.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">Est. Tax (25%)</div><div class="summary-value">${c}${taxEst.toFixed(2)}</div></div>`;
+}
+
+async function loadMonth(){
+  const month=parseInt(document.getElementById('monthSelect').value);
+  const year=parseInt(document.getElementById('yearSelect').value);
+  document.getElementById('incomeList').innerHTML='';
+  document.getElementById('monthlyExpensesList').innerHTML='';
+  try{
+    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','monthly').eq('record_month',month).eq('record_year',year).single();
+    if(data){
+      currentMonthRecord=data;
+      (data.income_json||[]).forEach(i=>addIncome(i.desc,i.cat,i.amt));
+      (data.expenses_json||[]).forEach(e=>addMonthlyExpense(e.desc,e.cat,e.amt));
+    }else{
+      currentMonthRecord=null;
+    }
+  }catch(e){currentMonthRecord=null}
+  if(!document.querySelectorAll('#incomeList .expense-row').length)addIncome();
+  if(!document.querySelectorAll('#monthlyExpensesList .expense-row').length)addMonthlyExpense();
+  recalcMonth();
+}
+
+async function saveMonth(){
+  const month=parseInt(document.getElementById('monthSelect').value);
+  const year=parseInt(document.getElementById('yearSelect').value);
+  const income=getMonthEntries('#incomeList');
+  const expenses=getMonthEntries('#monthlyExpensesList');
+  const totalIn=income.reduce((s,e)=>s+e.amt,0);
+  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
+  const payload={
+    user_id:currentUser.id,
+    record_type:'monthly',
+    record_month:month,
+    record_year:year,
+    record_date:`${year}-${String(month).padStart(2,'0')}-01`,
+    title:`${year}-${String(month).padStart(2,'0')}`,
+    revenue:totalIn,
+    total_expenses:totalOut,
+    income_json:income,
+    expenses_json:expenses
+  };
+  try{
+    if(currentMonthRecord){
+      const{error}=await sb.from('profit_records').update(payload).eq('id',currentMonthRecord.id);
+      if(error)throw error;
+    }else{
+      const{data,error}=await sb.from('profit_records').insert(payload).select().single();
+      if(error)throw error;
+      currentMonthRecord=data;
+    }
+    showToast('✓ Month saved');
+  }catch(e){alert('Save error: '+e.message)}
+}
+
+// ===== YEAR =====
+async function loadYear(){
+  const year=parseInt(document.getElementById('yearSummarySelect').value);
+  try{
+    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_year',year);
+    renderYear(data||[],year);
+  }catch(e){renderYear([],year)}
+}
+
+function renderYear(records,year){
+  const c=currencySymbol;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let totalRev=0,totalExp=0;
+  const monthlyData=Array(12).fill(null).map(()=>({rev:0,exp:0}));
+  records.forEach(r=>{
+    if(r.record_type==='monthly'&&r.record_month){
+      monthlyData[r.record_month-1].rev+=parseFloat(r.revenue)||0;
+      monthlyData[r.record_month-1].exp+=parseFloat(r.total_expenses)||0;
+    }else if(r.record_type==='event'&&r.record_date){
+      const m=new Date(r.record_date+'T00:00').getMonth();
+      monthlyData[m].rev+=parseFloat(r.revenue)||0;
+      monthlyData[m].exp+=parseFloat(r.total_expenses)||0;
+    }
+    totalRev+=parseFloat(r.revenue)||0;
+    totalExp+=parseFloat(r.total_expenses)||0;
+  });
+  const profit=totalRev-totalExp;
+  const tax=profit>0?profit*0.25:0;
+
+  document.getElementById('yearSummary').innerHTML=`
+    <div class="summary-card"><div class="summary-label">${year} Total Revenue</div><div class="summary-value profit">${c}${totalRev.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">${year} Expenses</div><div class="summary-value loss">${c}${totalExp.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">${year} Net Profit</div><div class="summary-value ${profit<0?'loss':'profit'}">${c}${profit.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">Est. Tax Set-Aside</div><div class="summary-value">${c}${tax.toFixed(2)}</div></div>`;
+
+  let rows='';
+  monthlyData.forEach((m,i)=>{
+    const p=m.rev-m.exp;
+    rows+=`<tr><td>${months[i]}</td><td>${c}${m.rev.toFixed(2)}</td><td>${c}${m.exp.toFixed(2)}</td><td style="color:${p<0?'var(--danger)':'var(--success)'};font-weight:700">${c}${p.toFixed(2)}</td></tr>`;
+  });
+  document.getElementById('yearBreakdown').innerHTML=`
+    <table class="year-table">
+      <thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Profit</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>TOTAL ${year}</td><td>${c}${totalRev.toFixed(2)}</td><td>${c}${totalExp.toFixed(2)}</td><td>${c}${profit.toFixed(2)}</td></tr></tfoot>
+    </table>`;
+}
+
+function downloadEventPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'letter'});
+  const name=document.getElementById('evName').value||'Event';
+  const revenue=parseFloat(document.getElementById('evRevenue').value)||0;
+  const expenses=getEventExpenses();
+  const totalExp=expenses.reduce((s,e)=>s+e.amt,0);
+  const profit=revenue-totalExp;
+  const c=currencySymbol;
+  doc.setFillColor(13,27,62);doc.rect(0,0,612,40,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('Event Profit Report',40,26);
+  doc.setTextColor(40,40,40);doc.setFontSize(16);
+  doc.text(name,40,80);doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text('Date: '+(document.getElementById('evDate').value||'—'),40,100);
+  let y=130;
+  doc.setFont('helvetica','bold');doc.text('Revenue:',40,y);doc.text(c+revenue.toFixed(2),500,y,{align:'right'});y+=20;
+  doc.setFont('helvetica','normal');doc.text('Expenses:',40,y);y+=16;
+  expenses.forEach(e=>{doc.text('  '+e.desc+' ('+e.cat+')',50,y);doc.text(c+e.amt.toFixed(2),500,y,{align:'right'});y+=14});
+  y+=6;doc.setDrawColor(201,168,76);doc.line(40,y,560,y);y+=16;
+  doc.setFont('helvetica','bold');doc.text('Total Expenses:',40,y);doc.text(c+totalExp.toFixed(2),500,y,{align:'right'});y+=20;
+  doc.setFontSize(13);doc.setTextColor(13,27,62);doc.text('NET PROFIT:',40,y);doc.text(c+profit.toFixed(2),500,y,{align:'right'});
+  doc.save('ProfitReport_'+name.replace(/\s+/g,'_')+'.pdf');
+}
+
+function downloadMonthPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'letter'});
+  const month=document.getElementById('monthSelect').options[document.getElementById('monthSelect').selectedIndex].text;
+  const year=document.getElementById('yearSelect').value;
+  const income=getMonthEntries('#incomeList');
+  const expenses=getMonthEntries('#monthlyExpensesList');
+  const totalIn=income.reduce((s,e)=>s+e.amt,0);
+  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
+  const c=currencySymbol;
+  doc.setFillColor(13,27,62);doc.rect(0,0,612,40,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('Monthly Bookkeeping Report',40,26);
+  doc.setTextColor(40,40,40);doc.setFontSize(16);doc.text(month+' '+year,40,80);
+  let y=120;doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('INCOME',40,y);y+=18;
+  doc.setFont('helvetica','normal');doc.setFontSize(10);
+  income.forEach(i=>{doc.text(i.desc+' ('+i.cat+')',40,y);doc.text(c+i.amt.toFixed(2),500,y,{align:'right'});y+=14});
+  y+=6;doc.setFont('helvetica','bold');doc.text('Total Income:',40,y);doc.text(c+totalIn.toFixed(2),500,y,{align:'right'});y+=24;
+  doc.text('EXPENSES',40,y);y+=18;doc.setFont('helvetica','normal');
+  expenses.forEach(e=>{doc.text(e.desc+' ('+e.cat+')',40,y);doc.text(c+e.amt.toFixed(2),500,y,{align:'right'});y+=14});
+  y+=6;doc.setFont('helvetica','bold');doc.text('Total Expenses:',40,y);doc.text(c+totalOut.toFixed(2),500,y,{align:'right'});y+=20;
+  doc.setFontSize(13);doc.setTextColor(13,27,62);doc.text('NET PROFIT:',40,y);doc.text(c+(totalIn-totalOut).toFixed(2),500,y,{align:'right'});
+  doc.save('Bookkeeping_'+month+'_'+year+'.pdf');
+}
+
+function downloadYearPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'letter'});
+  const year=document.getElementById('yearSummarySelect').value;
+  doc.setFillColor(13,27,62);doc.rect(0,0,612,40,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('Year-End Summary '+year,40,26);
+  doc.setTextColor(40,40,40);doc.setFontSize(11);
+  const tbl=document.querySelector('.year-table');
+  if(!tbl){doc.text('No data',40,80);doc.save('YearSummary_'+year+'.pdf');return}
+  let y=80;
+  doc.text('For accountant / tax prep',40,y);y+=26;
+  doc.setFont('helvetica','bold');doc.text('Month',40,y);doc.text('Revenue',250,y);doc.text('Expenses',380,y);doc.text('Profit',510,y);y+=14;
+  doc.setDrawColor(201,168,76);doc.line(40,y-8,560,y-8);
+  doc.setFont('helvetica','normal');
+  tbl.querySelectorAll('tbody tr').forEach(r=>{
+    const cells=r.querySelectorAll('td');
+    doc.text(cells[0].textContent,40,y);doc.text(cells[1].textContent,250,y);doc.text(cells[2].textContent,380,y);doc.text(cells[3].textContent,510,y);y+=14;
+  });
+  y+=4;doc.setDrawColor(201,168,76);doc.line(40,y-2,560,y-2);y+=14;
+  const foot=tbl.querySelector('tfoot tr').querySelectorAll('td');
+  doc.setFont('helvetica','bold');
+  doc.text(foot[0].textContent,40,y);doc.text(foot[1].textContent,250,y);doc.text(foot[2].textContent,380,y);doc.text(foot[3].textContent,510,y);
+  doc.save('YearSummary_'+year+'.pdf');
+}
+
+function downloadYearCSV(){
+  const year=document.getElementById('yearSummarySelect').value;
+  const tbl=document.querySelector('.year-table');
+  if(!tbl)return;
+  let csv='Month,Revenue,Expenses,Profit\n';
+  tbl.querySelectorAll('tbody tr').forEach(r=>{
+    const cells=r.querySelectorAll('td');
+    csv+=[cells[0],cells[1],cells[2],cells[3]].map(c=>c.textContent.replace(currencySymbol,'').replace(/,/g,'')).join(',')+'\n';
+  });
+  const foot=tbl.querySelector('tfoot tr').querySelectorAll('td');
+  csv+=[foot[0],foot[1],foot[2],foot[3]].map(c=>c.textContent.replace(currencySymbol,'').replace(/,/g,'')).join(',')+'\n';
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='YearSummary_'+year+'.csv';a.click();
+}
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+async function handleLogout(){await sb.auth.signOut();window.location.href='login.html'}
+init();
+</script>
+</body>
+</html>
