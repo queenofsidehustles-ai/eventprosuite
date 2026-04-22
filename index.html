@@ -444,10 +444,15 @@ function currency(){
   }
   return val;
 }
-  const val = qs('currency').value;
-  if(val === 'custom'){
-    return qs('customCurr
-function taxCfg(){return {mode:qs('taxMode').value,rate:parseFloat(qs('taxRate').value||'0'),label:qs('taxLabel').value||'Tax'}}
+  function handleCurrencyChange(val){
+  const custom = qs('customCurrency');
+  if (val === 'custom'){
+    custom.style.display = 'block';
+  } else {
+    custom.style.display = 'none';
+  }
+  refreshAll();
+}
 function pkg(id){return packages.find(p=>p.id===id)}
 function expandPackages(){qs('packagePanel').classList.remove('collapsed')}
 function collapsePackages(){qs('packagePanel').classList.add('collapsed')}
