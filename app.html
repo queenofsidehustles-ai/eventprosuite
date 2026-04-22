@@ -1652,6 +1652,7 @@ async function loadProfileFromSupabase(userId) {
         if (el) el.value = normalized;
         if (hex) hex.value = normalized;
       }
+      applyBrandTheme();
       if (p.taxMode) { const btn = document.getElementById(p.taxMode==='added'?'taxAdded':p.taxMode==='included'?'taxIncluded':'taxNone'); setTax(p.taxMode, btn); }
       if (p.taxRate) { const el = document.getElementById('taxRate'); if(el) el.value = p.taxRate; }
       if (p.taxLabel) { const el = document.getElementById('taxLabel'); if(el) el.value = p.taxLabel; }
