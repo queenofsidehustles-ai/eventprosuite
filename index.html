@@ -65,7 +65,7 @@
       </section>
       <section class="panel package-panel collapsed" id="packagePanel">
         <div class="panel-header"><div><h2 class="panel-title">Offer Builder</h2><div class="panel-sub">Choose the offer you’re building first. Then add real catalog items or custom items into that offer. Offer totals are calculated from the actual items inside the offer.</div></div><div class="section-badge">Step 2</div></div>
-        <div class="toolbar"><span><strong>KPP package flow:</strong> Basic, Mid, Premium can all be renamed. Build them from real services, save them, and reuse them later.</span><div class="helper-actions"><button type="button" class="tiny-btn" id="expandOffersBtn">Expand offers</button><button type="button" class="tiny-btn" id="collapseOffersBtn">Collapse offers</button><button type="button" class="tiny-btn" id="saveOffersBtn">Save offers</button></div></div>
+        <div class="toolbar"><span><strong>KPP package flow:</strong> Basic, Mid, Premium can all be renamed. Build them from real services, save them, and reuse them later. Then push the finished offer into the quote.</span><div class="helper-actions"><button type="button" class="tiny-btn" id="expandOffersBtn">Expand offers</button><button type="button" class="tiny-btn" id="collapseOffersBtn">Collapse offers</button><button type="button" class="tiny-btn" id="saveOffersBtn">Save offers</button><button type="button" class="tiny-btn" id="useActiveOfferBtn">Use active offer in quote</button></div></div><div class="panel-sub" style="margin-top:-2px;margin-bottom:14px;color:var(--muted)">Important: adding items into a package builds the offer only. The printable quote generates after that offer is added into the quote.</div>
         <div class="package-grid" id="packageGrid"></div>
       </section>
       <section class="panel">
@@ -196,6 +196,7 @@
       if(t.id==='expandOffersBtn'){ $('packagePanel').classList.remove('collapsed'); return; }
       if(t.id==='collapseOffersBtn'){ $('packagePanel').classList.add('collapsed'); return; }
       if(t.id==='saveOffersBtn'){ savePackages(); return; }
+      if(t.id==='useActiveOfferBtn'){ const p=pkg(state.activePackageId); p.items.forEach(item=>state.quoteItems.push({...item})); refreshAll(); return; }
       if(t.id==='expandCatsBtn'){ state.catalog.forEach(c=>c.open=true); renderCatalog(); return; }
       if(t.id==='collapseCatsBtn'){ state.catalog.forEach(c=>c.open=false); renderCatalog(); return; }
       if(t.id==='customQuoteBtn'){ const item=customItem(); if(!item) return; state.quoteItems.push(item); clearCustom(); refreshAll(); return; }
