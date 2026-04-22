@@ -1,1043 +1,460 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EventPro Suite™ | Everything Event Professionals Need</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy: #0d1b3e;
-      --navy-mid: #162d5e;
-      --navy-light: #1e3d7a;
-      --navy-pale: #e6ebf5;
-      --gold: #c9a84c;
-      --gold-bright: #d4ae52;
-      --gold-light: #fdf8ec;
-      --white: #ffffff;
-      --off: #f7f8fc;
-      --mid: #3d4f6e;
-      --muted: #7a8aaa;
-      --border: #dde3ef;
-      --success: #1e8c5a;
-      --radius: 14px;
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--navy); overflow-x: hidden; }
-
-    /* ── NAV ── */
-    nav {
-      background: var(--navy);
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 3rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(201,168,76,0.25);
-    }
-    .nav-brand {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--gold-bright);
-      letter-spacing: 0.02em;
-    }
-    .nav-links { display: flex; align-items: center; gap: 2rem; }
-    .nav-link { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.82rem; font-weight: 500; transition: color 0.18s; }
-    .nav-link:hover { color: var(--gold-bright); }
-    .nav-cta {
-      background: var(--gold);
-      color: var(--navy);
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 0.5rem 1.2rem;
-      border-radius: 6px;
-      text-decoration: none;
-      transition: all 0.18s;
-      letter-spacing: 0.02em;
-    }
-    .nav-cta:hover { background: var(--gold-bright); }
-    @media (max-width: 640px) {
-      nav { padding: 0 1.2rem; }
-      .nav-links { gap: 1rem; }
-      .nav-link:not(.nav-cta) { display: none; }
-    }
-
-    /* ── HERO — compact, editorial ── */
-    .hero {
-      background: var(--navy);
-      padding: 4rem 3rem 3.5rem;
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 3rem;
-      align-items: center;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    @media (max-width: 800px) {
-      .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem; gap: 2rem; }
-      .hero-right { order: -1; }
-    }
-    .hero-section { background: var(--navy); }
-
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1.2rem;
-    }
-    .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--gold); }
-
-    .hero-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2.2rem, 5vw, 3.2rem);
-      font-weight: 700;
-      color: white;
-      line-height: 1.12;
-      margin-bottom: 1rem;
-    }
-    .hero-title em { color: var(--gold-bright); font-style: italic; }
-
-    .hero-sub {
-      font-size: 0.95rem;
-      color: rgba(255,255,255,0.62);
-      line-height: 1.8;
-      max-width: 460px;
-      margin-bottom: 1.8rem;
-    }
-    .hero-tagline {
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-bottom: 2rem;
-    }
-
-    .hero-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 700;
-      font-size: 0.9rem;
-      padding: 0.85rem 2rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.18s;
-      font-family: 'DM Sans', sans-serif;
-      letter-spacing: 0.02em;
-      text-decoration: none;
-    }
-    .btn-primary:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
-    .btn-ghost {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      color: rgba(255,255,255,0.55);
-      font-size: 0.85rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.18s;
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .btn-ghost:hover { color: var(--gold-bright); }
-
-    .hero-note {
-      margin-top: 1rem;
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.45);
-      line-height: 1.7;
-    }
-    .hero-note strong { color: var(--gold-bright); }
-
-    /* Hero right — pricing card */
-    .hero-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(201,168,76,0.2);
-      border-radius: var(--radius);
-      padding: 2rem 1.8rem;
-      backdrop-filter: blur(8px);
-    }
-    .hc-badge {
-      display: inline-block;
-      background: rgba(201,168,76,0.12);
-      border: 1px solid rgba(201,168,76,0.25);
-      color: var(--gold-bright);
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.28rem 0.75rem;
-      border-radius: 20px;
-      margin-bottom: 1.2rem;
-    }
-    .hc-price {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 3.2rem;
-      font-weight: 700;
-      color: white;
-      line-height: 1;
-      margin-bottom: 0.2rem;
-    }
-    .hc-price sup { font-size: 1.4rem; vertical-align: top; margin-top: 0.4rem; }
-    .hc-price-after { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-bottom: 0.3rem; }
-    .hc-price-after strong { color: var(--gold-bright); font-weight: 600; }
-    .hc-term { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 1.4rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .hc-features { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem; }
-    .hc-features li { font-size: 0.82rem; color: rgba(255,255,255,0.72); display: flex; align-items: flex-start; gap: 0.6rem; line-height: 1.45; }
-    .hc-features li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
-    .hc-btn {
-      display: block;
-      width: 100%;
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 700;
-      font-size: 0.88rem;
-      padding: 0.85rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      text-align: center;
-      transition: all 0.18s;
-      letter-spacing: 0.02em;
-    }
-    .hc-btn:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
-    .hc-note { font-size: 0.72rem; color: rgba(255,255,255,0.3); text-align: center; margin-top: 0.75rem; line-height: 1.6; }
-
-    /* Spots bar */
-    .spots-wrap { margin-bottom: 1.2rem; }
-    .spots-text { font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
-    .spots-text strong { color: var(--gold-bright); }
-    .spots-bar { background: rgba(255,255,255,0.08); border-radius: 4px; height: 4px; overflow: hidden; }
-    .spots-fill { background: linear-gradient(90deg, var(--navy-light), var(--gold)); height: 100%; width: 0%; border-radius: 4px; }
-
-    /* ── STATS BAR ── */
-    .stats-wrap { background: var(--navy); border-top: 1px solid rgba(255,255,255,0.06); }
-    .stats-bar {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 1.2rem 3rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      border-top: 1px solid rgba(201,168,76,0.1);
-    }
-    .stat-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: rgba(255,255,255,0.5); }
-    .stat-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
-    @media (max-width: 640px) { .stats-bar { padding: 1rem 1.5rem; } }
-
-    /* ── TOOLS SECTION ── */
-    .tools-wrap { background: var(--white); }
-    .tools-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 4rem 3rem;
-    }
-    @media (max-width: 640px) { .tools-inner { padding: 3rem 1.5rem; } }
-
-    .section-header { margin-bottom: 2.5rem; }
-    .section-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
-    }
-    .section-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 700;
-      color: var(--navy);
-      line-height: 1.15;
-      margin-bottom: 0.5rem;
-    }
-    .section-sub { font-size: 0.9rem; color: var(--muted); line-height: 1.75; max-width: 560px; }
-
-    .tool-avail {
-      display: inline-block;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-    }
-    .avail-now { background: rgba(30,140,90,0.1); color: var(--success); border: 1px solid rgba(30,140,90,0.2); }
-    .avail-soon { background: var(--navy-pale); color: var(--muted); }
-    .tool-code { font-size: 0.68rem; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 0.3rem; }
-    .tool-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; line-height: 1.2; }
-    .tool-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.65; }
-
-    /* Featured tool — full width hero card */
-    .tool-featured {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 2.5rem;
-      background: var(--navy);
-      border-radius: var(--radius);
-      padding: 2.5rem;
-      margin-bottom: 1rem;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .tool-featured::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--gold), var(--gold-bright));
-    }
-    @media (max-width: 720px) {
-      .tool-featured { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.8rem; }
-      .tf-right { order: -1; }
-    }
-    .tf-code {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
-    }
-    .tf-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 700;
-      color: white;
-      line-height: 1.2;
-      margin-bottom: 0.9rem;
-    }
-    .tf-desc {
-      font-size: 0.85rem;
-      color: rgba(255,255,255,0.6);
-      line-height: 1.75;
-      margin-bottom: 1.2rem;
-      max-width: 480px;
-    }
-    .tf-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .tf-tag {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.65);
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.25rem 0.65rem;
-      border-radius: 20px;
-      letter-spacing: 0.03em;
-    }
-
-    /* Mock quote inside featured card */
-    .tf-mock {
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
-    .tf-mock-header {
-      background: var(--navy);
-      padding: 0.75rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid var(--gold);
-    }
-    .tf-mock-body { padding: 0.9rem 1rem; }
-    .tf-mock-title { font-size: 0.72rem; font-weight: 700; color: var(--navy); margin-bottom: 0.6rem; }
-    .tf-mock-row {
-      display: flex; justify-content: space-between;
-      font-size: 0.72rem; color: var(--mid);
-      padding: 0.3rem 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .tf-mock-row:last-of-type { border-bottom: none; }
-    .tf-mock-total {
-      display: flex; justify-content: space-between;
-      background: var(--navy);
-      color: var(--gold-bright);
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.55rem 0.8rem;
-      border-radius: 6px;
-      margin: 0.5rem 0 0.4rem;
-    }
-    .tf-mock-deposit {
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-align: center;
-      padding-bottom: 0.2rem;
-    }
-
-    /* 2x2 coming soon grid */
-    .coming-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    @media (max-width: 560px) { .coming-grid { grid-template-columns: 1fr; } }
-    .coming-item {
-      background: white;
-      padding: 1.5rem 1.4rem;
-      transition: background 0.18s;
-    }
-    .coming-item:hover { background: var(--off); }
-
-    /* ── FEATURES ── */
-    .features-wrap { background: var(--off); }
-    .features-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 4rem 3rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: center;
-    }
-    @media (max-width: 720px) { .features-inner { grid-template-columns: 1fr; padding: 3rem 1.5rem; gap: 2rem; } }
-    .features-left {}
-    .features-list { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 2rem; }
-    .feat-item { display: flex; gap: 1rem; align-items: flex-start; }
-    .feat-icon {
-      width: 38px; height: 38px; flex-shrink: 0;
-      background: var(--navy);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-    }
-    .feat-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); margin-bottom: 0.2rem; }
-    .feat-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
-
-    .features-right {
-      background: var(--navy);
-      border-radius: var(--radius);
-      padding: 2.5rem;
-      color: white;
-    }
-    .quote-preview-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--gold-bright);
-      margin-bottom: 1.2rem;
-    }
-    .qp-mock {
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .qp-mock-header {
-      background: var(--navy);
-      padding: 0.75rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid var(--gold);
-    }
-    .qp-mock-biz { font-size: 0.78rem; font-weight: 700; color: var(--gold-bright); }
-    .qp-mock-contact { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-align: right; }
-    .qp-mock-body { padding: 0.9rem 1rem; }
-    .qp-mock-row {
-      display: flex; justify-content: space-between;
-      padding: 0.35rem 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 0.72rem;
-      color: var(--mid);
-    }
-    .qp-mock-row:last-child { border-bottom: none; }
-    .qp-mock-total {
-      display: flex; justify-content: space-between;
-      padding: 0.6rem 0.8rem;
-      background: var(--navy);
-      color: var(--gold-bright);
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin: 0.5rem 0;
-      border-radius: 6px;
-    }
-
-    /* ── QUICK FAQ (above pricing) ── */
-    .quick-faq-wrap { background: var(--white); padding: 3.5rem 3rem 2rem; }
-    .quick-faq-inner { max-width: 900px; margin: 0 auto; }
-    .quick-faq-header { text-align: center; margin-bottom: 2rem; }
-    .quick-faq-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-    }
-    @media (max-width: 720px) {
-      .quick-faq-wrap { padding: 3rem 1.5rem 1.5rem; }
-      .quick-faq-grid { grid-template-columns: 1fr; gap: 1rem; }
-    }
-    .quick-faq-item {
-      background: var(--off);
-      border-left: 3px solid var(--gold);
-      border-radius: 6px;
-      padding: 1.1rem 1.25rem;
-    }
-    .qf-q {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--navy);
-      margin-bottom: 0.4rem;
-      line-height: 1.3;
-    }
-    .qf-a { font-size: 0.83rem; color: var(--mid); line-height: 1.65; }
-    .qf-a strong { color: var(--navy); }
-
-    /* ── PRICING STRIP ── */
-    .pricing-wrap {
-      background: var(--navy);
-      padding: 4rem 3rem;
-    }
-    .pricing-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 3rem;
-      align-items: center;
-    }
-    @media (max-width: 800px) { .pricing-inner { grid-template-columns: 1fr; padding: 0; gap: 2rem; } }
-    .pricing-left .section-title { color: white; }
-    .pricing-left .section-sub { color: rgba(255,255,255,0.55); }
-    .pricing-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1.5rem; }
-    .pricing-bullets li { font-size: 0.85rem; color: rgba(255,255,255,0.65); display: flex; align-items: flex-start; gap: 0.65rem; line-height: 1.5; }
-    .pricing-bullets li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
-
-    .pricing-card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 2.2rem;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.25);
-    }
-    .pc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border); }
-    .pc-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
-    .pc-price { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 700; color: var(--navy); line-height: 1; }
-    .pc-price sup { font-size: 1.3rem; vertical-align: top; margin-top: 0.3rem; }
-    .pc-price-year { font-size: 0.95rem; color: var(--muted); font-weight: 600; margin-left: 0.25rem; }
-    .pc-term { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; line-height: 1.55; }
-    .pc-term strong { color: var(--navy); }
-    .pc-badge {
-      background: var(--navy);
-      color: var(--gold-bright);
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 0.25rem 0.65rem;
-      border-radius: 6px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-    /* Pricing breakdown inside card */
-    .pc-breakdown {
-      background: var(--off);
-      border-radius: 8px;
-      padding: 0.9rem 1rem;
-      margin-bottom: 1.2rem;
-    }
-    .pc-break-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      padding: 0.35rem 0;
-      color: var(--mid);
-      border-bottom: 1px solid var(--border);
-    }
-    .pc-break-row:last-child { border-bottom: none; }
-    .pc-break-row.highlight {
-      color: var(--navy);
-      font-weight: 700;
-    }
-    .pc-break-row.future {
-      color: var(--muted);
-      font-size: 0.75rem;
-      font-style: italic;
-    }
-    .pc-spots { background: var(--off); border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 1.2rem; }
-    .pc-spots-text { font-size: 0.75rem; color: var(--mid); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
-    .pc-spots-text strong { color: var(--navy); }
-    .pc-bar { background: var(--border); border-radius: 4px; height: 4px; overflow: hidden; }
-    .pc-fill { background: linear-gradient(90deg, var(--navy), var(--gold)); height: 100%; width: 0%; border-radius: 4px; }
-    .pc-btn {
-      display: block; width: 100%;
-      background: var(--navy);
-      color: white;
-      font-weight: 700; font-size: 0.9rem;
-      padding: 0.9rem;
-      border-radius: 8px; border: none;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      text-align: center;
-      transition: all 0.18s;
-      letter-spacing: 0.02em;
-    }
-    .pc-btn:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,27,62,0.25); }
-    .pc-note { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 0.75rem; line-height: 1.6; }
-
-    /* ── FULL FAQ SECTION ── */
-    .faq-wrap { background: var(--off); padding: 4.5rem 3rem; }
-    .faq-inner { max-width: 820px; margin: 0 auto; }
-    .faq-header { text-align: center; margin-bottom: 2.5rem; }
-    .faq-header .section-title { color: var(--navy); margin-bottom: 0.5rem; }
-    .faq-header .section-sub { margin: 0 auto; text-align: center; }
-    @media (max-width: 640px) { .faq-wrap { padding: 3.5rem 1.5rem; } }
-
-    .faq-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .faq-item {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .faq-item[open] {
-      border-color: var(--gold);
-      box-shadow: 0 4px 18px rgba(201,168,76,0.08);
-    }
-    .faq-summary {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.1rem 1.3rem;
-      cursor: pointer;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--navy);
-      line-height: 1.3;
-      list-style: none;
-      transition: background 0.15s;
-    }
-    .faq-summary::-webkit-details-marker { display: none; }
-    .faq-summary:hover { background: var(--gold-light); }
-    .faq-icon {
-      flex-shrink: 0;
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      background: var(--navy);
-      color: var(--gold-bright);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-left: 1rem;
-      transition: transform 0.25s;
-    }
-    .faq-item[open] .faq-icon { transform: rotate(45deg); background: var(--gold); color: var(--navy); }
-    .faq-body {
-      padding: 0 1.3rem 1.2rem;
-      font-size: 0.88rem;
-      color: var(--mid);
-      line-height: 1.75;
-    }
-    .faq-body p + p { margin-top: 0.7rem; }
-    .faq-body strong { color: var(--navy); }
-
-    /* ── FOOTER ── */
-    footer {
-      background: #080f1e;
-      padding: 2.5rem 3rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      border-top: 1px solid rgba(201,168,76,0.15);
-    }
-    @media (max-width: 640px) { footer { padding: 2rem 1.5rem; flex-direction: column; text-align: center; } }
-    .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold-bright); }
-    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
-    .footer-links a { color: rgba(255,255,255,0.35); text-decoration: none; font-size: 0.78rem; transition: color 0.18s; }
-    .footer-links a:hover { color: var(--gold-bright); }
-    .footer-copy { font-size: 0.72rem; color: rgba(255,255,255,0.25); }
-
-
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Party Biz Hub | Quote Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plum-900:#4A2B63;
+  --plum-800:#5A3476;
+  --plum-700:#6A417E;
+  --mauve-500:#A67BB5;
+  --pink-400:#E6A2BE;
+  --gold-500:#C9A227;
+  --cream:#FCF8F4;
+  --ink:#1F1A24;
+  --muted:#6C6473;
+  --line:#EAE3ED;
+  --line-strong:#DDD1E5;
+  --shadow-sm:0 8px 24px rgba(59,35,81,.06);
+  --shadow:0 16px 45px rgba(61,39,85,.10);
+  --shadow-lg:0 24px 70px rgba(61,39,85,.15);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at top right, rgba(230,162,190,.18), transparent 28%),
+    linear-gradient(180deg,#FFFDFC 0%, var(--cream) 55%, #FFFDFC 100%);
+}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(255,253,252,.82);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(74,43,99,.08);
+}
+.topbar-inner{
+  max-width:1440px;
+  margin:0 auto;
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+.brand-wrap{display:flex;align-items:center;gap:14px}
+.brand-mark{
+  width:42px;height:42px;border-radius:14px;
+  background:linear-gradient(135deg,#5A3476,#A67BB5 58%,#E6A2BE);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;
+  box-shadow:0 10px 25px rgba(90,52,118,.22);
+}
+.brand-name{font-family:'Playfair Display',serif;font-size:24px;line-height:1;color:var(--plum-900)}
+.brand-name span{color:var(--mauve-500)}
+.brand-sub{margin-top:4px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ghost-chip,.primary-chip{border-radius:999px;padding:9px 12px;font-size:12px;font-weight:700}
+.ghost-chip{background:#fff;border:1px solid rgba(74,43,99,.08);color:var(--muted)}
+.primary-chip{background:linear-gradient(135deg,#5A3476,#8E67A6);color:#fff;box-shadow:0 10px 25px rgba(90,52,118,.20)}
+.hero{max-width:1440px;margin:0 auto;padding:26px 24px 8px}
+.hero-card{
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(230,162,190,.16), transparent 22%),
+    linear-gradient(135deg,#5A3476 0%,#6A417E 45%,#A67BB5 100%);
+  color:#fff;
+  padding:30px;
+  box-shadow:var(--shadow-lg);
+}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:rgba(255,255,255,.78)}
+.eyebrow:before{content:'';width:26px;height:1px;background:rgba(255,255,255,.45)}
+.hero-grid{margin-top:18px;display:grid;grid-template-columns:1.35fr .95fr;gap:24px;align-items:end}
+.hero-title{margin:0;font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,54px);line-height:1.02;letter-spacing:-.03em;max-width:760px}
+.hero-copy{margin-top:14px;max-width:640px;color:rgba(255,255,255,.82);font-size:15px;line-height:1.8}
+.hero-notes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.note-card{border-radius:20px;padding:16px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12)}
+.note-card strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.72);margin-bottom:8px}
+.note-card span{display:block;font-size:14px;line-height:1.5;color:#fff}
+.builder-layout{max-width:1440px;margin:0 auto;padding:22px 24px 48px;display:grid;grid-template-columns:minmax(0,1.55fr) 420px;gap:22px;align-items:start}
+.workspace{display:flex;flex-direction:column;gap:18px}
+.panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);padding:22px}
+.panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+.panel-title{font-family:'Playfair Display',serif;font-size:28px;color:var(--plum-900);line-height:1;margin:0}
+.panel-sub{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.7;max-width:680px}
+.section-badge{border-radius:999px;padding:8px 12px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.16));color:var(--plum-800);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font:inherit;padding:14px 15px;outline:none;transition:.18s ease}
+textarea{min-height:94px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:#CDB9D7;box-shadow:0 0 0 4px rgba(166,123,181,.10)}
+.package-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));border:1px solid rgba(166,123,181,.14)}
+.package-toolbar span{font-size:13px;color:var(--muted)}
+.package-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.package-panel.collapsed .package-grid{display:none}
+.package-panel.collapsed .package-toolbar{margin-bottom:0}
+.package-card{border-radius:22px;padding:18px;border:1px solid var(--line);background:radial-gradient(circle at top right, rgba(230,162,190,.12), transparent 22%),linear-gradient(180deg, rgba(255,255,255,.98), rgba(250,245,252,.95));box-shadow:var(--shadow-sm)}
+.package-card.active{border-color:#D8C6E1;box-shadow:0 16px 40px rgba(90,52,118,.10)}
+.package-tier{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg, rgba(90,52,118,.10), rgba(230,162,190,.16));color:var(--plum-800);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.package-tier .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--plum-700),var(--pink-400))}
+.package-card h3{margin:14px 0 6px;font-size:20px;font-family:'Playfair Display',serif;color:var(--plum-900)}
+.package-card p{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.65}
+.package-price{display:flex;align-items:flex-end;gap:8px;margin-bottom:12px}
+.package-price strong{font-size:30px;font-family:'Playfair Display',serif;color:var(--plum-900)}
+.package-price span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.btn{appearance:none;border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:14px;padding:13px 16px;transition:.18s ease}
+.btn-primary{color:#fff;background:linear-gradient(135deg,#5A3476 0%,#8E67A6 100%);box-shadow:0 12px 30px rgba(90,52,118,.22)}
+.btn-secondary{background:#fff;color:var(--plum-800);border:1px solid var(--line-strong)}
+.btn-ghost{background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.14));color:var(--plum-800)}
+.helper-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));border:1px solid rgba(166,123,181,.14)}
+.helper-row span{font-size:13px;color:var(--muted)}
+.helper-row strong{color:var(--plum-900)}
+.helper-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tiny-btn{border:none;cursor:pointer;background:#fff;color:var(--plum-800);border:1px solid var(--line-strong);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700}
+.catalog{display:flex;flex-direction:column;gap:12px}
+.cat-card{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
+.cat-head{width:100%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.10));padding:16px 18px;text-align:left}
+.cat-left{display:flex;align-items:center;gap:14px;min-width:0}
+.cat-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg, rgba(90,52,118,.16), rgba(230,162,190,.20));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cat-label strong{font-size:15px;color:var(--plum-900)}
+.cat-label span{display:block;margin-top:4px;font-size:12px;color:var(--muted);opacity:.8}
+.cat-toggle{color:var(--plum-800);font-size:18px;transition:transform .18s ease}
+.cat-card.collapsed .cat-toggle{transform:rotate(-90deg)}
+.cat-card.collapsed .cat-body{display:none}
+.cat-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.service-item{border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;grid-template-columns:minmax(0,1.2fr) 90px 120px 104px;gap:12px;align-items:start;background:linear-gradient(180deg,#fff,#FFFEFD)}
+.service-item.selected{border-color:#D8C6E1;background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,239,248,.52));box-shadow:0 12px 30px rgba(90,52,118,.06)}
+.service-main{display:flex;gap:12px}
+.service-check{margin-top:2px;width:20px;height:20px;border-radius:6px;border:1.5px solid #C9BED0;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0;background:#fff}
+.service-item.selected .service-check{background:linear-gradient(135deg,#5A3476,#A67BB5);border-color:transparent}
+.service-copy strong{display:block;color:var(--ink);font-size:14px;line-height:1.45}
+.service-copy .service-meta{margin-top:4px;font-size:12px;color:var(--muted);line-height:1.5}
+.service-copy .service-hint{display:inline-flex;align-items:center;gap:8px;margin-top:10px;border-radius:999px;padding:6px 10px;background:linear-gradient(135deg, rgba(30,140,90,.08), rgba(201,162,39,.10));color:#4F5B35;font-size:11px;font-weight:700}
+.qty-col label,.price-col label,.total-col label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;font-weight:700}
+.qty-col input,.price-col input{text-align:center;padding:12px 10px}
+.total-pill{margin-top:21px;min-height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));color:var(--plum-900);font-weight:700;font-size:14px;border:1px solid rgba(166,123,181,.14)}
+.custom-item-grid{display:grid;grid-template-columns:1.3fr 1fr 100px 110px auto;gap:10px;align-items:end}
+.side-rail{position:sticky;top:92px;display:flex;flex-direction:column;gap:16px}
+.summary-card{border-radius:28px;padding:22px;color:#fff;background:radial-gradient(circle at top left, rgba(255,255,255,.10), transparent 25%),radial-gradient(circle at bottom right, rgba(230,162,190,.16), transparent 24%),linear-gradient(155deg,#4A2B63 0%,#6A417E 55%,#A67BB5 100%);box-shadow:var(--shadow-lg)}
+.summary-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:16px}
+.summary-head h3{margin:0;font-size:24px;font-family:'Playfair Display',serif}
+.summary-head p{margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.75)}
+.summary-badge{border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.12);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.live-mini{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px}
+.live-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}
+.live-row strong{display:block;font-size:13px}
+.live-row small{display:block;margin-top:4px;color:rgba(255,255,255,.65);line-height:1.45}
+.live-row span{font-weight:700;white-space:nowrap}
+.empty-state{border-radius:18px;padding:18px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.74);font-size:14px;line-height:1.75}
+.money-stack{margin-top:16px;display:grid;gap:10px}
+.money-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08)}
+.money-row strong{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66)}
+.money-row span{font-size:18px;font-weight:700}
+.money-row.total{background:linear-gradient(135deg, rgba(201,162,39,.18), rgba(255,255,255,.12));border:1px solid rgba(201,162,39,.28)}
+.money-row.total span{color:#F6E5A6}
+.deposit-block{margin-top:16px;border-radius:20px;padding:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}
+.deposit-block h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.72)}
+.tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tier-btn{border:none;border-radius:14px;padding:12px 10px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}
+.tier-btn.active{background:linear-gradient(135deg, rgba(201,162,39,.92), rgba(230,162,190,.40));color:#3A2A1A}
+.tier-btn.missing{opacity:.55}
+.tier-help{margin-top:10px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.70)}
+.preview-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);overflow:hidden}
+.preview-head{padding:22px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));border-bottom:1px solid var(--line)}
+.preview-head h3{margin:0;font-family:'Playfair Display',serif;font-size:28px;color:var(--plum-900)}
+.preview-head p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
+.preview-body{padding:22px}
+.invoice-shell{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}
+.invoice-top{padding:24px;background:linear-gradient(135deg,#5A3476 0%,#6A417E 55%,#A67BB5 100%);color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.invoice-top h4{margin:0;font-family:'Playfair Display',serif;font-size:26px}
+.invoice-top p{margin:8px 0 0;color:rgba(255,255,255,.74);line-height:1.6;font-size:13px}
+.invoice-meta{padding:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;border-bottom:1px solid var(--line)}
+.meta-box small{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.meta-box strong{display:block;margin-top:6px;font-size:14px;color:var(--ink);line-height:1.5}
+.invoice-table{padding:10px 22px 0}
+.invoice-row{display:grid;grid-template-columns:1.6fr .7fr .7fr .8fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
+.invoice-row.head strong{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.invoice-row span{font-size:14px;line-height:1.55}
+.invoice-totals{margin-left:auto;width:min(360px,100%);padding:18px 22px 22px}
+.invoice-total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.invoice-total-row.grand{font-weight:800;font-size:18px;color:var(--plum-900)}
+.invoice-deposit{margin-top:16px;border-radius:18px;padding:16px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.14));border:1px solid rgba(166,123,181,.14);color:var(--ink);line-height:1.7;font-size:14px}
+@media (max-width:1180px){.builder-layout{grid-template-columns:1fr}.side-rail{position:relative;top:0}}
+@media (max-width:960px){.hero-grid,.package-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.topbar-inner,.hero,.builder-layout{padding-left:16px;padding-right:16px}.hero-card{padding:24px 20px}.form-grid,.custom-item-grid,.invoice-meta,.invoice-row,.service-item{grid-template-columns:1fr}.invoice-totals{width:100%}}
+</style>
 </head>
 <body>
-
-<!-- NAV -->
-<nav>
-  <div class="nav-brand">EventPro Suite™</div>
-  <div class="nav-links">
-    <a href="#tools" class="nav-link">Tools</a>
-    <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="#faq" class="nav-link">FAQ</a>
-    <a href="login.html" class="nav-link">Sign In</a>
-    <a href="#pricing" class="nav-cta">Get Access</a>
-  </div>
-</nav>
-
-<!-- HERO — compact two-column -->
-<div style="background:var(--navy);">
-  <div class="hero">
-    <div class="hero-left">
-      <div class="hero-eyebrow">Founding 100 Members · First Year Access</div>
-      <h1 class="hero-title">
-        Everything event professionals need to run a
-        <em>profitable business</em>
-      </h1>
-      <p class="hero-sub">EventPro Suite™ is the complete business toolkit built for event planners, party businesses, and event operators worldwide.</p>
-      <p class="hero-tagline">Quote it · Contract it · Price it · Run it</p>
-      <div class="hero-actions">
-        <button class="btn-primary" onclick="window.location.href='https://buy.stripe.com/6oU9ATfchgBx0O24Cv7bW05'">Become a Founder — $97 →</button>
-        <a href="#tools" class="btn-ghost">See all tools ↓</a>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-wrap">
+      <div class="brand-mark">✨</div>
+      <div>
+        <div class="brand-name">Party <span>Biz Hub</span></div>
+        <div class="brand-sub">Build. Book. Be Paid.</div>
       </div>
-      <p class="hero-note">First 100 founders pay <strong>$97 for a full year</strong> · Then $29/mo founder rate · <strong>Regular price $49/mo after seats fill</strong></p>
     </div>
-    <div class="hero-right">
-      <div class="hero-card">
-        <div class="hc-badge">✦ Founding 100 Offer</div>
-        <div class="hc-price"><sup>$</sup>97</div>
-        <div class="hc-price-after"><strong>Full first year</strong> · then $29/mo founder rate</div>
-        <div class="hc-term">Regular price launches at $49/mo once 100 seats are gone</div>
-        <div class="spots-wrap">
-          <div class="spots-text"><span>Founder spots remaining</span><strong>100 / 100</strong></div>
-          <div class="spots-bar"><div class="spots-fill"></div></div>
-        </div>
-        <ul class="hc-features">
-          <li>Event Quote Pro™ — create branded client quotes</li>
-          <li>Contract Builder Pro™ — contracts with e-signature</li>
-          <li>Profit Calculator Pro™ — know your numbers</li>
-          <li>Event Prep Pro™ — checklists & shopping lists</li>
-          <li>Vendor Finder Pro™ — your vendor directory</li>
-          <li>Multi-currency · Your brand on every doc</li>
-        </ul>
-        <button class="hc-btn" onclick="window.location.href='https://buy.stripe.com/6oU9ATfchgBx0O24Cv7bW05'">Claim Your Founder Spot →</button>
-        <div class="hc-note">Stripe secure checkout · Instant access · 14-day guarantee</div>
-      </div>
+    <div class="topbar-actions">
+      <div class="ghost-chip">Premium Branded Suite</div>
+      <div class="primary-chip">Quote Builder</div>
     </div>
   </div>
 </div>
 
-<!-- STATS BAR -->
-<div class="stats-wrap">
-  <div class="stats-bar">
-    <div class="stat-item"><span class="stat-dot"></span>Professional quotes in minutes</div>
-    <div class="stat-item"><span class="stat-dot"></span>14 currencies supported</div>
-    <div class="stat-item"><span class="stat-dot"></span>80+ event services covered</div>
-    <div class="stat-item"><span class="stat-dot"></span>Your brand on every document</div>
-    <div class="stat-item"><span class="stat-dot"></span>Works on any device</div>
-  </div>
-</div>
-
-<!-- TOOLS -->
-<div class="tools-wrap" id="tools">
-  <div class="tools-inner">
-    <div class="section-header">
-      <div class="section-label">The Suite</div>
-      <h2 class="section-title">Five tools. One platform.</h2>
-      <p class="section-sub">Every tool built specifically for event business operators. Your founder subscription covers everything — now and as new tools launch.</p>
-    </div>
-    <!-- FEATURED TOOL — spans full width -->
-    <div class="tool-featured">
-      <div class="tf-left">
-        <div class="tf-code">EQ — Event Quote Pro™</div>
-        <div class="tf-name">Create fast, professional quotes<br/>that close clients quicker</div>
-        <p class="tf-desc">Generate fully branded, itemized event quotes with suggested market rates, multi-currency support, tax settings, and your logo — in minutes. Print as PDF or copy to send directly to clients.</p>
-        <div class="tf-tags">
-          <span class="tf-tag">80+ Services</span>
-          <span class="tf-tag">14 Currencies</span>
-          <span class="tf-tag">Your Brand</span>
-          <span class="tf-tag">Tax Settings</span>
-          <span class="tf-tag">PDF Export</span>
-        </div>
+<section class="hero">
+  <div class="hero-card">
+    <div class="eyebrow">Founder's Quote Workspace</div>
+    <div class="hero-grid">
+      <div>
+        <h1 class="hero-title">Build premium quotes fast — with offers, real-time totals, and a catalog that actually feels complete.</h1>
+        <div class="hero-copy">This version keeps the premium suite direction you approved, tightens the structure, and makes the Offer Builder more concise. Start with your three KPP offers, then customize with the restored catalog below.</div>
       </div>
-      <div class="tf-right">
-        <div class="tf-mock">
-          <div class="tf-mock-header">
-            <div style="font-size:0.78rem;font-weight:700;color:var(--gold-bright);">Bear Hug Events</div>
-            <div style="font-size:0.65rem;color:rgba(255,255,255,0.5);text-align:right;">Orlando, FL</div>
-          </div>
-          <div class="tf-mock-body">
-            <div class="tf-mock-title">Event Quote — Sarah Johnson</div>
-            <div class="tf-mock-row"><span>Full Balloon Garland Setup</span><span>$200</span></div>
-            <div class="tf-mock-row"><span>Backdrop &amp; Focal Wall</span><span>$150</span></div>
-            <div class="tf-mock-row"><span>Dessert Table Styling</span><span>$225</span></div>
-            <div class="tf-mock-row"><span>Setup &amp; Breakdown Fee</span><span>$75</span></div>
-            <div class="tf-mock-total"><span>Total</span><span>$650.00</span></div>
-            <div class="tf-mock-deposit">50% deposit due: $325.00</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2x2 COMING SOON GRID -->
-    <div class="coming-grid">
-      <div class="coming-item">
-        <div class="tool-code">CB</div>
-        <div class="tool-name">Contract Builder Pro™</div>
-        <p class="tool-desc">Generate contracts in minutes without legal confusion.</p>
-      </div>
-      <div class="coming-item">
-        <div class="tool-code">PC</div>
-        <div class="tool-name">Profit Calculator Pro™</div>
-        <p class="tool-desc">Know exactly what to charge and how much you are making.</p>
-      </div>
-      <div class="coming-item">
-        <div class="tool-code">EP</div>
-        <div class="tool-name">Event Prep Pro™</div>
-        <p class="tool-desc">Organize every event so nothing falls through the cracks.</p>
-      </div>
-      <div class="coming-item">
-        <div class="tool-code">VF</div>
-        <div class="tool-name">Vendor Finder Pro™</div>
-        <p class="tool-desc">Find reliable vendors fast and build your professional network.</p>
+      <div class="hero-notes">
+        <div class="note-card"><strong>Designed For</strong><span>KPP students and party pros who need beautiful quotes that still feel practical and fast to build.</span></div>
+        <div class="note-card"><strong>Built Around</strong><span>Offers first when you need them. Catalog second. Live quote on the right. Final invoice preview below.</span></div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- FEATURES -->
-<div class="features-wrap">
-  <div class="features-inner">
-    <div class="features-left">
-      <div class="section-label">Why EventPro Suite™</div>
-      <h2 class="section-title">Built for the way you actually work</h2>
-      <div class="features-list">
-        <div class="feat-item">
-          <div class="feat-icon">🌍</div>
-          <div><div class="feat-title">Works Worldwide</div><div class="feat-desc">14 currencies supported. Your business, your market, your currency.</div></div>
-        </div>
-        <div class="feat-item">
-          <div class="feat-icon">🎨</div>
-          <div><div class="feat-title">Fully Branded Documents</div><div class="feat-desc">Your logo, colors, and business name on every quote and contract you send.</div></div>
-        </div>
-        <div class="feat-item">
-          <div class="feat-icon">💰</div>
-          <div><div class="feat-title">Market Rate Guidance</div><div class="feat-desc">Suggested pricing for 80+ event services so you never underprice again.</div></div>
-        </div>
-        <div class="feat-item">
-          <div class="feat-icon">🔒</div>
-          <div><div class="feat-title">Secure Cloud Account</div><div class="feat-desc">Your profile and quotes saved securely. Access from any device, anytime.</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="features-right">
-      <div class="quote-preview-title">Sample Quote Output</div>
-      <div class="qp-mock">
-        <div class="qp-mock-header">
-          <div class="qp-mock-biz">Bear Hug Events</div>
-          <div class="qp-mock-contact">Orlando, FL<br/>bearhug.events</div>
-        </div>
-        <div class="qp-mock-body">
-          <div class="qp-mock-row" style="font-weight:600;color:var(--navy);font-size:0.75rem;padding-bottom:0.5rem;">Event Quote — Sarah Johnson · June 14, 2025</div>
-          <div class="qp-mock-row"><span>Full Balloon Garland Setup</span><span>$200.00</span></div>
-          <div class="qp-mock-row"><span>Backdrop &amp; Focal Wall</span><span>$150.00</span></div>
-          <div class="qp-mock-row"><span>Dessert Table Styling</span><span>$225.00</span></div>
-          <div class="qp-mock-row"><span>Setup &amp; Breakdown Fee</span><span>$75.00</span></div>
-          <div class="qp-mock-total"><span>Total</span><span>$650.00</span></div>
-          <div class="qp-mock-row" style="font-size:0.68rem;color:var(--muted)">Deposit (50%) due now: $325.00 · Balance: $325.00</div>
-        </div>
-      </div>
-      <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:1rem;line-height:1.6;">Generated in under 2 minutes · Branded with your logo and colors · Print or copy to send</p>
-    </div>
-  </div>
-</div>
-
-<!-- QUICK FAQ (above pricing — knocks out top objections) -->
-<div class="quick-faq-wrap">
-  <div class="quick-faq-inner">
-    <div class="quick-faq-header">
-      <div class="section-label">Before You Decide</div>
-      <h2 class="section-title">Common questions</h2>
-    </div>
-    <div class="quick-faq-grid">
-      <div class="quick-faq-item">
-        <div class="qf-q">What exactly do I get for $97?</div>
-        <div class="qf-a">A <strong>full year</strong> of EventPro Suite™ with every tool that exists now and every new tool added during your year — at no extra cost.</div>
-      </div>
-      <div class="quick-faq-item">
-        <div class="qf-q">What happens after my first year?</div>
-        <div class="qf-a">As a founder, you keep the <strong>$29/mo founder rate — yours to keep while subscribed</strong>. Regular pricing will be $49/mo.</div>
-      </div>
-      <div class="quick-faq-item">
-        <div class="qf-q">Is there a real guarantee?</div>
-        <div class="qf-a"><strong>14-day money-back guarantee.</strong> If it's not what you expected, email support and get a full refund. No hoops.</div>
-      </div>
-      <div class="quick-faq-item">
-        <div class="qf-q">Why only 100 founder spots?</div>
-        <div class="qf-a">Founders get my direct attention and input into what gets built next. Once the 100 seats fill, pricing opens at $49/mo for everyone else.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- PRICING -->
-<div class="pricing-wrap" id="pricing">
-  <div class="pricing-inner">
-    <div class="pricing-left">
-      <div class="section-label" style="color:var(--gold)">Founding 100 Offer</div>
-      <h2 class="section-title" style="color:white;">Lock in founder pricing before the 100 seats are gone</h2>
-      <p class="section-sub" style="color:rgba(255,255,255,0.55);">First 100 founders pay $97 for a full year of access, then keep the $29/mo founder rate for as long as you stay subscribed. Everyone after founders pays $49/mo. No exceptions once the spots are gone.</p>
-      <ul class="pricing-bullets">
-        <li>Full first year of Event Quote Pro™ — starting today</li>
-        <li>Every new tool added during your year at no extra cost</li>
-        <li>Founder rate of $29/mo locked in year two onward</li>
-        <li>Multi-currency support for global businesses</li>
-        <li>Your brand on every document you generate</li>
-        <li>Secure cloud account — access from any device</li>
-        <li>14-day money back guarantee — no questions asked</li>
-      </ul>
-    </div>
-    <div class="pricing-card">
-      <div class="pc-top">
+<main class="builder-layout">
+  <div class="workspace">
+    <section class="panel">
+      <div class="panel-header">
         <div>
-          <div class="pc-label">Founding 100</div>
-          <div class="pc-price"><sup>$</sup>97<span class="pc-price-year">/year 1</span></div>
-          <div class="pc-term"><strong>Then $29/mo founder rate</strong><br/>yours to keep while subscribed</div>
+          <h2 class="panel-title">Business & client details</h2>
+          <div class="panel-sub">Set the quote basics first. Your live panel on the right will update while you build so you never have to scroll blind.</div>
         </div>
-        <div class="pc-badge">Limited</div>
+        <div class="section-badge">Step 1</div>
       </div>
-
-      <div class="pc-breakdown">
-        <div class="pc-break-row highlight"><span>Today</span><span>$97 · one payment</span></div>
-        <div class="pc-break-row"><span>Months 1–12</span><span>Full access, no extra charge</span></div>
-        <div class="pc-break-row"><span>Year 2 onward</span><span>$29/mo founder rate</span></div>
-        <div class="pc-break-row future"><span>Regular price (non-founders)</span><span>$49/mo</span></div>
+      <div class="form-grid">
+        <div class="field"><label>Business name</label><input id="bizName" value="Party Biz Hub"></div>
+        <div class="field"><label>Client name</label><input id="clientName"></div>
+        <div class="field"><label>Event type</label><input id="eventType"></div>
+        <div class="field"><label>Event date</label><input id="eventDate" type="date"></div>
+        <div class="field"><label>Expiration date</label><input id="expiryDate" type="date"></div>
+        <div class="field"><label>Currency</label><select id="currency" onchange="handleCurrencyChange(this.value)">
+<option value="$">USD ($)</option>
+<option value="CA$">CAD (CA$)</option>
+<option value="£">GBP (£)</option>
+<option value="€">EUR (€)</option>
+<option value="AED">AED</option>
+<option value="₵">GHS (₵)</option>
+<option value="₦">NGN (₦)</option>
+<option value="R">ZAR (R)</option>
+<option value="custom">Custom</option>
+</select>
+<input id="customCurrency" placeholder="Enter symbol (e.g. KSh, ¥)" style="margin-top:6px;display:none;" oninput="refreshAll()"></div>
+        <div class="field"><label>Tax mode</label><select id="taxMode"><option value="none">No tax</option><option value="included">Tax included</option><option value="added">Add tax</option></select></div>
+        <div class="field"><label>Tax rate (%)</label><input id="taxRate" type="number" value="8"></div>
+        <div class="field"><label>Tax label</label><input id="taxLabel" value="Sales Tax"></div>
+        <div class="field full"><label>Event notes</label><textarea id="eventNotes"></textarea></div>
       </div>
+    </section>
 
-      <div class="pc-spots">
-        <div class="pc-spots-text"><span>Founder spots remaining</span><strong>100 of 100</strong></div>
-        <div class="pc-bar"><div class="pc-fill"></div></div>
+    <section class="panel package-panel collapsed" id="packagePanel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Offer Builder</h2>
+          <div class="panel-sub">Build out your Basic, Premium, and Luxe offers, then customize below using the same service catalog if you need to.</div>
+        </div>
+        <div class="section-badge">Step 2</div>
       </div>
-      <button class="pc-btn" onclick="window.location.href='https://buy.stripe.com/6oU9ATfchgBx0O24Cv7bW05'">Become a Founder — $97 →</button>
-      <p class="pc-note">Secure checkout via Stripe · Instant access after payment<br/>14-day money-back guarantee</p>
-    </div>
+      <div class="package-toolbar">
+        <span><strong style="color:var(--plum-900)">KPP offer method:</strong> start with your three core offers, then drop into the catalog only when you need custom build-outs.</span>
+        <div class="helper-actions">
+          <button class="tiny-btn" onclick="expandPackages()">Expand offers</button>
+          <button class="tiny-btn" onclick="collapsePackages()">Collapse offers</button>
+        </div>
+      </div>
+      <div class="package-grid" id="packageGrid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Service catalog</h2>
+          <div class="panel-sub">Comprehensive quote-builder strength restored: collapsible categories, suggested U.S. market rates, quantity controls, price overrides, and live totals.</div>
+        </div>
+        <div class="section-badge">Step 3</div>
+      </div>
+      <div class="helper-row">
+        <span><strong>Tip:</strong> Start with an offer, then use the catalog to customize, upsell, and fill in missing items fast.</span>
+        <div class="helper-actions">
+          <button class="tiny-btn" onclick="expandAllCats()">Expand all</button>
+          <button class="tiny-btn" onclick="collapseAllCats()">Collapse all</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="custom-item-grid">
+          <div class="field"><label>Custom item</label><input id="customName"></div>
+          <div class="field"><label>Category label</label><input id="customCategory"></div>
+          <div class="field"><label>Qty</label><input id="customQty" type="number" value="1"></div>
+          <div class="field"><label>Unit price</label><input id="customPrice" type="number"></div>
+          <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addCustomItem()">Add custom item</button></div>
+        </div>
+      </div>
+      <div class="catalog" id="catalog"></div>
+    </section>
+
+    <section class="preview-card">
+      <div class="preview-head">
+        <h3>Final quote preview</h3>
+        <p>The right rail stays live while you work, and this full preview gives you the final professional presentation before sending.</p>
+      </div>
+      <div class="preview-body" id="fullPreview"></div>
+    </section>
   </div>
-</div>
 
-<!-- FULL FAQ -->
-<div class="faq-wrap" id="faq">
-  <div class="faq-inner">
-    <div class="faq-header">
-      <div class="section-label">Frequently Asked Questions</div>
-      <h2 class="section-title">Everything you want to know</h2>
-      <p class="section-sub">Still have questions? <a href="mailto:support@eventprosuite.com" style="color:var(--navy);font-weight:600;text-decoration:underline;">Email support</a>.</p>
-    </div>
-
-    <div class="faq-list">
-
-      <details class="faq-item">
-        <summary class="faq-summary">How does the pricing actually work?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>As one of the first 100 founders, you pay <strong>$97 one-time today</strong> and get a full year of EventPro Suite™ access — every tool currently available and every new tool added during your year at no extra cost.</p>
-          <p>After your first year, you move to the <strong>$29/month founder rate — yours to keep while subscribed</strong>. Once the 100 founder spots are gone, pricing for everyone new starts at $49/month.</p>
+  <aside class="side-rail">
+    <section class="summary-card">
+      <div class="summary-head">
+        <div>
+          <h3>Live quote</h3>
+          <p>Always-on summary while you build. No more creating at the top and hunting for the quote at the bottom.</p>
         </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">What happens if I cancel my subscription later?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>The $29/month founder rate is yours to keep <strong>while you stay subscribed</strong>. If you cancel your subscription, you'll lose the founder rate. Rejoining later would be at the then-current regular price ($49/mo or higher).</p>
-          <p>This is how we protect the value of the founder rate for members who stay with us.</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">Is there a refund policy?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>Yes — <strong>14-day money-back guarantee</strong> on your $97 founder payment. If EventPro Suite™ isn't what you expected, email <a href="mailto:support@eventprosuite.com">support@eventprosuite.com</a> within 14 days and we'll refund you in full. No hoops, no "reason required."</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">What tools are actually available right now?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p><strong>Event Quote Pro™ is live and working right now.</strong> You can log in, set up your brand, and start generating professional client quotes in minutes. It supports 80+ event services, 14 currencies, your logo and colors, tax settings, and PDF export.</p>
-          <p>Contract Builder Pro™, Profit Calculator Pro™, Event Prep Pro™, and Vendor Finder Pro™ are the next tools in development. As each launches, founders get them automatically at no extra cost during your first year.</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">Who is EventPro Suite™ built for?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>Event planners, party businesses, balloon artists, event decorators, bounce house operators, event rental companies, photographers, DJs, caterers — anyone running a service-based event business who needs to send professional quotes, track numbers, and look legit to clients.</p>
-          <p>It's especially built for solo operators and small teams who don't have in-house admin or designers.</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">Does it work outside the United States?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>Yes. EventPro Suite™ supports <strong>14 currencies</strong> including USD, EUR, GBP, CAD, AUD, NGN, GHS, ZAR, and more. Your quotes are generated in the currency you choose, with your country-appropriate tax settings.</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">Is my data secure?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>Yes. Your account, profile, and quotes are stored in a secure cloud database with industry-standard encryption. Payments are processed by Stripe — we never see or store your card details.</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">Can I upgrade or change my subscription later?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>Your founder pricing is locked. As long as you stay subscribed continuously, your $29/month founder rate doesn't change — even if regular pricing increases for new customers down the road.</p>
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary class="faq-summary">Who runs EventPro Suite™?<span class="faq-icon">+</span></summary>
-        <div class="faq-body">
-          <p>EventPro Suite™ is built by Monica, founder of Bear Hug Events (a real, operating event business in Orlando, FL) and the Queen of Side Hustles brand. Every tool is designed from the inside of a real event business — not from a tech founder guessing what event pros need.</p>
-          <p>Founders get direct access to Monica and real input into what gets built next.</p>
-        </div>
-      </details>
-
-    </div>
-
-    <div style="text-align:center;margin-top:2.5rem;">
-      <a href="#pricing" class="nav-cta" style="display:inline-block;padding:0.85rem 2rem;font-size:0.9rem;">Become a Founder — $97 →</a>
-    </div>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-brand">EventPro Suite™</div>
-  <div class="footer-links">
-    <a href="#tools">Tools</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
-    <a href="login.html">Sign In</a>
-    <a href="mailto:support@eventprosuite.com">Support</a>
-  </div>
-  <div class="footer-copy">© 2025 EventPro Suite™ · All rights reserved</div>
-</footer>
-
-
+        <div class="summary-badge" id="quoteStatus">Draft</div>
+      </div>
+      <div class="live-mini" id="liveMini"><div class="empty-state">Select an offer, add catalog items, or build a custom line item to see your quote come together here in real time.</div></div>
+      <div class="money-stack">
+        <div class="money-row"><strong>Subtotal</strong><span id="subtotalVal">$0.00</span></div>
+        <div class="money-row"><strong id="taxLabelLive">Tax</strong><span id="taxVal">$0.00</span></div>
+        <div class="money-row total"><strong>Total</strong><span id="grandVal">$0.00</span></div>
+      </div>
+      <div class="deposit-block">
+        <h4>Deposit options</h4>
+        <div class="tier-grid" id="tierGrid"></div>
+        <div class="tier-help" id="tierHelp"></div>
+      </div>
+    </section>
+  </aside>
+</main>
 
 <script>
-// Direct Stripe payment link — no SDK needed
-</script>
-</body>
-</html>
+const depositOptions=[100,250,500,1000];
+let selectedDepositTier=250;
+let activePackageId='premium';
+let customItems=[];
+
+let packages=[
+  {id:'basic',tier:'Basic',name:'Basic Package',description:'Perfect for intimate parties that still need a polished, branded experience.',flatPrice:450,notes:'Starter package for smaller setups.',selectedItems:[]},
+  {id:'premium',tier:'Premium',name:'Premium Package',description:'A fuller event setup with more styling, stronger visual impact, and room for premium add-ons.',flatPrice:850,notes:'Best for clients who want more than the basics.',selectedItems:[]},
+  {id:'luxe',tier:'Luxe',name:'Luxe Package',description:'High-touch premium setup for clients who want the full elevated experience.',flatPrice:1450,notes:'Designed for your premium buyer.',selectedItems:[]}
+];
+
+let catalogData=[
+  {cat:'Kids Experiences & Activities',icon:'🎪',expanded:true,items:[
+    {name:'Teepee / Sleepover Setup (per tent)',suggested:'$50–$100/tent',def:65,min:2,taxable:true,desc:'Sleepover styling package for kids party experiences.',selected:false,qty:2,price:65},
+    {name:'Stuffed Animal / Bear Making Station',suggested:'$200–$500',def:300,min:1,taxable:true,desc:'Hands-on party activity station with guided setup.',selected:false,qty:1,price:300},
+    {name:'Kids Spa Party (per child)',suggested:'$25–$50/child',def:35,min:6,taxable:true,desc:'Mini spa setup and child-based activity pricing.',selected:false,qty:6,price:35},
+    {name:'Slime Making Station',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Interactive slime station with supplies and setup.',selected:false,qty:1,price:200},
+    {name:'Paint & Sip Activity',suggested:'$150–$300',def:200,min:1,taxable:true,desc:'Creative guided paint station for kids or tweens.',selected:false,qty:1,price:200},
+    {name:'DIY Craft Activity Station',suggested:'$100–$250',def:150,min:1,taxable:true,desc:'Custom craft table and activity setup.',selected:false,qty:1,price:150},
+    {name:'Face Painting (per hour)',suggested:'$75–$150/hr',def:100,min:1,taxable:true,desc:'Hourly entertainment add-on.',selected:false,qty:1,price:100},
+    {name:'Balloon Twisting (per hour)',suggested:'$75–$150/hr',def:100,min:1,taxable:true,desc:'Live balloon art entertainment.',selected:false,qty:1,price:100},
+    {name:'Glitter Tattoos (per hour)',suggested:'$75–$125/hr',def:90,min:1,taxable:true,desc:'Interactive glam add-on.',selected:false,qty:1,price:90},
+    {name:'Character Visit (per hour)',suggested:'$150–$400/hr',def:200,min:1,taxable:true,desc:'Character appearance and entertainment.',selected:false,qty:1,price:200}
+  ]},
+  {cat:'Themed Party Items',icon:'🎉',expanded:true,items:[
+    {name:'Themed Backdrop Setup',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Backdrop styling tied to the party theme.',selected:false,qty:1,price:225},
+    {name:'Balloon Garland Installation',suggested:'$150–$350',def:225,min:1,taxable:true,desc:'Signature balloon install for themed parties.',selected:false,qty:1,price:225},
+    {name:'Dessert / Candy Table Styling',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Styled table for desserts, treats, and decor.',selected:false,qty:1,price:225},
+    {name:'Tablescape & Centerpieces',suggested:'$75–$200',def:125,min:1,taxable:true,desc:'Themed tablescape styling.',selected:false,qty:1,price:125},
+    {name:'Full Room Décor Package',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Room transformation with layered decor.',selected:false,qty:1,price:450},
+    {name:'Custom Balloon Bouquets',suggested:'$25–$60 each',def:35,min:2,taxable:true,desc:'Accent bouquets and party moments.',selected:false,qty:2,price:35},
+    {name:'Number / Letter Balloons',suggested:'$20–$50 each',def:30,min:1,taxable:true,desc:'Milestone or statement balloons.',selected:false,qty:1,price:30},
+    {name:'Standalone Balloon Arch',suggested:'$100–$300',def:175,min:1,taxable:true,desc:'Balloon focal point setup.',selected:false,qty:1,price:175},
+    {name:'Setup & Breakdown Fee',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Logistics, labor, and event teardown.',selected:false,qty:1,price:75}
+  ]},
+  {cat:'Rentals',icon:'🎮',expanded:false,items:[
+    {name:'Nerf Battle Package',suggested:'$150–$300',def:200,min:1,taxable:true,desc:'Interactive game rental package.',selected:false,qty:1,price:200},
+    {name:'Outdoor Movie Night Setup',suggested:'$200–$500',def:300,min:1,taxable:true,desc:'Projector, screen, and setup package.',selected:false,qty:1,price:300},
+    {name:'Carnival Games Set (3 games)',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Game rental grouping for event fun.',selected:false,qty:1,price:200},
+    {name:'Giant Yard Games (Jenga, Connect 4)',suggested:'$75–$200',def:100,min:1,taxable:true,desc:'Outdoor activity add-on.',selected:false,qty:1,price:100},
+    {name:'Water Slide Rental (per day)',suggested:'$200–$500/day',def:300,min:1,taxable:true,desc:'Popular large-format rental.',selected:false,qty:1,price:300},
+    {name:'Obstacle Course Rental (per day)',suggested:'$250–$600/day',def:350,min:1,taxable:true,desc:'Premium active rental experience.',selected:false,qty:1,price:350}
+  ]},
+  {cat:'Furniture Rentals',icon:'🪑',expanded:false,items:[
+    {name:'Bounce House Rental (per day)',suggested:'$150–$350/day',def:200,min:1,taxable:true,desc:'Classic party rental for kids events.',selected:false,qty:1,price:200},
+    {name:'Soft Play Set Rental',suggested:'$200–$500/day',def:300,min:1,taxable:true,desc:'Toddler-friendly soft play setup.',selected:false,qty:1,price:300},
+    {name:'Tables (per table)',suggested:'$8–$15/table',def:10,min:1,taxable:true,desc:'Basic table rental pricing.',selected:false,qty:1,price:10},
+    {name:'Chairs (per chair)',suggested:'$1.50–$3/chair',def:2,min:4,taxable:true,desc:'Chair rental pricing.',selected:false,qty:4,price:2},
+    {name:'Kids Table & Chair Set',suggested:'$35–$75/set',def:50,min:1,taxable:true,desc:'Kids seating set rental.',selected:false,qty:1,price:50},
+    {name:'Photo Booth Rental',suggested:'$300–$600',def:400,min:1,taxable:true,desc:'High-value rental add-on.',selected:false,qty:1,price:400},
+    {name:'Backdrop Stand (rental only)',suggested:'$25–$50',def:35,min:1,taxable:true,desc:'Backdrop structure rental.',selected:false,qty:1,price:35}
+  ]},
+  {cat:'Concessions',icon:'🍿',expanded:false,items:[
+    {name:'Popcorn Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Popular food equipment rental.',selected:false,qty:1,price:100},
+    {name:'Cotton Candy Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Sweet concession add-on.',selected:false,qty:1,price:100},
+    {name:'Snow Cone Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Seasonal concession rental.',selected:false,qty:1,price:100},
+    {name:'Hot Dog Roller Rental',suggested:'$75–$125/day',def:90,min:1,taxable:true,desc:'Food service rental.',selected:false,qty:1,price:90},
+    {name:'Nacho Warmer Rental',suggested:'$50–$100/day',def:65,min:1,taxable:true,desc:'Concession support equipment.',selected:false,qty:1,price:65},
+    {name:'Lemonade Dispenser Rental',suggested:'$50–$100/day',def:65,min:1,taxable:true,desc:'Drink service rental.',selected:false,qty:1,price:65},
+    {name:'Full Food Cart Setup',suggested:'$200–$400/day',def:275,min:1,taxable:true,desc:'Expanded concession setup.',selected:false,qty:1,price:275},
+    {name:'Concession Supplies Package',suggested:'$50–$150',def:85,min:1,taxable:true,desc:'Supplies bundle for concession service.',selected:false,qty:1,price:85}
+  ]},
+  {cat:'Baby Shower',icon:'🍼',expanded:false,items:[
+    {name:'Baby Shower Full Setup',suggested:'$200–$600',def:350,min:1,taxable:true,desc:'Baby shower styling and setup.',selected:false,qty:1,price:350},
+    {name:'Gender Reveal Styling Package',suggested:'$150–$400',def:250,min:1,taxable:true,desc:'Reveal-focused event setup.',selected:false,qty:1,price:250},
+    {name:'Balloon Garland & Backdrop',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Photo-friendly shower focal point.',selected:false,qty:1,price:200},
+    {name:'Dessert Table Styling',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Styled sweets and decor table.',selected:false,qty:1,price:225},
+    {name:'Custom Balloon Box Reveal',suggested:'$75–$200',def:125,min:1,taxable:true,desc:'Reveal moment add-on.',selected:false,qty:1,price:125},
+    {name:'Confetti Cannon Setup',suggested:'$50–$150',def:75,min:1,taxable:true,desc:'Reveal or celebration accent.',selected:false,qty:1,price:75},
+    {name:'Diaper Raffle & Game Stations',suggested:'$50–$150',def:75,min:1,taxable:true,desc:'Interactive shower game area.',selected:false,qty:1,price:75},
+    {name:'Mommy-to-Be Floral Crown',suggested:'$35–$100',def:55,min:1,taxable:true,desc:'Small premium keepsake touch.',selected:false,qty:1,price:55}
+  ]},
+  {cat:'Wedding',icon:'💍',expanded:false,items:[
+    {name:'Wedding Ceremony Décor Setup',suggested:'$400–$1,500',def:750,min:1,taxable:true,desc:'Ceremony decor and install.',selected:false,qty:1,price:750},
+    {name:'Wedding Reception Styling',suggested:'$500–$2,000',def:1000,min:1,taxable:true,desc:'Reception room styling and decor.',selected:false,qty:1,price:1000},
+    {name:'Floral Arrangements (per table)',suggested:'$50–$200/table',def:100,min:4,taxable:true,desc:'Wedding floral tablescape pricing.',selected:false,qty:4,price:100},
+    {name:'Bridal Backdrop & Arch',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Statement wedding backdrop.',selected:false,qty:1,price:450},
+    {name:'Head Table Styling',suggested:'$150–$400',def:250,min:1,taxable:true,desc:'Premium table styling upgrade.',selected:false,qty:1,price:250},
+    {name:'Wedding Balloon Installation',suggested:'$300–$1,000',def:500,min:1,taxable:true,desc:'Special-event balloon styling.',selected:false,qty:1,price:500},
+    {name:'Guest Table Centerpieces (per table)',suggested:'$40–$150/table',def:75,min:4,taxable:true,desc:'Per-table wedding decor.',selected:false,qty:4,price:75},
+    {name:'Wedding Day Coordination',suggested:'$500–$1,500',def:800,min:1,taxable:false,desc:'Timeline and event management.',selected:false,qty:1,price:800},
+    {name:'Bridal Shower Setup',suggested:'$200–$600',def:350,min:1,taxable:true,desc:'Wedding-adjacent event package.',selected:false,qty:1,price:350}
+  ]},
+  {cat:'Other original categories',icon:'📂',expanded:false,items:[
+    {name:'Corporate Event Styling',suggested:'$500–$2,500',def:1000,min:1,taxable:true,desc:'Brand-focused event styling.',selected:false,qty:1,price:1000},
+    {name:'Stage / Podium Backdrop',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Corporate or presentation event decor.',selected:false,qty:1,price:450},
+    {name:'Event Photography (per hour)',suggested:'$100–$250/hr',def:150,min:1,taxable:true,desc:'Photography add-on service.',selected:false,qty:1,price:150},
+    {name:'Printed Photo Strip Service',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Keepsake booth add-on.',selected:false,qty:1,price:200},
+    {name:'Day-of Event Coordination',suggested:'$150–$400',def:250,min:1,taxable:false,desc:'Execution and logistics support.',selected:false,qty:1,price:250},
+    {name:'Full Event Planning Package',suggested:'$400–$1,200',def:600,min:1,taxable:false,desc:'Planning, strategy, and coordination.',selected:false,qty:1,price:600},
+    {name:'Vendor Coordination Fee',suggested:'$75–$200',def:100,min:1,taxable:false,desc:'Managing outside partners and vendors.',selected:false,qty:1,price:100},
+    {name:'Rush Booking Fee (under 7 days)',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Short-notice booking surcharge.',selected:false,qty:1,price:75}
+  ]}
+];
+
+function qs(id){return document.getElementById(id)}
+function esc(s){return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function currency(){
+  const val = qs('currency').value;
+  if(val === 'custom'){
+    return qs('customCurr
+function taxCfg(){return {mode:qs('taxMode').value,rate:parseFloat(qs('taxRate').value||'0'),label:qs('taxLabel').value||'Tax'}}
+function pkg(id){return packages.find(p=>p.id===id)}
+function expandPackages(){qs('packagePanel').classList.remove('collapsed')}
+function collapsePackages(){qs('packagePanel').classList.add('collapsed')}
+function setActivePackage(id){activePackageId=id; renderPackages(); refreshAll()}
+function updatePackageField(id,field,val){const p=pkg(id); p[field]=field==='flatPrice'?parseFloat(val||'0'):val; refreshAll()}
+function addServiceToPackage(pid,ci,ii){const p=pkg(pid), key=`${ci}:${ii}`; if(!p.selectedItems.includes(key)) p.selectedItems.push(key); renderPackages(); refreshAll()}
+function renderPackages(){
+  qs('packageGrid').innerHTML=packages.map(p=>`<div class="package-card ${p.id===activePackageId?'active':''}"><div class="package-tier"><span class="dot"></span>${p.tier}</div><h3><input style="border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:20px;color:var(--plum-900)" value="${esc(p.name)}" onchange="updatePackageField('${p.id}','name',this.value)"></h3><p><textarea style="min-height:78px" onchange="updatePackageField('${p.id}','description',this.value)">${esc(p.description)}</textarea></p><div class="package-price"><strong>${currency()}<input type="number" value="${p.flatPrice}" style="width:130px;border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:30px;color:var(--plum-900)" onchange="updatePackageField('${p.id}','flatPrice',this.value)"></strong><span>flat offer</span></div><div class="field"><label>Offer notes</label><input value="${esc(p.notes)}" onchange="updatePackageField('${p.id}','notes',this.value)"></div><div style="margin-top:8px;color:var(--muted);font-size:13px">${p.selectedItems.length} included catalog items selected</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-primary" onclick="setActivePackage('${p.id}')">${p.id===activePackageId?'Active offer':'Use this offer'}</button><button class="btn btn-secondary" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">Build offer items</button></div></div>`).join('');
+}
+function expandAllCats(){catalogData.forEach(c=>c.expanded=true); renderCatalog()}
+function collapseAllCats(){catalogData.forEach(c=>c.expanded=false); renderCatalog()}
+function toggleCategory(i){catalogData[i].expanded=!catalogData[i].expanded; renderCatalog()}
+function toggleService(ci,ii){const it=catalogData[ci].items[ii]; it.selected=!it.selected; if(it.qty<it.min) it.qty=it.min; renderCatalog(); refreshAll()}
+function updateItem(ci,ii,f,v){const it=catalogData[ci].items[ii]; if(f==='qty') it.qty=Math.max(it.min,parseInt(v||it.min,10)); else it[f]=f==='price'?parseFloat(v||'0'):v; refreshAll(); renderCatalog()}
+function renderCatalog(){
+  qs('catalog').innerHTML=catalogData.map((c,ci)=>`<div class="cat-card ${c.expanded?'':'collapsed'}"><button class="cat-head" onclick="toggleCategory(${ci})"><div class="cat-left"><div class="cat-icon">${c.icon}</div><div class="cat-label"><strong>${esc(c.cat)}</strong><span>${c.items.length} services in this category</span></div></div><div class="cat-toggle">⌄</div></button><div class="cat-body">${c.items.map((it,ii)=>`<div class="service-item ${it.selected?'selected':''}"><div class="service-main"><button type="button" class="service-check" onclick="toggleService(${ci},${ii})">${it.selected?'✓':''}</button><div class="service-copy"><strong>${esc(it.name)}</strong><div class="service-meta">${esc(it.desc)}</div><div class="service-hint">Suggested U.S. market rate: ${esc(it.suggested)} · Minimum qty ${it.min}</div><div style="margin-top:10px"><button class="tiny-btn" onclick="addServiceToPackage('${activePackageId}',${ci},${ii})">Add to active offer</button></div></div></div><div class="qty-col"><label>Qty</label><input type="number" min="${it.min}" value="${it.qty}" onchange="updateItem(${ci},${ii},'qty',this.value)"></div><div class="price-col"><label>Unit price</label><input type="number" value="${it.price}" onchange="updateItem(${ci},${ii},'price',this.value)"></div><div class="total-col"><label>Total</label><div class="total-pill">${currency()}${(it.qty*it.price).toFixed(2)}
