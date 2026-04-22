@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vendor Finder Pro™ | EventPro Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0d1b3e;--gold:#c9a84c;--gold-bright:#d4ae52;--off:#f7f8fc;--border:#dde3ef;--slate-900:#0f172a;--slate-700:#334155;--slate-600:#475569;--muted:#7a8aaa;--success:#1e8c5a;--danger:#dc2626;--user-primary:var(--navy);--user-accent:var(--gold);--user-primary-soft:#e6ebf5;--user-primary-contrast:#fff}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--slate-900);min-height:100vh}
+.suite-bar{background:var(--navy);padding:.7rem 2rem;display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:.82rem;flex-wrap:wrap;gap:.5rem}
+.suite-bar-left{color:var(--gold-bright);font-weight:600}
+.suite-bar-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.suite-nav-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:.72rem;font-weight:600;padding:.4rem .85rem;border-radius:6px;cursor:pointer;text-decoration:none}
+.suite-nav-btn:hover{background:rgba(255,255,255,.15)}
+.suite-nav-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.suite-logout{background:transparent;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);padding:.35rem .8rem;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:inherit}
+.user-name{font-size:.75rem;color:rgba(255,255,255,.75)}
+.page-header{background:var(--navy);padding:2rem;color:#fff;border-bottom:3px solid var(--gold)}
+.page-header-inner{max-width:1100px;margin:0 auto}
+.page-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,4vw,2.5rem);margin-bottom:.4rem}
+.page-sub{font-size:.9rem;color:rgba(255,255,255,.7);max-width:560px;line-height:1.7}
+.wrap{max-width:1100px;margin:0 auto;padding:2rem}
+
+.toolbar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1.5rem;display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.toolbar input[type="text"]{flex:1;min-width:200px;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit}
+.toolbar input:focus{outline:none;border-color:var(--user-primary)}
+.toolbar select{padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;background:#fff}
+
+.vendor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
+.vendor-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.3rem;transition:all .15s;position:relative}
+.vendor-card:hover{border-color:var(--user-primary);box-shadow:0 6px 20px rgba(13,27,62,.08)}
+.vendor-card.add{border-style:dashed;text-align:center;min-height:180px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--user-primary);font-weight:600}
+.vendor-card.add:hover{background:var(--user-primary-soft)}
+.v-name{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--user-primary);font-weight:700;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem}
+.v-cat{display:inline-block;background:var(--user-primary-soft);color:var(--user-primary);font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:50px;margin-bottom:.7rem;text-transform:uppercase;letter-spacing:.05em}
+.v-contact{font-size:.82rem;color:var(--slate-700);line-height:1.8;margin-bottom:.7rem}
+.v-contact a{color:var(--user-primary);text-decoration:none}
+.v-contact a:hover{text-decoration:underline}
+.v-notes{font-size:.8rem;color:var(--slate-600);line-height:1.5;margin-bottom:.7rem;background:var(--off);padding:.6rem .8rem;border-radius:6px;border-left:3px solid var(--user-accent)}
+.v-rating{color:var(--user-accent);font-size:1rem;letter-spacing:.1em;margin-bottom:.5rem}
+.v-stars-empty{color:var(--border)}
+.v-actions{display:flex;gap:.4rem;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--off)}
+.v-actions button{flex:1;padding:.45rem .7rem;font-size:.75rem;font-weight:600;border-radius:6px;cursor:pointer;font-family:inherit}
+.v-edit{background:var(--user-primary);color:#fff;border:none}
+.v-delete{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
+.v-preferred{position:absolute;top:.8rem;right:.8rem;background:var(--user-accent);color:var(--navy);font-size:.65rem;font-weight:700;padding:.2rem .5rem;border-radius:50px;letter-spacing:.05em}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.modal.show{display:flex}
+.modal-content{background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:2rem}
+.modal h2{font-family:'Cormorant Garamond',serif;color:var(--navy);font-size:1.5rem;margin-bottom:1.2rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:.35rem}
+.field.full{grid-column:1 / -1}
+.field label{font-size:.78rem;font-weight:700;color:var(--slate-700)}
+.field input,.field select,.field textarea{padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--user-primary)}
+
+.rating-input{display:flex;gap:.3rem}
+.rating-input button{background:transparent;border:none;font-size:1.6rem;color:var(--border);cursor:pointer;padding:0}
+.rating-input button.active{color:var(--user-accent)}
+
+.btn{padding:.75rem 1.4rem;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none}
+.btn-navy{background:var(--user-primary);color:#fff}
+.btn-gold{background:var(--user-accent);color:var(--navy)}
+.btn-outline{background:#fff;color:var(--user-primary);border:1.5px solid var(--border)}
+.btn-row{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);flex-wrap:wrap}
+
+.empty-state{text-align:center;padding:4rem 1rem;background:#fff;border:1px dashed var(--border);border-radius:14px}
+.empty-state h3{font-family:'Cormorant Garamond',serif;color:var(--user-primary);margin-bottom:.5rem}
+.empty-state p{color:var(--slate-600);font-size:.9rem;margin-bottom:1.5rem}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:.85rem 1.4rem;border-radius:8px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1100}
+.toast.show{opacity:1}
+.auth-gate{position:fixed;inset:0;background:var(--navy);display:none;align-items:center;justify-content:center;z-index:9999;color:#fff;text-align:center;padding:2rem}
+.auth-gate.show{display:flex}
+.auth-gate a{background:var(--gold);color:var(--navy);padding:.8rem 2rem;border-radius:8px;text-decoration:none;font-weight:700;margin-top:1.5rem;display:inline-block}
+
+.stats-bar{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.85rem 1.1rem;flex:1;min-width:140px}
+.stat-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate-600);margin-bottom:.2rem}
+.stat-value{font-size:1.3rem;font-weight:700;color:var(--user-primary)}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div><h2 style="font-family:'Cormorant Garamond',serif;color:var(--gold-bright);margin-bottom:.8rem">Sign in required</h2><p style="color:rgba(255,255,255,.7)">Please sign in to continue.</p><a href="login.html">Sign In →</a></div></div>
+
+<div class="suite-bar" id="suiteBar" style="display:none">
+  <div class="suite-bar-left">EventPro Suite™ · Vendor Finder Pro™</div>
+  <div class="suite-bar-right">
+    <a href="app.html" class="suite-nav-btn">📄 Quote</a>
+    <a href="contract.html" class="suite-nav-btn">📝 Contract</a>
+    <a href="profit.html" class="suite-nav-btn">💰 Profit</a>
+    <a href="prep.html" class="suite-nav-btn">📋 Prep</a>
+    <a href="vendors.html" class="suite-nav-btn active">🤝 Vendors</a>
+    <div class="user-name" id="userName">Welcome</div>
+    <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Vendor Finder Pro™</div>
+    <h1 class="page-title">Your trusted vendor network. One tap away.</h1>
+    <p class="page-sub">Build your vendor directory. Tag favorites. Search by category. Never lose a contact again.</p>
+  </div>
+</div>
+
+<main class="wrap">
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="🔍 Search vendors by name, category, or notes..." oninput="renderVendors()"/>
+  <select id="categoryFilter" onchange="renderVendors()">
+    <option value="">All Categories</option>
+  </select>
+  <select id="ratingFilter" onchange="renderVendors()">
+    <option value="0">All Ratings</option>
+    <option value="4">4+ Stars</option>
+    <option value="5">5 Stars Only</option>
+  </select>
+  <button class="btn btn-gold" onclick="openAddModal()">+ Add Vendor</button>
+</div>
+
+<div id="vendorsList"></div>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal" id="vendorModal">
+  <div class="modal-content">
+    <h2 id="modalTitle">Add Vendor</h2>
+    <div class="form-grid">
+      <div class="field full"><label>Vendor / Business Name *</label><input type="text" id="vName" placeholder="e.g. Balloons by Grace"/></div>
+      <div class="field"><label>Category *</label>
+        <select id="vCategory">
+          <option>Balloons</option>
+          <option>Bounce Houses</option>
+          <option>Bakery / Desserts</option>
+          <option>Catering</option>
+          <option>Characters / Entertainment</option>
+          <option>DJ / Music</option>
+          <option>Event Rentals</option>
+          <option>Face Painting</option>
+          <option>Florals</option>
+          <option>Food Carts</option>
+          <option>Linens / Tableware</option>
+          <option>Party Supplies</option>
+          <option>Photography</option>
+          <option>Photo Booth</option>
+          <option>Soft Play</option>
+          <option>Tents / Slumber</option>
+          <option>Venues</option>
+          <option>Videography</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Contact Name</label><input type="text" id="vContact" placeholder="Owner or rep"/></div>
+      <div class="field"><label>Phone</label><input type="tel" id="vPhone" placeholder="(407) 555-0100"/></div>
+      <div class="field"><label>Email</label><input type="email" id="vEmail" placeholder="hello@vendor.com"/></div>
+      <div class="field"><label>Website / Instagram</label><input type="text" id="vWebsite" placeholder="vendor.com or @handle"/></div>
+      <div class="field full"><label>Location / City</label><input type="text" id="vLocation" placeholder="Orlando, FL"/></div>
+      <div class="field"><label>Rating</label>
+        <div class="rating-input" id="ratingInput">
+          <button type="button" data-r="1">★</button>
+          <button type="button" data-r="2">★</button>
+          <button type="button" data-r="3">★</button>
+          <button type="button" data-r="4">★</button>
+          <button type="button" data-r="5">★</button>
+        </div>
+      </div>
+      <div class="field"><label style="display:flex;align-items:center;gap:.4rem;margin-top:1.5rem"><input type="checkbox" id="vPreferred" style="width:18px;height:18px"/> ⭐ Mark as Preferred Vendor</label></div>
+      <div class="field full"><label>Notes / Why You Like Them</label><textarea id="vNotes" rows="3" placeholder="Reliable, fair prices, fast response time..."></textarea></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-navy" onclick="saveVendor()" id="saveBtn">💾 Save Vendor</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,vendors=[],editingId=null,currentRating=0;
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){document.getElementById('authGate').classList.add('show');return}
+  currentUser=session.user;
+  document.getElementById('suiteBar').style.display='flex';
+  document.getElementById('userName').textContent=session.user.email||'Welcome';
+  try{
+    const{data:p}=await sb.from('profiles').select('profile_data').eq('id',session.user.id).single();
+    if(p&&p.profile_data&&p.profile_data.brandPrimary)applyBrand(p.profile_data.brandPrimary,p.profile_data.brandAccent||'#c9a84c');
+  }catch(e){}
+  await loadVendors();
+  setupRatingInput();
+}
+
+function applyBrand(primary,accent){
+  const r=document.documentElement;
+  r.style.setProperty('--user-primary',primary);r.style.setProperty('--user-accent',accent);
+  r.style.setProperty('--navy',primary);r.style.setProperty('--gold',accent);r.style.setProperty('--gold-bright',accent);
+  r.style.setProperty('--user-primary-soft',primary+'14');
+}
+
+async function loadVendors(){
+  try{
+    const{data}=await sb.from('vendors').select('*').eq('user_id',currentUser.id).order('preferred',{ascending:false}).order('name',{ascending:true});
+    vendors=data||[];
+    updateCategoryFilter();
+    renderVendors();
+    renderStats();
+  }catch(e){vendors=[];renderVendors()}
+}
+
+function updateCategoryFilter(){
+  const cats=[...new Set(vendors.map(v=>v.category))].sort();
+  const sel=document.getElementById('categoryFilter');
+  sel.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option>${escapeHtml(c)}</option>`).join('');
+}
+
+function renderStats(){
+  const total=vendors.length;
+  const preferred=vendors.filter(v=>v.preferred).length;
+  const cats=new Set(vendors.map(v=>v.category)).size;
+  const avgRating=total?(vendors.reduce((s,v)=>s+(v.rating||0),0)/vendors.filter(v=>v.rating).length).toFixed(1):'—';
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat"><div class="stat-label">Total Vendors</div><div class="stat-value">${total}</div></div>
+    <div class="stat"><div class="stat-label">⭐ Preferred</div><div class="stat-value">${preferred}</div></div>
+    <div class="stat"><div class="stat-label">Categories</div><div class="stat-value">${cats}</div></div>
+    <div class="stat"><div class="stat-label">Avg Rating</div><div class="stat-value">${avgRating}${avgRating!=='—'?'★':''}</div></div>`;
+}
+
+function renderVendors(){
+  const search=(document.getElementById('searchInput').value||'').toLowerCase();
+  const cat=document.getElementById('categoryFilter').value;
+  const minRating=parseInt(document.getElementById('ratingFilter').value)||0;
+
+  let filtered=vendors.filter(v=>{
+    if(cat&&v.category!==cat)return false;
+    if(minRating&&(v.rating||0)<minRating)return false;
+    if(search){
+      const hay=[v.name,v.category,v.contact_name,v.notes,v.location].filter(Boolean).join(' ').toLowerCase();
+      if(!hay.includes(search))return false;
+    }
+    return true;
+  });
+
+  const list=document.getElementById('vendorsList');
+  if(!filtered.length&&!vendors.length){
+    list.innerHTML='<div class="empty-state"><div style="font-size:3rem;margin-bottom:.5rem">🤝</div><h3>Build your vendor network</h3><p>Add your trusted vendors so you always have their info one tap away.</p><button class="btn btn-gold" onclick="openAddModal()">+ Add Your First Vendor</button></div>';
+    return;
+  }
+  if(!filtered.length){
+    list.innerHTML='<div class="empty-state"><h3>No matches</h3><p>Try a different search or filter.</p></div>';
+    return;
+  }
+
+  list.innerHTML='<div class="vendor-grid">'+
+    filtered.map(v=>{
+      const stars='★'.repeat(v.rating||0)+'<span class="v-stars-empty">'+'★'.repeat(5-(v.rating||0))+'</span>';
+      return `<div class="vendor-card">
+        ${v.preferred?'<div class="v-preferred">⭐ Preferred</div>':''}
+        <div class="v-name">${escapeHtml(v.name)}</div>
+        <span class="v-cat">${escapeHtml(v.category)}</span>
+        ${v.rating?`<div class="v-rating">${stars}</div>`:''}
+        <div class="v-contact">
+          ${v.contact_name?`<div><strong>${escapeHtml(v.contact_name)}</strong></div>`:''}
+          ${v.phone?`<div>📞 <a href="tel:${v.phone}">${escapeHtml(v.phone)}</a></div>`:''}
+          ${v.email?`<div>✉️ <a href="mailto:${v.email}">${escapeHtml(v.email)}</a></div>`:''}
+          ${v.website?`<div>🌐 <a href="${v.website.startsWith('http')?v.website:'https://'+v.website}" target="_blank">${escapeHtml(v.website)}</a></div>`:''}
+          ${v.location?`<div>📍 ${escapeHtml(v.location)}</div>`:''}
+        </div>
+        ${v.notes?`<div class="v-notes">${escapeHtml(v.notes)}</div>`:''}
+        <div class="v-actions">
+          <button class="v-edit" onclick="openEditModal('${v.id}')">Edit</button>
+          <button class="v-delete" onclick="deleteVendor('${v.id}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('')+
+    '<div class="vendor-card add" onclick="openAddModal()"><div>+<br>Add Vendor</div></div>'+
+    '</div>';
+}
+
+function setupRatingInput(){
+  document.querySelectorAll('#ratingInput button').forEach(btn=>{
+    btn.onclick=()=>{
+      const r=parseInt(btn.dataset.r);
+      currentRating=currentRating===r?0:r;
+      updateRatingDisplay();
+    };
+  });
+}
+
+function updateRatingDisplay(){
+  document.querySelectorAll('#ratingInput button').forEach(btn=>{
+    btn.classList.toggle('active',parseInt(btn.dataset.r)<=currentRating);
+  });
+}
+
+function openAddModal(){
+  editingId=null;currentRating=0;
+  document.getElementById('modalTitle').textContent='Add Vendor';
+  ['vName','vContact','vPhone','vEmail','vWebsite','vLocation','vNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('vCategory').selectedIndex=0;
+  document.getElementById('vPreferred').checked=false;
+  updateRatingDisplay();
+  document.getElementById('vendorModal').classList.add('show');
+}
+
+function openEditModal(id){
+  const v=vendors.find(x=>x.id===id);if(!v)return;
+  editingId=id;currentRating=v.rating||0;
+  document.getElementById('modalTitle').textContent='Edit Vendor';
+  document.getElementById('vName').value=v.name||'';
+  document.getElementById('vCategory').value=v.category||'Other';
+  document.getElementById('vContact').value=v.contact_name||'';
+  document.getElementById('vPhone').value=v.phone||'';
+  document.getElementById('vEmail').value=v.email||'';
+  document.getElementById('vWebsite').value=v.website||'';
+  document.getElementById('vLocation').value=v.location||'';
+  document.getElementById('vNotes').value=v.notes||'';
+  document.getElementById('vPreferred').checked=!!v.preferred;
+  updateRatingDisplay();
+  document.getElementById('vendorModal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('vendorModal').classList.remove('show')}
+
+async function saveVendor(){
+  const name=document.getElementById('vName').value.trim();
+  if(!name){alert('Vendor name is required');return}
+  const payload={
+    user_id:currentUser.id,
+    name,
+    category:document.getElementById('vCategory').value,
+    contact_name:document.getElementById('vContact').value.trim()||null,
+    phone:document.getElementById('vPhone').value.trim()||null,
+    email:document.getElementById('vEmail').value.trim()||null,
+    website:document.getElementById('vWebsite').value.trim()||null,
+    location:document.getElementById('vLocation').value.trim()||null,
+    notes:document.getElementById('vNotes').value.trim()||null,
+    rating:currentRating||null,
+    preferred:document.getElementById('vPreferred').checked
+  };
+  try{
+    if(editingId){
+      const{error}=await sb.from('vendors').update(payload).eq('id',editingId);
+      if(error)throw error;
+    }else{
+      const{error}=await sb.from('vendors').insert(payload);
+      if(error)throw error;
+    }
+    closeModal();
+    await loadVendors();
+    showToast('✓ Vendor saved');
+  }catch(e){alert('Save failed: '+e.message)}
+}
+
+async function deleteVendor(id){
+  const v=vendors.find(x=>x.id===id);if(!v)return;
+  if(!confirm('Delete '+v.name+'?'))return;
+  try{
+    const{error}=await sb.from('vendors').delete().eq('id',id);
+    if(error)throw error;
+    showToast('Deleted');
+    await loadVendors();
+  }catch(e){alert('Delete failed: '+e.message)}
+}
+
+function escapeHtml(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+async function handleLogout(){await sb.auth.signOut();window.location.href='login.html'}
+init();
+</script>
+</body>
+</html>
