@@ -439,6 +439,12 @@ function qs(id){return document.getElementById(id)}
 function esc(s){return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function currency(){
   const val = qs('currency').value;
+  if (val === 'custom'){
+    return qs('customCurrency').value || '';
+  }
+  return val;
+}
+  const val = qs('currency').value;
   if(val === 'custom'){
     return qs('customCurr
 function taxCfg(){return {mode:qs('taxMode').value,rate:parseFloat(qs('taxRate').value||'0'),label:qs('taxLabel').value||'Tax'}}
