@@ -65,6 +65,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
   text-decoration: none;
 }
 .suite-nav-btn:hover { background: rgba(255,255,255,0.15); }
+.suite-nav-btn.active { background: var(--gold); color: var(--navy); border-color: var(--gold); }
 .suite-logout {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.25);
@@ -595,8 +596,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--
 <div class="suite-bar" id="suiteBar" style="display:none;">
   <div class="suite-bar-left">EventPro Suite™ &nbsp;·&nbsp; Contract Builder Pro™</div>
   <div class="suite-bar-right">
-    <a href="app.html" class="suite-nav-btn">← Dashboard</a>
-    <a href="app.html" class="suite-nav-btn">📄 Quote Pro</a>
+    <a href="app.html" class="suite-nav-btn">📄 Quote</a>
+    <a href="contract.html" class="suite-nav-btn active">📝 Contract</a>
+    <a href="profit.html" class="suite-nav-btn">💰 Profit</a>
+    <a href="prep.html" class="suite-nav-btn">📋 Prep</a>
+    <a href="vendors.html" class="suite-nav-btn">🤝 Vendors</a>
     <button class="suite-nav-btn" onclick="showMyContracts()">📋 My Contracts</button>
     <div class="user-name" id="userName">Welcome</div>
     <button class="suite-logout" onclick="handleLogout()">Sign Out</button>
