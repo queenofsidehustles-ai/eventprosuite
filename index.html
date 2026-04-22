@@ -1,271 +1,1597 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Party Biz Hub | Quote Builder</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --plum-900:#4A2B63;
-  --plum-800:#5A3476;
-  --plum-700:#6A417E;
-  --mauve-500:#A67BB5;
-  --pink-400:#E6A2BE;
-  --gold-500:#C9A227;
-  --cream:#FCF8F4;
-  --ink:#1F1A24;
-  --muted:#6C6473;
-  --line:#EAE3ED;
-  --line-strong:#DDD1E5;
-  --shadow-sm:0 8px 24px rgba(59,35,81,.06);
-  --shadow:0 16px 45px rgba(61,39,85,.10);
-  --shadow-lg:0 24px 70px rgba(61,39,85,.15);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#FFFDFC 0%, var(--cream) 55%, #FFFDFC 100%)}
-.topbar{position:sticky;top:0;z-index:100;background:rgba(255,253,252,.85);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,43,99,.08)}
-.topbar-inner{max-width:1440px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:18px}
-.brand-wrap{display:flex;align-items:center;gap:14px}
-.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#5A3476,#A67BB5 58%,#E6A2BE);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:0 10px 25px rgba(90,52,118,.22)}
-.brand-name{font-family:'Playfair Display',serif;font-size:24px;line-height:1;color:var(--plum-900)}
-.brand-name span{color:var(--mauve-500)}
-.brand-sub{margin-top:4px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ghost-chip,.primary-chip{border-radius:999px;padding:9px 12px;font-size:12px;font-weight:700}
-.ghost-chip{background:#fff;border:1px solid rgba(74,43,99,.08);color:var(--muted)}
-.primary-chip{background:linear-gradient(135deg,#5A3476,#8E67A6);color:#fff;box-shadow:0 10px 25px rgba(90,52,118,.20)}
-.builder-layout{max-width:1440px;margin:0 auto;padding:22px 24px 48px;display:grid;grid-template-columns:minmax(0,1.55fr) 420px;gap:22px;align-items:start}
-.workspace{display:flex;flex-direction:column;gap:18px}
-.panel{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);padding:22px}
-.panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
-.panel-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--plum-900);line-height:1;margin:0}
-.panel-sub{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.7;max-width:680px}
-.section-badge{border-radius:999px;padding:8px 12px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.16));color:var(--plum-800);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;white-space:nowrap}
-.notice{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg, rgba(90,52,118,.05), rgba(230,162,190,.09));border:1px solid rgba(166,123,181,.14)}
-.notice strong{display:block;font-size:13px;color:var(--plum-900)}
-.notice span{display:block;font-size:13px;line-height:1.6;color:var(--muted)}
-.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field.full{grid-column:1/-1}
-.field label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-input,select,textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font:inherit;padding:14px 15px;outline:none;transition:.18s ease}
-textarea{min-height:94px;resize:vertical}
-input:focus,select:focus,textarea:focus{border-color:#CDB9D7;box-shadow:0 0 0 4px rgba(166,123,181,.10)}
-.package-toolbar,.helper-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));border:1px solid rgba(166,123,181,.14)}
-.package-toolbar span,.helper-row span{font-size:13px;color:var(--muted)}
-.helper-row strong,.package-toolbar strong{color:var(--plum-900)}
-.helper-actions{display:flex;gap:8px;flex-wrap:wrap}
-.tiny-btn{border:none;cursor:pointer;background:#fff;color:var(--plum-800);border:1px solid var(--line-strong);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700}
-.package-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.package-panel.collapsed .package-grid{display:none}
-.package-panel.collapsed .package-toolbar{margin-bottom:0}
-.package-card{border-radius:22px;padding:18px;border:1px solid var(--line);background:radial-gradient(circle at top right, rgba(230,162,190,.12), transparent 22%),linear-gradient(180deg, rgba(255,255,255,.98), rgba(250,245,252,.95));box-shadow:var(--shadow-sm)}
-.package-card.active{border-color:#D8C6E1;box-shadow:0 16px 40px rgba(90,52,118,.10)}
-.package-tier{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg, rgba(90,52,118,.10), rgba(230,162,190,.16));color:var(--plum-800);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
-.package-tier .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--plum-700),var(--pink-400))}
-.package-card h3{margin:14px 0 6px;font-size:20px;font-family:'Playfair Display',serif;color:var(--plum-900)}
-.package-card p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.65}
-.package-total{margin-top:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg, rgba(201,162,39,.12), rgba(230,162,190,.10));border:1px solid rgba(201,162,39,.18);display:flex;justify-content:space-between;gap:10px;align-items:center}
-.package-total strong{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.package-total span{font-size:18px;font-weight:800;color:var(--plum-900)}
-.package-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.btn{appearance:none;border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:14px;padding:13px 16px;transition:.18s ease}
-.btn-primary{color:#fff;background:linear-gradient(135deg,#5A3476 0%,#8E67A6 100%);box-shadow:0 12px 30px rgba(90,52,118,.22)}
-.btn-secondary{background:#fff;color:var(--plum-800);border:1px solid var(--line-strong)}
-.catalog{display:flex;flex-direction:column;gap:12px}
-.cat-card{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
-.cat-head{width:100%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.10));padding:16px 18px;text-align:left}
-.cat-left{display:flex;align-items:center;gap:14px;min-width:0}
-.cat-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg, rgba(90,52,118,.16), rgba(230,162,190,.20));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.cat-label strong{font-size:15px;color:var(--plum-900)}
-.cat-label span{display:block;margin-top:4px;font-size:12px;color:var(--muted);opacity:.8}
-.cat-toggle{color:var(--plum-800);font-size:18px;transition:transform .18s ease}
-.cat-card.collapsed .cat-toggle{transform:rotate(-90deg)}
-.cat-card.collapsed .cat-body{display:none}
-.cat-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
-.service-item{border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;grid-template-columns:minmax(0,1.2fr) 90px 120px 104px;gap:12px;align-items:start;background:linear-gradient(180deg,#fff,#FFFEFD)}
-.service-item.selected{border-color:#D8C6E1;background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,239,248,.52));box-shadow:0 12px 30px rgba(90,52,118,.06)}
-.service-main{display:flex;gap:12px}.service-check{margin-top:2px;width:20px;height:20px;border-radius:6px;border:1.5px solid #C9BED0;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0;background:#fff}.service-item.selected .service-check{background:linear-gradient(135deg,#5A3476,#A67BB5);border-color:transparent}
-.service-copy strong{display:block;color:var(--ink);font-size:14px;line-height:1.45}
-.service-copy .service-meta{margin-top:4px;font-size:12px;color:var(--muted);line-height:1.5}
-.service-copy .service-hint{display:inline-flex;align-items:center;gap:8px;margin-top:10px;border-radius:999px;padding:6px 10px;background:linear-gradient(135deg, rgba(30,140,90,.08), rgba(201,162,39,.10));color:#4F5B35;font-size:11px;font-weight:700}
-.qty-col label,.price-col label,.total-col label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;font-weight:700}
-.qty-col input,.price-col input{text-align:center;padding:12px 10px}.total-pill{margin-top:21px;min-height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));color:var(--plum-900);font-weight:700;font-size:14px;border:1px solid rgba(166,123,181,.14)}
-.custom-wrap{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
-.custom-item-grid{display:grid;grid-template-columns:1.3fr 1fr 100px 110px auto;gap:10px;align-items:end}
-.side-rail{position:sticky;top:92px;display:flex;flex-direction:column;gap:16px}
-.summary-card{border-radius:28px;padding:22px;color:#fff;background:radial-gradient(circle at top left, rgba(255,255,255,.10), transparent 25%),radial-gradient(circle at bottom right, rgba(230,162,190,.16), transparent 24%),linear-gradient(155deg,#4A2B63 0%,#6A417E 55%,#A67BB5 100%);box-shadow:var(--shadow-lg)}
-.summary-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:16px}.summary-head h3{margin:0;font-size:24px;font-family:'Playfair Display',serif}.summary-head p{margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.75)}.summary-badge{border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.12);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
-.live-mini{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px}.live-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}.live-row strong{display:block;font-size:13px}.live-row small{display:block;margin-top:4px;color:rgba(255,255,255,.65);line-height:1.45}.live-row span{font-weight:700;white-space:nowrap}
-.empty-state{border-radius:18px;padding:18px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.74);font-size:14px;line-height:1.75}
-.money-stack{margin-top:16px;display:grid;gap:10px}.money-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08)}.money-row strong{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.66)}.money-row span{font-size:18px;font-weight:700}.money-row.total{background:linear-gradient(135deg, rgba(201,162,39,.18), rgba(255,255,255,.12));border:1px solid rgba(201,162,39,.28)}.money-row.total span{color:#F6E5A6}
-.deposit-block{margin-top:16px;border-radius:20px;padding:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}.deposit-block h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.72)}.tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tier-btn{border:none;border-radius:14px;padding:12px 10px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}.tier-btn.active{background:linear-gradient(135deg, rgba(201,162,39,.92), rgba(230,162,190,.40));color:#3A2A1A}.tier-btn.missing{opacity:.55}.tier-help{margin-top:10px;font-size:12px;line-height:1.6;color:rgba(255,255,255,.70)}
-.preview-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);overflow:hidden}.preview-head{padding:22px;background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));border-bottom:1px solid var(--line)}.preview-head h3{margin:0;font-family:'Playfair Display',serif;font-size:24px;color:var(--plum-900)}.preview-head p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.7}.preview-body{padding:22px}
-.invoice-shell{border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}.invoice-top{padding:24px;background:linear-gradient(135deg,#5A3476 0%,#6A417E 55%,#A67BB5 100%);color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.invoice-top h4{margin:0;font-family:'Playfair Display',serif;font-size:26px}.invoice-top p{margin:8px 0 0;color:rgba(255,255,255,.74);line-height:1.6;font-size:13px}.invoice-meta{padding:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;border-bottom:1px solid var(--line)}.meta-box small{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}.meta-box strong{display:block;margin-top:6px;font-size:14px;color:var(--ink);line-height:1.5}.invoice-table{padding:10px 22px 0}.invoice-row{display:grid;grid-template-columns:1.6fr .7fr .7fr .8fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}.invoice-row.head strong{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.invoice-row span{font-size:14px;line-height:1.55}.invoice-totals{margin-left:auto;width:min(360px,100%);padding:18px 22px 22px}.invoice-total-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.invoice-total-row.grand{font-weight:800;font-size:18px;color:var(--plum-900)}.invoice-deposit{margin-top:16px;border-radius:18px;padding:16px;background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.14));border:1px solid rgba(166,123,181,.14);color:var(--ink);line-height:1.7;font-size:14px}
-@media (max-width:1180px){.builder-layout{grid-template-columns:1fr}.side-rail{position:relative;top:0}}@media (max-width:960px){.package-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}}@media (max-width:760px){.topbar-inner,.builder-layout{padding-left:16px;padding-right:16px}.form-grid,.custom-item-grid,.invoice-meta,.invoice-row,.service-item{grid-template-columns:1fr}.invoice-totals{width:100%}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Party Biz Hub | Quote Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --plum-900:#4A2B63;
+      --plum-800:#5A3476;
+      --plum-700:#6A417E;
+      --mauve-500:#A67BB5;
+      --pink-400:#E6A2BE;
+      --gold-500:#C9A227;
+      --cream:#FCF8F4;
+      --ink:#1F1A24;
+      --muted:#6C6473;
+      --line:#EAE3ED;
+      --line-strong:#DDD1E5;
+      --shadow-sm:0 8px 24px rgba(59,35,81,.06);
+      --shadow:0 16px 45px rgba(61,39,85,.10);
+      --shadow-lg:0 24px 70px rgba(61,39,85,.15);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:'Inter',system-ui,sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#FFFDFC 0%, var(--cream) 55%, #FFFDFC 100%);
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(255,253,252,.88);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(74,43,99,.08);
+    }
+    .topbar-inner{
+      max-width:1440px;
+      margin:0 auto;
+      padding:14px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+    }
+    .brand-wrap{display:flex;align-items:center;gap:14px}
+    .brand-mark{
+      width:42px;height:42px;border-radius:14px;
+      background:linear-gradient(135deg,#5A3476,#A67BB5 58%,#E6A2BE);
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:18px;
+      box-shadow:0 10px 25px rgba(90,52,118,.22);
+    }
+    .brand-name{
+      font-family:'Playfair Display',serif;
+      font-size:24px;
+      line-height:1;
+      color:var(--plum-900);
+    }
+    .brand-name span{color:var(--mauve-500)}
+    .brand-sub{
+      margin-top:4px;
+      font-size:11px;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:600;
+    }
+    .topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .ghost-chip,.primary-chip{
+      border-radius:999px;
+      padding:9px 12px;
+      font-size:12px;
+      font-weight:700;
+    }
+    .ghost-chip{
+      background:#fff;
+      border:1px solid rgba(74,43,99,.08);
+      color:var(--muted);
+    }
+    .primary-chip{
+      background:linear-gradient(135deg,#5A3476,#8E67A6);
+      color:#fff;
+      box-shadow:0 10px 25px rgba(90,52,118,.20);
+    }
+
+    .builder-layout{
+      max-width:1440px;
+      margin:0 auto;
+      padding:22px 24px 48px;
+      display:grid;
+      grid-template-columns:minmax(0,1.55fr) 420px;
+      gap:22px;
+      align-items:start;
+    }
+    .workspace{display:flex;flex-direction:column;gap:18px}
+    .panel{
+      background:rgba(255,255,255,.95);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow-sm);
+      padding:22px;
+    }
+    .panel-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:16px;
+    }
+    .panel-title{
+      font-family:'Playfair Display',serif;
+      font-size:24px;
+      color:var(--plum-900);
+      line-height:1;
+      margin:0;
+    }
+    .panel-sub{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+      max-width:720px;
+    }
+    .section-badge{
+      border-radius:999px;
+      padding:8px 12px;
+      background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.16));
+      color:var(--plum-800);
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+    }
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field.full{grid-column:1/-1}
+    .field label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    input,select,textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      color:var(--ink);
+      font:inherit;
+      padding:14px 15px;
+      outline:none;
+      transition:.18s ease;
+    }
+    textarea{min-height:94px;resize:vertical}
+    input:focus,select:focus,textarea:focus{
+      border-color:#CDB9D7;
+      box-shadow:0 0 0 4px rgba(166,123,181,.10);
+    }
+
+    .helper-row,.package-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.08));
+      border:1px solid rgba(166,123,181,.14);
+    }
+    .helper-row span,.package-toolbar span{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .helper-row strong,.package-toolbar strong{color:var(--plum-900)}
+    .helper-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .tiny-btn{
+      border:none;
+      cursor:pointer;
+      background:#fff;
+      color:var(--plum-800);
+      border:1px solid var(--line-strong);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .package-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+    }
+    .package-panel.collapsed .package-grid{display:none}
+    .package-panel.collapsed .package-toolbar{margin-bottom:0}
+
+    .package-card{
+      border-radius:22px;
+      padding:18px;
+      border:1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(230,162,190,.12), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,.98), rgba(250,245,252,.95));
+      box-shadow:var(--shadow-sm);
+    }
+    .package-card.active{
+      border-color:#D8C6E1;
+      box-shadow:0 16px 40px rgba(90,52,118,.10);
+    }
+    .package-tier{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:linear-gradient(135deg, rgba(90,52,118,.10), rgba(230,162,190,.16));
+      color:var(--plum-800);
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .package-tier .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:linear-gradient(135deg,var(--plum-700),var(--pink-400));
+    }
+    .package-card h3{
+      margin:14px 0 8px;
+      font-size:20px;
+      font-family:'Playfair Display',serif;
+      color:var(--plum-900);
+    }
+    .package-card p{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.65;
+    }
+    .package-total{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:linear-gradient(135deg, rgba(201,162,39,.12), rgba(230,162,190,.10));
+      border:1px solid rgba(201,162,39,.18);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+    .package-total strong{
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .package-total span{
+      font-size:18px;
+      font-weight:800;
+      color:var(--plum-900);
+    }
+    .package-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      font:inherit;
+      font-weight:700;
+      border-radius:14px;
+      padding:13px 16px;
+      transition:.18s ease;
+    }
+    .btn-primary{
+      color:#fff;
+      background:linear-gradient(135deg,#5A3476 0%,#8E67A6 100%);
+      box-shadow:0 12px 30px rgba(90,52,118,.22);
+    }
+    .btn-secondary{
+      background:#fff;
+      color:var(--plum-800);
+      border:1px solid var(--line-strong);
+    }
+
+    .catalog{display:flex;flex-direction:column;gap:12px}
+    .cat-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .cat-head{
+      width:100%;
+      border:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.10));
+      padding:16px 18px;
+      text-align:left;
+    }
+    .cat-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+    .cat-icon{
+      width:38px;height:38px;border-radius:12px;
+      background:linear-gradient(135deg, rgba(90,52,118,.16), rgba(230,162,190,.20));
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;flex-shrink:0;
+    }
+    .cat-label strong{font-size:15px;color:var(--plum-900)}
+    .cat-label span{
+      display:block;
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      opacity:.8;
+    }
+    .cat-toggle{
+      color:var(--plum-800);
+      font-size:18px;
+      transition:transform .18s ease;
+    }
+    .cat-card.collapsed .cat-toggle{transform:rotate(-90deg)}
+    .cat-card.collapsed .cat-body{display:none}
+    .cat-body{
+      padding:14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .service-item{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      display:grid;
+      grid-template-columns:minmax(0,1.2fr) 90px 120px 104px;
+      gap:12px;
+      align-items:start;
+      background:linear-gradient(180deg,#fff,#FFFEFD);
+    }
+    .service-item.selected{
+      border-color:#D8C6E1;
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,239,248,.52));
+      box-shadow:0 12px 30px rgba(90,52,118,.06);
+    }
+    .service-main{display:flex;gap:12px}
+    .service-check{
+      margin-top:2px;
+      width:20px;height:20px;border-radius:6px;
+      border:1.5px solid #C9BED0;
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-size:12px;flex-shrink:0;background:#fff;
+    }
+    .service-item.selected .service-check{
+      background:linear-gradient(135deg,#5A3476,#A67BB5);
+      border-color:transparent;
+    }
+    .service-copy strong{
+      display:block;
+      color:var(--ink);
+      font-size:14px;
+      line-height:1.45;
+    }
+    .service-copy .service-meta{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .service-copy .service-hint{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:10px;
+      border-radius:999px;
+      padding:6px 10px;
+      background:linear-gradient(135deg, rgba(30,140,90,.08), rgba(201,162,39,.10));
+      color:#4F5B35;
+      font-size:11px;
+      font-weight:700;
+    }
+    .service-actions{
+      margin-top:10px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .qty-col label,.price-col label,.total-col label{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:6px;
+      font-weight:700;
+    }
+    .qty-col input,.price-col input{text-align:center;padding:12px 10px}
+    .total-pill{
+      margin-top:21px;
+      min-height:48px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));
+      color:var(--plum-900);
+      font-weight:700;
+      font-size:14px;
+      border:1px solid rgba(166,123,181,.14);
+    }
+
+    .custom-wrap{
+      margin-top:18px;
+      padding-top:18px;
+      border-top:1px solid var(--line);
+    }
+    .custom-item-grid{
+      display:grid;
+      grid-template-columns:1.3fr 1fr 100px 110px auto auto;
+      gap:10px;
+      align-items:end;
+    }
+
+    .side-rail{
+      position:sticky;
+      top:92px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .summary-card{
+      border-radius:28px;
+      padding:22px;
+      color:#fff;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.10), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(230,162,190,.16), transparent 24%),
+        linear-gradient(155deg,#4A2B63 0%,#6A417E 55%,#A67BB5 100%);
+      box-shadow:var(--shadow-lg);
+    }
+    .summary-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      padding-bottom:16px;
+      border-bottom:1px solid rgba(255,255,255,.14);
+      margin-bottom:16px;
+    }
+    .summary-head h3{
+      margin:0;
+      font-size:24px;
+      font-family:'Playfair Display',serif;
+    }
+    .summary-head p{
+      margin:6px 0 0;
+      font-size:13px;
+      line-height:1.6;
+      color:rgba(255,255,255,.75);
+    }
+    .summary-badge{
+      border-radius:999px;
+      padding:8px 12px;
+      background:rgba(255,255,255,.12);
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+
+    .live-mini{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:360px;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .live-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .live-row strong{display:block;font-size:13px}
+    .live-row small{
+      display:block;
+      margin-top:4px;
+      color:rgba(255,255,255,.65);
+      line-height:1.45;
+    }
+    .live-row span{
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .empty-state{
+      border-radius:18px;
+      padding:18px;
+      background:rgba(255,255,255,.08);
+      color:rgba(255,255,255,.74);
+      font-size:14px;
+      line-height:1.75;
+    }
+
+    .money-stack{margin-top:16px;display:grid;gap:10px}
+    .money-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+    }
+    .money-row strong{
+      font-size:13px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.66);
+    }
+    .money-row span{font-size:18px;font-weight:700}
+    .money-row.total{
+      background:linear-gradient(135deg, rgba(201,162,39,.18), rgba(255,255,255,.12));
+      border:1px solid rgba(201,162,39,.28);
+    }
+    .money-row.total span{color:#F6E5A6}
+
+    .deposit-block{
+      margin-top:16px;
+      border-radius:20px;
+      padding:16px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .deposit-block h4{
+      margin:0 0 10px;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:rgba(255,255,255,.72);
+    }
+    .tier-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .tier-btn{
+      border:none;
+      border-radius:14px;
+      padding:12px 10px;
+      font:inherit;
+      font-weight:700;
+      cursor:pointer;
+      color:#fff;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .tier-btn.active{
+      background:linear-gradient(135deg, rgba(201,162,39,.92), rgba(230,162,190,.40));
+      color:#3A2A1A;
+    }
+    .tier-help{
+      margin-top:10px;
+      font-size:12px;
+      line-height:1.6;
+      color:rgba(255,255,255,.70);
+    }
+
+    .preview-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow-sm);
+      overflow:hidden;
+    }
+    .preview-head{
+      padding:22px;
+      background:linear-gradient(135deg, rgba(90,52,118,.08), rgba(230,162,190,.14));
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .preview-head h3{
+      margin:0;
+      font-family:'Playfair Display',serif;
+      font-size:24px;
+      color:var(--plum-900);
+    }
+    .preview-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+      max-width:680px;
+    }
+    .preview-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .preview-body{padding:22px}
+
+    .invoice-shell{
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .invoice-top{
+      padding:24px;
+      background:linear-gradient(135deg,#5A3476 0%,#6A417E 55%,#A67BB5 100%);
+      color:#fff;
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+    }
+    .invoice-top h4{
+      margin:0;
+      font-family:'Playfair Display',serif;
+      font-size:26px;
+    }
+    .invoice-top p{
+      margin:8px 0 0;
+      color:rgba(255,255,255,.74);
+      line-height:1.6;
+      font-size:13px;
+    }
+    .invoice-meta{
+      padding:22px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      border-bottom:1px solid var(--line);
+    }
+    .meta-box small{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .meta-box strong{
+      display:block;
+      margin-top:6px;
+      font-size:14px;
+      color:var(--ink);
+      line-height:1.5;
+    }
+    .invoice-table{padding:10px 22px 0}
+    .invoice-row{
+      display:grid;
+      grid-template-columns:1.6fr .7fr .7fr .8fr;
+      gap:14px;
+      align-items:start;
+      padding:14px 0;
+      border-bottom:1px solid var(--line);
+    }
+    .invoice-row.head strong{
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .invoice-row span{
+      font-size:14px;
+      line-height:1.55;
+    }
+    .invoice-totals{
+      margin-left:auto;
+      width:min(360px,100%);
+      padding:18px 22px 22px;
+    }
+    .invoice-total-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 0;
+      border-bottom:1px solid var(--line);
+      font-size:14px;
+    }
+    .invoice-total-row.grand{
+      font-weight:800;
+      font-size:18px;
+      color:var(--plum-900);
+    }
+    .invoice-deposit{
+      margin-top:16px;
+      border-radius:18px;
+      padding:16px;
+      background:linear-gradient(135deg, rgba(90,52,118,.06), rgba(230,162,190,.14));
+      border:1px solid rgba(166,123,181,.14);
+      color:var(--ink);
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    @media (max-width:1180px){
+      .builder-layout{grid-template-columns:1fr}
+      .side-rail{position:relative;top:0}
+    }
+    @media (max-width:960px){
+      .package-grid{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:760px){
+      .topbar-inner,.builder-layout{padding-left:16px;padding-right:16px}
+      .form-grid,.custom-item-grid,.invoice-meta,.invoice-row,.service-item{
+        grid-template-columns:1fr;
+      }
+      .invoice-totals{width:100%}
+    }
+  </style>
 </head>
 <body>
-<div class="topbar"><div class="topbar-inner"><div class="brand-wrap"><div class="brand-mark">✨</div><div><div class="brand-name">Party <span>Biz Hub</span></div><div class="brand-sub">Build. Book. Be Paid.</div></div></div><div class="topbar-actions"><div class="ghost-chip">Premium Branded Suite</div><div class="primary-chip">Quote Builder</div></div></div></div>
-<main class="builder-layout">
-  <div class="workspace">
-    <section class="panel">
-      <div class="notice"><div><strong>Business profile is handled at account setup</strong><span>Your business name, logo, colors, deposit links, and tax defaults should be stored once in Business Profile and reused across quotes and contracts. This page focuses only on client and quote building.</span></div><button class="tiny-btn" type="button">Profile synced</button></div>
-    </section>
-    <section class="panel">
-      <div class="panel-header"><div><h2 class="panel-title">Client & quote details</h2><div class="panel-sub">Back-office quote creation only. Your saved business profile should handle company identity outside this page.</div></div><div class="section-badge">Step 1</div></div>
-      <div class="form-grid">
-        <div class="field"><label>Client name</label><input id="clientName"></div>
-        <div class="field"><label>Event type</label><input id="eventType"></div>
-        <div class="field"><label>Currency</label><select id="currency" onchange="handleCurrencyChange(this.value)"><option value="$">USD ($)</option><option value="CA$">CAD (CA$)</option><option value="£">GBP (£)</option><option value="€">EUR (€)</option><option value="AED">AED</option><option value="₵">GHS (₵)</option><option value="₦">NGN (₦)</option><option value="R">ZAR (R)</option><option value="custom">Custom</option></select><input id="customCurrency" placeholder="Enter symbol (e.g. KSh, ¥)" style="margin-top:6px;display:none;" oninput="refreshAll()"></div>
-        <div class="field"><label>Event date</label><input id="eventDate" type="date"></div>
-        <div class="field"><label>Expiration date</label><input id="expiryDate" type="date"></div>
-        <div class="field"><label>Deposit link set</label><select id="depositProfile" onchange="refreshAll()"><option value="default">Default account deposit links</option><option value="manual">Manual follow-up invoice</option></select></div>
-        <div class="field"><label>Tax mode</label><select id="taxMode"><option value="none">No tax</option><option value="included">Tax included</option><option value="added">Add tax</option></select></div>
-        <div class="field"><label>Tax rate (%)</label><input id="taxRate" type="number" value="8"></div>
-        <div class="field"><label>Tax label</label><input id="taxLabel" value="Sales Tax"></div>
-        <div class="field full"><label>Event notes</label><textarea id="eventNotes"></textarea></div>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-wrap">
+        <div class="brand-mark">✨</div>
+        <div>
+          <div class="brand-name">Party <span>Biz Hub</span></div>
+          <div class="brand-sub">Build. Book. Be Paid.</div>
+        </div>
       </div>
-    </section>
-    <section class="panel package-panel collapsed" id="packagePanel">
-      <div class="panel-header"><div><h2 class="panel-title">Offer Builder</h2><div class="panel-sub">Use this to build reusable Basic, Premium, and Luxe offers. Offer totals are item-based: the package value is calculated from the items you include inside it.</div></div><div class="section-badge">Step 2</div></div>
-      <div class="package-toolbar"><span><strong>KPP offer method:</strong> choose an active offer, add items from the catalog into that offer, and the offer total updates from the included items. No random default pricing logic.</span><div class="helper-actions"><button class="tiny-btn" onclick="expandPackages()">Expand offers</button><button class="tiny-btn" onclick="collapsePackages()">Collapse offers</button><button class="tiny-btn" onclick="savePackages()">Save offers</button></div></div>
-      <div class="package-grid" id="packageGrid"></div>
-    </section>
-    <section class="panel">
-      <div class="panel-header"><div><h2 class="panel-title">Service catalog</h2><div class="panel-sub">Choose items from the catalog to add directly into the quote or add them into the active offer. The catalog is the engine. Custom item comes last.</div></div><div class="section-badge">Step 3</div></div>
-      <div class="helper-row"><span><strong>Tip:</strong> Use the active offer button on each service if you want that service stored inside the offer template. Use the service checkbox if you want it added directly into this quote.</span><div class="helper-actions"><button class="tiny-btn" onclick="expandAllCats()">Expand all</button><button class="tiny-btn" onclick="collapseAllCats()">Collapse all</button></div></div>
-      <div class="catalog" id="catalog"></div>
-      <div class="custom-wrap"><div class="panel-sub" style="margin:0 0 12px;color:var(--muted)">Custom item is placed after the last category so it acts like a true fallback, not a primary path.</div><div class="custom-item-grid"><div class="field"><label>Custom item</label><input id="customName"></div><div class="field"><label>Category label</label><input id="customCategory"></div><div class="field"><label>Qty</label><input id="customQty" type="number" value="1"></div><div class="field"><label>Unit price</label><input id="customPrice" type="number"></div><div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addCustomItem()">Add custom item</button></div></div></div>
-    </section>
-    <section class="preview-card"><div class="preview-head"><h3>Final quote preview</h3><p>This should populate live before the user prints, downloads, copies, or emails the quote. The preview below updates from the selections on this page.</p></div><div class="preview-body" id="fullPreview"></div></section>
+      <div class="topbar-actions">
+        <div class="ghost-chip">Premium Branded Suite</div>
+        <div class="primary-chip">Quote Builder</div>
+      </div>
+    </div>
   </div>
-  <aside class="side-rail"><section class="summary-card"><div class="summary-head"><div><h3>Live quote</h3><p>This updates as you add catalog items, offer items, and custom items. No dead right rail.</p></div><div class="summary-badge" id="quoteStatus">Draft</div></div><div class="live-mini" id="liveMini"><div class="empty-state">Select an offer, add catalog items, or create a custom line item to build the quote in real time.</div></div><div class="money-stack"><div class="money-row"><strong>Subtotal</strong><span id="subtotalVal">$0.00</span></div><div class="money-row"><strong id="taxLabelLive">Tax</strong><span id="taxVal">$0.00</span></div><div class="money-row total"><strong>Total</strong><span id="grandVal">$0.00</span></div></div><div class="deposit-block"><h4>Deposit options</h4><div class="tier-grid" id="tierGrid"></div><div class="tier-help" id="tierHelp"></div></div></section></aside>
-</main>
-<script>
-const depositOptions=[100,250,500,1000];
-let selectedDepositTier=250;
-let activePackageId='premium';
-let customItems=[];
-let packages=loadPackages();
-let catalogData=[
-  {cat:'Kids Experiences & Activities',icon:'🎪',expanded:true,items:[
-    {name:'Teepee / Sleepover Setup (per tent)',suggested:'$50–$100/tent',def:65,min:2,taxable:true,desc:'Sleepover styling package for kids party experiences.',selected:false,qty:2,price:65},
-    {name:'Stuffed Animal / Bear Making Station',suggested:'$200–$500',def:300,min:1,taxable:true,desc:'Hands-on party activity station with guided setup.',selected:false,qty:1,price:300},
-    {name:'Kids Spa Party (per child)',suggested:'$25–$50/child',def:35,min:6,taxable:true,desc:'Mini spa setup and child-based activity pricing.',selected:false,qty:6,price:35},
-    {name:'Slime Making Station',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Interactive slime station with supplies and setup.',selected:false,qty:1,price:200},
-    {name:'Paint & Sip Activity',suggested:'$150–$300',def:200,min:1,taxable:true,desc:'Creative guided paint station for kids or tweens.',selected:false,qty:1,price:200},
-    {name:'DIY Craft Activity Station',suggested:'$100–$250',def:150,min:1,taxable:true,desc:'Custom craft table and activity setup.',selected:false,qty:1,price:150},
-    {name:'Face Painting (per hour)',suggested:'$75–$150/hr',def:100,min:1,taxable:true,desc:'Hourly entertainment add-on.',selected:false,qty:1,price:100},
-    {name:'Balloon Twisting (per hour)',suggested:'$75–$150/hr',def:100,min:1,taxable:true,desc:'Live balloon art entertainment.',selected:false,qty:1,price:100},
-    {name:'Glitter Tattoos (per hour)',suggested:'$75–$125/hr',def:90,min:1,taxable:true,desc:'Interactive glam add-on.',selected:false,qty:1,price:90},
-    {name:'Character Visit (per hour)',suggested:'$150–$400/hr',def:200,min:1,taxable:true,desc:'Character appearance and entertainment.',selected:false,qty:1,price:200}
-  ]},
-  {cat:'Themed Party Items',icon:'🎉',expanded:true,items:[
-    {name:'Themed Backdrop Setup',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Backdrop styling tied to the party theme.',selected:false,qty:1,price:225},
-    {name:'Balloon Garland Installation',suggested:'$150–$350',def:225,min:1,taxable:true,desc:'Signature balloon install for themed parties.',selected:false,qty:1,price:225},
-    {name:'Dessert / Candy Table Styling',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Styled table for desserts, treats, and decor.',selected:false,qty:1,price:225},
-    {name:'Tablescape & Centerpieces',suggested:'$75–$200',def:125,min:1,taxable:true,desc:'Themed tablescape styling.',selected:false,qty:1,price:125},
-    {name:'Full Room Décor Package',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Room transformation with layered decor.',selected:false,qty:1,price:450},
-    {name:'Custom Balloon Bouquets',suggested:'$25–$60 each',def:35,min:2,taxable:true,desc:'Accent bouquets and party moments.',selected:false,qty:2,price:35},
-    {name:'Number / Letter Balloons',suggested:'$20–$50 each',def:30,min:1,taxable:true,desc:'Milestone or statement balloons.',selected:false,qty:1,price:30},
-    {name:'Standalone Balloon Arch',suggested:'$100–$300',def:175,min:1,taxable:true,desc:'Balloon focal point setup.',selected:false,qty:1,price:175},
-    {name:'Setup & Breakdown Fee',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Logistics, labor, and event teardown.',selected:false,qty:1,price:75}
-  ]},
-  {cat:'Rentals',icon:'🎮',expanded:false,items:[
-    {name:'Nerf Battle Package',suggested:'$150–$300',def:200,min:1,taxable:true,desc:'Interactive game rental package.',selected:false,qty:1,price:200},
-    {name:'Outdoor Movie Night Setup',suggested:'$200–$500',def:300,min:1,taxable:true,desc:'Projector, screen, and setup package.',selected:false,qty:1,price:300},
-    {name:'Carnival Games Set (3 games)',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Game rental grouping for event fun.',selected:false,qty:1,price:200},
-    {name:'Giant Yard Games (Jenga, Connect 4)',suggested:'$75–$200',def:100,min:1,taxable:true,desc:'Outdoor activity add-on.',selected:false,qty:1,price:100},
-    {name:'Water Slide Rental (per day)',suggested:'$200–$500/day',def:300,min:1,taxable:true,desc:'Popular large-format rental.',selected:false,qty:1,price:300},
-    {name:'Obstacle Course Rental (per day)',suggested:'$250–$600/day',def:350,min:1,taxable:true,desc:'Premium active rental experience.',selected:false,qty:1,price:350}
-  ]},
-  {cat:'Furniture Rentals',icon:'🪑',expanded:false,items:[
-    {name:'Bounce House Rental (per day)',suggested:'$150–$350/day',def:200,min:1,taxable:true,desc:'Classic party rental for kids events.',selected:false,qty:1,price:200},
-    {name:'Soft Play Set Rental',suggested:'$200–$500/day',def:300,min:1,taxable:true,desc:'Toddler-friendly soft play setup.',selected:false,qty:1,price:300},
-    {name:'Tables (per table)',suggested:'$8–$15/table',def:10,min:1,taxable:true,desc:'Basic table rental pricing.',selected:false,qty:1,price:10},
-    {name:'Chairs (per chair)',suggested:'$1.50–$3/chair',def:2,min:4,taxable:true,desc:'Chair rental pricing.',selected:false,qty:4,price:2},
-    {name:'Kids Table & Chair Set',suggested:'$35–$75/set',def:50,min:1,taxable:true,desc:'Kids seating set rental.',selected:false,qty:1,price:50},
-    {name:'Photo Booth Rental',suggested:'$300–$600',def:400,min:1,taxable:true,desc:'High-value rental add-on.',selected:false,qty:1,price:400},
-    {name:'Backdrop Stand (rental only)',suggested:'$25–$50',def:35,min:1,taxable:true,desc:'Backdrop structure rental.',selected:false,qty:1,price:35}
-  ]},
-  {cat:'Concessions',icon:'🍿',expanded:false,items:[
-    {name:'Popcorn Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Popular food equipment rental.',selected:false,qty:1,price:100},
-    {name:'Cotton Candy Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Sweet concession add-on.',selected:false,qty:1,price:100},
-    {name:'Snow Cone Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Seasonal concession rental.',selected:false,qty:1,price:100},
-    {name:'Hot Dog Roller Rental',suggested:'$75–$125/day',def:90,min:1,taxable:true,desc:'Food service rental.',selected:false,qty:1,price:90},
-    {name:'Nacho Warmer Rental',suggested:'$50–$100/day',def:65,min:1,taxable:true,desc:'Concession support equipment.',selected:false,qty:1,price:65},
-    {name:'Lemonade Dispenser Rental',suggested:'$50–$100/day',def:65,min:1,taxable:true,desc:'Drink service rental.',selected:false,qty:1,price:65},
-    {name:'Full Food Cart Setup',suggested:'$200–$400/day',def:275,min:1,taxable:true,desc:'Expanded concession setup.',selected:false,qty:1,price:275},
-    {name:'Concession Supplies Package',suggested:'$50–$150',def:85,min:1,taxable:true,desc:'Supplies bundle for concession service.',selected:false,qty:1,price:85}
-  ]},
-  {cat:'Baby Shower',icon:'🍼',expanded:false,items:[
-    {name:'Baby Shower Full Setup',suggested:'$200–$600',def:350,min:1,taxable:true,desc:'Baby shower styling and setup.',selected:false,qty:1,price:350},
-    {name:'Gender Reveal Styling Package',suggested:'$150–$400',def:250,min:1,taxable:true,desc:'Reveal-focused event setup.',selected:false,qty:1,price:250},
-    {name:'Balloon Garland & Backdrop',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Photo-friendly shower focal point.',selected:false,qty:1,price:200},
-    {name:'Dessert Table Styling',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Styled sweets and decor table.',selected:false,qty:1,price:225},
-    {name:'Custom Balloon Box Reveal',suggested:'$75–$200',def:125,min:1,taxable:true,desc:'Reveal moment add-on.',selected:false,qty:1,price:125},
-    {name:'Confetti Cannon Setup',suggested:'$50–$150',def:75,min:1,taxable:true,desc:'Reveal or celebration accent.',selected:false,qty:1,price:75},
-    {name:'Diaper Raffle & Game Stations',suggested:'$50–$150',def:75,min:1,taxable:true,desc:'Interactive shower game area.',selected:false,qty:1,price:75},
-    {name:'Mommy-to-Be Floral Crown',suggested:'$35–$100',def:55,min:1,taxable:true,desc:'Small premium keepsake touch.',selected:false,qty:1,price:55}
-  ]},
-  {cat:'Wedding',icon:'💍',expanded:false,items:[
-    {name:'Wedding Ceremony Décor Setup',suggested:'$400–$1,500',def:750,min:1,taxable:true,desc:'Ceremony decor and install.',selected:false,qty:1,price:750},
-    {name:'Wedding Reception Styling',suggested:'$500–$2,000',def:1000,min:1,taxable:true,desc:'Reception room styling and decor.',selected:false,qty:1,price:1000},
-    {name:'Floral Arrangements (per table)',suggested:'$50–$200/table',def:100,min:4,taxable:true,desc:'Wedding floral tablescape pricing.',selected:false,qty:4,price:100},
-    {name:'Bridal Backdrop & Arch',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Statement wedding backdrop.',selected:false,qty:1,price:450},
-    {name:'Head Table Styling',suggested:'$150–$400',def:250,min:1,taxable:true,desc:'Premium table styling upgrade.',selected:false,qty:1,price:250},
-    {name:'Wedding Balloon Installation',suggested:'$300–$1,000',def:500,min:1,taxable:true,desc:'Special-event balloon styling.',selected:false,qty:1,price:500},
-    {name:'Guest Table Centerpieces (per table)',suggested:'$40–$150/table',def:75,min:4,taxable:true,desc:'Per-table wedding decor.',selected:false,qty:4,price:75},
-    {name:'Wedding Day Coordination',suggested:'$500–$1,500',def:800,min:1,taxable:false,desc:'Timeline and event management.',selected:false,qty:1,price:800},
-    {name:'Bridal Shower Setup',suggested:'$200–$600',def:350,min:1,taxable:true,desc:'Wedding-adjacent event package.',selected:false,qty:1,price:350}
-  ]},
-  {cat:'Other original categories',icon:'📂',expanded:false,items:[
-    {name:'Corporate Event Styling',suggested:'$500–$2,500',def:1000,min:1,taxable:true,desc:'Brand-focused event styling.',selected:false,qty:1,price:1000},
-    {name:'Stage / Podium Backdrop',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Corporate or presentation event decor.',selected:false,qty:1,price:450},
-    {name:'Event Photography (per hour)',suggested:'$100–$250/hr',def:150,min:1,taxable:true,desc:'Photography add-on service.',selected:false,qty:1,price:150},
-    {name:'Printed Photo Strip Service',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Keepsake booth add-on.',selected:false,qty:1,price:200},
-    {name:'Day-of Event Coordination',suggested:'$150–$400',def:250,min:1,taxable:false,desc:'Execution and logistics support.',selected:false,qty:1,price:250},
-    {name:'Full Event Planning Package',suggested:'$400–$1,200',def:600,min:1,taxable:false,desc:'Planning, strategy, and coordination.',selected:false,qty:1,price:600},
-    {name:'Vendor Coordination Fee',suggested:'$75–$200',def:100,min:1,taxable:false,desc:'Managing outside partners and vendors.',selected:false,qty:1,price:100},
-    {name:'Rush Booking Fee (under 7 days)',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Short-notice booking surcharge.',selected:false,qty:1,price:75}
-  ]}
-];
-function defaultPackages(){return [{id:'basic',tier:'Basic',name:'Basic Offer',description:'Starter reusable offer for smaller bookings.',notes:'',selectedItems:[]},{id:'premium',tier:'Premium',name:'Premium Offer',description:'Middle offer with stronger value and visual impact.',notes:'',selectedItems:[]},{id:'luxe',tier:'Luxe',name:'Luxe Offer',description:'High-touch premium offer for premium buyers.',notes:'',selectedItems:[]}]} 
-function loadPackages(){try{return JSON.parse(localStorage.getItem('pbh_packages'))||defaultPackages()}catch(e){return defaultPackages()}}
-function savePackages(){localStorage.setItem('pbh_packages',JSON.stringify(packages)); alert('Offers saved in this browser for reuse.');}
-function qs(id){return document.getElementById(id)}
-function esc(s){return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function currency(){const val=qs('currency').value; return val==='custom' ? (qs('customCurrency').value||'') : val}
-function handleCurrencyChange(val){const custom=qs('customCurrency'); custom.style.display = val==='custom' ? 'block' : 'none'; refreshAll();}
-function taxCfg(){return {mode:qs('taxMode').value,rate:parseFloat(qs('taxRate').value||'0'),label:qs('taxLabel').value||'Tax'}}
-function pkg(id){return packages.find(p=>p.id===id)}
-function expandPackages(){qs('packagePanel').classList.remove('collapsed')}
-function collapsePackages(){qs('packagePanel').classList.add('collapsed')}
-function expandAllCats(){catalogData.forEach(c=>c.expanded=true); renderCatalog()}
-function collapseAllCats(){catalogData.forEach(c=>c.expanded=false); renderCatalog()}
-function setActivePackage(id){activePackageId=id; renderPackages(); refreshAll()}
-function updatePackageField(id,field,val){const p=pkg(id); p[field]=val; savePackages(); refreshAll()}
-function addServiceToPackage(pid,ci,ii){const p=pkg(pid), key=`${ci}:${ii}`; if(!p.selectedItems.includes(key)) p.selectedItems.push(key); savePackages(); refreshAll()}
-function removeServiceFromPackage(pid,key){const p=pkg(pid); p.selectedItems=p.selectedItems.filter(x=>x!==key); savePackages(); refreshAll()}
-function packageCatalogItems(pid){const p=pkg(pid); return p.selectedItems.map(key=>{const [ci,ii]=key.split(':').map(Number), c=catalogData[ci], it=c.items[ii]; return {...it,key,category:c.cat,total:it.qty*it.price}})}
-function packageTotal(pid){return packageCatalogItems(pid).reduce((sum,it)=>sum+(it.qty*it.price),0)}
-function renderPackages(){qs('packageGrid').innerHTML=packages.map(p=>{const items=packageCatalogItems(p.id); return `<div class="package-card ${p.id===activePackageId?'active':''}"><div class="package-tier"><span class="dot"></span>${p.tier}</div><h3><input style="border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:20px;color:var(--plum-900)" value="${esc(p.name)}" onchange="updatePackageField('${p.id}','name',this.value)"></h3><p><textarea style="min-height:78px" onchange="updatePackageField('${p.id}','description',this.value)">${esc(p.description)}</textarea></p><div class="field"><label>Offer notes</label><input value="${esc(p.notes)}" onchange="updatePackageField('${p.id}','notes',this.value)"></div><div class="package-total"><strong>Offer total</strong><span>${currency()}${packageTotal(p.id).toFixed(2)}</span></div><div style="margin-top:10px;color:var(--muted);font-size:13px">${items.length} catalog items in this offer</div><div style="margin-top:8px;display:grid;gap:6px">${items.length?items.slice(0,3).map(it=>`<div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)"><span>${esc(it.name)}</span><span>${currency()}${(it.qty*it.price).toFixed(2)}</span></div>`).join(''):'<div style="font-size:12px;color:var(--muted)">No offer items added yet.</div>'}</div><div class="package-actions"><button class="btn btn-primary" onclick="setActivePackage('${p.id}')">${p.id===activePackageId?'Active offer':'Use this offer'}</button><button class="btn btn-secondary" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">Build offer items</button></div></div>`}).join('')}
-function toggleCategory(i){catalogData[i].expanded=!catalogData[i].expanded; renderCatalog()}
-function toggleService(ci,ii){const it=catalogData[ci].items[ii]; it.selected=!it.selected; if(it.qty<it.min) it.qty=it.min; refreshAll(); renderCatalog()}
-function updateItem(ci,ii,f,v){const it=catalogData[ci].items[ii]; if(f==='qty') it.qty=Math.max(it.min,parseInt(v||it.min,10)); else it[f]=f==='price'?parseFloat(v||'0'):v; refreshAll(); renderCatalog()}
-function renderCatalog(){qs('catalog').innerHTML=catalogData.map((c,ci)=>`<div class="cat-card ${c.expanded?'':'collapsed'}"><button class="cat-head" onclick="toggleCategory(${ci})"><div class="cat-left"><div class="cat-icon">${c.icon}</div><div class="cat-label"><strong>${esc(c.cat)}</strong><span>${c.items.length} services in this category</span></div></div><div class="cat-toggle">⌄</div></button><div class="cat-body">${c.items.map((it,ii)=>{const key=`${ci}:${ii}`; const inActive=pkg(activePackageId).selectedItems.includes(key); return `<div class="service-item ${it.selected?'selected':''}"><div class="service-main"><button type="button" class="service-check" onclick="toggleService(${ci},${ii})">${it.selected?'✓':''}</button><div class="service-copy"><strong>${esc(it.name)}</strong><div class="service-meta">${esc(it.desc)}</div><div class="service-hint">Suggested U.S. market rate: ${esc(it.suggested)} · Minimum qty ${it.min}</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="tiny-btn" onclick="addServiceToPackage('${activePackageId}',${ci},${ii})">${inActive?'Added to active offer':'Add to active offer'}</button>${inActive?`<button class="tiny-btn" onclick="removeServiceFromPackage('${activePackageId}','${key}')">Remove from offer</button>`:''}</div></div></div><div class="qty-col"><label>Qty</label><input type="number" min="${it.min}" value="${it.qty}" onchange="updateItem(${ci},${ii},'qty',this.value)"></div><div class="price-col"><label>Unit price</label><input type="number" value="${it.price}" onchange="updateItem(${ci},${ii},'price',this.value)"></div><div class="total-col"><label>Total</label><div class="total-pill">${currency()}${(it.qty*it.price).toFixed(2)}</div></div></div>`}).join('')}</div></div>`).join('')}
-function addCustomItem(){const n=qs('customName').value.trim(), c=qs('customCategory').value.trim(), q=Math.max(1,parseInt(qs('customQty').value||'1',10)), p=parseFloat(qs('customPrice').value||'0'); if(!n||!p)return; customItems.push({name:n,category:c||'Custom item',qty:q,price:p,total:q*p,taxable:true}); ['customName','customCategory','customPrice'].forEach(id=>qs(id).value=''); qs('customQty').value='1'; refreshAll()}
-function selectedCatalog(){const out=[]; catalogData.forEach(c=>c.items.forEach(it=>{if(it.selected) out.push({category:c.cat,name:it.name,qty:it.qty,price:it.price,total:it.qty*it.price,taxable:it.taxable})})); return out}
-function activeOfferLine(){const p=pkg(activePackageId); return {category:'Offer',name:p.name,qty:1,price:packageTotal(p.id),total:packageTotal(p.id),taxable:true,notes:p.notes||p.description}}
-function allItems(){return [activeOfferLine(), ...selectedCatalog(), ...customItems]}
-function totals(){const items=allItems().filter(i=>i.total>0), sub=items.reduce((s,i)=>s+i.total,0), t=taxCfg(); const taxableBase=items.filter(i=>i.taxable).reduce((s,i)=>s+i.total,0); let tax=0; if(t.mode==='added') tax=taxableBase*(t.rate/100); else if(t.mode==='included') tax=taxableBase*(t.rate/(100+t.rate)); const grand=t.mode==='added'?sub+tax:sub; return {items,sub,tax,grand,t}}
-function renderLive(){const {items,sub,tax,grand,t}=totals(); qs('quoteStatus').textContent=items.length?'In progress':'Draft'; qs('subtotalVal').textContent=`${currency()}${sub.toFixed(2)}`; qs('taxVal').textContent=`${currency()}${tax.toFixed(2)}`; qs('taxLabelLive').textContent=t.mode==='none'?'Tax':t.label; qs('grandVal').textContent=`${currency()}${grand.toFixed(2)}`; qs('liveMini').innerHTML=items.length?items.map(i=>`<div class="live-row"><div><strong>${esc(i.name)}</strong><small>${esc(i.category)}</small></div><span>${currency()}${i.total.toFixed(2)}</span></div>`).join(''):`<div class="empty-state">Select an offer, add catalog items, or create a custom line item to build the quote in real time.</div>`; qs('tierGrid').innerHTML=depositOptions.map(v=>`<button class="tier-btn ${selectedDepositTier===v?'active':''} ${currency()!=='$'?'missing':''}" onclick="selectedDepositTier=${v}; refreshAll()">${currency()}${v}</button>`).join(''); qs('tierHelp').textContent=currency()==='$' ? (qs('depositProfile').value==='manual' ? 'Manual follow-up invoice selected for deposits.' : 'Preset account deposit links can connect to these default tiers.') : `For ${currency()} currency quotes, use manual custom invoicing for deposits right now.`}
-function renderPreview(){const {items,sub,tax,grand,t}=totals(); const rows=items.length?items.map(i=>`<div class="invoice-row"><span><strong>${esc(i.name)}</strong><br><small style="color:var(--muted)">${esc(i.category)}</small></span><span>${i.qty}</span><span>${currency()}${i.price.toFixed(2)}</span><span>${currency()}${i.total.toFixed(2)}</span></div>`).join(''):`<div class="empty-state" style="background:#fff;border:1px dashed var(--line);color:var(--muted)">Your quote preview will populate live here as soon as you build the quote.</div>`; qs('fullPreview').innerHTML=`<div class="invoice-shell"><div class="invoice-top"><div><h4>Party Biz Hub Quote Preview</h4><p>Back-office quote preview. Business profile branding should feed into this later from account settings.</p></div><div style="text-align:right"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.74);font-weight:700">Quote preview</div><div style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.82)">Status: ${items.length?'Ready to review':'Draft'}</div></div></div><div class="invoice-meta"><div class="meta-box"><small>Client</small><strong>${esc(qs('clientName').value||'Client name')}</strong></div><div class="meta-box"><small>Event</small><strong>${esc(qs('eventType').value||'Event type')}</strong></div><div class="meta-box"><small>Event date</small><strong>${esc(qs('eventDate').value||'Event date')}</strong></div><div class="meta-box"><small>Expiration</small><strong>${esc(qs('expiryDate').value||'No expiration date set')}</strong></div></div><div class="invoice-table"><div class="invoice-row head"><strong>Item</strong><strong>Qty</strong><strong>Unit</strong><strong>Total</strong></div>${rows}</div><div class="invoice-totals"><div class="invoice-total-row"><span>Subtotal</span><span>${currency()}${sub.toFixed(2)}</span></div><div class="invoice-total-row"><span>${esc(t.label)}${t.mode==='added'?' (added)':t.mode==='included'?' (included)':''}</span><span>${currency()}${tax.toFixed(2)}</span></div><div class="invoice-total-row grand"><span>Total</span><span>${currency()}${grand.toFixed(2)}</span></div><div class="invoice-deposit"><strong>Deposit flow</strong><br>${qs('depositProfile').value==='manual' ? 'Manual follow-up invoice selected for deposit collection.' : 'Default account deposit link profile selected.'}<br><br><strong>Event notes:</strong> ${esc(qs('eventNotes').value||'No additional event notes added yet.')}<br><br><strong>Next actions:</strong> Print, download as PDF, copy text, or wire email send in the next build layer.</div></div></div>`}
-function refreshAll(){renderPackages(); renderLive(); renderPreview()}
-window.addEventListener('DOMContentLoaded',()=>{const t=new Date(), e=new Date(t), x=new Date(t); e.setDate(t.getDate()+14); x.setDate(t.getDate()+7); qs('eventDate').value=e.toISOString().slice(0,10); qs('expiryDate').value=x.toISOString().slice(0,10); renderPackages(); renderCatalog(); refreshAll(); collapsePackages(); ['clientName','eventType','eventDate','expiryDate','currency','taxMode','taxRate','taxLabel','eventNotes','depositProfile'].forEach(id=>{qs(id).addEventListener('input',refreshAll); qs(id).addEventListener('change',refreshAll)})})
-</script>
+
+  <main class="builder-layout">
+    <div class="workspace">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Client & quote details</h2>
+            <div class="panel-sub">This page is for building offers and quotes. Business profile, logo, colors, deposit links, and defaults should live in a separate setup page later.</div>
+          </div>
+          <div class="section-badge">Step 1</div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Client name</label>
+            <input id="clientName">
+          </div>
+          <div class="field">
+            <label>Event type</label>
+            <input id="eventType">
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select id="currency" onchange="handleCurrencyChange(this.value)">
+              <option value="$">USD ($)</option>
+              <option value="CA$">CAD (CA$)</option>
+              <option value="£">GBP (£)</option>
+              <option value="€">EUR (€)</option>
+              <option value="AED">AED</option>
+              <option value="₵">GHS (₵)</option>
+              <option value="₦">NGN (₦)</option>
+              <option value="R">ZAR (R)</option>
+              <option value="custom">Custom</option>
+            </select>
+            <input id="customCurrency" placeholder="Enter symbol (e.g. KSh, ¥)" style="margin-top:6px;display:none;" oninput="refreshAll()">
+          </div>
+
+          <div class="field">
+            <label>Event date</label>
+            <input id="eventDate" type="date">
+          </div>
+          <div class="field">
+            <label>Expiration date</label>
+            <input id="expiryDate" type="date">
+          </div>
+          <div class="field">
+            <label>Deposit profile</label>
+            <select id="depositProfile" onchange="refreshAll()">
+              <option value="default">Default account deposit links</option>
+              <option value="manual">Manual follow-up invoice</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Tax mode</label>
+            <select id="taxMode">
+              <option value="none">No tax</option>
+              <option value="included">Tax included</option>
+              <option value="added">Add tax</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tax rate (%)</label>
+            <input id="taxRate" type="number" value="8">
+          </div>
+          <div class="field">
+            <label>Tax label</label>
+            <input id="taxLabel" value="Sales Tax">
+          </div>
+
+          <div class="field full">
+            <label>Event notes</label>
+            <textarea id="eventNotes"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel package-panel collapsed" id="packagePanel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Offer Builder</h2>
+            <div class="panel-sub">Choose the offer you’re building first. Then add real catalog items or custom items into that offer. Offer totals are calculated from the actual items inside the offer.</div>
+          </div>
+          <div class="section-badge">Step 2</div>
+        </div>
+
+        <div class="package-toolbar">
+          <span><strong>KPP package flow:</strong> Basic, Mid, Premium can all be renamed. Build them from real services, save them, and reuse them later.</span>
+          <div class="helper-actions">
+            <button class="tiny-btn" onclick="expandPackages()">Expand offers</button>
+            <button class="tiny-btn" onclick="collapsePackages()">Collapse offers</button>
+            <button class="tiny-btn" onclick="savePackages()">Save offers</button>
+          </div>
+        </div>
+
+        <div class="package-grid" id="packageGrid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Service catalog</h2>
+            <div class="panel-sub">Add services directly to the quote or add them into the active offer. The same real items power both package building and quote building.</div>
+          </div>
+          <div class="section-badge">Step 3</div>
+        </div>
+
+        <div class="helper-row">
+          <span><strong>Tip:</strong> “Add to Quote” puts the item in the current quote. “Add to Active Offer” stores that item in the selected offer for reuse later.</span>
+          <div class="helper-actions">
+            <button class="tiny-btn" onclick="expandAllCats()">Expand all</button>
+            <button class="tiny-btn" onclick="collapseAllCats()">Collapse all</button>
+          </div>
+        </div>
+
+        <div class="catalog" id="catalog"></div>
+
+        <div class="custom-wrap">
+          <div class="panel-sub" style="margin:0 0 12px;color:var(--muted)">Custom item is your fallback when something is not listed in the catalog. You can add it to the current quote or to the active offer.</div>
+
+          <div class="custom-item-grid">
+            <div class="field">
+              <label>Custom item</label>
+              <input id="customName">
+            </div>
+            <div class="field">
+              <label>Category label</label>
+              <input id="customCategory">
+            </div>
+            <div class="field">
+              <label>Qty</label>
+              <input id="customQty" type="number" value="1">
+            </div>
+            <div class="field">
+              <label>Unit price</label>
+              <input id="customPrice" type="number">
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button class="btn btn-secondary" onclick="addCustomItemToQuote()">Add to Quote</button>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button class="btn btn-primary" onclick="addCustomItemToActivePackage()">Add to Active Offer</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="preview-card">
+        <div class="preview-head">
+          <div>
+            <h3>Final quote preview</h3>
+            <p>This should populate live before printing, saving as PDF, copying text, or saving the quote.</p>
+          </div>
+          <div class="preview-actions">
+            <button class="tiny-btn" onclick="printQuote()">Print / Save PDF</button>
+            <button class="tiny-btn" onclick="copyQuoteText()">Copy text</button>
+            <button class="tiny-btn" onclick="saveCurrentQuote()">Save quote</button>
+          </div>
+        </div>
+        <div class="preview-body" id="fullPreview"></div>
+      </section>
+    </div>
+
+    <aside class="side-rail">
+      <section class="summary-card">
+        <div class="summary-head">
+          <div>
+            <h3>Live quote</h3>
+            <p>This updates from quote items in real time. No dead right rail.</p>
+          </div>
+          <div class="summary-badge" id="quoteStatus">Draft</div>
+        </div>
+
+        <div class="live-mini" id="liveMini">
+          <div class="empty-state">Select a saved offer, add quote items, or add a custom line item to start building the quote.</div>
+        </div>
+
+        <div class="money-stack">
+          <div class="money-row"><strong>Subtotal</strong><span id="subtotalVal">$0.00</span></div>
+          <div class="money-row"><strong id="taxLabelLive">Tax</strong><span id="taxVal">$0.00</span></div>
+          <div class="money-row total"><strong>Total</strong><span id="grandVal">$0.00</span></div>
+        </div>
+
+        <div class="deposit-block">
+          <h4>Deposit options</h4>
+          <div class="tier-grid" id="tierGrid"></div>
+          <div class="tier-help" id="tierHelp"></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    const depositOptions = [100, 250, 500, 1000];
+    let selectedDepositTier = 250;
+    let activePackageId = 'mid';
+
+    let quoteItems = loadQuoteDraft();
+    let packages = loadPackages();
+
+    const catalogData = [
+      {cat:'Kids Experiences & Activities',icon:'🎪',expanded:true,items:[
+        {name:'Teepee / Sleepover Setup (per tent)',suggested:'$50–$100/tent',def:65,min:2,taxable:true,desc:'Sleepover styling package for kids party experiences.',qty:2,price:65},
+        {name:'Stuffed Animal / Bear Making Station',suggested:'$200–$500',def:300,min:1,taxable:true,desc:'Hands-on party activity station with guided setup.',qty:1,price:300},
+        {name:'Kids Spa Party (per child)',suggested:'$25–$50/child',def:35,min:6,taxable:true,desc:'Mini spa setup and child-based activity pricing.',qty:6,price:35},
+        {name:'Slime Making Station',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Interactive slime station with supplies and setup.',qty:1,price:200},
+        {name:'Paint & Sip Activity',suggested:'$150–$300',def:200,min:1,taxable:true,desc:'Creative guided paint station for kids or tweens.',qty:1,price:200},
+        {name:'DIY Craft Activity Station',suggested:'$100–$250',def:150,min:1,taxable:true,desc:'Custom craft table and activity setup.',qty:1,price:150},
+        {name:'Face Painting (per hour)',suggested:'$75–$150/hr',def:100,min:1,taxable:true,desc:'Hourly entertainment add-on.',qty:1,price:100},
+        {name:'Balloon Twisting (per hour)',suggested:'$75–$150/hr',def:100,min:1,taxable:true,desc:'Live balloon art entertainment.',qty:1,price:100},
+        {name:'Glitter Tattoos (per hour)',suggested:'$75–$125/hr',def:90,min:1,taxable:true,desc:'Interactive glam add-on.',qty:1,price:90},
+        {name:'Character Visit (per hour)',suggested:'$150–$400/hr',def:200,min:1,taxable:true,desc:'Character appearance and entertainment.',qty:1,price:200}
+      ]},
+      {cat:'Themed Party Items',icon:'🎉',expanded:true,items:[
+        {name:'Themed Backdrop Setup',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Backdrop styling tied to the party theme.',qty:1,price:225},
+        {name:'Balloon Garland Installation',suggested:'$150–$350',def:225,min:1,taxable:true,desc:'Signature balloon install for themed parties.',qty:1,price:225},
+        {name:'Dessert / Candy Table Styling',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Styled table for desserts, treats, and decor.',qty:1,price:225},
+        {name:'Tablescape & Centerpieces',suggested:'$75–$200',def:125,min:1,taxable:true,desc:'Themed tablescape styling.',qty:1,price:125},
+        {name:'Full Room Décor Package',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Room transformation with layered decor.',qty:1,price:450},
+        {name:'Custom Balloon Bouquets',suggested:'$25–$60 each',def:35,min:2,taxable:true,desc:'Accent bouquets and party moments.',qty:2,price:35},
+        {name:'Number / Letter Balloons',suggested:'$20–$50 each',def:30,min:1,taxable:true,desc:'Milestone or statement balloons.',qty:1,price:30},
+        {name:'Standalone Balloon Arch',suggested:'$100–$300',def:175,min:1,taxable:true,desc:'Balloon focal point setup.',qty:1,price:175},
+        {name:'Setup & Breakdown Fee',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Logistics, labor, and event teardown.',qty:1,price:75}
+      ]},
+      {cat:'Rentals',icon:'🎮',expanded:false,items:[
+        {name:'Nerf Battle Package',suggested:'$150–$300',def:200,min:1,taxable:true,desc:'Interactive game rental package.',qty:1,price:200},
+        {name:'Outdoor Movie Night Setup',suggested:'$200–$500',def:300,min:1,taxable:true,desc:'Projector, screen, and setup package.',qty:1,price:300},
+        {name:'Carnival Games Set (3 games)',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Game rental grouping for event fun.',qty:1,price:200},
+        {name:'Giant Yard Games (Jenga, Connect 4)',suggested:'$75–$200',def:100,min:1,taxable:true,desc:'Outdoor activity add-on.',qty:1,price:100},
+        {name:'Water Slide Rental (per day)',suggested:'$200–$500/day',def:300,min:1,taxable:true,desc:'Popular large-format rental.',qty:1,price:300},
+        {name:'Obstacle Course Rental (per day)',suggested:'$250–$600/day',def:350,min:1,taxable:true,desc:'Premium active rental experience.',qty:1,price:350}
+      ]},
+      {cat:'Furniture Rentals',icon:'🪑',expanded:false,items:[
+        {name:'Bounce House Rental (per day)',suggested:'$150–$350/day',def:200,min:1,taxable:true,desc:'Classic party rental for kids events.',qty:1,price:200},
+        {name:'Soft Play Set Rental',suggested:'$200–$500/day',def:300,min:1,taxable:true,desc:'Toddler-friendly soft play setup.',qty:1,price:300},
+        {name:'Tables (per table)',suggested:'$8–$15/table',def:10,min:1,taxable:true,desc:'Basic table rental pricing.',qty:1,price:10},
+        {name:'Chairs (per chair)',suggested:'$1.50–$3/chair',def:2,min:4,taxable:true,desc:'Chair rental pricing.',qty:4,price:2},
+        {name:'Kids Table & Chair Set',suggested:'$35–$75/set',def:50,min:1,taxable:true,desc:'Kids seating set rental.',qty:1,price:50},
+        {name:'Photo Booth Rental',suggested:'$300–$600',def:400,min:1,taxable:true,desc:'High-value rental add-on.',qty:1,price:400},
+        {name:'Backdrop Stand (rental only)',suggested:'$25–$50',def:35,min:1,taxable:true,desc:'Backdrop structure rental.',qty:1,price:35}
+      ]},
+      {cat:'Concessions',icon:'🍿',expanded:false,items:[
+        {name:'Popcorn Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Popular food equipment rental.',qty:1,price:100},
+        {name:'Cotton Candy Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Sweet concession add-on.',qty:1,price:100},
+        {name:'Snow Cone Machine Rental',suggested:'$75–$150/day',def:100,min:1,taxable:true,desc:'Seasonal concession rental.',qty:1,price:100},
+        {name:'Hot Dog Roller Rental',suggested:'$75–$125/day',def:90,min:1,taxable:true,desc:'Food service rental.',qty:1,price:90},
+        {name:'Nacho Warmer Rental',suggested:'$50–$100/day',def:65,min:1,taxable:true,desc:'Concession support equipment.',qty:1,price:65},
+        {name:'Lemonade Dispenser Rental',suggested:'$50–$100/day',def:65,min:1,taxable:true,desc:'Drink service rental.',qty:1,price:65},
+        {name:'Full Food Cart Setup',suggested:'$200–$400/day',def:275,min:1,taxable:true,desc:'Expanded concession setup.',qty:1,price:275},
+        {name:'Concession Supplies Package',suggested:'$50–$150',def:85,min:1,taxable:true,desc:'Supplies bundle for concession service.',qty:1,price:85}
+      ]},
+      {cat:'Baby Shower',icon:'🍼',expanded:false,items:[
+        {name:'Baby Shower Full Setup',suggested:'$200–$600',def:350,min:1,taxable:true,desc:'Baby shower styling and setup.',qty:1,price:350},
+        {name:'Gender Reveal Styling Package',suggested:'$150–$400',def:250,min:1,taxable:true,desc:'Reveal-focused event setup.',qty:1,price:250},
+        {name:'Balloon Garland & Backdrop',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Photo-friendly shower focal point.',qty:1,price:200},
+        {name:'Dessert Table Styling',suggested:'$150–$400',def:225,min:1,taxable:true,desc:'Styled sweets and decor table.',qty:1,price:225},
+        {name:'Custom Balloon Box Reveal',suggested:'$75–$200',def:125,min:1,taxable:true,desc:'Reveal moment add-on.',qty:1,price:125},
+        {name:'Confetti Cannon Setup',suggested:'$50–$150',def:75,min:1,taxable:true,desc:'Reveal or celebration accent.',qty:1,price:75},
+        {name:'Diaper Raffle & Game Stations',suggested:'$50–$150',def:75,min:1,taxable:true,desc:'Interactive shower game area.',qty:1,price:75},
+        {name:'Mommy-to-Be Floral Crown',suggested:'$35–$100',def:55,min:1,taxable:true,desc:'Small premium keepsake touch.',qty:1,price:55}
+      ]},
+      {cat:'Wedding',icon:'💍',expanded:false,items:[
+        {name:'Wedding Ceremony Décor Setup',suggested:'$400–$1,500',def:750,min:1,taxable:true,desc:'Ceremony decor and install.',qty:1,price:750},
+        {name:'Wedding Reception Styling',suggested:'$500–$2,000',def:1000,min:1,taxable:true,desc:'Reception room styling and decor.',qty:1,price:1000},
+        {name:'Floral Arrangements (per table)',suggested:'$50–$200/table',def:100,min:4,taxable:true,desc:'Wedding floral tablescape pricing.',qty:4,price:100},
+        {name:'Bridal Backdrop & Arch',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Statement wedding backdrop.',qty:1,price:450},
+        {name:'Head Table Styling',suggested:'$150–$400',def:250,min:1,taxable:true,desc:'Premium table styling upgrade.',qty:1,price:250},
+        {name:'Wedding Balloon Installation',suggested:'$300–$1,000',def:500,min:1,taxable:true,desc:'Special-event balloon styling.',qty:1,price:500},
+        {name:'Guest Table Centerpieces (per table)',suggested:'$40–$150/table',def:75,min:4,taxable:true,desc:'Per-table wedding decor.',qty:4,price:75},
+        {name:'Wedding Day Coordination',suggested:'$500–$1,500',def:800,min:1,taxable:false,desc:'Timeline and event management.',qty:1,price:800},
+        {name:'Bridal Shower Setup',suggested:'$200–$600',def:350,min:1,taxable:true,desc:'Wedding-adjacent event package.',qty:1,price:350}
+      ]},
+      {cat:'Other original categories',icon:'📂',expanded:false,items:[
+        {name:'Corporate Event Styling',suggested:'$500–$2,500',def:1000,min:1,taxable:true,desc:'Brand-focused event styling.',qty:1,price:1000},
+        {name:'Stage / Podium Backdrop',suggested:'$300–$800',def:450,min:1,taxable:true,desc:'Corporate or presentation event decor.',qty:1,price:450},
+        {name:'Event Photography (per hour)',suggested:'$100–$250/hr',def:150,min:1,taxable:true,desc:'Photography add-on service.',qty:1,price:150},
+        {name:'Printed Photo Strip Service',suggested:'$150–$350',def:200,min:1,taxable:true,desc:'Keepsake booth add-on.',qty:1,price:200},
+        {name:'Day-of Event Coordination',suggested:'$150–$400',def:250,min:1,taxable:false,desc:'Execution and logistics support.',qty:1,price:250},
+        {name:'Full Event Planning Package',suggested:'$400–$1,200',def:600,min:1,taxable:false,desc:'Planning, strategy, and coordination.',qty:1,price:600},
+        {name:'Vendor Coordination Fee',suggested:'$75–$200',def:100,min:1,taxable:false,desc:'Managing outside partners and vendors.',qty:1,price:100},
+        {name:'Rush Booking Fee (under 7 days)',suggested:'$50–$150',def:75,min:1,taxable:false,desc:'Short-notice booking surcharge.',qty:1,price:75}
+      ]}
+    ];
+
+    function defaultPackages(){
+      return [
+        {id:'basic',tier:'Basic',name:'Basic Package',description:'Starter package.',notes:'',items:[]},
+        {id:'mid',tier:'Mid',name:'Mid Package',description:'Middle offer.',notes:'',items:[]},
+        {id:'premium',tier:'Premium',name:'Premium Package',description:'Higher-value offer.',notes:'',items:[]}
+      ];
+    }
+
+    function loadPackages(){
+      try{
+        return JSON.parse(localStorage.getItem('pbh_packages')) || defaultPackages();
+      }catch(e){
+        return defaultPackages();
+      }
+    }
+
+    function savePackages(){
+      localStorage.setItem('pbh_packages', JSON.stringify(packages));
+      alert('Offers saved in this browser.');
+    }
+
+    function loadQuoteDraft(){
+      try{
+        return JSON.parse(localStorage.getItem('pbh_quote_draft')) || [];
+      }catch(e){
+        return [];
+      }
+    }
+
+    function saveQuoteDraft(){
+      localStorage.setItem('pbh_quote_draft', JSON.stringify(quoteItems));
+    }
+
+    function qs(id){return document.getElementById(id)}
+    function esc(s){
+      return String(s ?? '').replace(/[&<>"']/g,m=>({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
+    function currency(){
+      const val = qs('currency').value;
+      return val === 'custom' ? (qs('customCurrency').value || '') : val;
+    }
+
+    function handleCurrencyChange(val){
+      const custom = qs('customCurrency');
+      custom.style.display = val === 'custom' ? 'block' : 'none';
+      refreshAll();
+    }
+
+    function taxCfg(){
+      return {
+        mode:qs('taxMode').value,
+        rate:parseFloat(qs('taxRate').value || '0'),
+        label:qs('taxLabel').value || 'Tax'
+      };
+    }
+
+    function pkg(id){
+      return packages.find(p => p.id === id);
+    }
+
+    function expandPackages(){qs('packagePanel').classList.remove('collapsed')}
+    function collapsePackages(){qs('packagePanel').classList.add('collapsed')}
+    function expandAllCats(){catalogData.forEach(c => c.expanded = true); renderCatalog()}
+    function collapseAllCats(){catalogData.forEach(c => c.expanded = false); renderCatalog()}
+    function toggleCategory(i){catalogData[i].expanded = !catalogData[i].expanded; renderCatalog()}
+
+    function setActivePackage(id){
+      activePackageId = id;
+      renderPackages();
+      renderCatalog();
+      refreshAll();
+    }
+
+    function updatePackageField(id, field, value){
+      const p = pkg(id);
+      p[field] = value;
+      savePackages();
+      refreshAll();
+    }
+
+    function cloneCatalogItem(ci, ii){
+      const c = catalogData[ci];
+      const item = c.items[ii];
+      return {
+        source:'catalog',
+        sourceKey:`${ci}:${ii}`,
+        category:c.cat,
+        name:item.name,
+        desc:item.desc,
+        qty:Number(item.qty),
+        price:Number(item.price),
+        taxable:Boolean(item.taxable)
+      };
+    }
+
+    function addItemToQuote(item){
+      quoteItems.push({...item});
+      saveQuoteDraft();
+      refreshAll();
+    }
+
+    function addCatalogItemToQuote(ci, ii){
+      addItemToQuote(cloneCatalogItem(ci, ii));
+    }
+
+    function addCatalogItemToActivePackage(ci, ii){
+      const p = pkg(activePackageId);
+      const newItem = cloneCatalogItem(ci, ii);
+      p.items.push(newItem);
+      savePackages();
+      refreshAll();
+    }
+
+    function removePackageItem(packageId, index){
+      const p = pkg(packageId);
+      p.items.splice(index, 1);
+      savePackages();
+      refreshAll();
+    }
+
+    function usePackageInQuote(packageId){
+      const p = pkg(packageId);
+      p.items.forEach(item => {
+        quoteItems.push({...item, source:'package', packageName:p.name});
+      });
+      saveQuoteDraft();
+      refreshAll();
+    }
+
+    function updateCatalogItem(ci, ii, field, value){
+      const item = catalogData[ci].items[ii];
+      if(field === 'qty'){
+        item.qty = Math.max(item.min, parseInt(value || item.min, 10));
+      }else{
+        item.price = parseFloat(value || '0');
+      }
+      refreshAll();
+      renderCatalog();
+    }
+
+    function addCustomItemToQuote(){
+      const item = getCustomItemInput();
+      if(!item) return;
+      addItemToQuote(item);
+      clearCustomInputs();
+    }
+
+    function addCustomItemToActivePackage(){
+      const item = getCustomItemInput();
+      if(!item) return;
+      pkg(activePackageId).items.push({...item, source:'custom'});
+      savePackages();
+      clearCustomInputs();
+      refreshAll();
+    }
+
+    function getCustomItemInput(){
+      const name = qs('customName').value.trim();
+      const category = qs('customCategory').value.trim() || 'Custom item';
+      const qty = Math.max(1, parseInt(qs('customQty').value || '1', 10));
+      const price = parseFloat(qs('customPrice').value || '0');
+
+      if(!name || !price){
+        alert('Add a custom item name and price first.');
+        return null;
+      }
+
+      return {
+        source:'custom',
+        category,
+        name,
+        desc:'',
+        qty,
+        price,
+        taxable:true
+      };
+    }
+
+    function clearCustomInputs(){
+      qs('customName').value = '';
+      qs('customCategory').value = '';
+      qs('customQty').value = '1';
+      qs('customPrice').value = '';
+    }
+
+    function packageTotal(packageId){
+      return pkg(packageId).items.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0);
+    }
+
+    function renderPackages(){
+      qs('packageGrid').innerHTML = packages.map(p => {
+        return `
+          <div class="package-card ${p.id === activePackageId ? 'active' : ''}">
+            <div class="package-tier"><span class="dot"></span>${p.tier}</div>
+            <h3>
+              <input
+                style="border:none;padding:0;background:transparent;font:inherit;font-family:'Playfair Display',serif;font-size:20px;color:var(--plum-900)"
+                value="${esc(p.name)}"
+                onchange="updatePackageField('${p.id}','name',this.value)"
+              >
+            </h3>
+            <p>
+              <textarea style="min-height:78px" onchange="updatePackageField('${p.id}','description',this.value)">${esc(p.description)}</textarea>
+            </p>
+            <div class="field">
+              <label>Package notes</label>
+              <input value="${esc(p.notes)}" onchange="updatePackageField('${p.id}','notes',this.value)">
+            </div>
+
+            <div class="package-total">
+              <strong>Package total</strong>
+              <span>${currency()}${packageTotal(p.id).toFixed(2)}</span>
+            </div>
+
+            <div style="margin-top:10px;color:var(--muted);font-size:13px">${p.items.length} items in this package</div>
+
+            <div style="margin-top:10px;display:grid;gap:6px">
+              ${
+                p.items.length
+                  ? p.items.slice(0,4).map((item, idx) => `
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)">
+                      <span>${esc(item.name)} × ${item.qty}</span>
+                      <span>${currency()}${(item.qty * item.price).toFixed(2)}</span>
+                    </div>
+                  `).join('')
+                  : `<div style="font-size:12px;color:var(--muted)">No items added yet.</div>`
+              }
+            </div>
+
+            <div class="package-actions">
+              <button class="btn btn-primary" onclick="setActivePackage('${p.id}')">${p.id === activePackageId ? 'Active package' : 'Build this package'}</button>
+              <button class="btn btn-secondary" onclick="usePackageInQuote('${p.id}')">Use in quote</button>
+            </div>
+
+            ${
+              p.items.length
+                ? `<div style="margin-top:12px;display:grid;gap:6px">
+                    ${p.items.map((item, idx) => `
+                      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px">
+                        <span>${esc(item.name)} × ${item.qty}</span>
+                        <button class="tiny-btn" onclick="removePackageItem('${p.id}', ${idx})">Remove</button>
+                      </div>
+                    `).join('')}
+                  </div>`
+                : ''
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCatalog(){
+      qs('catalog').innerHTML = catalogData.map((cat, ci) => `
+        <div class="cat-card ${cat.expanded ? '' : 'collapsed'}">
+          <button class="cat-head" onclick="toggleCategory(${ci})">
+            <div class="cat-left">
+              <div class="cat-icon">${cat.icon}</div>
+              <div class="cat-label">
+                <strong>${esc(cat.cat)}</strong>
+                <span>${cat.items.length} services in this category</span>
+              </div>
+            </div>
+            <div class="cat-toggle">⌄</div>
+          </button>
+          <div class="cat-body">
+            ${cat.items.map((item, ii) => `
+              <div class="service-item">
+                <div class="service-main">
+                  <div class="service-check">+</div>
+                  <div class="service-copy">
+                    <strong>${esc(item.name)}</strong>
+                    <div class="service-meta">${esc(item.desc)}</div>
+                    <div class="service-hint">Suggested U.S. market rate: ${esc(item.suggested)} · Minimum qty ${item.min}</div>
+                    <div class="service-actions">
+                      <button class="tiny-btn" onclick="addCatalogItemToQuote(${ci}, ${ii})">Add to Quote</button>
+                      <button class="tiny-btn" onclick="addCatalogItemToActivePackage(${ci}, ${ii})">Add to Active Package</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="qty-col">
+                  <label>Qty</label>
+                  <input type="number" min="${item.min}" value="${item.qty}" onchange="updateCatalogItem(${ci}, ${ii}, 'qty', this.value)">
+                </div>
+                <div class="price-col">
+                  <label>Unit price</label>
+                  <input type="number" value="${item.price}" onchange="updateCatalogItem(${ci}, ${ii}, 'price', this.value)">
+                </div>
+                <div class="total-col">
+                  <label>Total</label>
+                  <div class="total-pill">${currency()}${(item.qty * item.price).toFixed(2)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateQuoteItem(index, field, value){
+      const item = quoteItems[index];
+      if(field === 'qty'){
+        item.qty = Math.max(1, parseInt(value || '1', 10));
+      }else if(field === 'price'){
+        item.price = parseFloat(value || '0');
+      }
+      saveQuoteDraft();
+      refreshAll();
+    }
+
+    function removeQuoteItem(index){
+      quoteItems.splice(index, 1);
+      saveQuoteDraft();
+      refreshAll();
+    }
+
+    function totals(){
+      const items = quoteItems.map(item => ({
+        ...item,
+        total: Number(item.qty) * Number(item.price)
+      }));
+
+      const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+      const taxInfo = taxCfg();
+      const taxableBase = items.filter(item => item.taxable).reduce((sum, item) => sum + item.total, 0);
+
+      let tax = 0;
+      if(taxInfo.mode === 'added'){
+        tax = taxableBase * (taxInfo.rate / 100);
+      }else if(taxInfo.mode === 'included'){
+        tax = taxableBase * (taxInfo.rate / (100 + taxInfo.rate));
+      }
+
+      const grand = taxInfo.mode === 'added' ? subtotal + tax : subtotal;
+      return {items, subtotal, tax, grand, taxInfo};
+    }
+
+    function renderLive(){
+      const {items, subtotal, tax, grand, taxInfo} = totals();
+
+      qs('quoteStatus').textContent = items.length ? 'In progress' : 'Draft';
+      qs('subtotalVal').textContent = `${currency()}${subtotal.toFixed(2)}`;
+      qs('taxVal').textContent = `${currency()}${tax.toFixed(2)}`;
+      qs('taxLabelLive').textContent = taxInfo.mode === 'none' ? 'Tax' : taxInfo.label;
+      qs('grandVal').textContent = `${currency()}${grand.toFixed(2)}`;
+
+      qs('liveMini').innerHTML = items.length
+        ? items.map((item, idx) => `
+            <div class="live-row">
+              <div>
+                <strong>${esc(item.name)}</strong>
+                <small>${esc(item.category)} · Qty ${item.qty}</small>
+              </div>
+              <span>${currency()}${item.total.toFixed(2)}</span>
+            </div>
+          `).join('')
+        : `<div class="empty-state">Select a saved offer, add quote items, or add a custom line item to start building the quote.</div>`;
+
+      qs('tierGrid').innerHTML = depositOptions.map(v => `
+        <button class="tier-btn ${selectedDepositTier === v ? 'active' : ''}" onclick="selectDeposit(${v})">
+          ${currency()}${v}
+        </button>
+      `).join('');
+
+      qs('tierHelp').textContent =
+        qs('depositProfile').value === 'manual'
+          ? 'Manual follow-up invoice selected for deposits.'
+          : 'Default deposit profile selected. Stripe links can map here later.';
+    }
+
+    function renderPreview(){
+      const {items, subtotal, tax, grand, taxInfo} = totals();
+
+      const rows = items.length
+        ? items.map((item, idx) => `
+            <div class="invoice-row">
+              <span>
+                <strong>${esc(item.name)}</strong><br>
+                <small style="color:var(--muted)">${esc(item.category)}</small>
+              </span>
+              <span>
+                <input style="width:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--line)" type="number" value="${item.qty}" onchange="updateQuoteItem(${idx}, 'qty', this.value)">
+              </span>
+              <span>
+                <input style="width:90px;padding:8px 10px;border-radius:10px;border:1px solid var(--line)" type="number" value="${item.price}" onchange="updateQuoteItem(${idx}, 'price', this.value)">
+              </span>
+              <span style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+                <span>${currency()}${item.total.toFixed(2)}</span>
+                <button class="tiny-btn" onclick="removeQuoteItem(${idx})">Remove</button>
+              </span>
+            </div>
+          `).join('')
+        : `<div class="empty-state" style="background:#fff;border:1px dashed var(--line);color:var(--muted)">Your quote preview will populate here as soon as you add items into the quote.</div>`;
+
+      qs('fullPreview').innerHTML = `
+        <div class="invoice-shell" id="printArea">
+          <div class="invoice-top">
+            <div>
+              <h4>Party Biz Hub Quote Preview</h4>
+              <p>This preview should later inherit business profile branding, logo, and saved company information.</p>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.74);font-weight:700">Quote preview</div>
+              <div style="margin-top:10px;font-size:13px;color:rgba(255,255,255,.82)">Status: ${items.length ? 'Ready to review' : 'Draft'}</div>
+            </div>
+          </div>
+
+          <div class="invoice-meta">
+            <div class="meta-box"><small>Client</small><strong>${esc(qs('clientName').value || 'Client name')}</strong></div>
+            <div class="meta-box"><small>Event</small><strong>${esc(qs('eventType').value || 'Event type')}</strong></div>
+            <div class="meta-box"><small>Event date</small><strong>${esc(qs('eventDate').value || 'Event date')}</strong></div>
+            <div class="meta-box"><small>Expiration</small><strong>${esc(qs('expiryDate').value || 'No expiration date set')}</strong></div>
+          </div>
+
+          <div class="invoice-table">
+            <div class="invoice-row head">
+              <strong>Item</strong>
+              <strong>Qty</strong>
+              <strong>Unit</strong>
+              <strong>Total</strong>
+            </div>
+            ${rows}
+          </div>
+
+          <div class="invoice-totals">
+            <div class="invoice-total-row"><span>Subtotal</span><span>${currency()}${subtotal.toFixed(2)}</span></div>
+            <div class="invoice-total-row"><span>${esc(taxInfo.label)}${taxInfo.mode === 'added' ? ' (added)' : taxInfo.mode === 'included' ? ' (included)' : ''}</span><span>${currency()}${tax.toFixed(2)}</span></div>
+            <div class="invoice-total-row grand"><span>Total</span><span>${currency()}${grand.toFixed(2)}</span></div>
+
+            <div class="invoice-deposit">
+              <strong>Deposit flow</strong><br>
+              ${
+                qs('depositProfile').value === 'manual'
+                  ? 'Manual follow-up invoice selected for deposit collection.'
+                  : `Preset deposit tier selected: ${currency()}${selectedDepositTier}. Stripe mapping can be connected later.`
+              }
+              <br><br>
+              <strong>Event notes:</strong> ${esc(qs('eventNotes').value || 'No additional event notes added yet.')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function quoteText(){
+      const {items, subtotal, tax, grand, taxInfo} = totals();
+      const lines = [
+        `QUOTE`,
+        ``,
+        `Client: ${qs('clientName').value || 'Client name'}`,
+        `Event: ${qs('eventType').value || 'Event type'}`,
+        `Event Date: ${qs('eventDate').value || 'Event date'}`,
+        `Expiration: ${qs('expiryDate').value || 'No expiration date set'}`,
+        ``,
+        `ITEMS`
+      ];
+
+      items.forEach(item => {
+        lines.push(`- ${item.name} | Qty ${item.qty} | ${currency()}${item.price.toFixed(2)} | ${currency()}${item.total.toFixed(2)}`);
+      });
+
+      lines.push(``);
+      lines.push(`Subtotal: ${currency()}${subtotal.toFixed(2)}`);
+      lines.push(`${taxInfo.label}: ${currency()}${tax.toFixed(2)}`);
+      lines.push(`Total: ${currency()}${grand.toFixed(2)}`);
+      lines.push(``);
+      lines.push(`Notes: ${qs('eventNotes').value || 'No notes added.'}`);
+
+      return lines.join('\n');
+    }
+
+    function copyQuoteText(){
+      navigator.clipboard.writeText(quoteText()).then(() => {
+        alert('Quote text copied.');
+      });
+    }
+
+    function printQuote(){
+      window.print();
+    }
+
+    function saveCurrentQuote(){
+      const savedQuotes = JSON.parse(localStorage.getItem('pbh_saved_quotes') || '[]');
+      savedQuotes.push({
+        id: Date.now(),
+        clientName: qs('clientName').value || '',
+        eventType: qs('eventType').value || '',
+        eventDate: qs('eventDate').value || '',
+        expiryDate: qs('expiryDate').value || '',
+        currency: qs('currency').value,
+        customCurrency: qs('customCurrency').value || '',
+        taxMode: qs('taxMode').value,
+        taxRate: qs('taxRate').value,
+        taxLabel: qs('taxLabel').value,
+        eventNotes: qs('eventNotes').value || '',
+        depositProfile: qs('depositProfile').value,
+        selectedDepositTier,
+        status:'Draft',
+        items: quoteItems
+      });
+      localStorage.setItem('pbh_saved_quotes', JSON.stringify(savedQuotes));
+      alert('Quote saved in this browser.');
+    }
+
+    function selectDeposit(value){
+      selectedDepositTier = value;
+      refreshAll();
+    }
+
+    function refreshAll(){
+      renderPackages();
+      renderCatalog();
+      renderLive();
+      renderPreview();
+      saveQuoteDraft();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date();
+      const eventDate = new Date(today);
+      const expiryDate = new Date(today);
+      eventDate.setDate(today.getDate() + 14);
+      expiryDate.setDate(today.getDate() + 7);
+
+      qs('eventDate').value = eventDate.toISOString().slice(0,10);
+      qs('expiryDate').value = expiryDate.toISOString().slice(0,10);
+
+      collapsePackages();
+      refreshAll();
+
+      [
+        'clientName','eventType','eventDate','expiryDate',
+        'currency','taxMode','taxRate','taxLabel','eventNotes',
+        'depositProfile'
+      ].forEach(id => {
+        qs(id).addEventListener('input', refreshAll);
+        qs(id).addEventListener('change', refreshAll);
+      });
+    });
+  </script>
 </body>
 </html>
