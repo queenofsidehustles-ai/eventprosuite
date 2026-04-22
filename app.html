@@ -1638,8 +1638,20 @@ async function loadProfileFromSupabase(userId) {
       fields.forEach(id => { const el = document.getElementById(id); if(el && p[id]) el.value = p[id]; });
       if (p.depositPct) setDeposit(p.depositPct);
       if (p.bizCurrency) { const sel = document.getElementById('bizCurrency'); if(sel) { sel.value = p.bizCurrency; updateCurrencyDisplay(); } }
-      if (p.brandPrimary) { const el = document.getElementById('brandPrimary'); if(el) { el.value = p.brandPrimary; const hex = document.getElementById('brandPrimaryHex'); if(hex) hex.value = p.brandPrimary; } }
-      if (p.brandAccent) { const el = document.getElementById('brandAccent'); if(el) { el.value = p.brandAccent; const hex = document.getElementById('brandAccentHex'); if(hex) hex.value = p.brandAccent; } }
+      if (p.brandPrimary) {
+        const normalized = normalizeHex(p.brandPrimary);
+        const el = document.getElementById('brandPrimary');
+        const hex = document.getElementById('brandPrimaryHex');
+        if (el) el.value = normalized;
+        if (hex) hex.value = normalized;
+      }
+      if (p.brandAccent) {
+        const normalized = normalizeHex(p.brandAccent);
+        const el = document.getElementById('brandAccent');
+        const hex = document.getElementById('brandAccentHex');
+        if (el) el.value = normalized;
+        if (hex) hex.value = normalized;
+      }
       if (p.taxMode) { const btn = document.getElementById(p.taxMode==='added'?'taxAdded':p.taxMode==='included'?'taxIncluded':'taxNone'); setTax(p.taxMode, btn); }
       if (p.taxRate) { const el = document.getElementById('taxRate'); if(el) el.value = p.taxRate; }
       if (p.taxLabel) { const el = document.getElementById('taxLabel'); if(el) el.value = p.taxLabel; }
