@@ -344,8 +344,14 @@ async function createAccount() {
   }
 }
 
-async function markUserAsPaid(userId, first, last) {
-  // Upsert to profiles table - marks the user as paid founder
+async function markUserAsPaid(userId, first, last, attempt = 1) {
+  const MAX_ATTEMPTS = 3;
+
+  // Small delay on retries to let auth session settle
+  if (attempt > 1) {
+    await new Promise(r => setTimeout(r, 700));
+  }
+
   const { error } = await sb.from('profiles').upsert({
     id: userId,
     has_paid: true,
@@ -353,11 +359,25 @@ async function markUserAsPaid(userId, first, last) {
   });
 
   if (error) {
-    console.error('Profile upsert error:', error);
-    // Not fatal - account is still created, they can still log in
-    // but we should still show success so they can proceed
+    console.error(`Profile upsert attempt ${attempt} failed:`, error);
+
+    // Retry up to MAX_ATTEMPTS times
+    if (attempt < MAX_ATTEMPTS) {
+      console.log(`Retrying... (attempt ${attempt + 1} of ${MAX_ATTEMPTS})`);
+      return markUserAsPaid(userId, first, last, attempt + 1);
+    }
+
+    // All retries exhausted - tell the user
+    setLoading(false);
+    showError(
+      'Your account was created but we could not confirm your founder access. ' +
+      'Please email monica@partybusinesscoach.com with your email address — ' +
+      'we will activate your access within 24 hours.'
+    );
+    return;
   }
 
+  // Success - show the done screen
   setLoading(false);
   document.getElementById('setupSection').style.display = 'none';
   document.getElementById('doneSection').style.display = 'block';
