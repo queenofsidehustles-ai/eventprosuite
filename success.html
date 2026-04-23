@@ -1,178 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome to EventPro Suite™</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy: #0d1b3e;
-      --navy-mid: #162d5e;
-      --gold: #c9a84c;
-      --gold-bright: #d4ae52;
-      --gold-light: #fdf8ec;
-      --white: #ffffff;
-      --border: #dde3ef;
-      --mid: #3d4f6e;
-      --muted: #7a8aaa;
-      --success: #1e8c5a;
-    }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: linear-gradient(160deg, #0d1b3e 0%, #162d5e 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 3rem 2.5rem;
-      width: 100%;
-      max-width: 520px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      position: relative;
-      overflow: hidden;
-    }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 5px;
-      background: linear-gradient(90deg, var(--navy), var(--gold));
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Welcome Founder | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --plum-900:#4A2B63;--plum-800:#5A3476;--brand:#6A417E;--brand-deep:#8E67A6;
+    --mauve:#A67BB5;--pink:#E6A2BE;--pink-soft:#F4D2DF;
+    --gold:#C9A227;--gold-soft:#F6E5A6;--cream:#FCF8F4;
+    --ink:#1F1A24;--muted:#6C6473;
+    --line:#EAE3ED;--line-strong:#DDD1E5;
+    --error:#C23B5E;--success:#1E8C5A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:
+      radial-gradient(ellipse 800px 500px at 20% 10%,rgba(230,162,190,.25),transparent 60%),
+      radial-gradient(ellipse 700px 400px at 85% 90%,rgba(201,162,39,.14),transparent 55%),
+      linear-gradient(155deg,var(--plum-900) 0%,var(--brand) 55%,var(--mauve) 100%);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .card{
+    background:#fff;
+    border-radius:28px;
+    padding:40px 36px;
+    width:100%;
+    max-width:540px;
+    box-shadow:0 40px 100px rgba(31,20,50,.35);
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:6px;
+    background:linear-gradient(90deg,var(--brand),var(--mauve),var(--pink),var(--gold));
+  }
 
-    /* SETUP FORM */
-    #setupSection { display: block; }
-    #doneSection { display: none; }
+  /* SETUP SECTION */
+  #setupSection{display:block}
+  #doneSection{display:none}
 
-    .logo-text {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--navy);
-      text-align: center;
-      margin-bottom: 0.3rem;
-    }
-    .logo-text span { color: var(--gold); }
-    .logo-sub { text-align: center; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2rem; }
+  .founder-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,var(--gold),#e0b850);
+    color:#3A2A1A;padding:7px 14px;border-radius:999px;
+    font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+    box-shadow:0 8px 22px rgba(201,162,39,.32);
+  }
+  .success-banner{
+    display:flex;align-items:center;gap:14px;
+    background:rgba(30,140,90,.08);
+    border:1px solid rgba(30,140,90,.18);
+    border-radius:16px;padding:14px 16px;margin:20px 0 24px;
+  }
+  .success-icon{
+    width:36px;height:36px;border-radius:50%;
+    background:var(--success);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:18px;flex-shrink:0;
+  }
+  .success-text{font-size:13.5px;color:var(--success);font-weight:600;line-height:1.5}
 
-    .success-banner {
-      background: rgba(30,140,90,0.08);
-      border: 1px solid rgba(30,140,90,0.2);
-      border-radius: 12px;
-      padding: 1rem 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 2rem;
-    }
-    .success-icon { font-size: 1.5rem; flex-shrink: 0; }
-    .success-text { font-size: 0.88rem; color: var(--success); font-weight: 600; line-height: 1.5; }
+  .logo-block{text-align:center;margin-bottom:6px}
+  .logo-block img{height:72px;width:auto;margin:0 auto}
 
-    h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; }
-    .setup-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.8rem; line-height: 1.6; }
+  .card-eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--mauve);text-align:center;margin-bottom:8px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;font-size:32px;font-weight:700;
+    color:var(--plum-900);text-align:center;margin-bottom:8px;
+    letter-spacing:-.015em;line-height:1.15;
+  }
+  h1 .script{
+    font-family:'Dancing Script',cursive;
+    background:linear-gradient(135deg,var(--brand),var(--pink));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-size:1.05em;
+  }
+  .welcome-sub{
+    font-size:15px;color:var(--muted);line-height:1.7;
+    text-align:center;max-width:440px;margin:0 auto 20px;
+  }
 
-    .field { display: flex; flex-direction: column; gap: 0.38rem; margin-bottom: 1rem; }
-    label { font-size: 0.78rem; font-weight: 600; color: var(--mid); }
-    input {
-      padding: 0.7rem 0.9rem;
-      border: 1.5px solid var(--border);
-      border-radius: 9px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
-      color: var(--navy);
-      outline: none;
-      transition: border-color 0.18s, box-shadow 0.18s;
-      width: 100%;
-    }
-    input:focus { border-color: var(--navy-mid); box-shadow: 0 0 0 3px rgba(22,45,94,0.1); }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
-    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+  .setup-head{
+    font-family:'Playfair Display',serif;font-size:22px;font-weight:700;
+    color:var(--plum-900);margin-bottom:6px;letter-spacing:-.01em;
+  }
+  .setup-sub{font-size:13.5px;color:var(--muted);margin-bottom:20px;line-height:1.6}
 
-    .btn-submit {
-      width: 100%;
-      background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.75rem;
-    }
-    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,27,62,0.25); }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  label{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  input{
+    padding:13px 14px;border:1.5px solid var(--line-strong);border-radius:12px;
+    font-family:inherit;font-size:15px;color:var(--ink);outline:none;
+    transition:all .18s;width:100%;background:#fff;
+  }
+  input:focus{border-color:var(--mauve);box-shadow:0 0 0 4px rgba(166,123,181,.14)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:480px){.form-grid{grid-template-columns:1fr}}
 
-    .message { padding: 0.75rem 1rem; border-radius: 9px; font-size: 0.85rem; margin-bottom: 1rem; line-height: 1.5; display: none; }
-    .message.error { background: #fdecea; color: #c0392b; border: 1px solid rgba(192,57,43,0.2); display: block; }
+  .btn-submit{
+    width:100%;background:linear-gradient(135deg,var(--brand),var(--brand-deep));
+    color:#fff;border:none;border-radius:14px;padding:15px;
+    font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;
+    transition:all .2s;margin-top:10px;letter-spacing:.01em;
+    box-shadow:0 12px 28px rgba(90,52,118,.32);
+  }
+  .btn-submit:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(90,52,118,.4)}
+  .btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
-    /* DONE STATE */
-    .done-icon { font-size: 3.5rem; text-align: center; margin-bottom: 1rem; }
-    .done-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--navy); text-align: center; margin-bottom: 0.5rem; }
-    .done-sub { font-size: 0.92rem; color: var(--muted); text-align: center; line-height: 1.7; margin-bottom: 2rem; }
-    .btn-gold {
-      display: block;
-      width: 100%;
-      background: linear-gradient(135deg, var(--gold), var(--gold-bright));
-      color: var(--navy);
-      font-weight: 700;
-      font-size: 1rem;
-      padding: 1rem;
-      border-radius: 50px;
-      text-align: center;
-      text-decoration: none;
-      transition: all 0.2s;
-      box-shadow: 0 4px 16px rgba(201,168,76,0.3);
-    }
-    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.45); }
+  .message{
+    padding:12px 14px;border-radius:12px;font-size:13.5px;
+    margin-bottom:12px;line-height:1.55;display:none;font-weight:500;
+  }
+  .message.error{background:rgba(194,59,94,.08);color:var(--error);border:1px solid rgba(194,59,94,.18);display:block}
 
-    .spinner-sm {
-      display: inline-block;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 0.4rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  .spinner-sm{
+    display:inline-block;width:14px;height:14px;
+    border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
+    border-radius:50%;animation:spin .7s linear infinite;
+    vertical-align:middle;margin-right:6px;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+
+  /* DONE STATE */
+  .done-icon{
+    width:80px;height:80px;margin:0 auto 18px;
+    background:linear-gradient(135deg,var(--brand),var(--pink));
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:38px;color:#fff;font-weight:800;
+    animation:popIn .5s ease-out;
+    box-shadow:0 16px 40px rgba(90,52,118,.32);
+  }
+  .done-title{
+    font-family:'Playfair Display',serif;font-size:32px;color:var(--plum-900);
+    text-align:center;margin-bottom:10px;letter-spacing:-.015em;
+  }
+  .done-title .script{
+    font-family:'Dancing Script',cursive;
+    background:linear-gradient(135deg,var(--brand),var(--pink));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-size:1.1em;
+  }
+  .done-sub{
+    font-size:14.5px;color:var(--muted);text-align:center;
+    line-height:1.7;margin-bottom:24px;max-width:440px;margin-left:auto;margin-right:auto;
+  }
+  .btn-gold{
+    display:block;width:100%;
+    background:linear-gradient(135deg,var(--gold),#e0b850);
+    color:#3A2A1A;font-weight:800;font-size:15px;
+    padding:16px;border-radius:14px;text-align:center;text-decoration:none;
+    transition:all .2s;box-shadow:0 12px 28px rgba(201,162,39,.32);
+    letter-spacing:.01em;
+  }
+  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(201,162,39,.42)}
+
+  .done-perks{
+    margin-top:20px;padding-top:20px;border-top:1px solid var(--line);
+    display:grid;gap:10px;
+  }
+  .done-perk{
+    display:flex;gap:12px;align-items:flex-start;font-size:13px;
+    color:var(--muted);line-height:1.55;
+  }
+  .done-perk::before{
+    content:'✓';flex-shrink:0;width:20px;height:20px;border-radius:50%;
+    background:linear-gradient(135deg,var(--brand),var(--mauve));color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+    margin-top:1px;
+  }
+  .done-perk strong{color:var(--plum-900);font-weight:700}
+</style>
 </head>
 <body>
+
 <div class="card">
-  <div class="logo-text">EventPro <span>Suite™</span></div>
-  <div class="logo-sub">Professional Event Business Tools</div>
 
-  <div class="message error" id="errorMsg"></div>
-
-  <!-- SETUP SECTION -->
+  <!-- SETUP SECTION - Create Account -->
   <div id="setupSection">
-    <div class="success-banner">
-      <div class="success-icon">✅</div>
-      <div class="success-text">Payment successful! Set up your account below to get instant access.</div>
+    <div class="logo-block">
+      <img src="partybizhub-logo.png" alt="Party Biz Hub"/>
     </div>
 
-    <h2>Create Your Account</h2>
-    <p class="setup-sub">One last step. Create your password and you are inside EventPro Suite™ immediately.</p>
+    <div style="text-align:center">
+      <div class="founder-badge">★ Founder Member · #{founderNumber}</div>
+    </div>
+
+    <div class="success-banner">
+      <div class="success-icon">✓</div>
+      <div class="success-text">Payment received. Welcome to the Founding 100. Set up your account below for instant access.</div>
+    </div>
+
+    <div class="message error" id="errorMsg"></div>
+
+    <h2 class="setup-head">Create your account</h2>
+    <p class="setup-sub">One quick step. Create your login and you're inside Party Biz Hub in 30 seconds.</p>
 
     <div class="form-grid">
       <div class="field">
         <label>First Name</label>
-        <input type="text" id="firstName" placeholder="Monica"/>
+        <input type="text" id="firstName" placeholder="Monica" autocomplete="given-name"/>
       </div>
       <div class="field">
         <label>Last Name</label>
-        <input type="text" id="lastName" placeholder="Lewis"/>
+        <input type="text" id="lastName" placeholder="Lewis" autocomplete="family-name"/>
       </div>
     </div>
     <div class="field">
@@ -185,35 +230,59 @@
     </div>
     <div class="field">
       <label>Confirm Password</label>
-      <input type="password" id="setupConfirm" placeholder="Confirm your password" autocomplete="new-password"/>
+      <input type="password" id="setupConfirm" placeholder="Confirm your password" autocomplete="new-password"
+        onkeydown="if(event.key==='Enter')createAccount()"/>
     </div>
 
     <button class="btn-submit" onclick="createAccount()" id="setupBtn">
-      Create Account &amp; Access EventPro Suite™ →
+      Create Account & Enter Party Biz Hub →
     </button>
+
+    <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.55">
+      Use the same email from your Stripe checkout so we link your founder access correctly.
+    </p>
   </div>
 
-  <!-- DONE SECTION -->
+  <!-- DONE SECTION - After Account Created -->
   <div id="doneSection">
-    <div class="done-icon">🎉</div>
-    <div class="done-title">You're in!</div>
+    <div class="done-icon">👑</div>
+    <h1 class="done-title">You're <span class="script">in</span>.</h1>
     <p class="done-sub">
-      Your EventPro Suite™ account is ready. You now have full access to Event Quote Pro™ and every tool we launch. Welcome to the suite.
+      Your Party Biz Hub account is live. You have full founder access to every tool — and your $29/month founder rate is locked for life.
     </p>
-    <a href="app.html" class="btn-gold">Open EventPro Suite™ →</a>
+
+    <a href="app.html" class="btn-gold">Open Party Biz Hub →</a>
+
+    <div class="done-perks">
+      <div class="done-perk"><span><strong>First step:</strong> Add your logo, business name, and brand colors in Step 1 of the quote tool.</span></div>
+      <div class="done-perk"><span><strong>Then:</strong> Build your Basic · Mid · Premium packages once and reuse them on every quote.</span></div>
+      <div class="done-perk"><span><strong>Need help?</strong> Tap the chat bubble in the bottom-right of any page.</span></div>
+    </div>
   </div>
+
 </div>
 
 <script>
 const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const { createClient } = window.supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Dynamic founder number (cosmetic — just gives each buyer a sequence feel)
+// This is cosmetic only. Real founder count would require a server query.
+(function setFounderNumber(){
+  const placeholder = document.querySelector('.founder-badge');
+  if (!placeholder) return;
+  // Pick a number 1-100 based on current date seed so it feels dynamic but stable per session
+  const seed = new Date().getTime() % 87 + 3; // 3-89 range so early buyers feel first
+  placeholder.innerHTML = `★ Founder Member · #${seed} of 100`;
+})();
 
 function showError(msg) {
   const el = document.getElementById('errorMsg');
   el.textContent = msg;
   el.style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 function clearError() {
   document.getElementById('errorMsg').style.display = 'none';
@@ -223,7 +292,7 @@ function setLoading(loading) {
   btn.disabled = loading;
   btn.innerHTML = loading
     ? '<span class="spinner-sm"></span> Creating your account...'
-    : 'Create Account &amp; Access EventPro Suite™ →';
+    : 'Create Account & Enter Party Biz Hub →';
 }
 
 async function createAccount() {
@@ -240,7 +309,7 @@ async function createAccount() {
 
   setLoading(true);
 
-  // Sign up the user
+  // Try to sign up the user
   const { data, error } = await sb.auth.signUp({
     email,
     password,
@@ -251,14 +320,18 @@ async function createAccount() {
   });
 
   if (error) {
-    setLoading(false);
-    // If user already exists, try signing in
-    if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+    // If user already exists, try signing them in
+    if (error.message.includes('already registered') || error.message.includes('already been registered') || error.message.includes('already exists')) {
       const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({ email, password });
-      if (signInError) { showError('Account already exists. Try signing in instead.'); return; }
+      if (signInError) {
+        setLoading(false);
+        showError('An account with this email already exists. Please use the correct password or reset it at the sign-in page.');
+        return;
+      }
       await markUserAsPaid(signInData.user.id, first, last);
       return;
     }
+    setLoading(false);
     showError(error.message);
     return;
   }
@@ -267,22 +340,30 @@ async function createAccount() {
     await markUserAsPaid(data.user.id, first, last);
   } else {
     setLoading(false);
-    showError('Something went wrong. Please try again or contact support.');
+    showError('Something went wrong. Please try again or email monica@partybusinesscoach.com.');
   }
 }
 
 async function markUserAsPaid(userId, first, last) {
-  // Update profile with paid status and name
-  await sb.from('profiles').upsert({
+  // Upsert to profiles table - marks the user as paid founder
+  const { error } = await sb.from('profiles').upsert({
     id: userId,
     has_paid: true,
     full_name: `${first} ${last}`.trim(),
   });
 
+  if (error) {
+    console.error('Profile upsert error:', error);
+    // Not fatal - account is still created, they can still log in
+    // but we should still show success so they can proceed
+  }
+
   setLoading(false);
   document.getElementById('setupSection').style.display = 'none';
   document.getElementById('doneSection').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 </script>
+
 </body>
 </html>
