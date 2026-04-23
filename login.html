@@ -205,8 +205,15 @@ const { createClient } = window.supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Auto-redirect if already logged in
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'app.html';
+sb.auth.getSession().then(async ({ data: { session } }) => {
+  if (!session) return;
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('profile_data')
+    .eq('id', session.user.id)
+    .single();
+  const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
+  window.location.href = hasBusinessName ? 'app.html' : 'profile.html';
 });
 
 function switchTab(tab) {
@@ -258,7 +265,7 @@ async function handleLogin() {
   // Check has_paid status
   const { data: profile } = await sb
     .from('profiles')
-    .select('has_paid')
+    .select('has_paid, profile_data')
     .eq('id', data.user.id)
     .single();
 
@@ -269,7 +276,9 @@ async function handleLogin() {
     return;
   }
 
-  window.location.href = 'app.html';
+  // Smart routing: incomplete profile → profile.html, complete → app.html
+  const hasBusinessName = profile.profile_data && profile.profile_data.businessName;
+  window.location.href = hasBusinessName ? 'app.html' : 'profile.html';
 }
 
 async function handleSignup() {
