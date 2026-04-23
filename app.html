@@ -70,6 +70,14 @@
   @media(max-width:1180px){.app-layout{grid-template-columns:1fr}}
 
   .workspace{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+  /* PROFILE INCOMPLETE BANNER */
+  .profile-banner{display:flex;align-items:center;gap:16px;padding:18px 22px;background:linear-gradient(135deg,rgba(201,162,39,.14),rgba(230,162,190,.12));border:1px solid rgba(201,162,39,.3);border-radius:18px;box-shadow:var(--shadow-sm);flex-wrap:wrap}
+  .profile-banner .pb-icon{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e0b850);color:#3A2A1A;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0}
+  .profile-banner .pb-text{flex:1;min-width:200px}
+  .profile-banner .pb-text strong{display:block;font-family:'Playfair Display',serif;color:var(--plum-900);font-size:17px;margin-bottom:3px}
+  .profile-banner .pb-text span{font-size:13px;color:var(--muted);line-height:1.5}
+  .profile-banner .btn{text-decoration:none;white-space:nowrap}
   .panel{background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-sm);padding:22px}
   .panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
   .panel-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--plum-900);line-height:1.15;margin:0;letter-spacing:-.01em}
@@ -198,7 +206,7 @@
   .preview-actions{display:flex;gap:8px;flex-wrap:wrap}
   .preview-body{padding:20px}
   .invoice-shell{border:1px solid var(--line);border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 14px 40px rgba(31,26,36,.06)}
-  .invoice-top{padding:24px 26px 20px;background:linear-gradient(135deg,var(--user-primary) 0%,var(--brand-deep) 50%,var(--pink) 100%);color:#fff;display:grid;grid-template-columns:1.25fr .85fr;gap:18px;align-items:start}
+  .invoice-top{padding:24px 26px 20px;background:linear-gradient(135deg,var(--user-primary) 0%,var(--user-primary-light,#8E67A6) 100%);color:#fff;display:grid;grid-template-columns:1.25fr .85fr;gap:18px;align-items:start}
   .invoice-brand{display:flex;gap:14px;align-items:flex-start}
   .invoice-logo{width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(255,255,255,.18);flex-shrink:0}
   .invoice-logo img{width:100%;height:100%;object-fit:contain;padding:4px;background:#fff;border-radius:10px}
@@ -317,7 +325,7 @@
   </div>
   <div class="user-menu" id="userMenu">
     <button class="user-menu-item" onclick="openQuotesModal()">📋 My Saved Quotes</button>
-    <button class="user-menu-item" onclick="scrollToBrandSetup()">🎨 Brand Settings</button>
+    <a href="profile.html" class="user-menu-item" style="text-decoration:none">⚙ Business Profile</a>
     <div class="user-menu-divider"></div>
     <button class="user-menu-item danger" onclick="handleLogout()">🚪 Sign Out</button>
   </div>
@@ -328,56 +336,54 @@
 
   <div class="workspace">
 
-    <!-- PANEL 1: BRAND + CLIENT SETUP -->
-    <section class="panel" id="brandPanel">
+    <!-- PROFILE INCOMPLETE BANNER (shown only if business profile not set up) -->
+    <div class="profile-banner" id="profileBanner" style="display:none">
+      <div class="pb-icon">⚠</div>
+      <div class="pb-text">
+        <strong>Complete your business profile first</strong>
+        <span>Add your logo, brand color, and Stripe deposit links so your quotes look like YOUR business.</span>
+      </div>
+      <a href="profile.html" class="btn btn-primary">Open Business Profile →</a>
+    </div>
+
+    <!-- PANEL 1: QUOTE DETAILS (per-client info only) -->
+    <section class="panel" id="quoteDetailsPanel">
       <div class="panel-header">
         <div>
-          <h2 class="panel-title">Your brand, your client's experience</h2>
-          <div class="panel-sub">Set these once. They apply to every quote your client sees. Your logo. Your colors. Your Stripe deposit links. Party Biz Hub stays invisible.</div>
+          <h2 class="panel-title">Quote details</h2>
+          <div class="panel-sub">Who this quote is for. Fill these in for every new quote. Your brand and Stripe settings come automatically from your <a href="profile.html" style="color:var(--brand);font-weight:600">business profile</a>.</div>
         </div>
-        <div class="section-badge">Step 1 · Setup</div>
-      </div>
-
-      <div class="brand-row">
-        <div class="brand-logo-preview" id="brandLogoPreview">
-          <div class="brand-logo-fallback" id="brandLogoFallback">P</div>
-        </div>
-        <div class="brand-row-text">
-          <strong id="brandRowName">Your Business Name</strong>
-          <small>Everything below is white-labeled. Your client never sees "Party Biz Hub."</small>
-        </div>
+        <div class="section-badge">Step 1 · Client</div>
       </div>
 
       <div class="form-grid">
-        <div class="field"><label>Your business name</label><input id="businessName" placeholder="e.g. Luxe Kids Events"/></div>
-        <div class="field"><label>Your logo (upload PNG)</label><input id="logoUpload" type="file" accept="image/png,image/jpeg"/></div>
-        <div class="field"><label>Primary brand color</label><input id="brandColor" type="color" value="#6A417E"/></div>
-
         <div class="field"><label>Client name</label><input id="clientName" placeholder="e.g. Sarah Johnson"/></div>
         <div class="field"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
-        <div class="field"><label>Currency</label><select id="currency"><option value="$">USD ($)</option><option value="CA$">CAD (CA$)</option><option value="£">GBP (£)</option><option value="€">EUR (€)</option></select></div>
-
         <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
         <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
-        <div class="field"><label>Tax mode</label><select id="taxMode"><option value="none">No tax</option><option value="added">Add tax</option><option value="included">Tax included</option></select></div>
-
-        <div class="field"><label>Tax rate (%)</label><input id="taxRate" type="number" value="8"/></div>
-        <div class="field"><label>Tax label</label><input id="taxLabel" value="Sales Tax"/></div>
-        <div class="field"><label>Deposit profile</label><select id="depositProfile"><option value="default">Stripe payment links</option><option value="manual">Manual follow-up invoice</option></select></div>
-
-        <div class="field"><label>$100 deposit link</label><input id="stripe100" placeholder="https://buy.stripe.com/..."/></div>
-        <div class="field"><label>$250 deposit link</label><input id="stripe250" placeholder="https://buy.stripe.com/..."/></div>
-        <div class="field"><label>$500 deposit link</label><input id="stripe500" placeholder="https://buy.stripe.com/..."/></div>
-
-        <div class="field"><label>$1000 deposit link</label><input id="stripe1000" placeholder="https://buy.stripe.com/..."/></div>
         <div class="field full"><label>Event notes (visible on quote)</label><textarea id="eventNotes" placeholder="Delivery time, setup requirements, special touches..."></textarea></div>
       </div>
-
-      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-primary" id="saveBrandBtn">💾 Save Brand Profile</button>
-        <span style="font-size:12.5px;color:var(--muted);align-self:center">Saved to your secure cloud account.</span>
-      </div>
     </section>
+
+    <!-- HIDDEN FIELDS: Profile data loaded from Supabase. Kept in DOM so existing JS keeps working. -->
+    <div style="display:none" aria-hidden="true">
+      <input id="businessName"/>
+      <input id="logoUpload" type="file"/>
+      <input id="brandColor" type="color" value="#6A417E"/>
+      <select id="currency"><option value="$">USD ($)</option><option value="CA$">CAD (CA$)</option><option value="£">GBP (£)</option><option value="€">EUR (€)</option><option value="A$">AUD (A$)</option><option value="R">ZAR (R)</option><option value="₦">NGN (₦)</option><option value="₵">GHS (₵)</option></select>
+      <select id="taxMode"><option value="none">No tax</option><option value="added">Add tax</option><option value="included">Tax included</option></select>
+      <input id="taxRate" type="number" value="8"/>
+      <input id="taxLabel" value="Sales Tax"/>
+      <select id="depositProfile"><option value="default">Stripe payment links</option><option value="manual">Manual follow-up invoice</option></select>
+      <input id="stripe100"/>
+      <input id="stripe250"/>
+      <input id="stripe500"/>
+      <input id="stripe1000"/>
+      <button id="saveBrandBtn"></button>
+      <div id="brandLogoPreview"><div id="brandLogoFallback">P</div></div>
+      <div id="brandRowName"></div>
+    </div>
+
 
     <!-- PANEL 2: OFFER / PACKAGE BUILDER -->
     <section class="panel package-panel collapsed" id="packagePanel">
@@ -570,7 +576,15 @@ async function checkAuth() {
       if (pd.taxRate) $('taxRate').value = pd.taxRate;
       if (pd.taxLabel) $('taxLabel').value = pd.taxLabel;
       if (pd.taxMode) $('taxMode').value = pd.taxMode;
+      if (pd.currency) $('currency').value = pd.currency;
+      if (pd.depositProfile) $('depositProfile').value = pd.depositProfile;
       if (pd.packages) state.packages = pd.packages;
+    }
+
+    // Show profile-incomplete banner if business name is empty
+    const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
+    if (!hasBusinessName) {
+      $('profileBanner').style.display = 'flex';
     }
 
     // Set user display
@@ -823,6 +837,16 @@ function totals() {
 function applyBrand() {
   const c = $('brandColor').value || '#6A417E';
   document.documentElement.style.setProperty('--user-primary', c);
+  document.documentElement.style.setProperty('--user-primary-light', lightenHex(c, 22));
+}
+function lightenHex(hex, percent) {
+  hex = hex.replace('#','');
+  const num = parseInt(hex, 16);
+  let r = (num >> 16) + Math.round(255 * percent / 100);
+  let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent / 100);
+  let b = (num & 0x0000FF) + Math.round(255 * percent / 100);
+  r = Math.min(255, r); g = Math.min(255, g); b = Math.min(255, b);
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 }
 function setLogo(dataURL) {
   window._logoDataURL = dataURL;
@@ -1190,11 +1214,6 @@ function loadQuote(data) {
   refreshAll();
   closeQuotesModal();
   toast('✓ Quote loaded');
-}
-
-function scrollToBrandSetup() {
-  $('userMenu').classList.remove('open');
-  $('brandPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ─────────────────────────────────────────────────────────────
