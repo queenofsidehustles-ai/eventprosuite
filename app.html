@@ -515,7 +515,7 @@
 // ─────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let currentProfile = null;
@@ -537,7 +537,7 @@ const state = {
 // ─────────────────────────────────────────────────────────────
 async function checkAuth() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if (!session || !session.user) {
       window.location.href = 'login.html';
       return;
@@ -545,7 +545,7 @@ async function checkAuth() {
     currentUser = session.user;
 
     // Load profile
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await sb
       .from('profiles')
       .select('*')
       .eq('id', currentUser.id)
@@ -599,7 +599,7 @@ async function checkAuth() {
 }
 
 async function handleLogout() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   window.location.href = 'login.html';
 }
 
@@ -622,7 +622,7 @@ async function saveBrandProfile() {
     packages: state.packages
   };
 
-  const { error } = await supabase
+  const { error } = await sb
     .from('profiles')
     .upsert({
       id: currentUser.id,
@@ -646,7 +646,7 @@ async function savePackages() {
   if (!currentUser) { localStorage.setItem('pbh_packages', JSON.stringify(state.packages)); return; }
   const currentPd = (currentProfile && currentProfile.profile_data) || {};
   currentPd.packages = state.packages;
-  await supabase.from('profiles').upsert({
+  await sb.from('profiles').upsert({
     id: currentUser.id,
     email: currentUser.email,
     profile_data: currentPd,
@@ -678,14 +678,14 @@ async function saveQuote() {
     },
     created_at: new Date().toISOString()
   };
-  const { error } = await supabase.from('saved_quotes').insert(payload);
+  const { error } = await sb.from('saved_quotes').insert(payload);
   if (error) { console.error(error); toast('Save failed'); return; }
   toast('✓ Quote saved');
 }
 
 async function loadSavedQuotes() {
   if (!currentUser) return [];
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('saved_quotes')
     .select('*')
     .eq('user_id', currentUser.id)
