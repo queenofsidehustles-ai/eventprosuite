@@ -3,842 +3,416 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Sign Contract | EventPro Suite</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<title>Sign Contract</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --navy: #0d1b3e;
-  --navy-mid: #162d5e;
-  --gold: #c9a84c;
-  --gold-bright: #d4ae52;
-  --white: #ffffff;
-  --off: #f7f8fc;
-  --slate-900: #0f172a;
-  --slate-700: #334155;
-  --slate-600: #475569;
-  --muted: #7a8aaa;
-  --border: #dde3ef;
-  --success: #1e8c5a;
-  --danger: #dc2626;
-  --radius: 14px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4A2B63;--plum-800:#5A3476;--brand:#6A417E;--brand-deep:#8E67A6;
+  --mauve:#A67BB5;--pink:#E6A2BE;--gold:#C9A227;--gold-soft:#F6E5A6;
+  --cream:#FCF8F4;--ink:#1F1A24;--muted:#6C6473;--slate-700:#4A4354;
+  --border:#EAE3ED;--border-strong:#DDD1E5;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --shadow-sm:0 1px 2px rgba(31,20,50,.04);
+  --shadow:0 4px 16px rgba(59,35,81,.06);
+  --shadow-lg:0 20px 50px -12px rgba(59,35,81,.18),0 8px 16px -4px rgba(59,35,81,.08);
 }
-body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--slate-900); min-height: 100vh; }
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
 
-.top-bar {
-  background: var(--navy);
-  color: white;
-  padding: 0.9rem 2rem;
-  text-align: center;
-  border-bottom: 3px solid var(--gold);
-}
-.top-bar-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--gold-bright);
-}
-.top-bar-sub {
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.6);
-  margin-top: 0.2rem;
-}
+.contract-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:2.5rem 1.5rem 3rem;color:#fff;position:relative;overflow:hidden}
+.contract-header::after{content:"";position:absolute;top:-50%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(201,162,39,.2) 0%,transparent 70%);pointer-events:none}
+.contract-header-inner{max-width:820px;margin:0 auto;position:relative;z-index:1}
+.biz-name{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.3rem}
+.doc-label{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--gold-soft);margin-bottom:.3rem}
+.contract-title{font-family:'Playfair Display',serif;font-size:1.4rem;margin-top:1.2rem;color:rgba(255,255,255,.92)}
 
-.wrap {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
+.wrap{max-width:820px;margin:-30px auto 3rem;padding:0 1.5rem;position:relative;z-index:2}
 
-.alert {
-  background: var(--gold-light, #fdf8ec);
-  border: 1px solid var(--gold);
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
-  margin-bottom: 1.5rem;
-  font-size: 0.88rem;
-  color: var(--navy);
-  line-height: 1.6;
-}
-.alert strong { color: var(--navy); }
+.loading,.error-box{text-align:center;padding:3rem 1.5rem;background:#fff;border-radius:18px;box-shadow:var(--shadow-lg);margin-top:2rem}
+.loading h2,.error-box h2{font-family:'Playfair Display',serif;color:var(--plum-900);margin-bottom:.6rem}
+.error-box p{color:var(--muted);line-height:1.6}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.status-banner {
-  background: #d1fae5;
-  border: 1px solid var(--success);
-  border-radius: 10px;
-  padding: 1.2rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-.status-banner h2 {
-  font-family: 'Cormorant Garamond', serif;
-  color: #065f46;
-  font-size: 1.4rem;
-  margin-bottom: 0.3rem;
-}
-.status-banner p { color: #065f46; font-size: 0.88rem; }
+.contract-card{background:#fff;border-radius:18px;padding:2rem;box-shadow:var(--shadow-lg);margin-bottom:1.5rem}
+.section{margin-bottom:1.8rem}
+.section h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.2rem;margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:2px solid var(--gold);letter-spacing:-.01em}
+.info-grid{display:grid;grid-template-columns:140px 1fr;gap:.6rem;font-size:.92rem}
+.info-grid strong{color:var(--slate-700);font-weight:600}
+.info-grid span{color:var(--ink);word-wrap:break-word}
+@media(max-width:520px){.info-grid{grid-template-columns:1fr;gap:.2rem}.info-grid strong{margin-top:.6rem}}
 
-.contract-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 2.2rem 2rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-}
-@media (max-width: 640px) { .contract-card { padding: 1.5rem 1.2rem; } }
+.clause-block{background:var(--cream);border-left:3px solid var(--plum-900);border-radius:8px;padding:1rem 1.2rem;margin-bottom:.8rem}
+.clause-block h4{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--plum-900);margin-bottom:.5rem}
+.clause-block p{font-size:.88rem;line-height:1.7;color:var(--slate-700)}
 
-.contract-header {
-  text-align: center;
-  padding-bottom: 1.2rem;
-  border-bottom: 2px solid var(--gold);
-  margin-bottom: 1.5rem;
-}
-.contract-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 0.3rem;
-}
-.contract-date { color: var(--slate-600); font-size: 0.82rem; }
+.signed-banner{background:linear-gradient(135deg,rgba(30,140,90,.1),rgba(30,140,90,.05));border:1.5px solid var(--success);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem}
+.signed-banner .icon{width:44px;height:44px;background:var(--success);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;flex-shrink:0}
+.signed-banner strong{color:var(--success);font-family:'Playfair Display',serif;font-size:1.15rem;display:block;margin-bottom:.2rem}
+.signed-banner span{font-size:.85rem;color:var(--slate-700);line-height:1.55}
 
-.contract-body { font-family: Georgia, serif; line-height: 1.7; font-size: 0.9rem; color: var(--slate-900); }
-.contract-body h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
-  color: var(--navy);
-  margin-top: 1.3rem;
-  margin-bottom: 0.5rem;
-  border-bottom: 1px solid var(--gold);
-  padding-bottom: 0.25rem;
-}
-.contract-body p { margin-bottom: 0.7rem; }
-.contract-body strong { color: var(--navy); }
+.sig-card{background:#fff;border-radius:18px;padding:2rem;box-shadow:var(--shadow-lg)}
+.sig-card h2{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.5rem;letter-spacing:-.01em;margin-bottom:.6rem}
+.sig-card .sub{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem;line-height:1.6}
+.agree-box{background:var(--cream);border:1.5px solid var(--border-strong);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.2rem;display:flex;gap:.8rem;align-items:flex-start}
+.agree-box input[type=checkbox]{width:22px;height:22px;margin-top:2px;accent-color:var(--brand);cursor:pointer;flex-shrink:0}
+.agree-box label{font-size:.88rem;line-height:1.6;color:var(--ink);cursor:pointer}
 
-.party-block {
-  background: var(--off);
-  padding: 0.8rem 1rem;
-  border-radius: 6px;
-  margin-bottom: 0.7rem;
-  font-size: 0.88rem;
-}
+.sig-pad{border:1.5px dashed var(--border-strong);border-radius:14px;background:var(--cream);padding:1rem;margin-bottom:1.2rem}
+.sig-tabs{display:flex;gap:.3rem;margin-bottom:.8rem;background:#fff;padding:.3rem;border-radius:10px;border:1px solid var(--border)}
+.sig-tab{flex:1;padding:.55rem;text-align:center;font-weight:700;font-size:.82rem;cursor:pointer;border-radius:8px;color:var(--muted);border:none;background:transparent;font-family:inherit;transition:all .15s}
+.sig-tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff}
+.sig-typed{width:100%;padding:1.5rem;border:none;background:#fff;border-radius:10px;font-family:'Dancing Script',cursive;font-size:2.2rem;text-align:center;color:var(--plum-900)}
+.sig-typed:focus{outline:2px solid var(--mauve)}
+#sigCanvas{width:100%;height:140px;background:#fff;border-radius:10px;cursor:crosshair;touch-action:none}
 
-.sig-section {
-  background: var(--off);
-  border: 2px dashed var(--gold);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 2rem;
-}
-.sig-section h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
-  color: var(--navy);
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-.sig-section p.sig-intro {
-  font-size: 0.88rem;
-  color: var(--slate-700);
-  text-align: center;
-  margin-bottom: 1.2rem;
-  line-height: 1.6;
-}
+.btn{padding:.95rem 1.6rem;border:none;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;text-decoration:none;transition:all .15s;box-shadow:var(--shadow-sm)}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#A78420);color:#3A2A1A;width:100%;padding:1.15rem}
+.btn-outline{background:#fff;color:var(--plum-800);border:1.5px solid var(--border-strong)}
 
-.sig-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  justify-content: center;
-}
-.sig-tab {
-  background: white;
-  border: 1.5px solid var(--border);
-  padding: 0.5rem 1.2rem;
-  border-radius: 50px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--slate-700);
-  cursor: pointer;
-  font-family: inherit;
-}
-.sig-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+.vendor-sig-display{background:var(--cream);border-radius:10px;padding:1rem;margin-top:.8rem;display:inline-block;min-width:200px}
+.vendor-sig-typed{font-family:'Dancing Script',cursive;font-size:2rem;color:var(--plum-900);margin-bottom:.3rem}
+.vendor-sig-typed-label{font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+.vendor-sig-drawn{max-height:80px;display:block;margin-bottom:.3rem}
 
-.esig-input {
-  width: 100%;
-  padding: 1rem;
-  border: 2px solid var(--gold);
-  border-radius: 8px;
-  font-family: 'Brush Script MT', cursive;
-  font-size: 1.8rem;
-  text-align: center;
-  background: white;
-  color: var(--navy);
-}
-.esig-input:focus { outline: none; border-color: var(--navy); }
-
-.sig-pad {
-  background: white;
-  border: 2px solid var(--navy);
-  border-radius: 8px;
-  width: 100%;
-  height: 180px;
-  touch-action: none;
-  cursor: crosshair;
-  display: block;
-}
-.sig-controls {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.7rem;
-  gap: 0.6rem;
-}
-.sig-clear {
-  background: transparent;
-  color: var(--slate-600);
-  border: 1px solid var(--border);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.consent-box {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.9rem 1rem;
-  margin: 1.2rem 0;
-  display: flex;
-  gap: 0.7rem;
-  align-items: flex-start;
-  font-size: 0.82rem;
-  color: var(--slate-700);
-  line-height: 1.55;
-}
-.consent-box input[type="checkbox"] {
-  margin-top: 0.15rem;
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--navy);
-}
-
-.btn-sign {
-  display: block;
-  width: 100%;
-  background: var(--gold);
-  color: var(--navy);
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 1rem;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: inherit;
-  letter-spacing: 0.02em;
-  transition: all 0.15s;
-  margin-top: 1rem;
-}
-.btn-sign:hover:not(:disabled) { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,76,0.3); }
-.btn-sign:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btn-download {
-  display: inline-block;
-  background: var(--navy);
-  color: white;
-  padding: 0.85rem 2rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.existing-sig {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-.existing-sig-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--slate-600);
-  margin-bottom: 0.4rem;
-}
-.existing-sig-value {
-  font-family: 'Brush Script MT', cursive;
-  font-size: 1.4rem;
-  color: var(--navy);
-}
-.existing-sig-meta {
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-top: 0.3rem;
-}
-
-.loading, .error {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 3rem 1.5rem;
-  text-align: center;
-}
-.loading { color: var(--slate-600); }
-.error { color: var(--danger); }
-
-.toast {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--navy);
-  color: white;
-  padding: 0.9rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-  z-index: 1000;
-}
-.toast.show { opacity: 1; }
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.85rem 1.4rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{background:var(--danger)}
 </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="top-bar-title">EventPro Suite™</div>
-  <div class="top-bar-sub">Secure Contract Signing</div>
+<div class="loading" id="loadingView">
+  <div class="spinner"></div>
+  <h2>Loading your contract...</h2>
 </div>
 
-<div class="wrap" id="wrap">
-  <div class="loading">
-    <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div>
-    Loading your contract...
+<div class="error-box" id="errorView" style="display:none">
+  <h2>Contract not found</h2>
+  <p id="errorMsg">This signing link is invalid or has expired. Please contact the business that sent you this contract.</p>
+</div>
+
+<div id="contractView" style="display:none">
+  <div class="contract-header">
+    <div class="contract-header-inner">
+      <div class="doc-label">CONTRACT FOR SIGNATURE</div>
+      <div class="biz-name" id="hdrBizName">Business</div>
+      <div class="contract-title" id="hdrContractTitle">Event Service Contract</div>
+    </div>
   </div>
+
+  <main class="wrap">
+    <div id="fullySignedBanner" class="signed-banner" style="display:none">
+      <div class="icon">✓</div>
+      <div>
+        <strong>Fully signed</strong>
+        <span>Both parties have signed this contract. You can download a copy for your records below.</span>
+      </div>
+    </div>
+
+    <div class="contract-card">
+      <div class="section">
+        <h3>Parties</h3>
+        <div class="info-grid">
+          <strong>Vendor</strong><span id="dispBizName">—</span>
+          <strong>Contact</strong><span id="dispBizContact">—</span>
+          <strong>Client</strong><span id="dispClientName">—</span>
+          <strong>Contact</strong><span id="dispClientContact">—</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Event details</h3>
+        <div class="info-grid">
+          <strong>Date & time</strong><span id="dispEvent">—</span>
+          <strong>Venue</strong><span id="dispVenue">—</span>
+          <strong>Services</strong><span id="dispServices" style="white-space:pre-line">—</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Payment</h3>
+        <div class="info-grid">
+          <strong>Total</strong><span id="dispTotal">—</span>
+          <strong>Deposit</strong><span id="dispDeposit">—</span>
+          <strong>Deposit due</strong><span id="dispDepositDue">—</span>
+          <strong>Balance due</strong><span id="dispBalanceDue">—</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Terms & conditions</h3>
+        <div id="clausesDisplay"></div>
+      </div>
+
+      <div class="section" id="vendorSigSection">
+        <h3>Vendor signature</h3>
+        <div id="vendorSigDisplay"></div>
+      </div>
+    </div>
+
+    <!-- SIGNATURE PANEL (hidden after signing) -->
+    <div class="sig-card" id="sigCard">
+      <h2>Your signature</h2>
+      <p class="sub">By signing below, you agree to the full terms of this contract. A signed PDF will be available to both parties after you sign.</p>
+
+      <div class="agree-box">
+        <input type="checkbox" id="agreeBox"/>
+        <label for="agreeBox">I have read the contract above and agree to all the terms and conditions.</label>
+      </div>
+
+      <div class="sig-pad">
+        <div class="sig-tabs">
+          <button class="sig-tab active" onclick="switchSigTab('typed')" id="tabTyped">Type your name</button>
+          <button class="sig-tab" onclick="switchSigTab('drawn')" id="tabDrawn">Draw signature</button>
+        </div>
+        <div id="sigTypedWrap"><input type="text" class="sig-typed" id="sigTyped" placeholder="Type your full name"/></div>
+        <div id="sigDrawnWrap" style="display:none">
+          <canvas id="sigCanvas"></canvas>
+          <button class="btn btn-outline" onclick="clearCanvas()" style="margin-top:.5rem;padding:.4rem .8rem;font-size:.78rem">Clear</button>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" id="submitBtn" onclick="submitSignature()">✍️ Sign & Submit</button>
+    </div>
+
+    <!-- POST-SIGN PANEL -->
+    <div class="sig-card" id="postSignCard" style="display:none">
+      <h2 style="color:var(--success)">✓ You've signed the contract</h2>
+      <p class="sub">A signed copy has been saved. Download a PDF for your records below. The vendor has also been notified.</p>
+      <button class="btn btn-gold" onclick="downloadContractPDF()">📄 Download Signed PDF</button>
+    </div>
+  </main>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════════════
-// CONFIG (must match contract.html config)
-// ══════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let sb = null;
-try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase init error:', e); }
+let contract=null,sigMode='typed',canvas,ctx,drawing=false,sigStrokes=[];
 
-const CLAUSES = {
-  clauseDeposit: {
-    nonrefundable_all: "All deposits paid are 100% non-refundable under any circumstances, including cancellation by the Client. The deposit secures the event date and covers preparation costs incurred prior to the event.",
-    nonrefundable_14: "Deposits are refundable if the contract is cancelled more than 14 days prior to the event date. Deposits become 100% non-refundable within 14 days of the event date, as the date has been reserved and preparation is underway.",
-    nonrefundable_30: "Deposits are refundable if the contract is cancelled more than 30 days prior to the event date. Within 30 days of the event, all deposits are 100% non-refundable.",
-    refundable_partial: "If the contract is cancelled 30 or more days before the event, 50% of the deposit will be refunded. Cancellations within 30 days of the event forfeit the full deposit.",
-    fully_refundable: "Deposits are fully refundable up to 48 hours before the event date. Cancellations within 48 hours of the event forfeit the deposit."
-  },
-  clauseCancellation: {
-    no_refund: "Once this contract is signed and the deposit is paid, no refunds will be issued for any reason except as specifically provided under the Weather & Unforeseen Events clause.",
-    tiered: "If the Client cancels 30 or more days before the event, 50% of amounts paid will be refunded. Cancellations 14–29 days before the event receive a 25% refund. Cancellations within 14 days of the event receive no refund.",
-    reschedule: "No cash refunds will be issued. If cancellation is necessary, the Client may reschedule the event one time within 6 months of the original date, subject to availability.",
-    full_refund_notice: "If the Client cancels 60 or more days before the event, a full refund will be issued minus a $50 administrative fee. Cancellations within 60 days will follow the Deposit Refund Policy above."
-  },
-  clausePayment: {
-    "50_50": "Payment is due as follows: 50% non-refundable deposit upon signing this contract to reserve the event date; remaining 50% balance due on the day of the event before services begin.",
-    "50_50_before": "Payment is due as follows: 50% non-refundable deposit upon signing; remaining 50% balance due no later than 7 days before the event date.",
-    "25_75": "Payment is due as follows: 25% non-refundable deposit upon signing; remaining 75% balance due no later than 14 days before the event date.",
-    "full_upfront": "Full payment is due upon signing this contract. Services will not be scheduled or reserved until payment is received in full.",
-    "three_pay": "Payment is due in three installments: 33% upon signing, 33% thirty (30) days before the event, and 34% on the day of the event before services begin."
-  },
-  clauseLiability: {
-    standard: "The Client assumes responsibility for the safety and supervision of all guests and attendees at the event. The Business is not liable for any injuries, accidents, or damages to persons or property occurring during the event, except in cases of gross negligence on the part of the Business. The Client is responsible for the cost of replacement or repair of any rental items lost or damaged during the event, except for normal wear and tear.",
-    strict: "The Client assumes all risk and liability for the event, including any injury, damage, or loss to any person or property. The Client agrees to indemnify and hold the Business harmless from any claims arising from the event. The Client is liable for the full replacement cost of any equipment or rental items damaged, lost, or stolen during the event.",
-    shared: "Both parties agree to carry their own liability insurance for the event. Damage to equipment or rentals will be assessed on a case-by-case basis and resolved in good faith between the parties."
-  },
-  clauseForce: {
-    reschedule: "In the event the event cannot take place due to weather conditions, illness, natural disaster, government mandate, or other circumstances beyond either party's reasonable control, the Business will work with the Client to reschedule the event to a mutually agreeable date within 12 months. No refunds will be issued in such cases; all funds paid will be credited toward the rescheduled event.",
-    credit: "If the event cannot proceed due to circumstances beyond either party's control (weather, illness, natural disaster, government mandate), the Client will receive a store credit for the full amount paid, valid for 12 months from the original event date.",
-    no_provision: "No special provisions apply for weather or unforeseen events. The standard Cancellation Policy above governs all cancellations regardless of cause."
-  }
-};
+function $(id){return document.getElementById(id)}
+function esc(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-let contractData = null;
-let sigMode = 'type';
+let toastTimer;
+function showToast(msg,type=''){const el=$('toast');el.textContent=msg;el.className='toast show '+type;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className='toast',3200)}
 
-// Resolve clause text — either from presets OR from custom text saved with the contract
-function resolveClause(clauseKey, selectedValue) {
-  if (!contractData || !contractData.clauses) return '';
-  if (selectedValue === 'custom') {
-    const customKey = 'custom' + clauseKey.charAt(0).toUpperCase() + clauseKey.slice(1);
-    return contractData.clauses[customKey] || '';
-  }
-  const clauseMap = { deposit: 'clauseDeposit', cancellation: 'clauseCancellation', payment: 'clausePayment', liability: 'clauseLiability', force: 'clauseForce' };
-  const dictKey = clauseMap[clauseKey];
-  return dictKey && CLAUSES[dictKey] ? (CLAUSES[dictKey][selectedValue] || '') : '';
+function showError(msg){
+  $('loadingView').style.display='none';
+  $('contractView').style.display='none';
+  $('errorView').style.display='block';
+  if(msg)$('errorMsg').textContent=msg;
 }
 
-function getToken() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('token');
+async function init(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('t');
+  if(!token){showError('No contract token in the link. Make sure you opened the full URL your vendor sent.');return}
+  try{
+    const{data,error}=await sb.from('contracts').select('*').eq('sign_token',token).maybeSingle();
+    if(error){console.error('Fetch error:',error);showError('Could not load this contract. Error: '+error.message);return}
+    if(!data){showError('This signing link is invalid or has been revoked.');return}
+    contract=data;
+    renderContract();
+    $('loadingView').style.display='none';
+    $('contractView').style.display='block';
+  }catch(e){console.error('Init exception:',e);showError('Something went wrong loading this contract.')}
 }
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso + 'T00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-}
-function fmtMoney(n) { return '$' + Number(n || 0).toFixed(2); }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-function getTypeTitle(t) {
-  return { service_agreement: 'EVENT SERVICE AGREEMENT', deposit_cancellation: 'DEPOSIT AND CANCELLATION AGREEMENT', liability_waiver: 'LIABILITY WAIVER AND HOLD HARMLESS AGREEMENT' }[t] || 'EVENT SERVICE AGREEMENT';
-}
-
-async function loadContract() {
-  const token = getToken();
-  if (!token) {
-    document.getElementById('wrap').innerHTML = '<div class="error"><h2>Invalid Link</h2><p>This signing link is missing its security token. Please ask the sender to generate a new link.</p></div>';
-    return;
-  }
-
-  if (!sb) {
-    document.getElementById('wrap').innerHTML = '<div class="error"><h2>Configuration Needed</h2><p>Supabase is not configured. Please set up your credentials in the HTML file.</p></div>';
-    return;
-  }
-
-  try {
-    const { data, error } = await sb.from('contracts').select('*').eq('sign_token', token).single();
-    if (error || !data) throw new Error('Contract not found');
-    contractData = data;
-    render();
-  } catch(e) {
-    document.getElementById('wrap').innerHTML = '<div class="error"><h2>Contract Not Found</h2><p>This signing link is invalid or has expired. Please request a new link from the sender.</p></div>';
-  }
-}
-
-function render() {
-  const c = contractData;
-  const isSigned = c.status === 'Fully Signed';
-
-  let html = '';
-
-  if (isSigned) {
-    html += `
-      <div class="status-banner">
-        <h2>✓ Contract Fully Signed</h2>
-        <p>This contract has been signed by both parties. You can download the final copy below.</p>
-      </div>
-      <div style="text-align:center;margin-bottom:2rem;">
-        <button class="btn-download" onclick="downloadPDF()">📥 Download Signed Contract (PDF)</button>
-      </div>
-    `;
-  } else {
-    html += `
-      <div class="alert">
-        <strong>Hi ${c.client_name || 'there'}</strong> — ${c.biz_owner || 'your vendor'} from <strong>${c.biz_name || 'the business'}</strong> has prepared this contract for your event on <strong>${fmtDate(c.event_date)}</strong>. Please review it carefully, then sign at the bottom. Your signature is legally binding.
-      </div>
-    `;
-  }
-
-  // Contract body
-  html += `
-    <div class="contract-card">
-      <div class="contract-header">
-        <div class="contract-title">${getTypeTitle(c.contract_type)}</div>
-        <div class="contract-date">Contract Date: ${new Date(c.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-      </div>
-
-      <div class="contract-body">
-        <h2>Parties</h2>
-        <div class="party-block">
-          <strong>Service Provider:</strong><br/>
-          ${c.biz_name}<br/>
-          ${c.biz_owner ? 'Owner: ' + c.biz_owner + '<br/>' : ''}
-          ${[c.biz_email, c.biz_phone].filter(Boolean).join(' · ')}<br/>
-          ${c.biz_address || ''}
-        </div>
-        <div class="party-block">
-          <strong>Client:</strong><br/>
-          ${c.client_name}<br/>
-          ${[c.client_email, c.client_phone].filter(Boolean).join(' · ')}<br/>
-          ${c.client_address || ''}
-        </div>
-
-        <h2>1. Event Details</h2>
-        <p><strong>Event Date:</strong> ${fmtDate(c.event_date)} ${c.event_time ? 'at ' + c.event_time : ''}</p>
-        <p><strong>Venue / Location:</strong> ${c.event_venue || '—'}</p>
-        <p><strong>Services Provided:</strong><br/>${(c.event_services || '').replace(/\n/g, '<br/>')}</p>
-
-        <h2>2. Fees and Payment</h2>
-        <p><strong>Total Contract Price:</strong> ${fmtMoney(c.total_price)}</p>
-        ${c.deposit_amount ? `<p><strong>Deposit:</strong> ${fmtMoney(c.deposit_amount)} ${c.deposit_due ? '· Due: ' + fmtDate(c.deposit_due) : ''}</p>` : ''}
-        ${c.balance_due ? `<p><strong>Balance Due:</strong> ${fmtDate(c.balance_due)}</p>` : ''}
-        <p>${resolveClause('payment', c.clauses.payment)}</p>
-
-        <h2>3. Deposit Policy</h2>
-        <p>${resolveClause('deposit', c.clauses.deposit)}</p>
-
-        <h2>4. Cancellation Policy</h2>
-        <p>${resolveClause('cancellation', c.clauses.cancellation)}</p>
-
-        <h2>5. Liability and Damages</h2>
-        <p>${resolveClause('liability', c.clauses.liability)}</p>
-
-        <h2>6. Weather and Unforeseen Events</h2>
-        <p>${resolveClause('force', c.clauses.force)}</p>
-
-        ${c.clauses.custom ? `<h2>7. Additional Terms</h2><p>${c.clauses.custom.replace(/\n/g, '<br/>')}</p>` : ''}
-
-        <h2>Governing Law</h2>
-        <p>This Agreement constitutes the entire understanding between the parties. Any modifications must be in writing and signed by both parties. Electronic signatures carry the same legal weight as handwritten signatures under the ESIGN Act of 2000.</p>
-      </div>
-
-      ${c.vendor_signature ? `
-        <div class="existing-sig" style="margin-top:1.5rem;">
-          <div class="existing-sig-label">Signed by Service Provider</div>
-          <div class="existing-sig-value">${c.vendor_signature.type === 'typed' ? c.vendor_signature.value : `<img src="${c.vendor_signature.value}" style="max-height:60px;"/>`}</div>
-          <div class="existing-sig-meta">${c.biz_owner} · ${new Date(c.vendor_signature.date).toLocaleString()}</div>
-        </div>
-      ` : ''}
-
-      ${c.client_signature ? `
-        <div class="existing-sig">
-          <div class="existing-sig-label">Signed by Client</div>
-          <div class="existing-sig-value">${c.client_signature.type === 'typed' ? c.client_signature.value : `<img src="${c.client_signature.value}" style="max-height:60px;"/>`}</div>
-          <div class="existing-sig-meta">${c.client_name} · ${new Date(c.client_signature.date).toLocaleString()}</div>
-        </div>
-      ` : ''}
-    </div>
-  `;
-
-  // Signature section (only if not yet signed by client)
-  if (!isSigned) {
-    html += `
-      <div class="sig-section">
-        <h3>Your Signature</h3>
-        <p class="sig-intro">By signing below, you (${c.client_name}) agree to all terms of this contract.</p>
-
-        <div class="sig-tabs">
-          <button class="sig-tab active" id="tabType" onclick="switchMode('type')">Type Signature</button>
-          <button class="sig-tab" id="tabDraw" onclick="switchMode('draw')">Draw Signature</button>
-        </div>
-
-        <div id="typeMode">
-          <input type="text" class="esig-input" id="clientEsig" placeholder="Type your full name" oninput="checkCanSign()"/>
-          <div style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:0.5rem;">Your typed name will serve as your electronic signature.</div>
-        </div>
-
-        <div id="drawMode" style="display:none;">
-          <canvas class="sig-pad" id="clientCanvas" width="600" height="180"></canvas>
-          <div class="sig-controls">
-            <button class="sig-clear" onclick="clearCanvas()">Clear</button>
-            <div style="font-size:0.75rem;color:var(--muted);align-self:center;">Draw with your mouse or finger</div>
-          </div>
-        </div>
-
-        <div class="consent-box">
-          <input type="checkbox" id="consentBox" onchange="checkCanSign()"/>
-          <label for="consentBox">I have read and agree to all terms of this contract. I understand that my electronic signature is legally binding under the ESIGN Act of 2000.</label>
-        </div>
-
-        <button class="btn-sign" id="signBtn" disabled onclick="submitSignature()">Sign Contract</button>
-      </div>
-    `;
-  }
-
-  document.getElementById('wrap').innerHTML = html;
-
-  if (!isSigned) setupCanvas();
-}
-
-function switchMode(mode) {
-  sigMode = mode;
-  document.getElementById('tabType').classList.toggle('active', mode === 'type');
-  document.getElementById('tabDraw').classList.toggle('active', mode === 'draw');
-  document.getElementById('typeMode').style.display = mode === 'type' ? 'block' : 'none';
-  document.getElementById('drawMode').style.display = mode === 'draw' ? 'block' : 'none';
-  checkCanSign();
-}
-
-function checkCanSign() {
-  const consented = document.getElementById('consentBox').checked;
-  let hasSig = false;
-  if (sigMode === 'type') {
-    hasSig = !!document.getElementById('clientEsig').value.trim();
-  } else {
-    const canvas = document.getElementById('clientCanvas');
-    const blank = document.createElement('canvas');
-    blank.width = canvas.width;
-    blank.height = canvas.height;
-    hasSig = canvas.toDataURL() !== blank.toDataURL();
-  }
-  document.getElementById('signBtn').disabled = !(consented && hasSig);
-}
-
-function setupCanvas() {
-  const canvas = document.getElementById('clientCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.strokeStyle = '#0d1b3e';
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  let drawing = false;
-  let last = null;
-
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
-  }
-
-  function start(e) { e.preventDefault(); drawing = true; last = getPos(e); }
-  function move(e) {
-    if (!drawing) return;
-    e.preventDefault();
-    const pos = getPos(e);
-    ctx.beginPath();
-    ctx.moveTo(last.x, last.y);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    last = pos;
-    checkCanSign();
-  }
-  function end() { drawing = false; }
-
-  canvas.addEventListener('mousedown', start);
-  canvas.addEventListener('mousemove', move);
-  canvas.addEventListener('mouseup', end);
-  canvas.addEventListener('mouseleave', end);
-  canvas.addEventListener('touchstart', start);
-  canvas.addEventListener('touchmove', move);
-  canvas.addEventListener('touchend', end);
-}
-
-function clearCanvas() {
-  const canvas = document.getElementById('clientCanvas');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  checkCanSign();
-}
-
-async function submitSignature() {
-  const btn = document.getElementById('signBtn');
-  btn.disabled = true;
-  btn.textContent = 'Signing...';
-
-  let sig;
-  if (sigMode === 'type') {
-    sig = { type: 'typed', value: document.getElementById('clientEsig').value.trim(), date: new Date().toISOString() };
-  } else {
-    const canvas = document.getElementById('clientCanvas');
-    sig = { type: 'drawn', value: canvas.toDataURL('image/png'), date: new Date().toISOString() };
-  }
-
-  try {
-    const { error } = await sb.from('contracts').update({
-      client_signature: sig,
-      status: 'Fully Signed',
-      signed_at: new Date().toISOString()
-    }).eq('id', contractData.id);
-
-    if (error) throw error;
-
-    contractData.client_signature = sig;
-    contractData.status = 'Fully Signed';
-    showToast('✓ Contract signed — download your copy below');
-    setTimeout(() => render(), 600);
-  } catch(e) {
-    btn.disabled = false;
-    btn.textContent = 'Sign Contract';
-    showToast('Error signing: ' + e.message);
-  }
-}
-
-function downloadPDF() {
-  const c = contractData;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 54;
-  const contentW = pageWidth - (margin * 2);
-  let y = margin;
-
+function renderContract(){
+  const c=contract;
   // Header
-  doc.setFillColor(13, 27, 62);
-  doc.rect(0, 0, pageWidth, 36, 'F');
-  doc.setFillColor(201, 168, 76);
-  doc.rect(0, 36, pageWidth, 3, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text(c.biz_name || '', margin, 22);
+  $('hdrBizName').textContent=c.biz_name||'Business';
+  const typeMap={service_agreement:'Event Service Agreement',deposit_agreement:'Deposit & Cancellation Agreement',liability_waiver:'Liability Waiver & Hold Harmless'};
+  $('hdrContractTitle').textContent=typeMap[c.contract_type]||'Event Service Contract';
+  document.title=`Sign: ${c.biz_name||'Contract'} — ${c.client_name||''}`;
 
-  y = 70;
-  doc.setTextColor(13, 27, 62);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.text(getTypeTitle(c.contract_type), pageWidth / 2, y, { align: 'center' });
+  // Parties
+  $('dispBizName').textContent=c.biz_name||'—';
+  $('dispBizContact').innerHTML=`${esc(c.biz_email||'')}${c.biz_email&&c.biz_phone?' · ':''}${esc(c.biz_phone||'')}${!c.biz_email&&!c.biz_phone?'—':''}`;
+  $('dispClientName').textContent=c.client_name||'—';
+  $('dispClientContact').innerHTML=`${esc(c.client_email||'')}${c.client_email&&c.client_phone?' · ':''}${esc(c.client_phone||'')}${!c.client_email&&!c.client_phone?'—':''}`;
 
-  y += 18;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(90, 90, 90);
-  doc.text('Contract Date: ' + new Date(c.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, y, { align: 'center' });
-  y += 24;
+  // Event
+  const eventDate=c.event_date?new Date(c.event_date+'T00:00').toLocaleDateString():'—';
+  $('dispEvent').textContent=`${eventDate}${c.event_time?' · '+c.event_time:''}`;
+  $('dispVenue').textContent=c.event_venue||'—';
+  $('dispServices').textContent=c.event_services||'—';
 
-  const addSection = (title) => {
-    if (y > pageHeight - 80) { doc.addPage(); y = margin; }
-    doc.setTextColor(13, 27, 62);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text(title, margin, y);
-    y += 4;
-    doc.setDrawColor(201, 168, 76);
-    doc.line(margin, y, margin + contentW, y);
-    y += 12;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(40, 40, 40);
-  };
-  const addBody = (text) => {
-    if (!text) return;
-    const lines = doc.splitTextToSize(text, contentW);
-    for (const line of lines) {
-      if (y > pageHeight - 60) { doc.addPage(); y = margin; }
-      doc.text(line, margin, y);
-      y += 13;
+  // Payment
+  const fmt=v=>v?'$'+parseFloat(v).toFixed(2):'—';
+  $('dispTotal').textContent=fmt(c.total_price);
+  $('dispDeposit').textContent=fmt(c.deposit_amount);
+  $('dispDepositDue').textContent=c.deposit_due?new Date(c.deposit_due+'T00:00').toLocaleDateString():'—';
+  $('dispBalanceDue').textContent=c.balance_due?new Date(c.balance_due+'T00:00').toLocaleDateString():'—';
+
+  // Clauses
+  const cl=c.clauses||{};
+  let html='';
+  const addClause=(title,text)=>{if(text)html+=`<div class="clause-block"><h4>${title}</h4><p>${esc(text)}</p></div>`};
+  addClause('1. Payment schedule',cl.paymentText);
+  addClause('2. Deposit policy',cl.depositText);
+  addClause('3. Cancellation',cl.cancellationText);
+  addClause('4. Liability',cl.liabilityText);
+  addClause('5. Force majeure / weather',cl.weatherText);
+  if(cl.custom)addClause('6. Additional terms',cl.custom);
+  $('clausesDisplay').innerHTML=html||'<p style="color:var(--muted);font-size:.88rem">No clauses specified.</p>';
+
+  // Vendor signature display
+  if(c.vendor_signature){
+    const vs=c.vendor_signature;
+    if(vs.type==='typed'){
+      $('vendorSigDisplay').innerHTML=`<div class="vendor-sig-display"><div class="vendor-sig-typed">${esc(vs.value)}</div><div class="vendor-sig-typed-label">Signed ${new Date(vs.date).toLocaleDateString()}</div></div>`;
+    }else if(vs.type==='drawn'){
+      $('vendorSigDisplay').innerHTML=`<div class="vendor-sig-display"><img src="${vs.value}" class="vendor-sig-drawn" alt="Vendor signature"/><div class="vendor-sig-typed-label">Signed ${new Date(vs.date).toLocaleDateString()}</div></div>`;
     }
-  };
-
-  addSection('PARTIES');
-  addBody('Business: ' + c.biz_name + (c.biz_owner ? ' (' + c.biz_owner + ')' : ''));
-  addBody([c.biz_email, c.biz_phone, c.biz_address].filter(Boolean).join(' · '));
-  y += 6;
-  addBody('Client: ' + c.client_name);
-  addBody([c.client_email, c.client_phone, c.client_address].filter(Boolean).join(' · '));
-  y += 8;
-
-  addSection('1. EVENT DETAILS');
-  addBody('Event Date: ' + fmtDate(c.event_date) + (c.event_time ? ' at ' + c.event_time : ''));
-  addBody('Venue: ' + (c.event_venue || '—'));
-  addBody('Services: ' + (c.event_services || '—'));
-  y += 4;
-
-  addSection('2. FEES AND PAYMENT');
-  addBody('Total: ' + fmtMoney(c.total_price));
-  if (c.deposit_amount) addBody('Deposit: ' + fmtMoney(c.deposit_amount) + (c.deposit_due ? ' · Due: ' + fmtDate(c.deposit_due) : ''));
-  addBody(resolveClause('payment', c.clauses.payment));
-  y += 4;
-
-  addSection('3. DEPOSIT POLICY');
-  addBody(resolveClause('deposit', c.clauses.deposit));
-  y += 4;
-
-  addSection('4. CANCELLATION POLICY');
-  addBody(resolveClause('cancellation', c.clauses.cancellation));
-  y += 4;
-
-  addSection('5. LIABILITY AND DAMAGES');
-  addBody(resolveClause('liability', c.clauses.liability));
-  y += 4;
-
-  addSection('6. WEATHER AND UNFORESEEN EVENTS');
-  addBody(resolveClause('force', c.clauses.force));
-  y += 4;
-
-  if (c.clauses.custom) {
-    addSection('7. ADDITIONAL TERMS');
-    addBody(c.clauses.custom);
-    y += 4;
+  }else{
+    $('vendorSigDisplay').innerHTML='<p style="color:var(--muted);font-size:.88rem;font-style:italic">Vendor has not signed yet.</p>';
   }
 
-  // Signatures
-  if (y > pageHeight - 160) { doc.addPage(); y = margin; }
-  addSection('SIGNATURES');
-  y += 10;
-
-  const sigY = y;
-  doc.setDrawColor(50, 50, 50);
-  doc.line(margin, sigY + 36, margin + 220, sigY + 36);
-
-  if (c.vendor_signature) {
-    if (c.vendor_signature.type === 'typed') {
-      doc.setFont('times', 'italic');
-      doc.setFontSize(18);
-      doc.setTextColor(13, 27, 62);
-      doc.text(c.vendor_signature.value, margin + 10, sigY + 30);
-    } else {
-      try { doc.addImage(c.vendor_signature.value, 'PNG', margin, sigY, 180, 40); } catch(e) {}
-    }
+  // If already fully signed, hide sign panel + show banner
+  if(c.client_signature){
+    $('sigCard').style.display='none';
+    $('postSignCard').style.display='block';
+    $('fullySignedBanner').style.display='flex';
   }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(40, 40, 40);
-  doc.text(c.biz_owner || 'Business Owner', margin, sigY + 50);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text(c.biz_name, margin, sigY + 62);
-  doc.text('Signed: ' + (c.vendor_signature ? new Date(c.vendor_signature.date).toLocaleString() : '—'), margin, sigY + 74);
-
-  doc.setDrawColor(50, 50, 50);
-  doc.line(margin + 260, sigY + 36, margin + 480, sigY + 36);
-
-  if (c.client_signature) {
-    if (c.client_signature.type === 'typed') {
-      doc.setFont('times', 'italic');
-      doc.setFontSize(18);
-      doc.setTextColor(13, 27, 62);
-      doc.text(c.client_signature.value, margin + 270, sigY + 30);
-    } else {
-      try { doc.addImage(c.client_signature.value, 'PNG', margin + 260, sigY, 180, 40); } catch(e) {}
-    }
-  }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(40, 40, 40);
-  doc.text(c.client_name, margin + 260, sigY + 50);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Client', margin + 260, sigY + 62);
-  doc.text('Signed: ' + (c.client_signature ? new Date(c.client_signature.date).toLocaleString() : '—'), margin + 260, sigY + 74);
-
-  const pageCount = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text('Generated by EventPro Suite™ · Contract Builder Pro™', pageWidth / 2, pageHeight - 24, { align: 'center' });
-    doc.text('Page ' + i + ' of ' + pageCount, pageWidth - margin, pageHeight - 24, { align: 'right' });
-  }
-
-  doc.save('Contract_' + (c.client_name || 'Client').replace(/\s+/g, '_') + '_SIGNED.pdf');
 }
 
-loadContract();
+function switchSigTab(mode){
+  sigMode=mode;
+  $('tabTyped').classList.toggle('active',mode==='typed');
+  $('tabDrawn').classList.toggle('active',mode==='drawn');
+  $('sigTypedWrap').style.display=mode==='typed'?'block':'none';
+  $('sigDrawnWrap').style.display=mode==='drawn'?'block':'none';
+  if(mode==='drawn')setupCanvas();
+}
+
+function setupCanvas(){
+  canvas=$('sigCanvas');if(!canvas)return;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width;canvas.height=140;
+  ctx=canvas.getContext('2d');
+  ctx.strokeStyle='#1F1A24';ctx.lineWidth=2;ctx.lineCap='round';
+  canvas.onmousedown=e=>{drawing=true;sigStrokes.push([[e.offsetX,e.offsetY]]);ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY)};
+  canvas.onmousemove=e=>{if(!drawing)return;ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();sigStrokes[sigStrokes.length-1].push([e.offsetX,e.offsetY])};
+  canvas.onmouseup=()=>drawing=false;canvas.onmouseleave=()=>drawing=false;
+  canvas.ontouchstart=e=>{e.preventDefault();const t=e.touches[0];const r=canvas.getBoundingClientRect();const x=t.clientX-r.left,y=t.clientY-r.top;drawing=true;sigStrokes.push([[x,y]]);ctx.beginPath();ctx.moveTo(x,y)};
+  canvas.ontouchmove=e=>{e.preventDefault();if(!drawing)return;const t=e.touches[0];const r=canvas.getBoundingClientRect();const x=t.clientX-r.left,y=t.clientY-r.top;ctx.lineTo(x,y);ctx.stroke();sigStrokes[sigStrokes.length-1].push([x,y])};
+  canvas.ontouchend=()=>drawing=false;
+}
+
+function clearCanvas(){if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);sigStrokes=[]}
+
+function getSignature(){
+  if(sigMode==='typed'){const val=$('sigTyped').value.trim();return val?{type:'typed',value:val,date:new Date().toISOString()}:null}
+  if(sigStrokes.length&&canvas)return{type:'drawn',value:canvas.toDataURL(),date:new Date().toISOString()};
+  return null;
+}
+
+async function submitSignature(){
+  if(!$('agreeBox').checked){showToast('Please check the agreement box first','error');return}
+  const sig=getSignature();
+  if(!sig){showToast('Please type or draw your signature','error');return}
+
+  const btn=$('submitBtn');
+  btn.disabled=true;
+  btn.textContent='Signing...';
+
+  try{
+    const status=contract.vendor_signature?'Fully Signed':'Vendor Signed';
+    const{error}=await sb.from('contracts').update({client_signature:sig,status,signed_at:new Date().toISOString()}).eq('sign_token',contract.sign_token);
+    if(error)throw error;
+    contract.client_signature=sig;
+    contract.status=status;
+    showToast('✓ Contract signed successfully');
+    $('sigCard').style.display='none';
+    $('postSignCard').style.display='block';
+    $('fullySignedBanner').style.display='flex';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    console.error('Sign error:',e);
+    btn.disabled=false;
+    btn.textContent='✍️ Sign & Submit';
+    showToast('Could not sign — '+(e.message||'try again'),'error');
+  }
+}
+
+function downloadContractPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'letter'});
+  const c=contract;
+  let y=54;const margin=54;const w=doc.internal.pageSize.getWidth()-margin*2;
+
+  doc.setFillColor(74,43,99);doc.rect(0,0,doc.internal.pageSize.getWidth(),72,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(20);
+  doc.text(c.biz_name||'Business',margin,34);
+  doc.setFontSize(11);doc.setFont('helvetica','normal');
+  doc.text('SIGNED EVENT SERVICE CONTRACT',margin,54);
+  y=110;
+  doc.setTextColor(30,25,35);doc.setFontSize(10);
+  doc.text(`Contract #: ${c.contract_number||'(auto)'}`,margin,y);y+=14;
+  doc.text(`Signed: ${new Date(c.signed_at||Date.now()).toLocaleDateString()}`,margin,y);y+=20;
+
+  const addHeading=(t)=>{if(y>720){doc.addPage();y=54}doc.setFont('helvetica','bold');doc.setTextColor(74,43,99);doc.setFontSize(12);doc.text(t,margin,y);y+=14;doc.setDrawColor(201,162,39);doc.line(margin,y-8,margin+60,y-8);doc.setTextColor(30,25,35);doc.setFont('helvetica','normal');doc.setFontSize(10)};
+  const addLine=(label,val)=>{if(y>740){doc.addPage();y=54}doc.setFont('helvetica','bold');doc.text(label,margin,y);doc.setFont('helvetica','normal');const lines=doc.splitTextToSize(val||'—',w-100);doc.text(lines,margin+100,y);y+=Math.max(14,lines.length*12)+2};
+  const addPara=(title,text)=>{if(!text)return;if(y>700){doc.addPage();y=54}doc.setFont('helvetica','bold');doc.text(title,margin,y);y+=14;doc.setFont('helvetica','normal');const lines=doc.splitTextToSize(text,w);lines.forEach(l=>{if(y>760){doc.addPage();y=54}doc.text(l,margin,y);y+=13});y+=8};
+
+  addHeading('PARTIES');
+  addLine('Vendor:',`${c.biz_name||''} (${c.biz_owner||'Owner'})`);
+  addLine('Email:',c.biz_email);addLine('Phone:',c.biz_phone);addLine('Address:',c.biz_address);
+  y+=6;
+  addLine('Client:',c.client_name);addLine('Email:',c.client_email);addLine('Phone:',c.client_phone);addLine('Address:',c.client_address);
+  y+=8;
+  addHeading('EVENT DETAILS');
+  addLine('Date:',c.event_date?new Date(c.event_date+'T00:00').toLocaleDateString():'');
+  addLine('Time:',c.event_time);addLine('Venue:',c.event_venue);
+  addPara('Services / deliverables:',c.event_services);
+  addHeading('PAYMENT TERMS');
+  addLine('Total price:','$'+parseFloat(c.total_price||0).toFixed(2));
+  addLine('Deposit:','$'+parseFloat(c.deposit_amount||0).toFixed(2));
+  addLine('Deposit due:',c.deposit_due?new Date(c.deposit_due+'T00:00').toLocaleDateString():'');
+  addLine('Balance due:',c.balance_due?new Date(c.balance_due+'T00:00').toLocaleDateString():'');
+  y+=6;
+  addHeading('TERMS & CONDITIONS');
+  const cl=c.clauses||{};
+  addPara('1. PAYMENT SCHEDULE',cl.paymentText);
+  addPara('2. DEPOSIT POLICY',cl.depositText);
+  addPara('3. CANCELLATION',cl.cancellationText);
+  addPara('4. LIABILITY',cl.liabilityText);
+  addPara('5. FORCE MAJEURE',cl.weatherText);
+  if(cl.custom)addPara('6. ADDITIONAL TERMS',cl.custom);
+
+  if(y>600){doc.addPage();y=54}
+  addHeading('SIGNATURES');
+
+  // Vendor sig
+  const vs=c.vendor_signature;
+  if(vs){
+    if(vs.type==='typed'){doc.setFont('helvetica','italic');doc.setFontSize(16);doc.text(vs.value,margin,y+20);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Vendor · '+new Date(vs.date).toLocaleDateString(),margin,y+36)}
+    else if(vs.type==='drawn'){try{doc.addImage(vs.value,'PNG',margin,y,180,50)}catch(e){}doc.setFontSize(10);doc.text('Vendor · '+new Date(vs.date).toLocaleDateString(),margin,y+60)}
+  }
+
+  // Client sig (opposite side)
+  const cs=c.client_signature;
+  if(cs){
+    if(cs.type==='typed'){doc.setFont('helvetica','italic');doc.setFontSize(16);doc.text(cs.value,margin+280,y+20);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Client · '+new Date(cs.date).toLocaleDateString(),margin+280,y+36)}
+    else if(cs.type==='drawn'){try{doc.addImage(cs.value,'PNG',margin+280,y,180,50)}catch(e){}doc.setFontSize(10);doc.text('Client · '+new Date(cs.date).toLocaleDateString(),margin+280,y+60)}
+  }
+
+  const safe=(c.client_name||'contract').replace(/[^a-z0-9]/gi,'_');
+  doc.save(`Signed_Contract_${safe}_${new Date().toISOString().slice(0,10)}.pdf`);
+  showToast('✓ PDF downloaded');
+}
+
+init();
 </script>
+
 </body>
 </html>
