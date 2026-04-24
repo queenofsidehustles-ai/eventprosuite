@@ -391,12 +391,12 @@ function initMonthYearSelects(){
 
 async function loadQuotesForPicker(){
   try{
-    const{data}=await sb.from('quotes').select('id,client_name,event_date,total,quote_data').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+    const{data}=await sb.from('saved_quotes').select('id,client_name,event_date,total_amount,quote_data').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
     if(data&&data.length){
       const sel=document.getElementById('quoteSelect');
       data.forEach(q=>{
         const d=q.event_date?new Date(q.event_date+'T00:00').toLocaleDateString():'';
-        sel.innerHTML+=`<option value="${q.id}" data-total="${q.total}" data-name="${(q.client_name||'').replace(/"/g,'&quot;')}" data-date="${q.event_date||''}">${q.client_name||'—'} · ${d} · ${currencySymbol}${parseFloat(q.total).toFixed(0)}</option>`;
+        sel.innerHTML+=`<option value="${q.id}" data-total="${q.total_amount}" data-name="${(q.client_name||'').replace(/"/g,'&quot;')}" data-date="${q.event_date||''}">${q.client_name||'—'} · ${d} · ${currencySymbol}${parseFloat(q.total_amount||0).toFixed(0)}</option>`;
       });
       document.getElementById('quotePicker').style.display='block';
     }
@@ -650,29 +650,44 @@ function recalcMonth(){
 let currentMonthEvents=[];
 
 async function loadMonth(){
-  const month=parseInt(document.getElementById('monthSelect').value);
-  const year=parseInt(document.getElementById('yearSelect').value);
+  let month=parseInt(document.getElementById('monthSelect').value);
+  let year=parseInt(document.getElementById('yearSelect').value);
+
+  // Guard against NaN (happens if dropdowns haven't fully populated yet)
+  if(isNaN(month)||isNaN(year)){
+    const now=new Date();
+    month=isNaN(month)?now.getMonth()+1:month;
+    year=isNaN(year)?now.getFullYear():year;
+    console.log('loadMonth: dropdowns not ready, using current date fallback',{month,year});
+  }
   document.getElementById('incomeList').innerHTML='';
   document.getElementById('monthlyExpensesList').innerHTML='';
   currentMonthEvents=[];
 
-  // Load the manually-entered monthly record
+  // Load the manually-entered monthly record (use maybeSingle to avoid errors when no row exists)
   try{
-    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','monthly').eq('record_month',month).eq('record_year',year).single();
+    const{data,error}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','monthly').eq('record_month',month).eq('record_year',year).maybeSingle();
+    if(error)console.error('Monthly record load error:',error);
     if(data){
       currentMonthRecord=data;
       (data.income_json||[]).forEach(i=>addIncome(i.desc,i.cat,i.amt));
       (data.expenses_json||[]).forEach(e=>addMonthlyExpense(e.desc,e.cat,e.amt));
     }else{currentMonthRecord=null}
-  }catch(e){currentMonthRecord=null}
+  }catch(e){console.error('Monthly record exception:',e);currentMonthRecord=null}
 
   // Load all per-event records whose record_date falls within this month/year
   try{
+    // First day of THIS month → first day of NEXT month (exclusive upper bound)
+    // This correctly handles months with 28, 29, 30, or 31 days
     const firstDay=`${year}-${String(month).padStart(2,'0')}-01`;
-    const lastDay=`${year}-${String(month).padStart(2,'0')}-31`;
-    const{data:events}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','event').gte('record_date',firstDay).lte('record_date',lastDay).order('record_date',{ascending:true});
+    const nextMonth=month===12?1:month+1;
+    const nextYear=month===12?year+1:year;
+    const firstDayNextMonth=`${nextYear}-${String(nextMonth).padStart(2,'0')}-01`;
+    const{data:events,error}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','event').gte('record_date',firstDay).lt('record_date',firstDayNextMonth).order('record_date',{ascending:true});
+    if(error)console.error('Events load error:',error);
+    console.log('Events query result:',{month,year,firstDay,firstDayNextMonth,count:events?.length||0,events});
     currentMonthEvents=events||[];
-  }catch(e){currentMonthEvents=[]}
+  }catch(e){console.error('Events load exception:',e);currentMonthEvents=[]}
 
   renderMonthEvents();
 
@@ -735,11 +750,17 @@ async function saveMonth(){
 }
 
 async function loadYear(){
-  const year=parseInt(document.getElementById('yearSummarySelect').value);
+  let year=parseInt(document.getElementById('yearSummarySelect').value);
+  if(isNaN(year))year=new Date().getFullYear();
+
   try{
-    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_year',year);
+    // Query using date range so it works for both monthly AND event records
+    const firstDay=`${year}-01-01`;
+    const firstDayNextYear=`${year+1}-01-01`;
+    const{data,error}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).gte('record_date',firstDay).lt('record_date',firstDayNextYear);
+    if(error)console.error('Year load error:',error);
     renderYear(data||[],year);
-  }catch(e){renderYear([],year)}
+  }catch(e){console.error('Year load exception:',e);renderYear([],year)}
 }
 function renderYear(records,year){
   const c=currencySymbol;
