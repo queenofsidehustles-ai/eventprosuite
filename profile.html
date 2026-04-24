@@ -3,175 +3,145 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Profit Calculator | Party Biz Hub</title>
+<title>Business Profile | Party Biz Hub</title>
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --plum-900:#4A2B63;--plum-800:#5A3476;--brand:#6A417E;--brand-deep:#8E67A6;
-  --mauve:#A67BB5;--pink:#E6A2BE;--pink-soft:#F4D2DF;
-  --gold:#C9A227;--gold-bright:#D4AE52;--gold-soft:#F6E5A6;
-  --cream:#FCF8F4;--off:#FFFDFC;
-  --border:#EAE3ED;--border-strong:#DDD1E5;
-  --ink:#1F1A24;--slate-900:#1F1A24;--slate-700:#4A4354;--slate-600:#6C6473;
-  --muted:#6C6473;
-  --success:#1E8C5A;--warning:#D68A2C;--danger:#C23B5E;
-  --radius:16px;
-  /* Profit Calculator accent = GOLD (money theme) */
-  --tool-accent:var(--gold);
-  --tool-accent-deep:#A78420;
-  --tool-accent-soft:rgba(201,162,39,.12);
-  /* Map legacy vars for compatibility with existing JS */
-  --navy:var(--plum-900);--navy-mid:var(--brand);
-  --user-primary:var(--plum-900);--user-accent:var(--gold);--user-primary-soft:rgba(74,43,99,.08);
-  --user-primary-contrast:#fff;
-  --shadow-sm:0 1px 2px rgba(31,20,50,.04),0 1px 1px rgba(31,20,50,.02);
-  --shadow:0 4px 16px rgba(59,35,81,.06),0 2px 4px rgba(59,35,81,.04);
-  --shadow-lg:0 20px 50px -12px rgba(59,35,81,.18),0 8px 16px -4px rgba(59,35,81,.08);
-}
-body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  :root{
+    --plum-900:#4A2B63;--plum-800:#5A3476;--brand:#6A417E;--brand-deep:#8E67A6;
+    --mauve:#A67BB5;--pink:#E6A2BE;--pink-soft:#F4D2DF;
+    --gold:#C9A227;--gold-soft:#F6E5A6;--cream:#FCF8F4;
+    --ink:#1F1A24;--muted:#6C6473;
+    --line:#EAE3ED;--line-strong:#DDD1E5;
+    --shadow-sm:0 8px 24px rgba(59,35,81,.06);
+    --shadow-md:0 16px 40px rgba(90,52,118,.10);
+    --shadow-lg:0 24px 70px rgba(61,39,85,.15);
+    --success:#1E8C5A;--error:#C23B5E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+  button{font:inherit;cursor:pointer}
+  input,select,textarea{font:inherit}
 
-/* ── TOP NAV (replaces suite-bar) ── */
-.topnav{position:sticky;top:0;z-index:50;background:rgba(255,253,252,.95);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,43,99,.08)}
-.topnav-inner{max-width:1440px;margin:0 auto;padding:12px 24px;display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center}
-.topnav-left{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none}
-.topnav-left img{height:44px;width:auto}
-.topnav-tabs{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:4px;box-shadow:var(--shadow-sm)}
-.topnav-tab{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .18s;border:none;background:transparent;white-space:nowrap}
-.topnav-tab:hover{color:var(--plum-900);background:rgba(230,162,190,.12)}
-.topnav-tab.active{background:linear-gradient(135deg,var(--tool-accent),var(--tool-accent-deep));color:#3A2A1A;box-shadow:0 6px 16px rgba(201,162,39,.35);font-weight:700}
-.topnav-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
-.user-chip{display:flex;align-items:center;gap:10px;padding:7px 14px 7px 8px;background:#fff;border:1px solid var(--border);border-radius:999px;cursor:pointer;transition:all .18s}
-.user-chip:hover{border-color:var(--mauve)}
-.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-.user-chip-text{font-size:13px;font-weight:600;color:var(--plum-900);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.user-menu{position:absolute;top:58px;right:24px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);padding:8px;min-width:220px;display:none;z-index:60}
-.user-menu.open{display:block}
-.user-menu-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink);border:none;background:transparent;width:100%;text-align:left;transition:background .15s;text-decoration:none}
-.user-menu-item:hover{background:var(--cream)}
-.user-menu-item.danger{color:var(--danger)}
-.user-menu-item.danger:hover{background:rgba(194,59,94,.08)}
-.user-menu-divider{height:1px;background:var(--border);margin:4px 0}
-@media(max-width:960px){
-  .topnav-inner{grid-template-columns:auto 1fr auto}
-  .topnav-tabs{overflow-x:auto;max-width:100%;gap:2px}
-  .topnav-tab{padding:8px 12px;font-size:12px}
-  .user-chip-text{display:none}
-  .topnav-left img{height:36px}
-}
+  /* AUTH GATE */
+  .auth-gate{position:fixed;inset:0;background:linear-gradient(155deg,var(--plum-900),var(--brand) 60%,var(--mauve));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff}
+  .auth-spinner{width:52px;height:52px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:18px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .auth-gate-text{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:.02em}
+  .auth-gate-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
 
-/* Hide old suite-bar styles (no longer used, kept for JS compat) */
-.suite-bar,.suite-switcher,.suite-brand-btn,.suite-panel,.tool-link,.suite-right,.suite-logout{display:none !important}
+  /* TOP NAV */
+  .topnav{position:sticky;top:0;z-index:50;background:rgba(255,253,252,.95);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,43,99,.08)}
+  .topnav-inner{max-width:1440px;margin:0 auto;padding:12px 24px;display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center}
+  .topnav-left{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none}
+  .topnav-left img{height:44px;width:auto}
+  .topnav-tabs{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:var(--shadow-sm)}
+  .topnav-tab{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .18s;border:none;background:transparent}
+  .topnav-tab:hover{color:var(--plum-900);background:rgba(230,162,190,.12)}
+  .topnav-tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 6px 16px rgba(90,52,118,.28)}
+  .topnav-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+  .user-chip{display:flex;align-items:center;gap:10px;padding:7px 14px 7px 8px;background:#fff;border:1px solid var(--line);border-radius:999px;cursor:pointer;transition:all .18s}
+  .user-chip:hover{border-color:var(--mauve)}
+  .user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .user-chip-text{font-size:13px;font-weight:600;color:var(--plum-900);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-menu{position:absolute;top:58px;right:24px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);padding:8px;min-width:220px;display:none;z-index:60}
+  .user-menu.open{display:block}
+  .user-menu-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink);border:none;background:transparent;width:100%;text-align:left;transition:background .15s;text-decoration:none}
+  .user-menu-item:hover{background:var(--cream)}
+  .user-menu-item.danger{color:#C23B5E}
+  .user-menu-item.danger:hover{background:rgba(194,59,94,.08)}
+  .user-menu-divider{height:1px;background:var(--line);margin:4px 0}
+  @media(max-width:960px){
+    .topnav-inner{grid-template-columns:auto 1fr auto}
+    .topnav-tabs{overflow-x:auto;max-width:100%;gap:2px}
+    .topnav-tab{padding:8px 12px;font-size:12px;white-space:nowrap}
+    .user-chip-text{display:none}
+    .topnav-left img{height:36px}
+  }
 
-.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:2.2rem 1.5rem 2.5rem;color:#fff;position:relative;overflow:hidden}
-.page-header::after{content:"";position:absolute;top:-50%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(201,162,39,.18) 0%,transparent 70%);pointer-events:none}
-.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
-.page-eyebrow{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:.7rem;padding:.3rem .75rem;background:rgba(201,162,39,.16);border:1px solid rgba(201,162,39,.35);border-radius:50px}
-.page-title{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,4vw,2.6rem);font-weight:700;margin-bottom:.5rem;line-height:1.12;letter-spacing:-.02em}
-.page-title .script{font-family:'Dancing Script',cursive;color:var(--gold-soft);font-size:1.05em}
-.page-sub{font-size:.92rem;color:rgba(255,255,255,.8);max-width:580px;line-height:1.65}
+  /* LAYOUT */
+  .profile-layout{max-width:900px;margin:0 auto;padding:32px 24px 64px}
 
-.mode-tabs{background:#fff;border-bottom:1px solid var(--border);padding:.9rem 1.5rem;position:sticky;top:68px;z-index:40;box-shadow:var(--shadow-sm)}
-.mode-tabs-inner{max-width:1100px;margin:0 auto;display:flex;gap:.4rem;flex-wrap:wrap}
-.mode-tab{background:transparent;border:none;padding:.55rem 1.1rem;border-radius:10px;font-size:.85rem;font-weight:600;color:var(--slate-600);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:.45rem}
-.mode-tab:hover{background:var(--tool-accent-soft);color:var(--tool-accent-deep)}
-.mode-tab.active{background:linear-gradient(135deg,var(--tool-accent),var(--tool-accent-deep));color:#3A2A1A;box-shadow:0 6px 14px rgba(201,162,39,.3)}
+  /* FIRST-TIME WELCOME BANNER */
+  .welcome-banner{background:radial-gradient(circle at top right,rgba(246,229,166,.25),transparent 35%),linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));color:#fff;border-radius:22px;padding:28px 30px;margin-bottom:26px;box-shadow:var(--shadow-lg);display:none}
+  .welcome-banner.show{display:block}
+  .welcome-banner .eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold-soft);margin-bottom:8px}
+  .welcome-banner h1{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:8px;letter-spacing:-.01em}
+  .welcome-banner h1 .script{font-family:'Dancing Script',cursive;color:var(--gold-soft);font-size:1.1em}
+  .welcome-banner p{font-size:14.5px;color:rgba(255,255,255,.85);line-height:1.65;max-width:640px}
 
-.wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
-.panel{display:none;background:#fff;border-radius:var(--radius);padding:2rem;border:1px solid var(--border);margin-bottom:1rem;box-shadow:var(--shadow-sm)}
-.panel.active{display:block}
-.panel h2{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.5rem;margin-bottom:.4rem;letter-spacing:-.01em}
-.panel .sub{color:var(--slate-600);font-size:.88rem;margin-bottom:1.5rem}
+  .page-head{margin-bottom:24px}
+  .page-title{font-family:'Playfair Display',serif;font-size:28px;color:var(--plum-900);letter-spacing:-.015em;margin-bottom:6px}
+  .page-sub{font-size:14.5px;color:var(--muted);line-height:1.65;max-width:680px}
 
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
-.field{display:flex;flex-direction:column;gap:.35rem}
-.field.full{grid-column:1 / -1}
-.field label{font-size:.76rem;font-weight:700;color:var(--slate-700);letter-spacing:.02em}
-.field input,.field select,.field textarea{padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;font-family:inherit;color:var(--slate-900);background:#fff;transition:all .12s}
-.field input:focus,.field select:focus{border-color:var(--user-primary);outline:none;box-shadow:0 0 0 3px var(--user-primary-soft)}
+  /* SECTION CARDS */
+  .section-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:26px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
+  .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .section-head h2{font-family:'Playfair Display',serif;font-size:19px;color:var(--plum-900);letter-spacing:-.01em}
+  .section-head .section-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--mauve));color:#fff;font-size:11.5px;font-weight:800;margin-right:8px;vertical-align:middle}
+  .section-badge{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted);padding:5px 10px;border:1px solid var(--line-strong);border-radius:999px;background:var(--cream)}
 
-.section-title{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--user-primary);margin:1.6rem 0 .9rem;padding-bottom:.55rem;border-bottom:2px solid var(--user-accent);display:flex;justify-content:space-between;align-items:center}
+  /* FORMS */
+  .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .form-grid.three-col{grid-template-columns:repeat(3,1fr)}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .field label .optional{color:var(--mauve);font-weight:600;letter-spacing:.02em;text-transform:none;margin-left:6px;font-size:10.5px}
+  input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);padding:12px 13px;outline:none;transition:all .15s;font-size:14px}
+  input:focus,select:focus,textarea:focus{border-color:var(--mauve);box-shadow:0 0 0 3px rgba(166,123,181,.14)}
+  textarea{resize:vertical;min-height:80px}
+  input[type="color"]{padding:4px;height:46px;cursor:pointer}
+  input[type="file"]{padding:8px;background:var(--cream);cursor:pointer;border-style:dashed}
+  @media(max-width:720px){.form-grid,.form-grid.three-col{grid-template-columns:1fr}}
 
-.expense-row{display:grid;grid-template-columns:2fr 1fr 110px 40px;gap:.5rem;margin-bottom:.5rem;align-items:center}
-@media(max-width:640px){.expense-row{grid-template-columns:1fr 110px 40px}.expense-row select{grid-column:1 / -1}}
-.expense-row input,.expense-row select{padding:.52rem .7rem;border:1.5px solid var(--border);border-radius:7px;font-size:.85rem;font-family:inherit}
-.expense-row input:focus,.expense-row select:focus{border-color:var(--user-primary);outline:none}
+  /* LOGO PREVIEW */
+  .logo-block{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding:14px;background:linear-gradient(135deg,rgba(90,52,118,.04),rgba(230,162,190,.08));border:1px solid var(--line);border-radius:16px;margin-bottom:14px}
+  .logo-preview{width:70px;height:70px;border-radius:16px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+  .logo-preview img{width:100%;height:100%;object-fit:contain;padding:4px}
+  .logo-fallback{font-family:'Playfair Display',serif;font-size:28px;color:var(--plum-900);font-weight:700}
+  .logo-hint strong{display:block;font-family:'Playfair Display',serif;font-size:17px;color:var(--plum-900);margin-bottom:3px}
+  .logo-hint small{font-size:12px;color:var(--muted);letter-spacing:.02em;line-height:1.5}
 
-.smart-row{background:var(--user-primary-soft);border:1.5px dashed var(--user-primary);border-radius:10px;padding:.8rem;margin:.5rem 0;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 40px;gap:.5rem;align-items:center}
-@media(max-width:640px){.smart-row{grid-template-columns:1fr 1fr 40px}}
-.smart-row input{background:#fff;padding:.5rem .65rem;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:.85rem}
-.smart-row .smart-total{font-weight:800;color:var(--success);font-size:.95rem;text-align:right;font-variant-numeric:tabular-nums}
-@media(max-width:640px){.smart-row .smart-total{grid-column:1 / 3}}
+  /* COLOR PREVIEW */
+  .color-preview-block{display:flex;align-items:center;gap:14px;padding:14px;background:var(--cream);border:1px solid var(--line);border-radius:14px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .color-swatch{width:56px;height:40px;border-radius:10px;border:1px solid var(--line-strong);flex-shrink:0;background:linear-gradient(135deg,var(--user-primary,#6A417E),var(--user-primary-light,#8E67A6))}
 
-.smart-btn{background:#fff;border:1.5px solid var(--user-primary);color:var(--user-primary);padding:.6rem 1rem;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.3rem;transition:all .12s;width:100%;justify-content:center;margin-top:.3rem}
-.smart-btn:hover{background:var(--user-primary);color:#fff}
+  /* SAVE BAR */
+  .save-bar{position:sticky;bottom:20px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 22px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:var(--shadow-lg);z-index:20;flex-wrap:wrap}
+  .save-bar-status{font-size:13px;color:var(--muted)}
+  .save-bar-status strong{color:var(--plum-900);font-weight:700}
+  .save-bar-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-weight:700;transition:all .18s;font-size:14px}
+  .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 10px 24px rgba(90,52,118,.22)}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(90,52,118,.3)}
+  .btn-secondary{background:#fff;color:var(--plum-800);border:1px solid var(--line-strong)}
+  .btn-secondary:hover{border-color:var(--mauve);color:var(--plum-900)}
+  .btn-large{padding:14px 28px;font-size:15px}
 
-.btn-remove{background:transparent;border:none;color:var(--danger);cursor:pointer;font-size:1.2rem;padding:.35rem;border-radius:6px;transition:all .12s}
-.btn-remove:hover{background:#fee2e2}
-.btn-add-row{background:transparent;border:1.5px dashed var(--border);color:var(--slate-600);padding:.7rem 1rem;border-radius:9px;font-weight:600;font-size:.82rem;cursor:pointer;width:100%;margin-top:.5rem;font-family:inherit;transition:all .12s}
-.btn-add-row:hover{border-color:var(--user-primary);color:var(--user-primary);background:var(--user-primary-soft)}
+  /* HELPER TEXT */
+  .helper-text{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
+  .helper-text.important{color:var(--plum-800);font-weight:500}
 
-.results{background:linear-gradient(135deg,var(--plum-900),var(--brand) 70%,var(--brand-deep));color:#fff;border-radius:16px;padding:1.8rem;margin-top:1.5rem;box-shadow:var(--shadow)}
-.results h3{font-family:'Playfair Display',serif;color:var(--gold-soft);font-size:1.3rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid rgba(255,255,255,.15)}
-.result-row{display:flex;justify-content:space-between;padding:.5rem 0;font-size:.9rem;border-bottom:1px solid rgba(255,255,255,.08);font-variant-numeric:tabular-nums}
-.result-row.expense{color:rgba(255,255,255,.72)}
-.result-row.grand{font-size:1.15rem;font-weight:800;color:var(--gold-soft);border-top:2px solid var(--gold);margin-top:.5rem;padding-top:.8rem;border-bottom:none}
-.result-row.margin{padding:.85rem .95rem;border-radius:10px;margin-top:.8rem;border:none;font-weight:700}
-.result-row.margin.success{background:rgba(30,140,90,.22);border:1.5px solid rgba(30,140,90,.55);color:#86efac}
-.result-row.margin.warning{background:rgba(214,138,44,.22);border:1.5px solid rgba(214,138,44,.55);color:#fcd34d}
-.result-row.margin.danger{background:rgba(194,59,94,.22);border:1.5px solid rgba(194,59,94,.55);color:#fca5a5}
-.result-row.loss{color:#fca5a5}
-
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
-.summary-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem;box-shadow:var(--shadow-sm);transition:all .15s}
-.summary-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
-.summary-label{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-600);margin-bottom:.35rem}
-.summary-value{font-size:1.5rem;font-weight:800;color:var(--plum-900);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.summary-value.profit{color:var(--success)}
-.summary-value.loss{color:var(--danger)}
-
-.month-bar{display:flex;gap:.5rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
-.month-bar select{padding:.55rem .85rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;background:#fff;font-size:.88rem}
-
-.btn{padding:.8rem 1.5rem;border:none;border-radius:11px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .15s;box-shadow:var(--shadow-sm)}
-.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
-.btn-navy{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--tool-accent-deep));color:#3A2A1A}
-.btn-outline{background:#fff;color:var(--plum-800);border:1.5px solid var(--border)}
-.btn-outline:hover{border-color:var(--mauve);color:var(--plum-900)}
-.btn-row{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border)}
-
-.quote-picker{background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(246,229,166,.15));border:1px solid rgba(201,162,39,.3);border-radius:14px;padding:1.1rem;margin-bottom:1.5rem}
-.quote-picker-title{font-size:.78rem;font-weight:700;color:var(--tool-accent-deep);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;letter-spacing:.02em;text-transform:uppercase}
-.quote-picker select{width:100%;padding:.62rem .85rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;background:#fff}
-
-.year-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:1rem;font-size:.85rem;box-shadow:var(--shadow-sm)}
-.year-table thead tr{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff}
-.year-table th,.year-table td{padding:.75rem 1rem;text-align:left}
-.year-table th:not(:first-child),.year-table td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
-.year-table tbody tr{border-top:1px solid var(--border);transition:background .12s}
-.year-table tbody tr:hover{background:var(--cream)}
-.year-table tfoot tr{background:var(--cream);font-weight:800}
-.year-table tfoot td{padding:.9rem 1rem;border-top:2px solid var(--gold)}
-
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.9rem 1.5rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-.auth-gate{position:fixed;inset:0;background:linear-gradient(155deg,var(--plum-900),var(--brand) 60%,var(--mauve));display:none;align-items:center;justify-content:center;z-index:9999;color:#fff;text-align:center;padding:2rem;flex-direction:column}
-.auth-gate.show{display:flex}
-.auth-gate a{background:linear-gradient(135deg,var(--gold),var(--tool-accent-deep));color:#3A2A1A;padding:.85rem 2rem;border-radius:11px;text-decoration:none;font-weight:700;margin-top:1.5rem;display:inline-block;box-shadow:0 10px 24px rgba(201,162,39,.3)}
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--plum-900);color:#fff;padding:12px 22px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);z-index:200;opacity:0;transition:all .3s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.success{background:var(--success)}
+  .toast.error{background:var(--error)}
 </style>
 </head>
 <body>
 
-<div class="auth-gate" id="authGate"><div><h2 style="font-family:'Playfair Display',serif;color:var(--gold-soft);margin-bottom:.8rem;font-size:1.8rem">Sign in required</h2><p style="color:rgba(255,255,255,.8);max-width:380px;margin:0 auto;line-height:1.55">Please sign in to continue to your Profit Calculator.</p><a href="login.html">Sign In →</a></div></div>
+<!-- AUTH GATE -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-spinner"></div>
+  <div class="auth-gate-text">Loading your business profile</div>
+  <div class="auth-gate-sub">Party Biz Hub</div>
+</div>
 
-<!-- TOP NAV (Party Biz Hub) -->
-<div class="topnav" id="suiteBar" style="display:none">
+<!-- TOP NAV -->
+<div class="topnav" id="topnav" style="display:none">
   <div class="topnav-inner">
     <a href="app.html" class="topnav-left">
       <img src="partybizhub-logo.png" alt="Party Biz Hub"/>
@@ -179,626 +149,438 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
     <div class="topnav-tabs">
       <a href="app.html" class="topnav-tab"><span>📄</span>Quote</a>
       <a href="contract.html" class="topnav-tab"><span>📝</span>Contract</a>
-      <a href="profit.html" class="topnav-tab active"><span>💰</span>Profit</a>
-      <a href="prep.html" class="topnav-tab"><span>📋</span>Checklist</a>
+      <a href="profit.html" class="topnav-tab"><span>💰</span>Profit</a>
+      <a href="prep.html" class="topnav-tab"><span>📋</span>Prep</a>
       <a href="vendors.html" class="topnav-tab"><span>🤝</span>Vendors</a>
     </div>
     <div class="topnav-right">
       <div class="user-chip" id="userChip" onclick="toggleUserMenu(event)">
         <div class="user-avatar" id="userAvatar">?</div>
-        <div class="user-chip-text" id="userName">Loading...</div>
+        <div class="user-chip-text" id="userChipText">Loading...</div>
       </div>
     </div>
   </div>
   <div class="user-menu" id="userMenu">
-    <a href="app.html" class="user-menu-item">📄 Quote Builder</a>
-    <a href="profile.html" class="user-menu-item">⚙ Business Profile</a>
+    <a href="app.html" class="user-menu-item">📄 Back to Quote Builder</a>
+    <a href="profile.html" class="user-menu-item" style="background:var(--cream)">⚙ Business Profile</a>
     <div class="user-menu-divider"></div>
     <button class="user-menu-item danger" onclick="handleLogout()">🚪 Sign Out</button>
   </div>
 </div>
 
-<div class="page-header">
-  <div class="page-header-inner">
-    <div class="page-eyebrow">✦ Profit Calculator</div>
-    <h1 class="page-title">Know your <span class="script">numbers</span>. Price with confidence.</h1>
-    <p class="page-sub">Calculate per-event profit, track monthly income and expenses, and get year-end reports ready for your accountant.</p>
-  </div>
-</div>
+<main class="profile-layout" id="profileMain" style="display:none">
 
-<div class="mode-tabs">
-  <div class="mode-tabs-inner">
-    <button class="mode-tab active" onclick="setMode('event')" id="tabEvent">📍 Per Event</button>
-    <button class="mode-tab" onclick="setMode('monthly')" id="tabMonthly">📅 Monthly Books</button>
-    <button class="mode-tab" onclick="setMode('year')" id="tabYear">📊 Year Summary</button>
-  </div>
-</div>
-
-<main class="wrap">
-
-<div class="panel active" id="panelEvent">
-  <h2>Per-Event Profit Calculator</h2>
-  <p class="sub">Calculate exactly what you made (or will make) on one specific event.</p>
-
-  <div class="quote-picker" id="quotePicker" style="display:none">
-    <div class="quote-picker-title">💡 Auto-fill from an existing quote</div>
-    <select id="quoteSelect" onchange="loadFromQuote()">
-      <option value="">— Start fresh (manual entry) —</option>
-    </select>
+  <!-- WELCOME BANNER (shown only if first-time) -->
+  <div class="welcome-banner" id="welcomeBanner">
+    <div class="eyebrow">✦ First things first</div>
+    <h1>Welcome to <span class="script">Party Biz Hub</span></h1>
+    <p>Let's set up your business once — your logo, colors, and payment links. Everything you save here shows up branded on every quote your clients see. Takes about 3 minutes.</p>
   </div>
 
-  <div class="form-grid">
-    <div class="field"><label>Event Name / Client</label><input type="text" id="evName" placeholder="Sarah's 5th Birthday"/></div>
-    <div class="field"><label>Event Date</label><input type="date" id="evDate"/></div>
-    <div class="field"><label>Total Charged to Client ($)</label><input type="number" id="evRevenue" placeholder="650.00" step="0.01" oninput="calcEvent()"/></div>
-    <div class="field"><label>Target Profit Margin (%)</label><input type="number" id="evTargetMargin" placeholder="40" value="40" step="1" oninput="calcEvent()"/></div>
+  <div class="page-head">
+    <h1 class="page-title">Business Profile</h1>
+    <p class="page-sub">Set these once. They apply to every quote, contract, and invoice your clients receive. Your clients never see "Party Biz Hub" anywhere — only your brand.</p>
   </div>
 
-  <div class="section-title">Labor <span style="font-size:.68rem;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0">Hours × hourly rate</span></div>
-  <div id="laborList"></div>
-  <button class="smart-btn" onclick="addLabor()">+ Add Labor (hourly)</button>
+  <!-- SECTION 1: BUSINESS IDENTITY -->
+  <section class="section-card">
+    <div class="section-head">
+      <h2><span class="section-num">1</span>Business identity</h2>
+      <div class="section-badge">Required</div>
+    </div>
 
-  <div class="section-title">Travel <span style="font-size:.68rem;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0">Miles × IRS rate ($0.67/mi)</span></div>
-  <div id="travelList"></div>
-  <button class="smart-btn" onclick="addTravel()">+ Add Trip (mileage)</button>
+    <div class="logo-block">
+      <div class="logo-preview" id="logoPreview">
+        <div class="logo-fallback" id="logoFallback">P</div>
+      </div>
+      <div class="logo-hint">
+        <strong id="logoHintName">Your Business Name</strong>
+        <small>Upload a PNG (transparent background works best). Appears on every client invoice.</small>
+      </div>
+    </div>
 
-  <div class="section-title">Other Expenses</div>
-  <div id="expensesList"></div>
-  <button class="btn-add-row" onclick="addExpense()">+ Add Expense</button>
+    <div class="form-grid">
+      <div class="field">
+        <label>Business name</label>
+        <input id="businessName" placeholder="e.g. Luxe Kids Events"/>
+      </div>
+      <div class="field">
+        <label>Logo (PNG or JPG)</label>
+        <input id="logoUpload" type="file" accept="image/png,image/jpeg"/>
+      </div>
+      <div class="field full">
+        <label>Primary brand color</label>
+        <input id="brandColor" type="color" value="#6A417E"/>
+        <div class="color-preview-block">
+          <div class="color-swatch" id="colorSwatch"></div>
+          <div>This is the gradient your clients will see at the top of every invoice. We build a soft gradient from your chosen color so your brand always stays intentional.</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div class="results" id="eventResults"></div>
+  <!-- SECTION 2: CONTACT INFO -->
+  <section class="section-card">
+    <div class="section-head">
+      <h2><span class="section-num">2</span>Contact information</h2>
+      <div class="section-badge">Shown on invoices</div>
+    </div>
 
-  <div class="btn-row">
-    <button class="btn btn-outline" onclick="clearEvent()">🗑️ Clear</button>
-    <button class="btn btn-navy" onclick="saveEventRecord()">💾 Save to My Books</button>
-    <button class="btn btn-gold" onclick="downloadEventPDF()">📄 Download PDF</button>
+    <div class="form-grid">
+      <div class="field">
+        <label>Business email</label>
+        <input id="businessEmail" type="email" placeholder="hello@yourbusiness.com"/>
+      </div>
+      <div class="field">
+        <label>Business phone</label>
+        <input id="businessPhone" type="tel" placeholder="(555) 123-4567"/>
+      </div>
+      <div class="field full">
+        <label>Business address <span class="optional">optional</span></label>
+        <input id="businessAddress" placeholder="Only if you want this shown on formal invoices"/>
+        <div class="helper-text">Skip this if you run your business from home and don't want your address public.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: PAYMENT LINKS -->
+  <section class="section-card">
+    <div class="section-head">
+      <h2><span class="section-num">3</span>Stripe deposit links</h2>
+      <div class="section-badge">Your $ goes directly to you</div>
+    </div>
+
+    <div class="helper-text important" style="margin-bottom:16px">Clients click a deposit button on your quote and pay you directly through Stripe. Create payment links in your Stripe dashboard, then paste them below. Money hits your Stripe — we never touch it.</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>$100 deposit link</label>
+        <input id="stripe100" placeholder="https://buy.stripe.com/..."/>
+      </div>
+      <div class="field">
+        <label>$250 deposit link</label>
+        <input id="stripe250" placeholder="https://buy.stripe.com/..."/>
+      </div>
+      <div class="field">
+        <label>$500 deposit link</label>
+        <input id="stripe500" placeholder="https://buy.stripe.com/..."/>
+      </div>
+      <div class="field">
+        <label>$1000 deposit link</label>
+        <input id="stripe1000" placeholder="https://buy.stripe.com/..."/>
+      </div>
+      <div class="field full">
+        <label>Default deposit profile</label>
+        <select id="depositProfile">
+          <option value="default">Stripe payment links (above)</option>
+          <option value="manual">Manual follow-up invoice (no Stripe button shown)</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: TAX SETTINGS -->
+  <section class="section-card">
+    <div class="section-head">
+      <h2><span class="section-num">4</span>Tax settings</h2>
+      <div class="section-badge">Default for all quotes</div>
+    </div>
+
+    <div class="form-grid three-col">
+      <div class="field">
+        <label>Tax mode</label>
+        <select id="taxMode">
+          <option value="none">No tax</option>
+          <option value="added">Add tax on top</option>
+          <option value="included">Tax already included</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tax rate (%)</label>
+        <input id="taxRate" type="number" step="0.01" value="8"/>
+      </div>
+      <div class="field">
+        <label>Tax label</label>
+        <input id="taxLabel" value="Sales Tax"/>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: PREFERENCES -->
+  <section class="section-card">
+    <div class="section-head">
+      <h2><span class="section-num">5</span>Preferences</h2>
+      <div class="section-badge">App-wide defaults</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Default currency</label>
+        <select id="currency">
+          <option value="$">USD ($)</option>
+          <option value="CA$">CAD (CA$)</option>
+          <option value="£">GBP (£)</option>
+          <option value="€">EUR (€)</option>
+          <option value="A$">AUD (A$)</option>
+          <option value="R">ZAR (R)</option>
+          <option value="₦">NGN (₦)</option>
+          <option value="₵">GHS (₵)</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- STICKY SAVE BAR -->
+  <div class="save-bar">
+    <div class="save-bar-status" id="saveStatus">Fill in your business info, then save.</div>
+    <div class="save-bar-actions">
+      <a href="app.html" class="btn btn-secondary">Skip for now</a>
+      <button class="btn btn-primary btn-large" id="saveBtn" onclick="saveProfile()">Save & Continue to Quote Builder →</button>
+    </div>
   </div>
-</div>
-
-<div class="panel" id="panelMonthly">
-  <h2>Monthly Bookkeeping</h2>
-  <p class="sub">Log all business income and expenses for the month. Perfect for bookkeeping and tax prep.</p>
-  <div class="month-bar">
-    <label style="font-size:.82rem;font-weight:700;color:var(--slate-700)">Month:</label>
-    <select id="monthSelect" onchange="loadMonth()"></select>
-    <select id="yearSelect" onchange="loadMonth()"></select>
-  </div>
-  <div class="summary-grid" id="monthSummary"></div>
-  <div class="section-title">Income This Month</div>
-  <div id="incomeList"></div>
-  <button class="btn-add-row" onclick="addIncome()">+ Add Income Entry</button>
-  <div class="section-title">Expenses This Month</div>
-  <div id="monthlyExpensesList"></div>
-  <button class="btn-add-row" onclick="addMonthlyExpense()">+ Add Expense</button>
-  <div class="btn-row">
-    <button class="btn btn-navy" onclick="saveMonth()">💾 Save Month</button>
-    <button class="btn btn-gold" onclick="downloadMonthPDF()">📄 Download Month Report</button>
-  </div>
-</div>
-
-<div class="panel" id="panelYear">
-  <h2>Year Summary</h2>
-  <p class="sub">Total income, expenses, and profit for the year. Export and hand to your accountant.</p>
-  <div class="month-bar">
-    <label style="font-size:.82rem;font-weight:700;color:var(--slate-700)">Year:</label>
-    <select id="yearSummarySelect" onchange="loadYear()"></select>
-  </div>
-  <div class="summary-grid" id="yearSummary"></div>
-  <div id="yearBreakdown"></div>
-  <div class="btn-row">
-    <button class="btn btn-gold" onclick="downloadYearPDF()">📄 Download Year Report</button>
-    <button class="btn btn-outline" onclick="downloadYearCSV()">📊 Download CSV (for accountant)</button>
-  </div>
-</div>
 
 </main>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null,currencySymbol='$',currentMode='event';
-const IRS_MILEAGE_RATE=0.67;
-const EXPENSE_CATEGORIES=['Supplies','Rentals','Fees (platform/Stripe)','Marketing','Food/Catering','Insurance','Subscriptions','Other'];
+const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-async function init(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(!session){document.getElementById('authGate').classList.add('show');return}
-  currentUser=session.user;
+let currentUser = null;
+let currentProfile = null;
+let savedLogoDataURL = null;
 
-  // Check has_paid
-  try{
-    const{data:p}=await sb.from('profiles').select('has_paid,profile_data,full_name').eq('id',session.user.id).single();
-    if(p && p.has_paid===false){
-      await sb.auth.signOut();
-      window.location.href='login.html';
+const $ = id => document.getElementById(id);
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg, type='') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── AUTH ──
+async function checkAuth() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session || !session.user) {
+      window.location.href = 'login.html';
       return;
     }
-    // Populate user chip with business name if available, else email
-    const displayName=(p && p.profile_data && p.profile_data.businessName)||p?.full_name||(session.user.email||'user').split('@')[0];
-    document.getElementById('userName').textContent=displayName;
-    document.getElementById('userAvatar').textContent=(displayName[0]||'?').toUpperCase();
+    currentUser = session.user;
 
-    // Load user's brand color + currency from business profile
-    if(p && p.profile_data){
-      const d=p.profile_data;
-      if(d.brandColor)applyBrand(d.brandColor,'#C9A227');
-      if(d.currency)currencySymbol=d.currency;
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single();
+
+    // Check has_paid
+    if (profile && profile.has_paid === false) {
+      await sb.auth.signOut();
+      window.location.href = 'login.html';
+      return;
     }
-  }catch(e){
-    const email=session.user.email||'user';
-    document.getElementById('userName').textContent=email.split('@')[0];
-    document.getElementById('userAvatar').textContent=(email[0]||'?').toUpperCase();
-  }
 
-  document.getElementById('suiteBar').style.display='block';
+    currentProfile = profile || { id: currentUser.id, email: currentUser.email };
 
-  // Close user menu when clicking outside
-  document.addEventListener('click',e=>{
-    if(!e.target.closest('#userChip') && !e.target.closest('#userMenu')){
-      const m=document.getElementById('userMenu');
-      if(m)m.classList.remove('open');
+    // Populate fields
+    if (profile && profile.profile_data) {
+      populateFromProfile(profile.profile_data);
     }
-  });
-
-  initMonthYearSelects();
-  await loadQuotesForPicker();
-  addExpense();
-  loadMonth();
-  loadYear();
-}
-
-function toggleUserMenu(e){
-  if(e)e.stopPropagation();
-  document.getElementById('userMenu').classList.toggle('open');
-}
-
-// Legacy: keeps any old references from breaking (no-op)
-function toggleSuite(e){ if(e)e.stopPropagation(); }
-
-function applyBrand(primary,accent){
-  const r=document.documentElement;
-  r.style.setProperty('--user-primary',primary);r.style.setProperty('--user-accent',accent);
-  r.style.setProperty('--navy',primary);r.style.setProperty('--gold',accent);r.style.setProperty('--gold-bright',accent);
-  r.style.setProperty('--user-primary-soft',primary+'14');
-}
-
-function initMonthYearSelects(){
-  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const now=new Date();
-  const mSel=document.getElementById('monthSelect');
-  const ySel=document.getElementById('yearSelect');
-  const yS=document.getElementById('yearSummarySelect');
-  months.forEach((m,i)=>{mSel.innerHTML+=`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`});
-  for(let y=now.getFullYear();y>=now.getFullYear()-5;y--){
-    ySel.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
-    yS.innerHTML+=`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`;
-  }
-}
-
-async function loadQuotesForPicker(){
-  try{
-    const{data}=await sb.from('quotes').select('id,client_name,event_date,total,quote_data').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
-    if(data&&data.length){
-      const sel=document.getElementById('quoteSelect');
-      data.forEach(q=>{
-        const d=q.event_date?new Date(q.event_date+'T00:00').toLocaleDateString():'';
-        sel.innerHTML+=`<option value="${q.id}" data-total="${q.total}" data-name="${(q.client_name||'').replace(/"/g,'&quot;')}" data-date="${q.event_date||''}">${q.client_name||'—'} · ${d} · ${currencySymbol}${parseFloat(q.total).toFixed(0)}</option>`;
-      });
-      document.getElementById('quotePicker').style.display='block';
+    if (profile && profile.full_name) {
+      updateUserChip(profile.full_name);
+    } else {
+      updateUserChip(currentUser.email.split('@')[0]);
     }
-  }catch(e){}
-}
 
-function loadFromQuote(){
-  const sel=document.getElementById('quoteSelect');
-  const opt=sel.options[sel.selectedIndex];
-  if(!opt.value){return}
-  document.getElementById('evName').value=opt.dataset.name;
-  document.getElementById('evDate').value=opt.dataset.date;
-  document.getElementById('evRevenue').value=opt.dataset.total;
-  calcEvent();
-  showToast('✓ Loaded from quote');
-}
+    // Show welcome banner if first-time (no business name set)
+    const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
+    if (!hasBusinessName) {
+      $('welcomeBanner').classList.add('show');
+    }
 
-function setMode(m){
-  currentMode=m;
-  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
-  document.getElementById('panel'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
-  if(m==='monthly')loadMonth();
-  if(m==='year')loadYear();
-}
+    // Reveal page
+    $('authGate').style.display = 'none';
+    $('topnav').style.display = 'block';
+    $('profileMain').style.display = 'block';
 
-function addLabor(desc='',hours='',rate='25'){
-  const div=document.createElement('div');
-  div.className='smart-row';
-  div.innerHTML=`<input type="text" placeholder="Role / Helper" value="${desc}" oninput="calcEvent()"/>
-    <input type="number" placeholder="Hours" value="${hours}" step="0.25" min="0" oninput="updateLaborTotal(this);calcEvent()"/>
-    <input type="number" placeholder="$/hr" value="${rate}" step="0.50" min="0" oninput="updateLaborTotal(this);calcEvent()"/>
-    <div class="smart-total">${currencySymbol}0.00</div>
-    <button class="btn-remove" onclick="this.parentNode.remove();calcEvent()">×</button>`;
-  document.getElementById('laborList').appendChild(div);
-  updateLaborTotal(div.querySelector('input[type="number"]'));
-}
-function updateLaborTotal(el){
-  const row=el.closest('.smart-row');
-  const inputs=row.querySelectorAll('input[type="number"]');
-  const total=(parseFloat(inputs[0].value)||0)*(parseFloat(inputs[1].value)||0);
-  row.querySelector('.smart-total').textContent=currencySymbol+total.toFixed(2);
-}
-function getLaborTotal(){
-  let total=0;const items=[];
-  document.querySelectorAll('#laborList .smart-row').forEach(r=>{
-    const desc=r.querySelector('input[type="text"]').value;
-    const inputs=r.querySelectorAll('input[type="number"]');
-    const hours=parseFloat(inputs[0].value)||0;
-    const rate=parseFloat(inputs[1].value)||0;
-    const amt=hours*rate;
-    total+=amt;
-    if(amt>0)items.push({desc:(desc||'Labor')+' ('+hours+'hr × '+currencySymbol+rate.toFixed(2)+')',cat:'Labor',amt});
-  });
-  return{total,items};
-}
-
-function addTravel(desc='',miles=''){
-  const div=document.createElement('div');
-  div.className='smart-row';
-  div.innerHTML=`<input type="text" placeholder="Destination / Purpose" value="${desc}" oninput="calcEvent()"/>
-    <input type="number" placeholder="Miles" value="${miles}" step="0.1" min="0" oninput="updateTravelTotal(this);calcEvent()"/>
-    <div style="font-size:.75rem;color:var(--slate-600);padding:.5rem;background:#fff;border-radius:6px;text-align:center">× $${IRS_MILEAGE_RATE}/mi</div>
-    <div class="smart-total">${currencySymbol}0.00</div>
-    <button class="btn-remove" onclick="this.parentNode.remove();calcEvent()">×</button>`;
-  document.getElementById('travelList').appendChild(div);
-  updateTravelTotal(div.querySelector('input[type="number"]'));
-}
-function updateTravelTotal(el){
-  const row=el.closest('.smart-row');
-  const miles=parseFloat(row.querySelector('input[type="number"]').value)||0;
-  const total=miles*IRS_MILEAGE_RATE;
-  row.querySelector('.smart-total').textContent=currencySymbol+total.toFixed(2);
-}
-function getTravelTotal(){
-  let total=0;const items=[];
-  document.querySelectorAll('#travelList .smart-row').forEach(r=>{
-    const desc=r.querySelector('input[type="text"]').value;
-    const miles=parseFloat(r.querySelector('input[type="number"]').value)||0;
-    const amt=miles*IRS_MILEAGE_RATE;
-    total+=amt;
-    if(amt>0)items.push({desc:(desc||'Travel')+' ('+miles+' mi × $'+IRS_MILEAGE_RATE+')',cat:'Travel/Mileage',amt});
-  });
-  return{total,items};
-}
-
-function addExpense(name='',cat='Supplies',amt=''){
-  const div=document.createElement('div');
-  div.className='expense-row';
-  div.innerHTML=`<input type="text" placeholder="Description" value="${name}" oninput="calcEvent()"/>
-    <select oninput="calcEvent()">${EXPENSE_CATEGORIES.map(c=>`<option ${c===cat?'selected':''}>${c}</option>`).join('')}</select>
-    <input type="number" placeholder="0.00" step="0.01" value="${amt}" oninput="calcEvent()"/>
-    <button class="btn-remove" onclick="this.parentNode.remove();calcEvent()">×</button>`;
-  document.getElementById('expensesList').appendChild(div);
-}
-
-function getOtherExpenses(){
-  const list=[];
-  document.querySelectorAll('#expensesList .expense-row').forEach(r=>{
-    const inputs=r.querySelectorAll('input');
-    const sel=r.querySelector('select');
-    const amt=parseFloat(inputs[1].value)||0;
-    if(amt>0||inputs[0].value)list.push({desc:inputs[0].value,cat:sel.value,amt});
-  });
-  return list;
-}
-
-function calcEvent(){
-  const revenue=parseFloat(document.getElementById('evRevenue').value)||0;
-  const targetMargin=parseFloat(document.getElementById('evTargetMargin').value)||0;
-  const labor=getLaborTotal();
-  const travel=getTravelTotal();
-  const otherExp=getOtherExpenses();
-  const otherTotal=otherExp.reduce((s,e)=>s+e.amt,0);
-  const allExpenses=[...labor.items,...travel.items,...otherExp];
-  const totalExp=labor.total+travel.total+otherTotal;
-  const profit=revenue-totalExp;
-  const margin=revenue>0?(profit/revenue*100):0;
-  const taxEst=profit>0?profit*0.25:0;
-  const afterTax=profit-taxEst;
-  const suggestedPrice=targetMargin<100&&totalExp>0?(totalExp/(1-targetMargin/100)):0;
-
-  const byCat={};
-  allExpenses.forEach(e=>{byCat[e.cat]=(byCat[e.cat]||0)+e.amt});
-
-  const c=currencySymbol;
-  let html=`<h3>💰 Profit Breakdown</h3>
-    <div class="result-row"><span>Revenue (what client paid)</span><span>${c}${revenue.toFixed(2)}</span></div>`;
-  Object.entries(byCat).forEach(([k,v])=>{
-    html+=`<div class="result-row expense"><span>— ${k}</span><span>(${c}${v.toFixed(2)})</span></div>`;
-  });
-  html+=`<div class="result-row"><span><strong>Total Expenses</strong></span><span><strong>(${c}${totalExp.toFixed(2)})</strong></span></div>
-    <div class="result-row grand ${profit<0?'loss':''}"><span>Gross Profit</span><span>${c}${profit.toFixed(2)}</span></div>
-    <div class="result-row expense"><span>Est. tax (25%)</span><span>(${c}${taxEst.toFixed(2)})</span></div>
-    <div class="result-row grand ${afterTax<0?'loss':''}"><span>Net After Tax</span><span>${c}${afterTax.toFixed(2)}</span></div>`;
-
-  let marginClass='danger';
-  let marginMsg='⚠️ Below target';
-  if(revenue>0){
-    if(margin>=targetMargin){marginClass='success';marginMsg='✓ Hitting target';}
-    else if(margin>=targetMargin-10){marginClass='warning';marginMsg='⚠ Close to target';}
+    // Attach live listeners for preview
+    setupLivePreview();
+  } catch (e) {
+    console.error('Auth error:', e);
+    window.location.href = 'login.html';
   }
-  html+=`<div class="result-row margin ${marginClass}"><span>${marginMsg} — Margin: <strong>${margin.toFixed(1)}%</strong></span><span>Target: ${targetMargin}%</span></div>`;
+}
 
-  if(suggestedPrice>0&&Math.abs(revenue-suggestedPrice)>1){
-    html+=`<div class="result-row margin success"><span>💡 To hit ${targetMargin}% margin, charge:</span><span><strong>${c}${suggestedPrice.toFixed(2)}</strong></span></div>`;
+function populateFromProfile(pd) {
+  if (pd.businessName) $('businessName').value = pd.businessName;
+  if (pd.brandColor) {
+    $('brandColor').value = pd.brandColor;
+    applyBrandColor(pd.brandColor);
+  }
+  if (pd.businessEmail) $('businessEmail').value = pd.businessEmail;
+  if (pd.businessPhone) $('businessPhone').value = pd.businessPhone;
+  if (pd.businessAddress) $('businessAddress').value = pd.businessAddress;
+  if (pd.stripe100) $('stripe100').value = pd.stripe100;
+  if (pd.stripe250) $('stripe250').value = pd.stripe250;
+  if (pd.stripe500) $('stripe500').value = pd.stripe500;
+  if (pd.stripe1000) $('stripe1000').value = pd.stripe1000;
+  if (pd.depositProfile) $('depositProfile').value = pd.depositProfile;
+  if (pd.taxMode) $('taxMode').value = pd.taxMode;
+  if (pd.taxRate) $('taxRate').value = pd.taxRate;
+  if (pd.taxLabel) $('taxLabel').value = pd.taxLabel;
+  if (pd.currency) $('currency').value = pd.currency;
+  if (pd.logoDataURL) {
+    savedLogoDataURL = pd.logoDataURL;
+    setLogoPreview(pd.logoDataURL);
+  }
+  updateLogoHint();
+}
+
+function updateUserChip(name) {
+  $('userChipText').textContent = name;
+  $('userAvatar').textContent = name.charAt(0).toUpperCase();
+}
+
+function setLogoPreview(dataURL) {
+  $('logoPreview').innerHTML = `<img src="${dataURL}" alt="Your logo"/>`;
+}
+
+function updateLogoHint() {
+  const bn = $('businessName').value.trim();
+  $('logoHintName').textContent = bn || 'Your Business Name';
+  if (!savedLogoDataURL) {
+    $('logoFallback').textContent = (bn || 'P').charAt(0).toUpperCase();
+  }
+}
+
+function applyBrandColor(color) {
+  document.documentElement.style.setProperty('--user-primary', color);
+  // Compute a lighter version for the gradient preview
+  document.documentElement.style.setProperty('--user-primary-light', lightenColor(color, 20));
+}
+
+// Helper: lighten a hex color by % amount
+function lightenColor(hex, percent) {
+  hex = hex.replace('#','');
+  const num = parseInt(hex, 16);
+  let r = (num >> 16) + Math.round(255 * percent / 100);
+  let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent / 100);
+  let b = (num & 0x0000FF) + Math.round(255 * percent / 100);
+  r = Math.min(255, r); g = Math.min(255, g); b = Math.min(255, b);
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+
+function setupLivePreview() {
+  $('businessName').addEventListener('input', updateLogoHint);
+  $('brandColor').addEventListener('input', (e) => applyBrandColor(e.target.value));
+  $('logoUpload').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      savedLogoDataURL = ev.target.result;
+      setLogoPreview(savedLogoDataURL);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+// ── SAVE ──
+async function saveProfile(attempt = 1) {
+  const MAX_ATTEMPTS = 3;
+  const businessName = $('businessName').value.trim();
+
+  if (!businessName) {
+    toast('Business name is required', 'error');
+    $('businessName').focus();
+    return;
   }
 
-  document.getElementById('eventResults').innerHTML=html;
-}
+  $('saveBtn').disabled = true;
+  $('saveBtn').textContent = 'Saving...';
+  $('saveStatus').textContent = 'Saving to your secure cloud...';
 
-function clearEvent(){
-  if(!confirm('Clear this event?'))return;
-  ['evName','evDate','evRevenue'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('laborList').innerHTML='';
-  document.getElementById('travelList').innerHTML='';
-  document.getElementById('expensesList').innerHTML='';
-  addExpense();
-  document.getElementById('eventResults').innerHTML='';
-}
+  if (attempt > 1) {
+    await new Promise(r => setTimeout(r, 600));
+  }
 
-async function saveEventRecord(){
-  const name=document.getElementById('evName').value.trim();
-  const date=document.getElementById('evDate').value;
-  const revenue=parseFloat(document.getElementById('evRevenue').value)||0;
-  if(!name||!date||revenue<=0){alert('Fill in Event Name, Date, and Revenue first.');return}
-  const labor=getLaborTotal();
-  const travel=getTravelTotal();
-  const other=getOtherExpenses();
-  const allExp=[...labor.items,...travel.items,...other];
-  const payload={
-    user_id:currentUser.id,record_type:'event',record_date:date,title:name,revenue,
-    expenses_json:allExp,total_expenses:allExp.reduce((s,e)=>s+e.amt,0)
+  const pd = {
+    businessName: businessName,
+    brandColor: $('brandColor').value,
+    logoDataURL: savedLogoDataURL || null,
+    businessEmail: $('businessEmail').value.trim(),
+    businessPhone: $('businessPhone').value.trim(),
+    businessAddress: $('businessAddress').value.trim(),
+    stripe100: $('stripe100').value.trim(),
+    stripe250: $('stripe250').value.trim(),
+    stripe500: $('stripe500').value.trim(),
+    stripe1000: $('stripe1000').value.trim(),
+    depositProfile: $('depositProfile').value,
+    taxMode: $('taxMode').value,
+    taxRate: $('taxRate').value,
+    taxLabel: $('taxLabel').value,
+    currency: $('currency').value
   };
-  try{
-    const{error}=await sb.from('profit_records').insert(payload);
-    if(error)throw error;
-    showToast('✓ Saved to My Books');
-  }catch(e){alert('Save failed: '+e.message)}
-}
 
-let currentMonthRecord=null;
-function addIncome(desc='',source='Event Booking',amt=''){
-  const div=document.createElement('div');
-  div.className='expense-row';
-  div.innerHTML=`<input type="text" placeholder="Description" value="${desc}" oninput="recalcMonth()"/>
-    <select oninput="recalcMonth()">
-      <option ${source==='Event Booking'?'selected':''}>Event Booking</option>
-      <option ${source==='Rental'?'selected':''}>Rental</option>
-      <option ${source==='Deposit'?'selected':''}>Deposit</option>
-      <option ${source==='Final Payment'?'selected':''}>Final Payment</option>
-      <option ${source==='Other'?'selected':''}>Other</option>
-    </select>
-    <input type="number" placeholder="0.00" step="0.01" value="${amt}" oninput="recalcMonth()"/>
-    <button class="btn-remove" onclick="this.parentNode.remove();recalcMonth()">×</button>`;
-  document.getElementById('incomeList').appendChild(div);
-}
-function addMonthlyExpense(desc='',cat='Supplies',amt=''){
-  const div=document.createElement('div');
-  div.className='expense-row';
-  const cats=['Supplies','Labor','Travel/Mileage','Rentals','Fees','Marketing','Food/Catering','Insurance','Subscriptions','Other'];
-  div.innerHTML=`<input type="text" placeholder="Description" value="${desc}" oninput="recalcMonth()"/>
-    <select oninput="recalcMonth()">${cats.map(c=>`<option ${c===cat?'selected':''}>${c}</option>`).join('')}</select>
-    <input type="number" placeholder="0.00" step="0.01" value="${amt}" oninput="recalcMonth()"/>
-    <button class="btn-remove" onclick="this.parentNode.remove();recalcMonth()">×</button>`;
-  document.getElementById('monthlyExpensesList').appendChild(div);
-}
-function getMonthEntries(selector){
-  const list=[];
-  document.querySelectorAll(selector+' .expense-row').forEach(r=>{
-    const inputs=r.querySelectorAll('input');
-    const sel=r.querySelector('select');
-    const amt=parseFloat(inputs[1].value)||0;
-    if(amt>0||inputs[0].value)list.push({desc:inputs[0].value,cat:sel.value,amt});
+  const { error } = await sb.from('profiles').upsert({
+    id: currentUser.id,
+    email: currentUser.email,
+    full_name: businessName,
+    profile_data: pd
   });
-  return list;
-}
-function recalcMonth(){
-  const income=getMonthEntries('#incomeList');
-  const expenses=getMonthEntries('#monthlyExpensesList');
-  const totalIn=income.reduce((s,e)=>s+e.amt,0);
-  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
-  const profit=totalIn-totalOut;
-  const taxEst=profit>0?profit*0.25:0;
-  const c=currencySymbol;
-  document.getElementById('monthSummary').innerHTML=`
-    <div class="summary-card"><div class="summary-label">Total Income</div><div class="summary-value profit">${c}${totalIn.toFixed(2)}</div></div>
-    <div class="summary-card"><div class="summary-label">Total Expenses</div><div class="summary-value loss">${c}${totalOut.toFixed(2)}</div></div>
-    <div class="summary-card"><div class="summary-label">Net Profit</div><div class="summary-value ${profit<0?'loss':'profit'}">${c}${profit.toFixed(2)}</div></div>
-    <div class="summary-card"><div class="summary-label">Est. Tax (25%)</div><div class="summary-value">${c}${taxEst.toFixed(2)}</div></div>`;
-}
-async function loadMonth(){
-  const month=parseInt(document.getElementById('monthSelect').value);
-  const year=parseInt(document.getElementById('yearSelect').value);
-  document.getElementById('incomeList').innerHTML='';
-  document.getElementById('monthlyExpensesList').innerHTML='';
-  try{
-    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','monthly').eq('record_month',month).eq('record_year',year).single();
-    if(data){
-      currentMonthRecord=data;
-      (data.income_json||[]).forEach(i=>addIncome(i.desc,i.cat,i.amt));
-      (data.expenses_json||[]).forEach(e=>addMonthlyExpense(e.desc,e.cat,e.amt));
-    }else{currentMonthRecord=null}
-  }catch(e){currentMonthRecord=null}
-  if(!document.querySelectorAll('#incomeList .expense-row').length)addIncome();
-  if(!document.querySelectorAll('#monthlyExpensesList .expense-row').length)addMonthlyExpense();
-  recalcMonth();
-}
-async function saveMonth(){
-  const month=parseInt(document.getElementById('monthSelect').value);
-  const year=parseInt(document.getElementById('yearSelect').value);
-  const income=getMonthEntries('#incomeList');
-  const expenses=getMonthEntries('#monthlyExpensesList');
-  const totalIn=income.reduce((s,e)=>s+e.amt,0);
-  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
-  const payload={
-    user_id:currentUser.id,record_type:'monthly',record_month:month,record_year:year,
-    record_date:`${year}-${String(month).padStart(2,'0')}-01`,
-    title:`${year}-${String(month).padStart(2,'0')}`,revenue:totalIn,total_expenses:totalOut,
-    income_json:income,expenses_json:expenses
-  };
-  try{
-    if(currentMonthRecord){
-      const{error}=await sb.from('profit_records').update(payload).eq('id',currentMonthRecord.id);
-      if(error)throw error;
-    }else{
-      const{data,error}=await sb.from('profit_records').insert(payload).select().single();
-      if(error)throw error;
-      currentMonthRecord=data;
+
+  if (error) {
+    console.error(`Save attempt ${attempt} failed:`, error);
+    if (attempt < MAX_ATTEMPTS) {
+      return saveProfile(attempt + 1);
     }
-    showToast('✓ Month saved');
-  }catch(e){alert('Save error: '+e.message)}
+    $('saveBtn').disabled = false;
+    $('saveBtn').textContent = 'Save & Continue to Quote Builder →';
+    $('saveStatus').textContent = 'Save failed. Please try again.';
+    toast('Could not save. Try again or email monica@partybusinesscoach.com.', 'error');
+    return;
+  }
+
+  // Success
+  toast('✓ Business profile saved', 'success');
+  updateUserChip(businessName);
+  $('welcomeBanner').classList.remove('show');
+
+  // Continue to app.html after brief success pause
+  setTimeout(() => {
+    window.location.href = 'app.html';
+  }, 900);
 }
 
-async function loadYear(){
-  const year=parseInt(document.getElementById('yearSummarySelect').value);
-  try{
-    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_year',year);
-    renderYear(data||[],year);
-  }catch(e){renderYear([],year)}
+// ── USER MENU ──
+function toggleUserMenu(e) {
+  if (e) e.stopPropagation();
+  $('userMenu').classList.toggle('open');
 }
-function renderYear(records,year){
-  const c=currencySymbol;
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let totalRev=0,totalExp=0;
-  const monthlyData=Array(12).fill(null).map(()=>({rev:0,exp:0}));
-  records.forEach(r=>{
-    if(r.record_type==='monthly'&&r.record_month){
-      monthlyData[r.record_month-1].rev+=parseFloat(r.revenue)||0;
-      monthlyData[r.record_month-1].exp+=parseFloat(r.total_expenses)||0;
-    }else if(r.record_type==='event'&&r.record_date){
-      const m=new Date(r.record_date+'T00:00').getMonth();
-      monthlyData[m].rev+=parseFloat(r.revenue)||0;
-      monthlyData[m].exp+=parseFloat(r.total_expenses)||0;
-    }
-    totalRev+=parseFloat(r.revenue)||0;
-    totalExp+=parseFloat(r.total_expenses)||0;
-  });
-  const profit=totalRev-totalExp;
-  const tax=profit>0?profit*0.25:0;
-  document.getElementById('yearSummary').innerHTML=`
-    <div class="summary-card"><div class="summary-label">${year} Total Revenue</div><div class="summary-value profit">${c}${totalRev.toFixed(2)}</div></div>
-    <div class="summary-card"><div class="summary-label">${year} Expenses</div><div class="summary-value loss">${c}${totalExp.toFixed(2)}</div></div>
-    <div class="summary-card"><div class="summary-label">${year} Net Profit</div><div class="summary-value ${profit<0?'loss':'profit'}">${c}${profit.toFixed(2)}</div></div>
-    <div class="summary-card"><div class="summary-label">Est. Tax Set-Aside</div><div class="summary-value">${c}${tax.toFixed(2)}</div></div>`;
-  let rows='';
-  monthlyData.forEach((m,i)=>{
-    const p=m.rev-m.exp;
-    rows+=`<tr><td>${months[i]}</td><td>${c}${m.rev.toFixed(2)}</td><td>${c}${m.exp.toFixed(2)}</td><td style="color:${p<0?'var(--danger)':'var(--success)'};font-weight:700">${c}${p.toFixed(2)}</td></tr>`;
-  });
-  document.getElementById('yearBreakdown').innerHTML=`
-    <table class="year-table">
-      <thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Profit</th></tr></thead>
-      <tbody>${rows}</tbody>
-      <tfoot><tr><td>TOTAL ${year}</td><td>${c}${totalRev.toFixed(2)}</td><td>${c}${totalExp.toFixed(2)}</td><td>${c}${profit.toFixed(2)}</td></tr></tfoot>
-    </table>`;
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#userChip') && !e.target.closest('#userMenu')) {
+    $('userMenu').classList.remove('open');
+  }
+});
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
 }
 
-function downloadEventPDF(){
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'pt',format:'letter'});
-  const name=document.getElementById('evName').value||'Event';
-  const revenue=parseFloat(document.getElementById('evRevenue').value)||0;
-  const labor=getLaborTotal();const travel=getTravelTotal();const other=getOtherExpenses();
-  const allExp=[...labor.items,...travel.items,...other];
-  const totalExp=allExp.reduce((s,e)=>s+e.amt,0);
-  const profit=revenue-totalExp;
-  const c=currencySymbol;
-  doc.setFillColor(13,27,62);doc.rect(0,0,612,40,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text('Event Profit Report',40,26);
-  doc.setTextColor(40,40,40);doc.setFontSize(16);
-  doc.text(name,40,80);doc.setFontSize(10);doc.setFont('helvetica','normal');
-  doc.text('Date: '+(document.getElementById('evDate').value||'—'),40,100);
-  let y=130;
-  doc.setFont('helvetica','bold');doc.text('Revenue:',40,y);doc.text(c+revenue.toFixed(2),500,y,{align:'right'});y+=20;
-  doc.setFont('helvetica','normal');doc.text('Expenses:',40,y);y+=16;
-  allExp.forEach(e=>{doc.text('  '+e.desc,50,y);doc.text(c+e.amt.toFixed(2),500,y,{align:'right'});y+=14;if(y>720){doc.addPage();y=60}});
-  y+=6;doc.setDrawColor(201,168,76);doc.line(40,y,560,y);y+=16;
-  doc.setFont('helvetica','bold');doc.text('Total Expenses:',40,y);doc.text(c+totalExp.toFixed(2),500,y,{align:'right'});y+=20;
-  doc.setFontSize(13);doc.setTextColor(13,27,62);doc.text('NET PROFIT:',40,y);doc.text(c+profit.toFixed(2),500,y,{align:'right'});
-  doc.save('ProfitReport_'+name.replace(/\s+/g,'_')+'.pdf');
-}
-
-function downloadMonthPDF(){
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'pt',format:'letter'});
-  const month=document.getElementById('monthSelect').options[document.getElementById('monthSelect').selectedIndex].text;
-  const year=document.getElementById('yearSelect').value;
-  const income=getMonthEntries('#incomeList');
-  const expenses=getMonthEntries('#monthlyExpensesList');
-  const totalIn=income.reduce((s,e)=>s+e.amt,0);
-  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
-  const c=currencySymbol;
-  doc.setFillColor(13,27,62);doc.rect(0,0,612,40,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text('Monthly Bookkeeping Report',40,26);
-  doc.setTextColor(40,40,40);doc.setFontSize(16);doc.text(month+' '+year,40,80);
-  let y=120;doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text('INCOME',40,y);y+=18;
-  doc.setFont('helvetica','normal');doc.setFontSize(10);
-  income.forEach(i=>{doc.text(i.desc+' ('+i.cat+')',40,y);doc.text(c+i.amt.toFixed(2),500,y,{align:'right'});y+=14});
-  y+=6;doc.setFont('helvetica','bold');doc.text('Total Income:',40,y);doc.text(c+totalIn.toFixed(2),500,y,{align:'right'});y+=24;
-  doc.text('EXPENSES',40,y);y+=18;doc.setFont('helvetica','normal');
-  expenses.forEach(e=>{doc.text(e.desc+' ('+e.cat+')',40,y);doc.text(c+e.amt.toFixed(2),500,y,{align:'right'});y+=14;if(y>720){doc.addPage();y=60}});
-  y+=6;doc.setFont('helvetica','bold');doc.text('Total Expenses:',40,y);doc.text(c+totalOut.toFixed(2),500,y,{align:'right'});y+=20;
-  doc.setFontSize(13);doc.setTextColor(13,27,62);doc.text('NET PROFIT:',40,y);doc.text(c+(totalIn-totalOut).toFixed(2),500,y,{align:'right'});
-  doc.save('Bookkeeping_'+month+'_'+year+'.pdf');
-}
-
-function downloadYearPDF(){
-  const{jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'pt',format:'letter'});
-  const year=document.getElementById('yearSummarySelect').value;
-  doc.setFillColor(13,27,62);doc.rect(0,0,612,40,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text('Year-End Summary '+year,40,26);
-  doc.setTextColor(40,40,40);doc.setFontSize(11);
-  const tbl=document.querySelector('.year-table');
-  if(!tbl){doc.text('No data',40,80);doc.save('YearSummary_'+year+'.pdf');return}
-  let y=80;doc.text('For accountant / tax prep',40,y);y+=26;
-  doc.setFont('helvetica','bold');doc.text('Month',40,y);doc.text('Revenue',250,y);doc.text('Expenses',380,y);doc.text('Profit',510,y);y+=14;
-  doc.setDrawColor(201,168,76);doc.line(40,y-8,560,y-8);
-  doc.setFont('helvetica','normal');
-  tbl.querySelectorAll('tbody tr').forEach(r=>{
-    const cells=r.querySelectorAll('td');
-    doc.text(cells[0].textContent,40,y);doc.text(cells[1].textContent,250,y);doc.text(cells[2].textContent,380,y);doc.text(cells[3].textContent,510,y);y+=14;
-  });
-  y+=4;doc.setDrawColor(201,168,76);doc.line(40,y-2,560,y-2);y+=14;
-  const foot=tbl.querySelector('tfoot tr').querySelectorAll('td');
-  doc.setFont('helvetica','bold');
-  doc.text(foot[0].textContent,40,y);doc.text(foot[1].textContent,250,y);doc.text(foot[2].textContent,380,y);doc.text(foot[3].textContent,510,y);
-  doc.save('YearSummary_'+year+'.pdf');
-}
-
-function downloadYearCSV(){
-  const year=document.getElementById('yearSummarySelect').value;
-  const tbl=document.querySelector('.year-table');
-  if(!tbl)return;
-  let csv='Month,Revenue,Expenses,Profit\n';
-  tbl.querySelectorAll('tbody tr').forEach(r=>{
-    const cells=r.querySelectorAll('td');
-    csv+=[cells[0],cells[1],cells[2],cells[3]].map(c=>c.textContent.replace(currencySymbol,'').replace(/,/g,'')).join(',')+'\n';
-  });
-  const foot=tbl.querySelector('tfoot tr').querySelectorAll('td');
-  csv+=[foot[0],foot[1],foot[2],foot[3]].map(c=>c.textContent.replace(currencySymbol,'').replace(/,/g,'')).join(',')+'\n';
-  const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='YearSummary_'+year+'.csv';a.click();
-}
-
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-async function handleLogout(){await sb.auth.signOut();window.location.href='login.html'}
-init();
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  applyBrandColor('#6A417E');
+  checkAuth();
+});
 </script>
+
 </body>
 </html>
