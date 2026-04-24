@@ -650,8 +650,16 @@ function recalcMonth(){
 let currentMonthEvents=[];
 
 async function loadMonth(){
-  const month=parseInt(document.getElementById('monthSelect').value);
-  const year=parseInt(document.getElementById('yearSelect').value);
+  let month=parseInt(document.getElementById('monthSelect').value);
+  let year=parseInt(document.getElementById('yearSelect').value);
+
+  // Guard against NaN (happens if dropdowns haven't fully populated yet)
+  if(isNaN(month)||isNaN(year)){
+    const now=new Date();
+    month=isNaN(month)?now.getMonth()+1:month;
+    year=isNaN(year)?now.getFullYear():year;
+    console.log('loadMonth: dropdowns not ready, using current date fallback',{month,year});
+  }
   document.getElementById('incomeList').innerHTML='';
   document.getElementById('monthlyExpensesList').innerHTML='';
   currentMonthEvents=[];
@@ -742,11 +750,17 @@ async function saveMonth(){
 }
 
 async function loadYear(){
-  const year=parseInt(document.getElementById('yearSummarySelect').value);
+  let year=parseInt(document.getElementById('yearSummarySelect').value);
+  if(isNaN(year))year=new Date().getFullYear();
+
   try{
-    const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_year',year);
+    // Query using date range so it works for both monthly AND event records
+    const firstDay=`${year}-01-01`;
+    const firstDayNextYear=`${year+1}-01-01`;
+    const{data,error}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).gte('record_date',firstDay).lt('record_date',firstDayNextYear);
+    if(error)console.error('Year load error:',error);
     renderYear(data||[],year);
-  }catch(e){renderYear([],year)}
+  }catch(e){console.error('Year load exception:',e);renderYear([],year)}
 }
 function renderYear(records,year){
   const c=currencySymbol;
