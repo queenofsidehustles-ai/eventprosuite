@@ -264,10 +264,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
     <select id="yearSelect" onchange="loadMonth()"></select>
   </div>
   <div class="summary-grid" id="monthSummary"></div>
-  <div class="section-title">Income This Month</div>
+
+  <!-- AUTO-POPULATED: per-event records saved this month -->
+  <div id="monthEventsBlock" style="display:none">
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>📅 Events Saved This Month <span style="color:var(--muted);font-weight:500;font-size:.8em">(auto from Per Event tab)</span></span>
+      <span id="monthEventsCount" class="section-count" style="background:var(--tool-accent-soft);color:var(--tool-accent-deep);padding:.3rem .7rem;border-radius:50px;font-size:.7rem;font-weight:700">0 events</span>
+    </div>
+    <div id="monthEventsList"></div>
+    <div style="font-size:.78rem;color:var(--muted);margin:.4rem 0 1rem;padding:.6rem .8rem;background:var(--cream);border-radius:10px;border-left:3px solid var(--gold)">💡 These events are already counted in your totals. Add income/expenses below ONLY for items NOT tied to a specific event (rentals, subscriptions, etc).</div>
+  </div>
+
+  <div class="section-title">Other Income This Month</div>
   <div id="incomeList"></div>
   <button class="btn-add-row" onclick="addIncome()">+ Add Income Entry</button>
-  <div class="section-title">Expenses This Month</div>
+  <div class="section-title">Other Expenses This Month</div>
   <div id="monthlyExpensesList"></div>
   <button class="btn-add-row" onclick="addMonthlyExpense()">+ Add Expense</button>
   <div class="btn-row">
@@ -564,7 +575,15 @@ async function saveEventRecord(){
   try{
     const{error}=await sb.from('profit_records').insert(payload);
     if(error)throw error;
-    showToast('✓ Saved to My Books');
+    const eventMonth=new Date(date+'T00:00').toLocaleString('default',{month:'long',year:'numeric'});
+    showToast(`✓ Saved · Now counted in ${eventMonth} books`);
+    // Refresh Monthly view if user is viewing the same month
+    const viewingMonth=parseInt(document.getElementById('monthSelect').value);
+    const viewingYear=parseInt(document.getElementById('yearSelect').value);
+    const d=new Date(date+'T00:00');
+    if(d.getMonth()+1===viewingMonth && d.getFullYear()===viewingYear){
+      loadMonth();
+    }
   }catch(e){alert('Save failed: '+e.message)}
 }
 
@@ -607,22 +626,37 @@ function getMonthEntries(selector){
 function recalcMonth(){
   const income=getMonthEntries('#incomeList');
   const expenses=getMonthEntries('#monthlyExpensesList');
-  const totalIn=income.reduce((s,e)=>s+e.amt,0);
-  const totalOut=expenses.reduce((s,e)=>s+e.amt,0);
+  const manualIn=income.reduce((s,e)=>s+e.amt,0);
+  const manualOut=expenses.reduce((s,e)=>s+e.amt,0);
+
+  // Add per-event revenue and expenses auto-pulled from Per Event tab
+  const eventIn=currentMonthEvents.reduce((s,ev)=>s+(parseFloat(ev.revenue)||0),0);
+  const eventOut=currentMonthEvents.reduce((s,ev)=>s+(parseFloat(ev.total_expenses)||0),0);
+
+  const totalIn=manualIn+eventIn;
+  const totalOut=manualOut+eventOut;
   const profit=totalIn-totalOut;
   const taxEst=profit>0?profit*0.25:0;
   const c=currencySymbol;
+
+  const eventsHint=currentMonthEvents.length?`<div style="font-size:.68rem;color:var(--muted);margin-top:.3rem;font-weight:500">incl. ${c}${eventIn.toFixed(0)} from ${currentMonthEvents.length} event${currentMonthEvents.length>1?'s':''}</div>`:'';
+
   document.getElementById('monthSummary').innerHTML=`
-    <div class="summary-card"><div class="summary-label">Total Income</div><div class="summary-value profit">${c}${totalIn.toFixed(2)}</div></div>
+    <div class="summary-card"><div class="summary-label">Total Income</div><div class="summary-value profit">${c}${totalIn.toFixed(2)}</div>${eventsHint}</div>
     <div class="summary-card"><div class="summary-label">Total Expenses</div><div class="summary-value loss">${c}${totalOut.toFixed(2)}</div></div>
     <div class="summary-card"><div class="summary-label">Net Profit</div><div class="summary-value ${profit<0?'loss':'profit'}">${c}${profit.toFixed(2)}</div></div>
     <div class="summary-card"><div class="summary-label">Est. Tax (25%)</div><div class="summary-value">${c}${taxEst.toFixed(2)}</div></div>`;
 }
+let currentMonthEvents=[];
+
 async function loadMonth(){
   const month=parseInt(document.getElementById('monthSelect').value);
   const year=parseInt(document.getElementById('yearSelect').value);
   document.getElementById('incomeList').innerHTML='';
   document.getElementById('monthlyExpensesList').innerHTML='';
+  currentMonthEvents=[];
+
+  // Load the manually-entered monthly record
   try{
     const{data}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','monthly').eq('record_month',month).eq('record_year',year).single();
     if(data){
@@ -631,9 +665,48 @@ async function loadMonth(){
       (data.expenses_json||[]).forEach(e=>addMonthlyExpense(e.desc,e.cat,e.amt));
     }else{currentMonthRecord=null}
   }catch(e){currentMonthRecord=null}
+
+  // Load all per-event records whose record_date falls within this month/year
+  try{
+    const firstDay=`${year}-${String(month).padStart(2,'0')}-01`;
+    const lastDay=`${year}-${String(month).padStart(2,'0')}-31`;
+    const{data:events}=await sb.from('profit_records').select('*').eq('user_id',currentUser.id).eq('record_type','event').gte('record_date',firstDay).lte('record_date',lastDay).order('record_date',{ascending:true});
+    currentMonthEvents=events||[];
+  }catch(e){currentMonthEvents=[]}
+
+  renderMonthEvents();
+
   if(!document.querySelectorAll('#incomeList .expense-row').length)addIncome();
   if(!document.querySelectorAll('#monthlyExpensesList .expense-row').length)addMonthlyExpense();
   recalcMonth();
+}
+
+function renderMonthEvents(){
+  const block=document.getElementById('monthEventsBlock');
+  const list=document.getElementById('monthEventsList');
+  const countEl=document.getElementById('monthEventsCount');
+  const c=currencySymbol;
+
+  if(!currentMonthEvents.length){
+    block.style.display='none';
+    return;
+  }
+
+  block.style.display='block';
+  countEl.textContent=currentMonthEvents.length+' '+(currentMonthEvents.length===1?'event':'events');
+
+  list.innerHTML=currentMonthEvents.map(ev=>{
+    const rev=parseFloat(ev.revenue)||0;
+    const exp=parseFloat(ev.total_expenses)||0;
+    const profit=rev-exp;
+    const dt=ev.record_date?new Date(ev.record_date+'T00:00').toLocaleDateString():'';
+    return `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:1rem;padding:.75rem .9rem;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:.4rem;align-items:center;font-size:.88rem">
+      <div><strong style="color:var(--plum-900)">${(ev.title||'Untitled event').replace(/</g,'&lt;')}</strong><div style="color:var(--muted);font-size:.78rem;margin-top:.15rem">${dt}</div></div>
+      <div style="text-align:right;font-variant-numeric:tabular-nums"><div style="font-size:.7rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700">Revenue</div><div style="color:var(--success);font-weight:700">${c}${rev.toFixed(2)}</div></div>
+      <div style="text-align:right;font-variant-numeric:tabular-nums"><div style="font-size:.7rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700">Expenses</div><div style="color:var(--danger);font-weight:700">${c}${exp.toFixed(2)}</div></div>
+      <div style="text-align:right;font-variant-numeric:tabular-nums"><div style="font-size:.7rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700">Profit</div><div style="color:${profit<0?'var(--danger)':'var(--success)'};font-weight:800">${c}${profit.toFixed(2)}</div></div>
+    </div>`;
+  }).join('');
 }
 async function saveMonth(){
   const month=parseInt(document.getElementById('monthSelect').value);
