@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Party Co. | Luxury Kids Party Experiences</title>
+  <meta name="description" content="Beautifully styled kids parties built around moments — bears, blooms, sweet stations, and signature experiences for unforgettable celebrations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║                                                                      ║
+  ║   👑  KPPS FLAGSHIP TEMPLATE — Built by Coach Monica Lewis            ║
+  ║                                                                      ║
+  ║   Customize the CONFIG block in <script> at the top of <body>.       ║
+  ║   Every section reads from CONFIG — change once, updates everywhere.  ║
+  ║                                                                      ║
+  ║   See template-setup.md for the full customization guide.            ║
+  ║                                                                      ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+  -->
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       THEME: MODERN PLAYFUL — coral + peach + lavender + cream + gold
+       Change these 5 hex values in :root to retheme the entire site.
+       ═══════════════════════════════════════════════════════════════════ */
+    :root {
+      /* __CUSTOMIZER_COLORS_START__ */
+      --primary: #ff7faf;
+      --primary-soft: #ffe6f0;
+      --accent: #ffd7a8;
+      /* __CUSTOMIZER_COLORS_END__ */
+      --soft: #e6dcff;
+      --sky: #dff4ff;
+      --cream: #fff9f5;
+      --gold: #d8a84e;
+      --gold-bright: #e6bb54;
+      --text: #2f2430;
+      --text-soft: #6f5f69;
+      --text-muted: #9d8a98;
+      --white: #ffffff;
+      --line: rgba(255, 127, 175, 0.14);
+      --shadow-soft: 0 10px 25px rgba(131, 91, 120, 0.08);
+      --shadow-card: 0 14px 35px rgba(148, 107, 136, 0.10);
+      --shadow-deep: 0 24px 60px rgba(131, 91, 120, 0.18);
+      --glow-pink: 0 0 60px rgba(255, 127, 175, 0.25);
+      --radius-sm: 12px;
+      --radius-md: 18px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --max: 1180px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(255, 214, 224, 0.55), transparent 28%),
+        radial-gradient(circle at 88% 5%, rgba(230, 220, 255, 0.50), transparent 25%),
+        radial-gradient(circle at 80% 60%, rgba(255, 215, 168, 0.40), transparent 30%),
+        linear-gradient(180deg, #fff6fa 0%, #fffaf5 45%, #ffffff 100%);
+    }
+
+    img { max-width: 100%; display: block; }
+    a { text-decoration: none; color: inherit; }
+
+    .container {
+      width: min(100% - 28px, var(--max));
+      margin: 0 auto;
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    .display {
+      font-family: "Playfair Display", serif;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+    }
+    .display-xl { font-size: clamp(2.2rem, 5.5vw, 3.6rem); }
+    .display-lg { font-size: clamp(1.7rem, 3.5vw, 2.6rem); }
+    .display-md { font-size: clamp(1.3rem, 2.3vw, 1.85rem); }
+
+    .script {
+      font-family: "Caveat", cursive;
+      color: var(--gold-bright);
+      font-weight: 700;
+    }
+
+    .accent-text {
+      background: linear-gradient(135deg, var(--primary) 0%, #ff9d68 60%, var(--gold-bright) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-style: italic;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(216, 168, 78, 0.18);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7a5368;
+      backdrop-filter: blur(10px);
+    }
+
+    .lead {
+      font-size: 1rem;
+      color: var(--text-soft);
+      line-height: 1.75;
+      max-width: 620px;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 13px 26px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-family: inherit;
+      font-size: 0.95rem;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, #ff9d68 100%);
+      box-shadow: 0 14px 30px rgba(255, 127, 175, 0.30), 0 4px 8px rgba(255, 127, 175, 0.20);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px rgba(255, 127, 175, 0.40), 0 6px 12px rgba(255, 127, 175, 0.25);
+    }
+
+    .btn-gold {
+      color: #3a2a07;
+      background: linear-gradient(135deg, #f5cc5f 0%, var(--gold) 100%);
+      box-shadow: 0 14px 30px rgba(216, 168, 78, 0.40);
+    }
+    .btn-gold:hover { transform: translateY(-2px); }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.88);
+      color: #7a5368;
+      border: 1.5px solid rgba(216, 168, 78, 0.25);
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: var(--white);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .btn-arrow {
+      transition: transform 0.2s ease;
+    }
+    .btn:hover .btn-arrow { transform: translateX(4px); }
+
+    /* ─── NAV ─── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(16px);
+      background: rgba(255, 250, 248, 0.85);
+      border-bottom: 1px solid rgba(216, 168, 78, 0.10);
+    }
+
+    .nav {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: "Playfair Display", serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      box-shadow: 0 8px 20px rgba(255, 127, 175, 0.30);
+    }
+
+    .brand-name {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .brand-name strong {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .brand-name span {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .nav-links {
+      display: none;
+      gap: 28px;
+      align-items: center;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text-soft);
+    }
+    .nav-links a:hover { color: var(--primary); }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 36px 0 60px;
+      position: relative;
+    }
+
+    .hero-shell {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      padding: 44px 28px;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(255, 255, 255, 0.85), transparent 25%),
+        radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.70), transparent 22%),
+        linear-gradient(135deg, #ffe3ef 0%, #fff0dc 35%, #ece5ff 70%, #e4f7ff 100%);
+      box-shadow: var(--shadow-deep);
+      text-align: center;
+    }
+
+    .hero-shell::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.4;
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.95) 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.75) 1px, transparent 1.5px);
+      background-size: 38px 38px, 56px 56px;
+      background-position: 0 0, 18px 18px;
+    }
+
+    .hero-shell::after {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(255, 127, 175, 0.16), transparent 65%);
+      pointer-events: none;
+      filter: blur(20px);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .hero .script {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .hero h1 {
+      margin: 8px 0 18px;
+    }
+
+    .hero .lead {
+      margin: 0 auto 24px;
+      max-width: 640px;
+    }
+
+    .price-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 22px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1.5px solid rgba(216, 168, 78, 0.30);
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #42303f;
+      margin: 0 auto 26px;
+      box-shadow: var(--shadow-soft);
+    }
+    .price-badge strong {
+      font-family: "Playfair Display", serif;
+      color: var(--primary);
+      font-size: 1.15rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 0 auto 30px;
+    }
+
+    .hero-image {
+      position: relative;
+      z-index: 2;
+      max-width: 880px;
+      margin: 0 auto 28px;
+      background: rgba(255, 255, 255, 0.70);
+      border-radius: var(--radius-lg);
+      padding: 8px;
+      box-shadow: var(--shadow-deep);
+    }
+
+    .hero-image-inner {
+      width: 100%;
+      aspect-ratio: 16 / 8.5;
+      border-radius: var(--radius-md);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 215, 168, 0.55), transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(230, 220, 255, 0.55), transparent 50%),
+        linear-gradient(135deg, #ffe3ef, #fff0dc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-image-placeholder {
+      font-family: "Caveat", cursive;
+      font-size: 1.8rem;
+      color: rgba(122, 83, 104, 0.50);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero-image-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-pillars {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      max-width: 880px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pillar {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+    .pillar strong {
+      display: block;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .pillar span {
+      display: block;
+      font-size: 0.86rem;
+      color: var(--text-soft);
+    }
+
+    /* ─── FOUNDING BANNER ─── */
+    .founding {
+      padding: 0 0 30px;
+    }
+
+    .founding-card {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255, 215, 168, 0.40), transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(230, 220, 255, 0.45), transparent 35%),
+        linear-gradient(135deg, #fff5fa 0%, #fff8ef 50%, #f5f0ff 100%);
+      border: 2px solid rgba(216, 168, 78, 0.30);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+    }
+
+    .founding-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.85) 1px, transparent 1.5px);
+      background-size: 32px 32px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .founding-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .founding-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      color: white;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 20px rgba(255, 127, 175, 0.25);
+    }
+
+    .founding-card h2 {
+      margin-bottom: 10px;
+    }
+
+    .founding-card p {
+      color: var(--text-soft);
+      max-width: 560px;
+      margin: 0 auto 16px;
+      font-size: 0.94rem;
+    }
+
+    .founding-spots-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(216, 168, 78, 0.25);
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #7a5368;
+      margin-bottom: 18px;
+    }
+
+    .spot-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 12px rgba(255, 127, 175, 0.7);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    /* ─── CONTACT STRIP ─── */
+    .contact-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 214, 224, 0.7);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+    }
+
+    .contact-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #7a5368;
+      padding: 10px 18px;
+      background: white;
+      border: 1px solid rgba(255, 214, 224, 0.7);
+      border-radius: 999px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+    }
+    .contact-item:hover {
+      background: var(--primary-soft);
+      transform: translateY(-1px);
+    }
+
+    /* ─── SECTION ─── */
+    section { padding: 50px 0; }
+
+    .section-head {
+      max-width: 720px;
+      margin: 0 auto 32px;
+      text-align: center;
+    }
+    .section-head .eyebrow { margin-bottom: 14px; }
+    .section-head h2 { margin-bottom: 10px; }
+    .section-head p { color: var(--text-soft); font-size: 0.98rem; }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       NICHE TREATMENTS — each niche type has its own visual signature
+       ═══════════════════════════════════════════════════════════════════ */
+
+    .niche-block {
+      position: relative;
+      border-radius: var(--radius-xl);
+      padding: 36px 28px;
+      margin-bottom: 30px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    .niche-header {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 24px;
+      max-width: 580px;
+    }
+
+    .niche-header .eyebrow { margin-bottom: 10px; }
+    .niche-header h3 { margin-bottom: 8px; font-size: clamp(1.5rem, 3vw, 2.1rem); }
+    .niche-header p { color: var(--text-soft); font-size: 0.95rem; }
+
+    /* ─── NICHE TREATMENT: BEAR ─── */
+    .niche-bear {
+      background:
+        radial-gradient(circle at 12% 20%, rgba(255, 215, 168, 0.45), transparent 40%),
+        radial-gradient(circle at 88% 75%, rgba(255, 214, 224, 0.50), transparent 40%),
+        linear-gradient(135deg, #fff5ef 0%, #fff9f3 50%, #fff0e8 100%);
+      border: 1px solid rgba(216, 168, 78, 0.18);
+    }
+    .niche-bear::before {
+      content: '';
+      position: absolute;
+      top: 20px; right: 30px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(255, 127, 175, 0.18), transparent 60%);
+      border-radius: 50%;
+      filter: blur(8px);
+      pointer-events: none;
+    }
+    .niche-bear .niche-icon {
+      background: linear-gradient(135deg, #d4a373, #a06d3f);
+    }
+
+    /* ─── NICHE TREATMENT: CUSTOM (used for any niche outside the 15) ─── */
+    .niche-custom {
+      background:
+        radial-gradient(circle at 88% 15%, rgba(230, 220, 255, 0.50), transparent 40%),
+        radial-gradient(circle at 12% 85%, rgba(255, 214, 224, 0.45), transparent 40%),
+        linear-gradient(135deg, #fbf5ff 0%, #fffaf5 50%, #fff5fa 100%);
+      border: 1px solid rgba(167, 139, 250, 0.18);
+    }
+    .niche-custom::before {
+      content: '';
+      position: absolute;
+      top: 30px; left: 25px;
+      width: 80px; height: 80px;
+      background: radial-gradient(circle, rgba(216, 168, 78, 0.18), transparent 60%);
+      border-radius: 50%;
+      filter: blur(8px);
+      pointer-events: none;
+    }
+    .niche-custom .niche-icon {
+      background: linear-gradient(135deg, #c084fc, var(--primary));
+    }
+
+    /* ─── NICHE TREATMENT: SPA ─── eucalyptus + blush + cream */
+    .niche-spa {
+      background:
+        radial-gradient(circle at 15% 25%, rgba(216, 232, 215, 0.55), transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(248, 215, 218, 0.45), transparent 40%),
+        linear-gradient(135deg, #f5f9f3 0%, #fffaf6 50%, #fdf2f4 100%);
+      border: 1px solid rgba(168, 196, 162, 0.22);
+    }
+    .niche-spa::before {
+      content: '';
+      position: absolute;
+      top: 25px; right: 35px;
+      width: 110px; height: 110px;
+      background: radial-gradient(circle, rgba(168, 196, 162, 0.20), transparent 65%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-spa .niche-icon {
+      background: linear-gradient(135deg, #a8c4a2, #d8a3a8);
+    }
+
+    /* ─── NICHE TREATMENT: SLUMBER ─── twilight navy + dusty pink + cream */
+    .niche-slumber {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(180, 165, 220, 0.45), transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(255, 200, 215, 0.40), transparent 40%),
+        linear-gradient(135deg, #f4f1fa 0%, #fff8fb 50%, #fef0f5 100%);
+      border: 1px solid rgba(127, 100, 168, 0.20);
+    }
+    .niche-slumber::before {
+      content: '';
+      position: absolute;
+      top: 30px; right: 25px;
+      width: 130px; height: 130px;
+      background: radial-gradient(circle, rgba(127, 100, 168, 0.18), transparent 65%);
+      border-radius: 50%;
+      filter: blur(12px);
+      pointer-events: none;
+    }
+    .niche-slumber .niche-icon {
+      background: linear-gradient(135deg, #7f64a8, #d4a3c7);
+    }
+
+    /* ─── NICHE TREATMENT: TEEPEE ─── sage + terracotta + cream (boho) */
+    .niche-teepee {
+      background:
+        radial-gradient(circle at 18% 22%, rgba(206, 213, 188, 0.55), transparent 42%),
+        radial-gradient(circle at 82% 78%, rgba(232, 180, 142, 0.45), transparent 42%),
+        linear-gradient(135deg, #f7f5ee 0%, #fffaf3 50%, #fbf0e6 100%);
+      border: 1px solid rgba(170, 142, 100, 0.22);
+    }
+    .niche-teepee::before {
+      content: '';
+      position: absolute;
+      top: 22px; left: 30px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(232, 180, 142, 0.22), transparent 60%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-teepee .niche-icon {
+      background: linear-gradient(135deg, #c89c6e, #87a374);
+    }
+
+    /* ─── NICHE TREATMENT: SLIME ─── neon mint + bubblegum + lemon (playful) */
+    .niche-slime {
+      background:
+        radial-gradient(circle at 12% 28%, rgba(168, 230, 207, 0.55), transparent 40%),
+        radial-gradient(circle at 88% 75%, rgba(255, 200, 222, 0.50), transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(255, 240, 175, 0.30), transparent 50%),
+        linear-gradient(135deg, #f0fbf5 0%, #fffdf2 50%, #fff5fa 100%);
+      border: 1px solid rgba(76, 200, 175, 0.22);
+    }
+    .niche-slime::before {
+      content: '';
+      position: absolute;
+      top: 30px; right: 30px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(76, 200, 175, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(11px);
+      pointer-events: none;
+    }
+    .niche-slime .niche-icon {
+      background: linear-gradient(135deg, #4cc8af, #ff8db8);
+    }
+
+    /* ─── NICHE TREATMENT: PAINT & SIP ─── lavender + peach + soft mint (artistic) */
+    .niche-paint {
+      background:
+        radial-gradient(circle at 25% 18%, rgba(220, 200, 248, 0.50), transparent 42%),
+        radial-gradient(circle at 78% 72%, rgba(255, 215, 178, 0.50), transparent 42%),
+        radial-gradient(circle at 60% 90%, rgba(192, 230, 215, 0.38), transparent 48%),
+        linear-gradient(135deg, #f8f4ff 0%, #fff8f0 50%, #f3fbf6 100%);
+      border: 1px solid rgba(168, 132, 220, 0.22);
+    }
+    .niche-paint::before {
+      content: '';
+      position: absolute;
+      top: 25px; left: 35px;
+      width: 110px; height: 110px;
+      background: radial-gradient(circle, rgba(168, 132, 220, 0.22), transparent 60%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-paint .niche-icon {
+      background: linear-gradient(135deg, #a884dc, #ffb088);
+    }
+
+    /* ─── NICHE TREATMENT: CRAFT ─── kraft brown + butter yellow + cream (handmade) */
+    .niche-craft {
+      background:
+        radial-gradient(circle at 18% 22%, rgba(232, 200, 145, 0.45), transparent 42%),
+        radial-gradient(circle at 82% 78%, rgba(248, 220, 175, 0.50), transparent 42%),
+        linear-gradient(135deg, #fdf6e8 0%, #fffaf3 50%, #faf3df 100%);
+      border: 1px solid rgba(180, 145, 95, 0.22);
+    }
+    .niche-craft::before {
+      content: '';
+      position: absolute;
+      top: 30px; right: 28px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(180, 145, 95, 0.20), transparent 65%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-craft .niche-icon {
+      background: linear-gradient(135deg, #b4915f, #e8c891);
+    }
+
+    /* ─── NICHE TREATMENT: CANDY/DESSERT ─── strawberry + mint + vanilla (sweet) */
+    .niche-candy {
+      background:
+        radial-gradient(circle at 14% 22%, rgba(255, 195, 215, 0.55), transparent 40%),
+        radial-gradient(circle at 86% 78%, rgba(190, 232, 210, 0.45), transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(255, 240, 220, 0.35), transparent 50%),
+        linear-gradient(135deg, #fff4f8 0%, #fffaf3 50%, #f3fbf5 100%);
+      border: 1px solid rgba(232, 130, 165, 0.22);
+    }
+    .niche-candy::before {
+      content: '';
+      position: absolute;
+      top: 28px; right: 32px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(232, 130, 165, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(11px);
+      pointer-events: none;
+    }
+    .niche-candy .niche-icon {
+      background: linear-gradient(135deg, #e882a5, #b8e6c8);
+    }
+
+    /* ─── NICHE TREATMENT: FOOD CART ─── tomato red + sunflower + cream (street food) */
+    .niche-foodcart {
+      background:
+        radial-gradient(circle at 18% 25%, rgba(255, 195, 165, 0.50), transparent 42%),
+        radial-gradient(circle at 82% 75%, rgba(255, 222, 145, 0.50), transparent 42%),
+        linear-gradient(135deg, #fff5ef 0%, #fffaf0 50%, #fff8e8 100%);
+      border: 1px solid rgba(220, 135, 90, 0.22);
+    }
+    .niche-foodcart::before {
+      content: '';
+      position: absolute;
+      top: 25px; right: 35px;
+      width: 105px; height: 105px;
+      background: radial-gradient(circle, rgba(220, 135, 90, 0.22), transparent 60%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-foodcart .niche-icon {
+      background: linear-gradient(135deg, #dc875a, #f5cb70);
+    }
+
+    /* ─── NICHE TREATMENT: FACE PAINT & BALLOONS ─── rainbow pastel (fun) */
+    .niche-facepaint {
+      background:
+        radial-gradient(circle at 12% 22%, rgba(255, 200, 220, 0.50), transparent 38%),
+        radial-gradient(circle at 50% 18%, rgba(220, 200, 248, 0.45), transparent 38%),
+        radial-gradient(circle at 88% 25%, rgba(180, 220, 248, 0.45), transparent 38%),
+        radial-gradient(circle at 50% 80%, rgba(255, 230, 180, 0.45), transparent 42%),
+        linear-gradient(135deg, #fff6f8 0%, #fffaf3 50%, #f5f9ff 100%);
+      border: 1px solid rgba(232, 145, 195, 0.22);
+    }
+    .niche-facepaint::before {
+      content: '';
+      position: absolute;
+      top: 25px; right: 28px;
+      width: 130px; height: 130px;
+      background: radial-gradient(circle, rgba(232, 145, 195, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(12px);
+      pointer-events: none;
+    }
+    .niche-facepaint .niche-icon {
+      background: linear-gradient(135deg, #e891c3, #88c4ea);
+    }
+
+    /* ─── NICHE TREATMENT: PHOTO BOOTH ─── champagne gold + dusty rose + ivory (glam) */
+    .niche-photo {
+      background:
+        radial-gradient(circle at 18% 22%, rgba(232, 200, 130, 0.42), transparent 42%),
+        radial-gradient(circle at 82% 78%, rgba(232, 180, 188, 0.45), transparent 42%),
+        linear-gradient(135deg, #fffaf0 0%, #fff5f3 50%, #faf3e8 100%);
+      border: 1px solid rgba(196, 158, 92, 0.22);
+    }
+    .niche-photo::before {
+      content: '';
+      position: absolute;
+      top: 28px; right: 30px;
+      width: 110px; height: 110px;
+      background: radial-gradient(circle, rgba(196, 158, 92, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-photo .niche-icon {
+      background: linear-gradient(135deg, #c49e5c, #d4a3a8);
+    }
+
+    /* ─── NICHE TREATMENT: OUTDOOR MOVIE ─── twilight blue + popcorn cream + dusk pink */
+    .niche-movie {
+      background:
+        radial-gradient(circle at 22% 18%, rgba(155, 175, 215, 0.45), transparent 42%),
+        radial-gradient(circle at 78% 82%, rgba(255, 220, 195, 0.45), transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(220, 200, 232, 0.35), transparent 48%),
+        linear-gradient(135deg, #f3f6fb 0%, #fffaf3 50%, #faf2f8 100%);
+      border: 1px solid rgba(108, 138, 188, 0.22);
+    }
+    .niche-movie::before {
+      content: '';
+      position: absolute;
+      top: 25px; right: 32px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(108, 138, 188, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(11px);
+      pointer-events: none;
+    }
+    .niche-movie .niche-icon {
+      background: linear-gradient(135deg, #6c8abc, #f5c790);
+    }
+
+    /* ─── NICHE TREATMENT: SOFT PLAY ─── powder blue + butter yellow + soft pink (toddler) */
+    .niche-softplay {
+      background:
+        radial-gradient(circle at 14% 22%, rgba(180, 220, 248, 0.55), transparent 40%),
+        radial-gradient(circle at 86% 75%, rgba(255, 230, 180, 0.50), transparent 42%),
+        radial-gradient(circle at 50% 88%, rgba(255, 200, 220, 0.40), transparent 48%),
+        linear-gradient(135deg, #f5fafd 0%, #fffaf3 50%, #fff4f7 100%);
+      border: 1px solid rgba(140, 195, 232, 0.25);
+    }
+    .niche-softplay::before {
+      content: '';
+      position: absolute;
+      top: 28px; right: 30px;
+      width: 115px; height: 115px;
+      background: radial-gradient(circle, rgba(140, 195, 232, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(11px);
+      pointer-events: none;
+    }
+    .niche-softplay .niche-icon {
+      background: linear-gradient(135deg, #88c4ea, #f5cb70);
+    }
+
+    /* ─── NICHE TREATMENT: BOUNCE HOUSE ─── electric coral + sunflower + sky (high energy) */
+    .niche-bounce {
+      background:
+        radial-gradient(circle at 12% 25%, rgba(255, 175, 165, 0.55), transparent 40%),
+        radial-gradient(circle at 88% 75%, rgba(135, 200, 240, 0.50), transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(255, 220, 130, 0.35), transparent 48%),
+        linear-gradient(135deg, #fff4ef 0%, #fffaf0 50%, #f3faff 100%);
+      border: 1px solid rgba(232, 110, 90, 0.22);
+    }
+    .niche-bounce::before {
+      content: '';
+      position: absolute;
+      top: 25px; right: 28px;
+      width: 130px; height: 130px;
+      background: radial-gradient(circle, rgba(232, 110, 90, 0.22), transparent 65%);
+      border-radius: 50%;
+      filter: blur(12px);
+      pointer-events: none;
+    }
+    .niche-bounce .niche-icon {
+      background: linear-gradient(135deg, #e86e5a, #88c4ea);
+    }
+
+    /* ─── NICHE TREATMENT: COORDINATOR ─── obsidian + champagne + ivory (luxe executive) */
+    .niche-coordinator {
+      background:
+        radial-gradient(circle at 18% 22%, rgba(218, 200, 148, 0.40), transparent 42%),
+        radial-gradient(circle at 82% 78%, rgba(168, 158, 182, 0.40), transparent 42%),
+        linear-gradient(135deg, #faf8f3 0%, #fffaf5 50%, #f5f3f7 100%);
+      border: 1px solid rgba(115, 100, 130, 0.22);
+    }
+    .niche-coordinator::before {
+      content: '';
+      position: absolute;
+      top: 25px; right: 32px;
+      width: 110px; height: 110px;
+      background: radial-gradient(circle, rgba(115, 100, 130, 0.20), transparent 65%);
+      border-radius: 50%;
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .niche-coordinator .niche-icon {
+      background: linear-gradient(135deg, #736482, #daC894);
+    }
+
+    .niche-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      color: white;
+      font-size: 1.6rem;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    /* ─── PACKAGES GRID ─── */
+    .packages {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .package {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 251, 0.92));
+      border: 1px solid rgba(255, 232, 239, 0.92);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .package:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-deep);
+    }
+
+    .package.popular {
+      background:
+        radial-gradient(circle at top right, rgba(255, 215, 168, 0.30), transparent 40%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 235, 0.95));
+      border: 2px solid rgba(216, 168, 78, 0.40);
+    }
+
+    .package-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+    .package-top h4 {
+      font-family: "Playfair Display", serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .price {
+      font-family: "Playfair Display", serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #42303f;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .price-note {
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
+    .package-list {
+      list-style: none;
+      margin: 0 0 14px;
+    }
+    .package-list li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 7px;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+    }
+    .package-list li::before {
+      content: "✦";
+      position: absolute;
+      left: 0; top: 0;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .package-footer {
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 214, 224, 0.6);
+      color: #7a5368;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    /* ─── ACTIVITIES ─── */
+    .activities-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .activity-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 247, 245, 0.88));
+      border: 1px solid rgba(255, 221, 232, 0.7);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-soft);
+    }
+    .activity-card h4 {
+      font-family: "Playfair Display", serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .pill {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid rgba(255, 214, 224, 0.8);
+      font-weight: 600;
+      color: #7a5368;
+      font-size: 0.86rem;
+      box-shadow: 0 2px 8px rgba(131, 91, 120, 0.06);
+    }
+
+    /* ─── ADD-ONS ─── */
+    .addons-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .addon {
+      background: linear-gradient(180deg, white, #fff9fc);
+      border: 1px solid rgba(255, 231, 238, 0.92);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+    }
+    .addon:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .addon strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .addon span {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+    }
+
+    /* ─── ABOUT ─── */
+    .about-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: 32px 28px;
+      box-shadow: var(--shadow-deep);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .about-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--accent), var(--gold));
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .about-photo {
+      width: 100%;
+      aspect-ratio: 4 / 4.5;
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 215, 168, 0.55), transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(230, 220, 255, 0.55), transparent 50%),
+        linear-gradient(135deg, #ffe3ef, #fff0dc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .about-photo img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .about-content h2 {
+      margin-bottom: 12px;
+    }
+    .about-quote {
+      background: linear-gradient(135deg, #fff5fa, #fffaf0);
+      border-left: 3px solid var(--primary);
+      border-radius: 0 14px 14px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-style: italic;
+      font-size: 1rem;
+      color: #7a5368;
+      font-weight: 600;
+    }
+    .about-content p {
+      color: var(--text-soft);
+      line-height: 1.8;
+      margin-bottom: 12px;
+      font-size: 0.93rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 214, 224, 0.7);
+      border-radius: var(--radius-md);
+      padding: 14px 10px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+    }
+    .stat strong {
+      display: block;
+      font-family: "Playfair Display", serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .stat span {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+      display: block;
+      font-weight: 500;
+    }
+
+    /* ─── REVIEWS ─── */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .review {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 251, 0.92));
+      border: 1px solid rgba(255, 232, 239, 0.92);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .review::before {
+      content: '"';
+      position: absolute;
+      top: 8px; left: 18px;
+      font-family: "Playfair Display", serif;
+      font-size: 4rem;
+      color: rgba(255, 127, 175, 0.18);
+      line-height: 1;
+    }
+
+    .stars {
+      color: #f5a623;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-text {
+      font-size: 0.92rem;
+      color: var(--text-soft);
+      line-height: 1.7;
+      font-style: italic;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .review-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .review-name {
+      font-weight: 600;
+      font-size: 0.94rem;
+      color: var(--text);
+    }
+    .review-meta {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    /* ─── BOOKING ─── */
+    .booking-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    .booking-form-card,
+    .estimate-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      padding: 26px 22px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .booking-form-card h3 {
+      font-family: "Playfair Display", serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .form-step {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 247, 251, 0.65));
+      border: 1px solid rgba(255, 226, 235, 0.92);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .step-label {
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .field-row:last-child { margin-bottom: 0; }
+
+    label.field {
+      display: block;
+      font-size: 0.84rem;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+      padding-left: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid rgba(224, 208, 216, 0.92);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: white;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255, 127, 175, 0.12);
+    }
+    textarea { min-height: 110px; resize: vertical; }
+
+    .conditional-section {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px dashed rgba(255, 127, 175, 0.30);
+    }
+    .conditional-section.show { display: block; }
+    .conditional-section h5 {
+      font-family: "Playfair Display", serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 0.86rem;
+      color: var(--text-soft);
+      margin: 12px 0;
+      line-height: 1.55;
+    }
+    .checkbox-wrap input[type="checkbox"] {
+      width: auto; flex: 0 0 auto;
+      margin-top: 3px;
+    }
+    .checkbox-wrap a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .policy-strip {
+      background: linear-gradient(135deg, #fff5fa, #fffaf0);
+      border: 1px solid rgba(255, 127, 175, 0.20);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 8px;
+    }
+    .policy-strip strong {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .policy-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.86rem;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+      line-height: 1.55;
+    }
+    .policy-row::before {
+      content: "✦";
+      color: var(--primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ─── ESTIMATE ─── */
+    .estimate-card h3 {
+      font-family: "Playfair Display", serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .estimate-card .lead { font-size: 0.88rem; margin-bottom: 14px; }
+
+    .estimate-lines {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .estimate-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      border-bottom: 1px dashed rgba(216, 168, 78, 0.20);
+      padding-bottom: 6px;
+    }
+
+    .estimate-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 2px solid var(--primary);
+    }
+    .estimate-total span:last-child {
+      font-family: "Playfair Display", serif;
+      font-size: 1.4rem;
+      color: var(--primary);
+    }
+
+    .estimate-note {
+      font-size: 0.86rem;
+      color: var(--text-soft);
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .deposit-box {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #fff5ef, #fff3fa);
+      border: 1px solid rgba(255, 220, 196, 0.85);
+    }
+    .deposit-box strong {
+      display: block;
+      font-size: 1.02rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .deposit-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      margin: 8px 0;
+    }
+    .deposit-step .num {
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+      font-size: 0.74rem;
+    }
+
+    .success-message {
+      display: none;
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #fff5ef, #fff3fa);
+      border: 1px solid rgba(255, 220, 196, 0.85);
+      color: #7a5368;
+    }
+    .success-message.show { display: block; }
+    .success-message strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    /* ─── FOOTER ─── */
+    .site-footer {
+      padding: 40px 0 50px;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      background: linear-gradient(180deg, transparent, rgba(255, 246, 250, 0.6));
+    }
+    .site-footer strong { color: var(--text); display: block; font-size: 1.05rem; margin-bottom: 4px; }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .footer-links a {
+      color: var(--text-soft);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+    .footer-links a:hover { color: var(--primary); }
+
+    .built-by {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .built-by a { color: var(--gold); font-weight: 600; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (min-width: 700px) {
+      .hero-actions { flex-direction: row; }
+      .hero-pillars { grid-template-columns: repeat(3, 1fr); }
+      .field-row { grid-template-columns: 1fr 1fr; }
+      .addons-grid { grid-template-columns: 1fr 1fr; }
+      .reviews-grid { grid-template-columns: 1fr 1fr; }
+      .activities-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 920px) {
+      .nav-links { display: flex; }
+      .packages { grid-template-columns: repeat(3, 1fr); }
+      .booking-grid { grid-template-columns: 1.3fr 0.85fr; align-items: start; }
+      .estimate-card { position: sticky; top: 100px; }
+      .about-grid { grid-template-columns: 0.85fr 1.15fr; }
+      .addons-grid { grid-template-columns: repeat(3, 1fr); }
+      .reviews-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CONFIG — Edit this block to customize the entire site.
+     Every section below reads from this object dynamically.
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+// __CUSTOMIZER_CONFIG_START__
+const CONFIG = {
+
+  // ─── BRAND ─────────────────────────────────────────────────
+  business: {
+    name: "Sample Party Co.",
+    initial: "S",
+    tagline: "Luxury kids party experiences",
+    heroScript: "This is your sign to celebrate.",
+    heroHeadline: "Beautifully styled kids parties that feel like a moment.",
+    heroAccent: "Built around joy.",
+    heroLead: "From signature party experiences to bespoke styled celebrations, we create unforgettable moments for families across our city — without the overwhelm.",
+    startingPrice: 450,
+    city: "Your City, ST",
+    serviceArea: "Your service area",
+    phone: "(555) 555-0100",
+    email: "hello@yourdomain.com",
+    instagram: "@yourbrand",
+    domain: "yourdomain.com"
+  },
+
+  // ─── HUB INTEGRATION (Phase 2 — flip the URL when ready) ───
+  // Phase 1: Formspree → email
+  // Phase 2: Replace with Party Biz Hub API endpoint
+  formEndpoint: "https://formspree.io/f/YOUR_FORMSPREE_ID",
+  orgId: "sample-party-co",   // unique per student — used by Hub for routing
+
+  // ─── FOUNDING FAMILIES (toggle off if not running this offer) ───
+  foundingFamilies: {
+    enabled: true,
+    spotsTotal: 10,
+    spotsClaimed: 0,
+    discount: "15% off your first event",
+    description: "We're launching and looking for our first 10 families to experience the magic. Book as a Founding Family and receive a special discount in exchange for photos and a review."
+  },
+
+  // ─── NICHES — add as many as needed ─────────────────────────
+  // type determines visual treatment. All 15 KPPS niche types built in:
+  //   "bear"        — warm coral + peach (warm hug feel)
+  //   "spa"         — eucalyptus + blush + cream (calming)
+  //   "slumber"     — twilight purple + dusty pink (dreamy)
+  //   "teepee"      — sage + terracotta + cream (boho)
+  //   "slime"       — neon mint + bubblegum + lemon (playful)
+  //   "paint"       — lavender + peach + soft mint (artistic)
+  //   "craft"       — kraft brown + butter yellow (handmade)
+  //   "candy"       — strawberry + mint + vanilla (sweet)
+  //   "foodcart"    — tomato red + sunflower (street food)
+  //   "facepaint"   — rainbow pastel (fun, multi-color)
+  //   "photo"       — champagne gold + dusty rose (glam)
+  //   "movie"       — twilight blue + popcorn cream (dusk)
+  //   "softplay"    — powder blue + butter yellow (toddler)
+  //   "bounce"      — electric coral + sunflower + sky (energy)
+  //   "coordinator" — obsidian + champagne (luxe executive)
+  //   "custom"      — fallback for niches outside the 15
+  niches: [
+    {
+      id: "bears",
+      type: "bear",
+      icon: "🐻",
+      name: "Stuff-A-Bear Parties",
+      tagline: "Build a memory they'll hug forever",
+      description: "Our signature teddy bear stuffing experience — interactive, photo-ready, unforgettable. Each child stuffs and names their own bear in a beautifully styled setup.",
+      packages: [
+        {
+          name: "Signature",
+          price: 450,
+          note: "A simple, beautiful entry experience for families who want something special without overcomplicating the party.",
+          includes: [
+            "Bear stuffing experience",
+            "Heart ceremony",
+            "Styled activity setup",
+            "Basic bear outfit",
+            "Setup & breakdown",
+            "Up to 8 kids · 75 min"
+          ],
+          footer: "Perfect for a smaller celebration with a memorable interactive experience."
+        },
+        {
+          name: "Creative",
+          price: 650,
+          popular: true,
+          note: "Our most-loved package for families who want a fuller experience with one creative activity included.",
+          includes: [
+            "Everything in Signature",
+            "Choose 1 activity",
+            "Elevated styled presentation",
+            "Up to 10 kids · 90 min"
+          ],
+          footer: "A favorite for parents who want a more elevated and engaging birthday celebration."
+        },
+        {
+          name: "Luxury",
+          price: 900,
+          note: "A premium, photo-ready party experience with more included and a stronger wow factor.",
+          includes: [
+            "Everything in Creative",
+            "Choose 2 activities",
+            "Tables & chairs included",
+            "Photo-focused styling",
+            "Up to 12 kids · 2 hours"
+          ],
+          footer: "Ideal for clients who want a full luxury kids party experience."
+        }
+      ],
+      activities: ["Sip and Paint", "Slime Activity", "DIY Spa"]
+    },
+    {
+      id: "custom-bloom",
+      type: "custom",
+      icon: "🌸",
+      name: "Bloom Bar Experiences",
+      tagline: "Hands-on floral fun for little stylists",
+      description: "A custom hands-on flower-arranging experience where kids create their own beautiful bouquet to take home. Styled, themed, and unforgettable.",
+      packages: [
+        {
+          name: "Petite Bloom",
+          price: 350,
+          note: "An entry-level bloom bar for smaller groups.",
+          includes: [
+            "Curated flower selection",
+            "Vases & wraps included",
+            "Styled bloom station",
+            "Up to 6 kids · 60 min"
+          ],
+          footer: "A sweet, simple introduction to floral creativity."
+        },
+        {
+          name: "Garden Bloom",
+          price: 550,
+          popular: true,
+          note: "Our most-booked bloom experience with an expanded flower selection.",
+          includes: [
+            "Premium flower variety",
+            "Decorated vases",
+            "Floral crown option",
+            "Up to 10 kids · 75 min"
+          ],
+          footer: "Perfect for birthday parties and themed celebrations."
+        }
+      ],
+      activities: []
+    },
+    {
+      id: "custom-candy",
+      type: "custom",
+      icon: "🍭",
+      name: "Candy Stick Stations",
+      tagline: "Sweet stations that feel like art",
+      description: "A beautifully styled candy stick station — kids design their own keepsake candy bouquet. A custom add-on or standalone celebration moment.",
+      packages: [
+        {
+          name: "Sweet Station",
+          price: 275,
+          note: "A complete candy stick station for your event.",
+          includes: [
+            "Curated candy selection",
+            "Ribbons & wrapping",
+            "Styled display",
+            "Up to 12 kids"
+          ],
+          footer: "Beautiful as a standalone or paired with another experience."
+        }
+      ],
+      activities: []
+    }
+  ],
+
+  // ─── ADD-ONS ────────────────────────────────────────────────
+  addons: [
+    { name: "Extra Child", price: "$30 each" },
+    { name: "Custom Party T-Shirts", price: "$15 per child" },
+    { name: "Signature Photo Setup", price: "$250 — styled backdrop & balloons" },
+    { name: "Tables & Chairs", price: "$60 — for activity stations" },
+    { name: "Extra Time", price: "$75 per hour" },
+    { name: "Travel Fee", price: "Applies 20+ miles outside service zip" }
+  ],
+
+  // ─── POLICIES ───────────────────────────────────────────────
+  policies: {
+    depositPercent: 50,
+    rushFee: 100,
+    rushDays: 7,
+    bundleDiscountPercent: 10,
+    policyUrl: "#"
+  },
+
+  // ─── ABOUT ──────────────────────────────────────────────────
+  about: {
+    eyebrow: "Meet your host",
+    headline: "Hi, I'm here to make this the easiest party you'll ever throw.",
+    quote: "You relax — we've got this.",
+    paragraphs: [
+      "I'm the founder of this business and one of our city's trusted names in luxury kids party experiences. With years of experience creating beautiful, stress-free celebrations, I bring a rare combination of creative vision and operational excellence to every event.",
+      "My journey into the party business started with a simple observation: families deserve celebrations that feel curated, calm, and memorable — not chaotic. Every detail you see is designed to make your day feel effortless and unforgettable."
+    ],
+    stats: [
+      { number: "9+", label: "Years experience" },
+      { number: "250+", label: "Happy families" },
+      { number: "5★", label: "Google rating" }
+    ]
+  },
+
+  // ─── REVIEWS ────────────────────────────────────────────────
+  reviews: [
+    {
+      stars: 5,
+      text: "This was an incredible party — they completely transformed my living room and the kids could not have been more excited. Highly recommend!",
+      name: "K. St.",
+      meta: "Local Guide · 16 reviews",
+      initials: "KS"
+    },
+    {
+      stars: 5,
+      text: "Wonderful job. From the day I contacted them, professional and answered all my questions. On the day of the party, they arrived on time and ensured the kids had a great experience.",
+      name: "Kayla O.",
+      meta: "2 reviews",
+      initials: "KO"
+    },
+    {
+      stars: 5,
+      text: "My daughter enjoyed her party to the fullest! Very professional, very beautiful. I highly recommend for your parties. Definitely worth it.",
+      name: "Nicole J.",
+      meta: "2 reviews",
+      initials: "NJ"
+    },
+    {
+      stars: 5,
+      text: "Amazing experience! The setup was beautiful, the team was professional, organized, and great with kids. Highly recommend!",
+      name: "Verified Guest",
+      meta: "Verified booking",
+      initials: "VG"
+    }
+  ]
+};
+// __CUSTOMIZER_CONFIG_END__
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     RENDER — these elements are populated dynamically from CONFIG.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div class="topbar">
+  <div class="container nav">
+    <div class="brand">
+      <div class="brand-mark" id="brandMark">S</div>
+      <div class="brand-name">
+        <strong id="brandName">Sample Party Co.</strong>
+        <span id="brandTagline">Luxury kids party experiences</span>
+      </div>
+    </div>
+    <nav class="nav-links" id="navLinks"></nav>
+    <a class="btn btn-primary" href="#booking" style="min-height: 42px; padding: 8px 18px; font-size: 0.86rem;">Book Now</a>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-shell">
+      <div class="hero-content">
+        <span class="script" id="heroScript"></span>
+        <h1 class="display display-xl" id="heroHeadline"></h1>
+        <p class="lead" id="heroLead"></p>
+
+        <div class="price-badge">
+          ✨ Starting at <strong id="heroPrice">$450</strong>
+        </div>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#niches">View Experiences <span class="btn-arrow">→</span></a>
+          <a class="btn btn-secondary" href="#booking">Book Your Date</a>
+        </div>
+
+        <div class="hero-image">
+          <div class="hero-image-inner">
+            <div class="hero-image-placeholder">
+              ✨ Replace this placeholder with your styled hero image<br>
+              <span style="font-size: 1rem; opacity: 0.7;">(use the photo upload guide in template-setup.md)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-pillars">
+          <div class="pillar">
+            <strong>Luxury look</strong>
+            <span>Beautiful setups that feel elevated</span>
+          </div>
+          <div class="pillar">
+            <strong>Less stress</strong>
+            <span>Clear packages, easier booking</span>
+          </div>
+          <div class="pillar">
+            <strong>More fun</strong>
+            <span>Memorable experiences kids love</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="founding" id="foundingSection">
+  <div class="container">
+    <div class="founding-card">
+      <div class="founding-content">
+        <div class="founding-tag">🎉 Limited Availability</div>
+        <h2 class="display display-md">Become a <span class="accent-text">Founding Family</span></h2>
+        <p id="foundingDescription"></p>
+        <div class="founding-spots-pill">
+          <span class="spot-dot"></span>
+          <span id="foundingSpots">Only 10 founding family spots</span>
+        </div>
+        <div>
+          <a class="btn btn-primary" href="#booking">Claim Your Founding Spot <span class="btn-arrow">→</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 0 0 30px;">
+  <div class="container">
+    <div class="contact-strip">
+      <a class="contact-item" id="contactPhone" href="#">📞</a>
+      <a class="contact-item" id="contactEmail" href="#">✉️</a>
+      <span class="contact-item" id="contactCity">📍</span>
+    </div>
+  </div>
+</section>
+
+<section id="niches">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Signature experiences</div>
+      <h2 class="display display-lg">Choose the experience <span class="accent-text">that fits your celebration.</span></h2>
+      <p>Each experience is styled, set up, and broken down by us — you just enjoy the day.</p>
+    </div>
+    <div id="nichesContainer"></div>
+  </div>
+</section>
+
+<section id="addons">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Optional Add-Ons</div>
+      <h2 class="display display-lg">The finishing <span class="accent-text">touches.</span></h2>
+      <p>Make your celebration feel even more complete without adding confusion to the booking.</p>
+    </div>
+    <div class="addons-grid" id="addonsGrid"></div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="about-card">
+      <div class="about-grid">
+        <div class="about-photo">
+          <div style="font-family: 'Caveat', cursive; font-size: 1.4rem; color: rgba(122, 83, 104, 0.55); text-align: center; padding: 20px;">
+            ✨ Replace with your photo<br>
+            <span style="font-size: 0.9rem; opacity: 0.7;">(see template-setup.md)</span>
+          </div>
+        </div>
+        <div class="about-content">
+          <div class="eyebrow" id="aboutEyebrow"></div>
+          <h2 class="display display-md" id="aboutHeadline" style="margin-top: 12px;"></h2>
+          <div class="about-quote" id="aboutQuote"></div>
+          <div id="aboutParagraphs"></div>
+          <div class="stats-grid" id="aboutStats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="reviews">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">What families are saying</div>
+      <h2 class="display display-lg">Real words from <span class="accent-text">real families.</span></h2>
+    </div>
+    <div class="reviews-grid" id="reviewsGrid"></div>
+  </div>
+</section>
+
+<section id="booking">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Book your experience</div>
+      <h2 class="display display-lg">Let's plan <span class="accent-text">your celebration.</span></h2>
+      <p>Fill out your details and see your estimated total before submitting.</p>
+    </div>
+
+    <div class="booking-grid">
+      <div class="booking-form-card">
+        <h3>Booking request</h3>
+        <form id="bookingForm">
+          <input type="hidden" name="org_id" id="orgIdField" />
+
+          <div class="form-step">
+            <div class="step-label">Step 1 — Your details</div>
+            <div class="field-row">
+              <input type="text" name="parentName" placeholder="Parent name *" required />
+              <input type="text" name="honoreeName" placeholder="Child or honoree name" />
+            </div>
+            <div class="field-row">
+              <input type="email" name="email" placeholder="Email address *" required />
+              <input type="tel" name="phone" placeholder="Phone number *" required />
+            </div>
+          </div>
+
+          <div class="form-step">
+            <div class="step-label">Step 2 — Event details</div>
+            <div class="field-row">
+              <input type="text" name="honoreeAge" placeholder="Child age" />
+              <input type="number" id="guestCount" name="guestCount" placeholder="Guest count" min="1" />
+            </div>
+            <div class="field-row">
+              <div>
+                <label class="field">First preferred date</label>
+                <input type="date" id="preferredDate1" name="preferredDate1" required />
+              </div>
+              <div>
+                <label class="field">Backup date</label>
+                <input type="date" name="preferredDate2" />
+              </div>
+            </div>
+            <div class="field-row">
+              <select name="timeSlot" required>
+                <option value="">Preferred time *</option>
+                <option>10:00 AM</option>
+                <option>1:00 PM</option>
+                <option>3:00 PM</option>
+                <option>5:00 PM</option>
+              </select>
+              <input type="text" name="location" placeholder="Event location *" required />
+            </div>
+          </div>
+
+          <div class="form-step">
+            <div class="step-label">Step 3 — What are you booking?</div>
+            <select id="nicheSelect" name="nicheSelected" required>
+              <option value="">Select an experience *</option>
+            </select>
+
+            <div id="nicheDetails" class="conditional-section">
+              <h5 id="nicheDetailsTitle">Package details</h5>
+              <select id="packageSelect" name="packageSelected">
+                <option value="">Select a package</option>
+              </select>
+              <div id="activitiesSection" style="margin-top: 10px; display: none;">
+                <select id="activitySelect" name="activitySelected">
+                  <option value="">Activity choice (if applicable)</option>
+                </select>
+              </div>
+              <textarea name="details" placeholder="Theme, colors, vision, anything special you'd like" style="margin-top: 10px;"></textarea>
+            </div>
+          </div>
+
+          <div class="form-step">
+            <div class="step-label">Step 4 — Review &amp; confirm</div>
+            <div class="policy-strip">
+              <strong>Key policies — please read</strong>
+              <div class="policy-row"><span><b style="color: var(--text);">Deposits are non-refundable</b> and go directly toward your event total.</span></div>
+              <div class="policy-row"><span><b style="color: var(--text);">Cancellations must be in writing only</b> — verbal cancellations are not accepted.</span></div>
+              <div class="policy-row"><span><b style="color: var(--text);">All sales are final</b> once a deposit is paid.</span></div>
+            </div>
+
+            <label class="checkbox-wrap">
+              <input type="checkbox" required />
+              <span>I agree to the <a href="#" id="policyLink">booking policies &amp; terms</a>. I understand that <b>deposits are non-refundable</b>, cancellations must be submitted <b>in writing only</b>, and all sales are final.</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Booking Request</button>
+          </div>
+        </form>
+
+        <div id="successMessage" class="success-message">
+          <strong>🎉 Your booking request was received!</strong>
+          <div class="deposit-step">
+            <span class="num">1</span>
+            <span>We'll review your request and confirm availability within 2 hours.</span>
+          </div>
+          <div class="deposit-step">
+            <span class="num">2</span>
+            <span>You'll receive a secure invoice via email for your 50% deposit.</span>
+          </div>
+          <div class="deposit-step">
+            <span class="num">3</span>
+            <span>Once you pay, your date is officially secured.</span>
+          </div>
+          <div class="deposit-step">
+            <span class="num">4</span>
+            <span>Your remaining balance is invoiced 7 days before your event.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="estimate-card">
+        <h3>Your estimate</h3>
+        <p class="lead">Live total updates as you select.</p>
+
+        <div class="estimate-lines" id="estimateLines">
+          <div class="estimate-line"><span>No selections yet</span><span>$0</span></div>
+        </div>
+
+        <div class="estimate-total">
+          <span>Estimated Total</span>
+          <span id="estimateTotal">$0</span>
+        </div>
+
+        <p class="estimate-note">Most clients invest between $600 and $1,200. Final total confirmed after we review your details.</p>
+
+        <div class="deposit-box">
+          <strong>Quick details</strong>
+          <div class="deposit-step"><span class="num">✦</span><span>50% deposit goes toward your event total</span></div>
+          <div class="deposit-step"><span class="num">✦</span><span>Balance due 7 days before event</span></div>
+          <div class="deposit-step"><span class="num">✦</span><span>Bundle 2+ experiences — save 10%</span></div>
+          <div class="deposit-step"><span class="num">✦</span><span>Weekend dates book quickly</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <strong id="footerName">Sample Party Co.</strong>
+    <span id="footerCity">Your City, ST</span>
+    <div class="footer-links">
+      <a href="#niches">Experiences</a>
+      <a href="#about">About</a>
+      <a href="#booking">Book Now</a>
+      <a id="footerPhone" href="#">Call Us</a>
+    </div>
+    <div class="built-by">
+      Built with the <a href="https://partybusinesscoach.com" target="_blank" rel="noopener">KPPS Flagship Template</a> 👑
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   RENDER ENGINE — populates the page from CONFIG
+   ═══════════════════════════════════════════════════════════════════ */
+
+(function render() {
+  const c = CONFIG;
+
+  // Brand
+  document.getElementById('brandMark').textContent = c.business.initial;
+  document.getElementById('brandName').textContent = c.business.name;
+  document.getElementById('brandTagline').textContent = c.business.tagline;
+  document.title = c.business.name + ' | ' + c.business.tagline;
+
+  // Hero
+  document.getElementById('heroScript').textContent = c.business.heroScript;
+  document.getElementById('heroHeadline').innerHTML = c.business.heroHeadline + ' <span class="accent-text">' + c.business.heroAccent + '</span>';
+  document.getElementById('heroLead').textContent = c.business.heroLead;
+  document.getElementById('heroPrice').textContent = '$' + c.business.startingPrice;
+
+  // Founding
+  if (c.foundingFamilies && c.foundingFamilies.enabled) {
+    document.getElementById('foundingDescription').innerHTML = c.foundingFamilies.description.replace(c.foundingFamilies.discount, '<strong>' + c.foundingFamilies.discount + '</strong>');
+    const remaining = c.foundingFamilies.spotsTotal - c.foundingFamilies.spotsClaimed;
+    document.getElementById('foundingSpots').textContent = remaining + ' of ' + c.foundingFamilies.spotsTotal + ' founding family spots remaining';
+  } else {
+    document.getElementById('foundingSection').style.display = 'none';
+  }
+
+  // Contact
+  document.getElementById('contactPhone').innerHTML = '📞 ' + c.business.phone;
+  document.getElementById('contactPhone').href = 'tel:' + c.business.phone.replace(/\D/g, '');
+  document.getElementById('contactEmail').innerHTML = '✉️ ' + c.business.email;
+  document.getElementById('contactEmail').href = 'mailto:' + c.business.email;
+  document.getElementById('contactCity').innerHTML = '📍 ' + c.business.serviceArea;
+
+  // Nav links — auto-build from niches if more than 1
+  const navLinks = document.getElementById('navLinks');
+  navLinks.innerHTML = '<a href="#niches">Experiences</a><a href="#addons">Add-Ons</a><a href="#about">About</a><a href="#reviews">Reviews</a><a href="#booking">Book</a>';
+
+  // Niches
+  const nichesContainer = document.getElementById('nichesContainer');
+  nichesContainer.innerHTML = c.niches.map(n => renderNiche(n)).join('');
+
+  // Niche dropdown for booking form
+  const nicheSelect = document.getElementById('nicheSelect');
+  c.niches.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n.id;
+    opt.textContent = n.name;
+    nicheSelect.appendChild(opt);
+  });
+
+  // Add-ons
+  document.getElementById('addonsGrid').innerHTML = c.addons.map(a =>
+    '<div class="addon"><strong>' + a.name + '</strong><span>' + a.price + '</span></div>'
+  ).join('');
+
+  // About
+  document.getElementById('aboutEyebrow').textContent = c.about.eyebrow;
+  document.getElementById('aboutHeadline').textContent = c.about.headline;
+  document.getElementById('aboutQuote').textContent = '"' + c.about.quote + '"';
+  document.getElementById('aboutParagraphs').innerHTML = c.about.paragraphs.map(p => '<p>' + p + '</p>').join('');
+  document.getElementById('aboutStats').innerHTML = c.about.stats.map(s =>
+    '<div class="stat"><strong>' + s.number + '</strong><span>' + s.label + '</span></div>'
+  ).join('');
+
+  // Reviews
+  document.getElementById('reviewsGrid').innerHTML = c.reviews.map(r => {
+    const stars = '★'.repeat(r.stars);
+    return '<div class="review"><div class="stars">' + stars + '</div><p class="review-text">"' + r.text + '"</p><div class="review-author"><div class="review-avatar">' + r.initials + '</div><div><div class="review-name">' + r.name + '</div><div class="review-meta">' + r.meta + '</div></div></div></div>';
+  }).join('');
+
+  // Footer
+  document.getElementById('footerName').textContent = c.business.name;
+  document.getElementById('footerCity').textContent = c.business.city;
+  document.getElementById('footerPhone').href = 'tel:' + c.business.phone.replace(/\D/g, '');
+  document.getElementById('footerPhone').textContent = c.business.phone;
+
+  // Form org_id (Hub-ready)
+  document.getElementById('orgIdField').value = c.orgId;
+  document.getElementById('policyLink').href = c.policies.policyUrl || '#';
+})();
+
+function renderNiche(n) {
+  const treatmentMap = {
+    'bear': 'niche-bear',
+    'spa': 'niche-spa',
+    'slumber': 'niche-slumber',
+    'teepee': 'niche-teepee',
+    'slime': 'niche-slime',
+    'paint': 'niche-paint',
+    'craft': 'niche-craft',
+    'candy': 'niche-candy',
+    'foodcart': 'niche-foodcart',
+    'facepaint': 'niche-facepaint',
+    'photo': 'niche-photo',
+    'movie': 'niche-movie',
+    'softplay': 'niche-softplay',
+    'bounce': 'niche-bounce',
+    'coordinator': 'niche-coordinator',
+    'custom': 'niche-custom'
+  };
+  const typeClass = treatmentMap[n.type] || 'niche-custom';
+
+  const packagesHtml = n.packages.map(p => {
+    const includesHtml = p.includes.map(i => '<li>' + i + '</li>').join('');
+    return `
+      <article class="package${p.popular ? ' popular' : ''}" data-niche="${n.id}" data-price="${p.price}" data-name="${p.name}">
+        <div class="package-top">
+          <h4>${p.name}</h4>
+          ${p.popular ? '<div class="tag">Most Loved</div>' : ''}
+        </div>
+        <div class="price">$${p.price}</div>
+        <div class="price-note">${p.note}</div>
+        <ul class="package-list">${includesHtml}</ul>
+        <div class="package-footer">${p.footer}</div>
+      </article>
+    `;
+  }).join('');
+
+  const activitiesHtml = n.activities && n.activities.length ? `
+    <div class="activities-row">
+      <div class="activity-card">
+        <h4>Activity options</h4>
+        <p style="color: var(--text-soft); font-size: 0.88rem;">If your package includes an activity, choose from these.</p>
+        <div class="pill-row">
+          ${n.activities.map(a => '<div class="pill">' + a + '</div>').join('')}
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  return `
+    <div class="niche-block ${typeClass}" id="niche-${n.id}">
+      <div class="niche-header">
+        <div class="niche-icon">${n.icon}</div>
+        <div class="eyebrow">${n.tagline}</div>
+        <h3 class="display">${n.name}</h3>
+        <p>${n.description}</p>
+      </div>
+      <div class="packages">${packagesHtml}</div>
+      ${activitiesHtml}
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BOOKING FORM LOGIC — niche selection + estimate calculator
+   ═══════════════════════════════════════════════════════════════════ */
+
+const nicheSelect = document.getElementById('nicheSelect');
+const nicheDetails = document.getElementById('nicheDetails');
+const nicheDetailsTitle = document.getElementById('nicheDetailsTitle');
+const packageSelect = document.getElementById('packageSelect');
+const activitiesSection = document.getElementById('activitiesSection');
+const activitySelect = document.getElementById('activitySelect');
+const guestCount = document.getElementById('guestCount');
+const preferredDate1 = document.getElementById('preferredDate1');
+const estimateLines = document.getElementById('estimateLines');
+const estimateTotal = document.getElementById('estimateTotal');
+const bookingForm = document.getElementById('bookingForm');
+const successMessage = document.getElementById('successMessage');
+
+nicheSelect.addEventListener('change', function() {
+  const niche = CONFIG.niches.find(n => n.id === this.value);
+  packageSelect.innerHTML = '<option value="">Select a package</option>';
+  activitySelect.innerHTML = '<option value="">Activity choice</option>';
+  if (!niche) {
+    nicheDetails.classList.remove('show');
+    activitiesSection.style.display = 'none';
+    updateEstimate();
+    return;
+  }
+  nicheDetails.classList.add('show');
+  nicheDetailsTitle.textContent = niche.name + ' — package details';
+  niche.packages.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.price;
+    opt.textContent = p.name + ' — $' + p.price;
+    opt.dataset.name = p.name;
+    packageSelect.appendChild(opt);
+  });
+  if (niche.activities && niche.activities.length) {
+    niche.activities.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a;
+      opt.textContent = a;
+      activitySelect.appendChild(opt);
+    });
+    activitiesSection.style.display = 'block';
+  } else {
+    activitiesSection.style.display = 'none';
+  }
+  updateEstimate();
+});
+
+[packageSelect, activitySelect, guestCount, preferredDate1].forEach(el => {
+  el.addEventListener('change', updateEstimate);
+  el.addEventListener('input', updateEstimate);
+});
+
+function getDaysUntilEvent() {
+  if (!preferredDate1.value) return 999;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const selected = new Date(preferredDate1.value + 'T00:00:00');
+  return Math.ceil((selected - today) / (1000 * 60 * 60 * 24));
+}
+
+function updateEstimate() {
+  const lines = [];
+  let total = 0;
+  const niche = CONFIG.niches.find(n => n.id === nicheSelect.value);
+
+  if (niche && packageSelect.value) {
+    const price = Number(packageSelect.value);
+    const pkgName = packageSelect.options[packageSelect.selectedIndex].dataset.name;
+    lines.push({ label: niche.name + ' — ' + pkgName, amount: price });
+    total += price;
+  }
+
+  // Rush fee
+  if (preferredDate1.value && getDaysUntilEvent() < CONFIG.policies.rushDays) {
+    lines.push({ label: 'Rush booking fee', amount: CONFIG.policies.rushFee });
+    total += CONFIG.policies.rushFee;
+  }
+
+  if (lines.length === 0) {
+    estimateLines.innerHTML = '<div class="estimate-line"><span>No selections yet</span><span>$0</span></div>';
+    estimateTotal.textContent = '$0';
+    return;
+  }
+
+  estimateLines.innerHTML = lines.map(l =>
+    '<div class="estimate-line"><span>' + l.label + '</span><span>' + (l.amount < 0 ? '-' : '') + '$' + Math.abs(l.amount) + '</span></div>'
+  ).join('');
+  estimateTotal.textContent = '$' + Math.max(total, 0);
+}
+
+bookingForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  formData.append('estimate_total', estimateTotal.textContent);
+
+  // Phase 1: Formspree submission
+  // Phase 2: Replace this with Hub API endpoint
+  try {
+    const response = await fetch(CONFIG.formEndpoint, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: formData
+    });
+
+    if (response.ok || CONFIG.formEndpoint.includes('YOUR_FORMSPREE_ID')) {
+      // Success (or demo mode)
+      bookingForm.style.display = 'none';
+      successMessage.classList.add('show');
+      successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      alert('Something went wrong. Please call us directly at ' + CONFIG.business.phone);
+    }
+  } catch (err) {
+    // Demo mode fallback
+    bookingForm.style.display = 'none';
+    successMessage.classList.add('show');
+    successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+</script>
+
+</body>
+</html>
