@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Website | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4A2B63;--plum-800:#5A3476;--brand:#6A417E;--brand-deep:#8E67A6;
+  --mauve:#A67BB5;--pink:#E6A2BE;--pink-soft:#F4D2DF;
+  --gold:#C9A227;--gold-bright:#D4AE52;--gold-soft:#F6E5A6;
+  --cream:#FCF8F4;--ink:#1F1A24;--muted:#6C6473;
+  --line:#EAE3ED;--line-strong:#DDD1E5;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --shadow-sm:0 8px 24px rgba(59,35,81,.06);
+  --shadow:0 4px 16px rgba(59,35,81,.06),0 2px 4px rgba(59,35,81,.04);
+  --shadow-lg:0 24px 70px rgba(61,39,85,.15);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit}
+
+/* TOP NAV — same as other Hub pages */
+.topnav{position:sticky;top:0;z-index:50;background:rgba(255,253,252,.95);backdrop-filter:blur(14px);border-bottom:1px solid rgba(74,43,99,.08)}
+.topnav-inner{max-width:1440px;margin:0 auto;padding:12px 24px;display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center}
+.topnav-left{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none}
+.topnav-left img{height:44px;width:auto}
+.topnav-tabs{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:var(--shadow-sm)}
+.topnav-tab{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .18s;border:none;background:transparent;white-space:nowrap}
+.topnav-tab:hover{color:var(--plum-900);background:rgba(230,162,190,.12)}
+.topnav-tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 6px 16px rgba(90,52,118,.28);font-weight:700}
+.topnav-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.user-chip{display:flex;align-items:center;gap:10px;padding:7px 14px 7px 8px;background:#fff;border:1px solid var(--line);border-radius:999px;cursor:pointer;transition:all .18s}
+.user-chip:hover{border-color:var(--mauve)}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.user-chip-text{font-size:13px;font-weight:600;color:var(--plum-900);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-menu{position:absolute;top:58px;right:24px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);padding:8px;min-width:220px;display:none;z-index:60}
+.user-menu.open{display:block}
+.user-menu-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink);border:none;background:transparent;width:100%;text-align:left;transition:background .15s;text-decoration:none}
+.user-menu-item:hover{background:var(--cream)}
+.user-menu-item.danger{color:var(--danger)}
+.user-menu-divider{height:1px;background:var(--line);margin:4px 0}
+@media(max-width:960px){
+  .topnav-inner{grid-template-columns:auto 1fr auto}
+  .topnav-tabs{overflow-x:auto;max-width:100%;gap:2px}
+  .topnav-tab{padding:8px 12px;font-size:12px}
+  .user-chip-text{display:none}
+  .topnav-left img{height:36px}
+}
+
+/* PAGE HEADER */
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:2.4rem 1.5rem 2.6rem;color:#fff;position:relative;overflow:hidden}
+.page-header::after{content:"";position:absolute;top:-50%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(201,162,39,.18) 0%,transparent 70%);pointer-events:none}
+.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.page-eyebrow{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:.7rem;padding:.3rem .75rem;background:rgba(201,162,39,.16);border:1px solid rgba(201,162,39,.35);border-radius:50px}
+.page-title{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,4vw,2.6rem);font-weight:700;margin-bottom:.5rem;line-height:1.12;letter-spacing:-.02em}
+.page-title .script{font-family:'Dancing Script',cursive;color:var(--gold-soft);font-size:1.08em}
+.page-sub{font-size:.95rem;color:rgba(255,255,255,.82);max-width:600px;line-height:1.65}
+
+/* WIZARD STEPS */
+.steps-bar{background:#fff;border-bottom:1px solid var(--line);padding:.9rem 1.5rem;position:sticky;top:68px;z-index:40;box-shadow:var(--shadow-sm)}
+.steps-inner{max-width:1100px;margin:0 auto;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.step-pill{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1rem;border-radius:999px;font-size:.84rem;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;transition:all .15s;font-family:inherit}
+.step-pill .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--cream);color:var(--muted);font-size:.74rem;font-weight:800}
+.step-pill.active{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 6px 14px rgba(90,52,118,.25)}
+.step-pill.active .num{background:rgba(255,255,255,.3);color:#fff}
+.step-pill.done{color:var(--success)}
+.step-pill.done .num{background:var(--success);color:#fff}
+.step-pill:not(.active):not(.done):hover{background:var(--cream);color:var(--plum-900)}
+.step-pill.locked{opacity:.55;cursor:not-allowed}
+.step-divider{color:var(--line-strong);font-size:1rem}
+
+.wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 4rem}
+.panel{display:none}
+.panel.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border-radius:20px;border:1px solid var(--line);padding:1.8rem;margin-bottom:1.2rem;box-shadow:var(--shadow-sm)}
+.card-header{margin-bottom:1.4rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}
+.card-header h2{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.55rem;margin-bottom:.35rem;letter-spacing:-.01em}
+.card-header p{color:var(--muted);font-size:.92rem;line-height:1.6;max-width:680px}
+
+/* NICHE PICKER GRID */
+.niche-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:.5rem}
+.niche-tile{position:relative;border:2px solid transparent;border-radius:18px;padding:18px 16px 16px;cursor:pointer;transition:all .22s;overflow:hidden;background:#fff;text-align:left}
+.niche-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--mauve)}
+.niche-tile.selected{border-color:var(--gold);box-shadow:0 14px 32px rgba(201,162,39,.22)}
+.niche-tile.selected::after{content:"✓";position:absolute;top:10px;right:12px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.86rem;z-index:2;box-shadow:0 6px 14px rgba(201,162,39,.4)}
+
+/* Each niche tile gets its own gradient swatch matching the template treatment */
+.niche-swatch{height:90px;border-radius:14px;margin-bottom:12px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.niche-swatch::before{content:"";position:absolute;inset:0}
+.niche-swatch::after{content:"";position:absolute;width:60px;height:60px;border-radius:50%;filter:blur(6px)}
+
+.niche-tile-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--plum-900);line-height:1.2;margin-bottom:3px}
+.niche-tile-desc{font-size:.78rem;color:var(--muted);line-height:1.55}
+
+/* NICHE TREATMENT SWATCHES — match the template.html visual story */
+.swatch-bear{background:radial-gradient(circle at 12% 20%,rgba(255,215,168,.7),transparent 50%),radial-gradient(circle at 88% 75%,rgba(255,214,224,.65),transparent 50%),linear-gradient(135deg,#fff5ef,#fff0e8)}
+.swatch-bear::after{top:8px;right:12px;background:radial-gradient(circle,rgba(255,127,175,.4),transparent 65%)}
+.swatch-spa{background:radial-gradient(circle at 15% 25%,rgba(216,232,215,.85),transparent 50%),radial-gradient(circle at 85% 80%,rgba(248,215,218,.65),transparent 50%),linear-gradient(135deg,#f5f9f3,#fdf2f4)}
+.swatch-spa::after{top:8px;right:14px;background:radial-gradient(circle,rgba(168,196,162,.45),transparent 65%)}
+.swatch-slumber{background:radial-gradient(circle at 20% 15%,rgba(180,165,220,.75),transparent 50%),radial-gradient(circle at 85% 75%,rgba(255,200,215,.6),transparent 50%),linear-gradient(135deg,#f4f1fa,#fef0f5)}
+.swatch-slumber::after{top:8px;right:12px;background:radial-gradient(circle,rgba(127,100,168,.42),transparent 65%)}
+.swatch-teepee{background:radial-gradient(circle at 18% 22%,rgba(206,213,188,.85),transparent 52%),radial-gradient(circle at 82% 78%,rgba(232,180,142,.7),transparent 52%),linear-gradient(135deg,#f7f5ee,#fbf0e6)}
+.swatch-teepee::after{top:8px;left:12px;background:radial-gradient(circle,rgba(232,180,142,.55),transparent 60%)}
+.swatch-slime{background:radial-gradient(circle at 12% 28%,rgba(168,230,207,.85),transparent 50%),radial-gradient(circle at 88% 75%,rgba(255,200,222,.75),transparent 50%),radial-gradient(circle at 50% 50%,rgba(255,240,175,.5),transparent 60%),linear-gradient(135deg,#f0fbf5,#fff5fa)}
+.swatch-slime::after{top:8px;right:14px;background:radial-gradient(circle,rgba(76,200,175,.5),transparent 65%)}
+.swatch-paint{background:radial-gradient(circle at 25% 18%,rgba(220,200,248,.78),transparent 52%),radial-gradient(circle at 78% 72%,rgba(255,215,178,.75),transparent 52%),radial-gradient(circle at 60% 90%,rgba(192,230,215,.6),transparent 58%),linear-gradient(135deg,#f8f4ff,#f3fbf6)}
+.swatch-paint::after{top:8px;left:14px;background:radial-gradient(circle,rgba(168,132,220,.5),transparent 60%)}
+.swatch-craft{background:radial-gradient(circle at 18% 22%,rgba(232,200,145,.78),transparent 52%),radial-gradient(circle at 82% 78%,rgba(248,220,175,.85),transparent 52%),linear-gradient(135deg,#fdf6e8,#faf3df)}
+.swatch-craft::after{top:8px;right:12px;background:radial-gradient(circle,rgba(180,145,95,.45),transparent 65%)}
+.swatch-candy{background:radial-gradient(circle at 14% 22%,rgba(255,195,215,.85),transparent 50%),radial-gradient(circle at 86% 78%,rgba(190,232,210,.7),transparent 52%),radial-gradient(circle at 50% 50%,rgba(255,240,220,.55),transparent 60%),linear-gradient(135deg,#fff4f8,#f3fbf5)}
+.swatch-candy::after{top:8px;right:14px;background:radial-gradient(circle,rgba(232,130,165,.5),transparent 65%)}
+.swatch-foodcart{background:radial-gradient(circle at 18% 25%,rgba(255,195,165,.8),transparent 52%),radial-gradient(circle at 82% 75%,rgba(255,222,145,.8),transparent 52%),linear-gradient(135deg,#fff5ef,#fff8e8)}
+.swatch-foodcart::after{top:8px;right:14px;background:radial-gradient(circle,rgba(220,135,90,.5),transparent 60%)}
+.swatch-facepaint{background:radial-gradient(circle at 12% 22%,rgba(255,200,220,.78),transparent 48%),radial-gradient(circle at 50% 18%,rgba(220,200,248,.7),transparent 48%),radial-gradient(circle at 88% 25%,rgba(180,220,248,.7),transparent 48%),radial-gradient(circle at 50% 80%,rgba(255,230,180,.7),transparent 52%),linear-gradient(135deg,#fff6f8,#f5f9ff)}
+.swatch-facepaint::after{top:8px;right:12px;background:radial-gradient(circle,rgba(232,145,195,.5),transparent 65%)}
+.swatch-photo{background:radial-gradient(circle at 18% 22%,rgba(232,200,130,.65),transparent 52%),radial-gradient(circle at 82% 78%,rgba(232,180,188,.7),transparent 52%),linear-gradient(135deg,#fffaf0,#faf3e8)}
+.swatch-photo::after{top:8px;right:12px;background:radial-gradient(circle,rgba(196,158,92,.5),transparent 65%)}
+.swatch-movie{background:radial-gradient(circle at 22% 18%,rgba(155,175,215,.7),transparent 52%),radial-gradient(circle at 78% 82%,rgba(255,220,195,.7),transparent 52%),radial-gradient(circle at 50% 50%,rgba(220,200,232,.55),transparent 58%),linear-gradient(135deg,#f3f6fb,#faf2f8)}
+.swatch-movie::after{top:8px;right:14px;background:radial-gradient(circle,rgba(108,138,188,.5),transparent 65%)}
+.swatch-softplay{background:radial-gradient(circle at 14% 22%,rgba(180,220,248,.85),transparent 50%),radial-gradient(circle at 86% 75%,rgba(255,230,180,.75),transparent 52%),radial-gradient(circle at 50% 88%,rgba(255,200,220,.6),transparent 58%),linear-gradient(135deg,#f5fafd,#fff4f7)}
+.swatch-softplay::after{top:8px;right:14px;background:radial-gradient(circle,rgba(140,195,232,.5),transparent 65%)}
+.swatch-bounce{background:radial-gradient(circle at 12% 25%,rgba(255,175,165,.85),transparent 50%),radial-gradient(circle at 88% 75%,rgba(135,200,240,.75),transparent 52%),radial-gradient(circle at 50% 50%,rgba(255,220,130,.55),transparent 58%),linear-gradient(135deg,#fff4ef,#f3faff)}
+.swatch-bounce::after{top:8px;right:12px;background:radial-gradient(circle,rgba(232,110,90,.5),transparent 65%)}
+.swatch-coordinator{background:radial-gradient(circle at 18% 22%,rgba(218,200,148,.6),transparent 52%),radial-gradient(circle at 82% 78%,rgba(168,158,182,.6),transparent 52%),linear-gradient(135deg,#faf8f3,#f5f3f7)}
+.swatch-coordinator::after{top:8px;right:12px;background:radial-gradient(circle,rgba(115,100,130,.45),transparent 65%)}
+.swatch-custom{background:radial-gradient(circle at 88% 15%,rgba(230,220,255,.75),transparent 50%),radial-gradient(circle at 12% 85%,rgba(255,214,224,.7),transparent 50%),linear-gradient(135deg,#fbf5ff,#fff5fa)}
+.swatch-custom::after{top:8px;left:12px;background:radial-gradient(circle,rgba(216,168,78,.4),transparent 60%)}
+
+/* FORM FIELDS */
+.field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.field label{font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:.7rem .9rem;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;color:var(--ink);background:#fff;transition:all .15s;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--mauve);outline:none;box-shadow:0 0 0 3px rgba(166,123,181,.14)}
+.field input[type="color"]{padding:4px;height:46px;cursor:pointer}
+.field input[type="file"]{padding:8px;background:var(--cream);cursor:pointer}
+.field textarea{min-height:80px;resize:vertical}
+.field-help{font-size:.78rem;color:var(--muted);margin-top:.3rem;line-height:1.55}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* LOGO PREVIEW */
+.logo-row{display:grid;grid-template-columns:auto 1fr;gap:1.2rem;align-items:center;padding:1.1rem;background:linear-gradient(135deg,rgba(90,52,118,.04),rgba(230,162,190,.08));border:1px solid var(--line);border-radius:14px;margin-bottom:1rem}
+.logo-preview{width:80px;height:80px;border-radius:14px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.logo-preview img{width:100%;height:100%;object-fit:contain;padding:4px}
+.logo-fallback{font-family:'Playfair Display',serif;font-size:32px;color:var(--plum-900);font-weight:700}
+.logo-text strong{display:block;font-family:'Playfair Display',serif;font-size:18px;color:var(--plum-900);margin-bottom:3px}
+.logo-text small{font-size:12px;color:var(--muted)}
+
+/* COLOR PALETTE PRESETS */
+.palette-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:.5rem}
+.palette-tile{position:relative;border:2px solid transparent;border-radius:14px;padding:12px;cursor:pointer;transition:all .18s;background:#fff}
+.palette-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);border-color:var(--mauve)}
+.palette-tile.selected{border-color:var(--gold);box-shadow:0 10px 22px rgba(201,162,39,.2)}
+.palette-tile.selected::after{content:"✓";position:absolute;top:6px;right:8px;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.76rem;z-index:2}
+.palette-swatches{display:flex;gap:5px;margin-bottom:8px}
+.palette-dot{flex:1;height:36px;border-radius:8px;border:1px solid rgba(0,0,0,.05)}
+.palette-name{font-size:.78rem;font-weight:700;color:var(--plum-900)}
+
+/* BUTTONS */
+.btn{padding:.85rem 1.6rem;border:none;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .15s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 10px 24px rgba(90,52,118,.22)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(90,52,118,.3)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-outline{background:#fff;color:var(--plum-800);border:1.5px solid var(--line-strong)}
+.btn-outline:hover{border-color:var(--mauve);color:var(--plum-900)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;box-shadow:0 10px 24px rgba(201,162,39,.28)}
+.btn-gold:hover{transform:translateY(-1px)}
+
+/* WIZARD NAV */
+.wizard-nav{display:flex;justify-content:space-between;gap:1rem;margin-top:1.4rem;padding-top:1.4rem;border-top:1px solid var(--line);flex-wrap:wrap}
+.wizard-nav-left,.wizard-nav-right{display:flex;gap:.6rem;flex-wrap:wrap}
+.autosave-badge{font-size:.78rem;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem;padding:.5rem .8rem;background:var(--cream);border-radius:8px}
+.autosave-badge.saved{color:var(--success)}
+.autosave-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.9rem 1.5rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* AUTH GATE */
+.auth-gate{position:fixed;inset:0;background:linear-gradient(155deg,var(--plum-900),var(--brand) 60%,var(--mauve));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff}
+.auth-spinner{width:52px;height:52px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-gate-text{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:.02em}
+.auth-gate-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
+
+/* KPPS UPGRADE GATE */
+.upgrade-gate{max-width:680px;margin:3rem auto;background:linear-gradient(155deg,#241431 0%,#3a1f5c 50%,#5b21b6 100%);color:#fff;border-radius:24px;padding:3rem 2rem;text-align:center;box-shadow:0 24px 70px rgba(91,33,182,.35);position:relative;overflow:hidden;border:2px solid rgba(212,168,64,.45)}
+.upgrade-gate::before{content:"";position:absolute;top:-100px;right:-100px;width:280px;height:280px;background:radial-gradient(circle,rgba(212,168,64,.2),transparent 65%);pointer-events:none}
+.upgrade-gate-inner{position:relative;z-index:1}
+.upgrade-icon{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;font-size:32px;margin-bottom:1rem;box-shadow:0 10px 30px rgba(201,162,39,.4)}
+.upgrade-gate h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.2rem);margin-bottom:.7rem;color:#fff;letter-spacing:-.01em}
+.upgrade-gate h2 .script{font-family:'Dancing Script',cursive;color:var(--gold-soft)}
+.upgrade-gate p{color:rgba(255,255,255,.85);font-size:.96rem;line-height:1.7;margin-bottom:1.4rem;max-width:520px;margin-left:auto;margin-right:auto}
+.upgrade-features{text-align:left;max-width:440px;margin:0 auto 1.6rem;display:grid;gap:8px}
+.upgrade-feature{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:.9rem;color:rgba(255,255,255,.92);backdrop-filter:blur(8px)}
+.upgrade-feature::before{content:"✦";color:var(--gold-bright);font-weight:800;flex-shrink:0;margin-top:1px}
+.upgrade-cta{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;text-decoration:none;font-weight:800;padding:1rem 2rem;border-radius:14px;font-size:1rem;box-shadow:0 14px 32px rgba(201,162,39,.4);transition:transform .18s}
+.upgrade-cta:hover{transform:translateY(-2px)}
+.upgrade-note{margin-top:1rem;font-size:.78rem;color:rgba(255,255,255,.6)}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-spinner"></div>
+  <div class="auth-gate-text">Loading your website builder</div>
+  <div class="auth-gate-sub">Build · Book · Be Paid</div>
+</div>
+
+<!-- TOP NAV -->
+<div class="topnav" id="topnav" style="display:none">
+  <div class="topnav-inner">
+    <a href="app.html" class="topnav-left">
+      <img src="partybizhub-logo.png" alt="Party Biz Hub"/>
+    </a>
+    <div class="topnav-tabs">
+      <a href="app.html" class="topnav-tab"><span>📄</span>Quote</a>
+      <a href="contract.html" class="topnav-tab"><span>📝</span>Contract</a>
+      <a href="profit.html" class="topnav-tab"><span>💰</span>Profit</a>
+      <a href="prep.html" class="topnav-tab"><span>📋</span>Prep</a>
+      <a href="vendors.html" class="topnav-tab"><span>🤝</span>Vendors</a>
+      <a href="mywebsite.html" class="topnav-tab active"><span>🌐</span>My Website</a>
+    </div>
+    <div class="topnav-right">
+      <div class="user-chip" id="userChip" onclick="toggleUserMenu(event)">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-chip-text" id="userChipText">Loading...</div>
+      </div>
+    </div>
+  </div>
+  <div class="user-menu" id="userMenu">
+    <a href="app.html" class="user-menu-item">📄 Quote Builder</a>
+    <a href="profile.html" class="user-menu-item">⚙ Business Profile</a>
+    <div class="user-menu-divider"></div>
+    <button class="user-menu-item danger" onclick="handleLogout()">🚪 Sign Out</button>
+  </div>
+</div>
+
+<!-- KPPS UPGRADE GATE — shown when user is Hub-only (not KPPS) -->
+<div id="upgradeGate" style="display:none">
+  <div class="upgrade-gate">
+    <div class="upgrade-gate-inner">
+      <div class="upgrade-icon">🔒</div>
+      <h2>Website Builder is part of <span class="script">KPPS</span></h2>
+      <p>The Website Builder is included with the Kids Party Profit System — Coach Monica's complete business-in-a-box course. Hub Founders get $97 off when they upgrade.</p>
+      <div class="upgrade-features">
+        <div class="upgrade-feature">15 niche-specific premium templates ready to deploy</div>
+        <div class="upgrade-feature">Full KPPS course + 15 niche playbooks</div>
+        <div class="upgrade-feature">Kids Party Profit Academy (Skool community)</div>
+        <div class="upgrade-feature">Your $29/mo Hub rate stays locked for life</div>
+      </div>
+      <a href="https://partybusinesscoach.com" target="_blank" rel="noopener" class="upgrade-cta">Upgrade to KPPS — $400 →</a>
+      <div class="upgrade-note">Use code <strong style="color:var(--gold-soft)">HUBTOKPPS</strong> at checkout for $97 off as a Hub Founder.</div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="page-header" id="pageHeader" style="display:none">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">🌐 Website Builder · KPPS</div>
+    <h1 class="page-title">Build your party business <span class="script">website</span> in minutes.</h1>
+    <p class="page-sub">No coding. No drag-drop puzzles. Pick your niche, add your brand, fill in your packages — done. Your finished site is yours to download and deploy.</p>
+  </div>
+</div>
+
+<!-- STEPS BAR -->
+<div class="steps-bar" id="stepsBar" style="display:none">
+  <div class="steps-inner">
+    <button class="step-pill active" data-step="1" onclick="goToStep(1)"><span class="num">1</span>Pick your niche</button>
+    <span class="step-divider">→</span>
+    <button class="step-pill locked" data-step="2" onclick="goToStep(2)"><span class="num">2</span>Your brand</button>
+    <span class="step-divider">→</span>
+    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Coming soon</button>
+    <span class="autosave-badge saved" id="autosaveBadge" style="margin-left:auto;display:none"><span class="dot"></span>Saved</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="wrap" id="mainContent" style="display:none">
+
+  <!-- STEP 1 — NICHE PICKER -->
+  <div class="panel active" id="panelStep1">
+    <div class="card">
+      <div class="card-header">
+        <h2>Pick your niche</h2>
+        <p>Choose the visual treatment that matches YOUR business. Each niche has its own dimensional color story baked in. You can change it later — no commitment.</p>
+      </div>
+      <div class="niche-grid" id="nicheGrid"></div>
+
+      <div class="wizard-nav">
+        <div class="wizard-nav-left"></div>
+        <div class="wizard-nav-right">
+          <button class="btn btn-primary" id="step1NextBtn" onclick="continueFromStep1()" disabled>
+            Continue to Step 2 →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 — BRAND -->
+  <div class="panel" id="panelStep2">
+    <div class="card">
+      <div class="card-header">
+        <h2>Your brand</h2>
+        <p>This is how your client will see your business — on every page, every booking form, every detail. We'll keep this dead simple.</p>
+      </div>
+
+      <!-- Live logo preview -->
+      <div class="logo-row">
+        <div class="logo-preview" id="logoPreview">
+          <div class="logo-fallback" id="logoFallback">P</div>
+        </div>
+        <div class="logo-text">
+          <strong id="logoBusinessName">Your Business Name</strong>
+          <small id="logoStatus">No logo uploaded yet · PNG works best (transparent if possible)</small>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Business name</label>
+          <input type="text" id="businessName" placeholder="e.g. Bear Hug Events"/>
+          <div class="field-help">Appears at the top of every page on your site.</div>
+        </div>
+        <div class="field">
+          <label>Tagline</label>
+          <input type="text" id="tagline" placeholder="e.g. Luxury kids party experiences"/>
+          <div class="field-help">A one-line description under your business name.</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Phone</label>
+          <input type="tel" id="phone" placeholder="(555) 123-4567"/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="hello@yourbusiness.com"/>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>City / Service area</label>
+          <input type="text" id="city" placeholder="e.g. Orlando, FL"/>
+        </div>
+        <div class="field">
+          <label>Logo upload</label>
+          <input type="file" id="logoUpload" accept="image/*"/>
+          <div class="field-help">Square or transparent PNG works best.</div>
+        </div>
+      </div>
+
+      <!-- Color palette presets -->
+      <div style="margin-top:1.4rem">
+        <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Brand color palette</div>
+        <div style="font-size:.84rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6">Pick a palette OR a custom color below. Your site will style itself with these colors.</div>
+        <div class="palette-grid" id="paletteGrid"></div>
+
+        <div class="grid-2" style="margin-top:1rem">
+          <div class="field">
+            <label>Custom primary color</label>
+            <input type="color" id="customPrimary" value="#ff7faf"/>
+            <div class="field-help">Override the palette with any color you want.</div>
+          </div>
+          <div class="field">
+            <label>Custom accent color</label>
+            <input type="color" id="customAccent" value="#d4a840"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <div class="wizard-nav-left">
+          <button class="btn btn-outline" onclick="goToStep(1)">← Back</button>
+        </div>
+        <div class="wizard-nav-right">
+          <button class="btn btn-primary" onclick="continueFromStep2()">
+            Continue to Step 3 →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — PLACEHOLDER FOR TOMORROW -->
+  <div class="panel" id="panelStep3">
+    <div class="card" style="text-align:center;padding:3rem 2rem">
+      <div style="font-size:3rem;margin-bottom:1rem">🚧</div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.6rem;margin-bottom:.7rem">Step 3 — Coming Tomorrow</h2>
+      <p style="color:var(--muted);max-width:520px;margin:0 auto 1.4rem;line-height:1.7">This is where you'll fill in your packages, prices, reviews, and about section. We're shipping this in the next 1-2 days.</p>
+      <p style="color:var(--muted);max-width:480px;margin:0 auto;font-size:.86rem;line-height:1.65">For now — your niche pick and brand details are saved. Come back when Step 3 is ready and pick up right where you left off.</p>
+      <div class="wizard-nav" style="justify-content:center">
+        <button class="btn btn-outline" onclick="goToStep(2)">← Back to Brand</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,currentBuild=null,logoDataURL=null;
+const $=id=>document.getElementById(id);
+
+// ─── 16 NICHE TYPES (matches template.html) ───────────────────────
+const NICHES=[
+  {type:'bear',name:'Stuff-A-Bear Parties',desc:'Warm coral + peach. Hug feel.'},
+  {type:'spa',name:'Mobile Spa Parties',desc:'Eucalyptus + blush. Calming.'},
+  {type:'slumber',name:'Slumber Parties',desc:'Twilight purple + dusty pink.'},
+  {type:'teepee',name:'Teepee Setups',desc:'Sage + terracotta. Boho.'},
+  {type:'slime',name:'Slime / Science Parties',desc:'Mint + bubblegum + lemon.'},
+  {type:'paint',name:'Paint & Sip Parties',desc:'Lavender + peach + mint.'},
+  {type:'craft',name:'DIY Craft Parties',desc:'Kraft brown + butter yellow.'},
+  {type:'candy',name:'Candy / Dessert Stations',desc:'Strawberry + mint + vanilla.'},
+  {type:'foodcart',name:'Food Cart Rentals',desc:'Tomato red + sunflower.'},
+  {type:'facepaint',name:'Face Paint & Balloons',desc:'Rainbow pastel. Multi-color.'},
+  {type:'photo',name:'Photo Booth Rentals',desc:'Champagne gold + dusty rose.'},
+  {type:'movie',name:'Outdoor Movie Nights',desc:'Twilight blue + popcorn cream.'},
+  {type:'softplay',name:'Soft Play / Toddler',desc:'Powder blue + butter yellow.'},
+  {type:'bounce',name:'Bounce House Rentals',desc:'Coral + sunflower + sky.'},
+  {type:'coordinator',name:'Event Coordinator',desc:'Obsidian + champagne. Luxe.'},
+  {type:'custom',name:'Something Else (Custom)',desc:'Universal lavender + pink fallback.'}
+];
+
+// ─── 8 PRESET PALETTES ────────────────────────────────────────────
+const PALETTES=[
+  {name:'Modern Playful',primary:'#ff7faf',accent:'#d4a840',swatches:['#ff7faf','#ffd7a8','#e6dcff','#fff9f5','#d4a840']},
+  {name:'Editorial Luxury',primary:'#2f2430',accent:'#c9a227',swatches:['#2f2430','#a89788','#ede4d4','#fffaf3','#c9a227']},
+  {name:'Sage & Blush',primary:'#a8c4a2',accent:'#c9a961',swatches:['#a8c4a2','#f4c8c8','#f0ede5','#fafaf5','#c9a961']},
+  {name:'Dusty Rose',primary:'#c89a9a',accent:'#b08968',swatches:['#c89a9a','#e8d4c4','#f5ebe5','#fff8f3','#b08968']},
+  {name:'Sky & Lemon',primary:'#88c4ea',accent:'#d4a55c',swatches:['#88c4ea','#f7d967','#fef5d3','#fafdff','#d4a55c']},
+  {name:'Royal Plum',primary:'#6a417e',accent:'#c9a227',swatches:['#6a417e','#a67bb5','#f4d2df','#fcf8f4','#c9a227']},
+  {name:'Coastal',primary:'#3d6b8a',accent:'#e8c585',swatches:['#3d6b8a','#9bb8c9','#f0ebe0','#fdfcfa','#e8c585']},
+  {name:'Boho Spice',primary:'#c87d5a',accent:'#a89060',swatches:['#c87d5a','#e8b88a','#f5e8d8','#fffaf2','#a89060']}
+];
+
+// ─── BOOT ─────────────────────────────────────────────────────────
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+
+  // Load profile to check KPPS access + populate user chip
+  let isKppsMember=false;
+  try{
+    const{data:p}=await sb.from('profiles').select('profile_data,full_name,has_kpps_access').eq('id',currentUser.id).maybeSingle();
+    if(p){
+      isKppsMember=p.has_kpps_access===true;
+      const display=(p.profile_data&&p.profile_data.businessName)||p.full_name||currentUser.email.split('@')[0];
+      $('userChipText').textContent=display;
+      $('userAvatar').textContent=display.charAt(0).toUpperCase();
+    }else{
+      $('userChipText').textContent=currentUser.email.split('@')[0];
+      $('userAvatar').textContent=currentUser.email.charAt(0).toUpperCase();
+    }
+  }catch(e){console.error('Profile load:',e)}
+
+  // Hide auth gate, show nav
+  $('authGate').style.display='none';
+  $('topnav').style.display='block';
+
+  // ── KPPS GATE ──
+  // For now: gate is "soft" — show upgrade screen unless has_kpps_access=true.
+  // If you want everyone to see the builder during beta, comment out the next 4 lines.
+  if(!isKppsMember){
+    $('upgradeGate').style.display='block';
+    return;
+  }
+
+  // KPPS member — show the builder
+  $('pageHeader').style.display='block';
+  $('stepsBar').style.display='block';
+  $('mainContent').style.display='block';
+
+  // Render niche picker
+  renderNicheGrid();
+  // Render palette picker
+  renderPaletteGrid();
+
+  // Load existing build (if any)
+  await loadExistingBuild();
+
+  // Wire live preview for brand step
+  ['businessName','phone','email','city','tagline','customPrimary','customAccent'].forEach(id=>{
+    const el=$(id);
+    if(el)el.addEventListener('input',handleBrandInput);
+  });
+  $('logoUpload').addEventListener('change',handleLogoUpload);
+
+  // Close user menu on outside click
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#userChip')&&!e.target.closest('#userMenu')){
+      $('userMenu').classList.remove('open');
+    }
+  });
+}
+
+// ─── LOAD EXISTING BUILD ──────────────────────────────────────────
+async function loadExistingBuild(){
+  try{
+    const{data,error}=await sb.from('website_builds').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(error){console.error('Load build:',error);return}
+    if(!data)return;
+    currentBuild=data;
+
+    // Restore niche selection
+    if(data.niche_type){
+      selectNiche(data.niche_type,false);
+    }
+
+    // Restore brand
+    if(data.brand_data){
+      const b=data.brand_data;
+      if(b.businessName)$('businessName').value=b.businessName;
+      if(b.tagline)$('tagline').value=b.tagline;
+      if(b.phone)$('phone').value=b.phone;
+      if(b.email)$('email').value=b.email;
+      if(b.city)$('city').value=b.city;
+      if(b.customPrimary){$('customPrimary').value=b.customPrimary}
+      if(b.customAccent){$('customAccent').value=b.customAccent}
+      if(b.paletteName){selectPalette(b.paletteName,false)}
+      if(b.logoDataURL){logoDataURL=b.logoDataURL;applyLogoPreview()}
+      updateLogoTextPreview();
+    }
+
+    // Unlock subsequent steps if niche is picked
+    if(data.niche_type){
+      unlockStep(2);
+      $('step1NextBtn').disabled=false;
+    }
+  }catch(e){console.error('Load exception:',e)}
+}
+
+// ─── NICHE PICKER ────────────────────────────────────────────────
+function renderNicheGrid(){
+  $('nicheGrid').innerHTML=NICHES.map(n=>`
+    <button type="button" class="niche-tile" data-niche="${n.type}" onclick="selectNiche('${n.type}')">
+      <div class="niche-swatch swatch-${n.type}"></div>
+      <div class="niche-tile-name">${n.name}</div>
+      <div class="niche-tile-desc">${n.desc}</div>
+    </button>
+  `).join('');
+}
+
+let selectedNiche=null;
+function selectNiche(type,save=true){
+  selectedNiche=type;
+  document.querySelectorAll('.niche-tile').forEach(t=>{
+    t.classList.toggle('selected',t.dataset.niche===type);
+  });
+  $('step1NextBtn').disabled=false;
+  unlockStep(2);
+  if(save)debouncedSave();
+}
+
+// ─── PALETTE PICKER ──────────────────────────────────────────────
+function renderPaletteGrid(){
+  $('paletteGrid').innerHTML=PALETTES.map(p=>`
+    <button type="button" class="palette-tile" data-palette="${p.name}" onclick="selectPalette('${p.name}')">
+      <div class="palette-swatches">
+        ${p.swatches.map(c=>`<div class="palette-dot" style="background:${c}"></div>`).join('')}
+      </div>
+      <div class="palette-name">${p.name}</div>
+    </button>
+  `).join('');
+}
+
+let selectedPalette=null;
+function selectPalette(name,save=true){
+  selectedPalette=name;
+  const p=PALETTES.find(x=>x.name===name);
+  if(!p)return;
+  document.querySelectorAll('.palette-tile').forEach(t=>{
+    t.classList.toggle('selected',t.dataset.palette===name);
+  });
+  $('customPrimary').value=p.primary;
+  $('customAccent').value=p.accent;
+  if(save)debouncedSave();
+}
+
+// ─── BRAND INPUT HANDLER ─────────────────────────────────────────
+function handleBrandInput(){
+  updateLogoTextPreview();
+  debouncedSave();
+}
+
+function updateLogoTextPreview(){
+  const name=$('businessName').value||'Your Business Name';
+  $('logoBusinessName').textContent=name;
+  if(!logoDataURL){
+    $('logoFallback').textContent=name.charAt(0).toUpperCase();
+  }
+}
+
+function handleLogoUpload(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  if(f.size>2*1024*1024){
+    showToast('Logo too large — max 2 MB');
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    logoDataURL=ev.target.result;
+    applyLogoPreview();
+    debouncedSave();
+  };
+  reader.readAsDataURL(f);
+}
+
+function applyLogoPreview(){
+  const p=$('logoPreview');
+  if(logoDataURL){
+    p.innerHTML=`<img src="${logoDataURL}" alt="Your logo"/>`;
+    $('logoStatus').textContent='Logo uploaded ✓';
+  }else{
+    const name=$('businessName').value||'P';
+    p.innerHTML=`<div class="logo-fallback">${name.charAt(0).toUpperCase()}</div>`;
+    $('logoStatus').textContent='No logo uploaded yet · PNG works best';
+  }
+}
+
+// ─── STEPS NAVIGATION ────────────────────────────────────────────
+let currentStep=1;
+function goToStep(n){
+  // Block jumping to locked steps
+  const pill=document.querySelector(`.step-pill[data-step="${n}"]`);
+  if(pill&&pill.classList.contains('locked'))return;
+  currentStep=n;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  $(`panelStep${n}`).classList.add('active');
+  document.querySelectorAll('.step-pill').forEach(p=>{
+    p.classList.toggle('active',Number(p.dataset.step)===n);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function unlockStep(n){
+  const pill=document.querySelector(`.step-pill[data-step="${n}"]`);
+  if(pill)pill.classList.remove('locked');
+}
+
+function markStepDone(n){
+  const pill=document.querySelector(`.step-pill[data-step="${n}"]`);
+  if(pill){pill.classList.remove('active');pill.classList.add('done')}
+}
+
+function continueFromStep1(){
+  if(!selectedNiche){showToast('Pick a niche first');return}
+  markStepDone(1);
+  unlockStep(2);
+  goToStep(2);
+}
+
+function continueFromStep2(){
+  const name=$('businessName').value.trim();
+  if(!name){showToast('Add your business name first');return}
+  markStepDone(2);
+  unlockStep(3);
+  goToStep(3);
+  saveNow();
+}
+
+// ─── AUTOSAVE ────────────────────────────────────────────────────
+let saveTimer;
+function debouncedSave(){
+  $('autosaveBadge').style.display='inline-flex';
+  $('autosaveBadge').classList.remove('saved');
+  $('autosaveBadge').innerHTML='<span class="dot"></span>Saving...';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveNow,800);
+}
+
+async function saveNow(){
+  if(!currentUser)return;
+  const payload={
+    user_id:currentUser.id,
+    business_name:$('businessName').value||null,
+    niche_type:selectedNiche,
+    brand_data:{
+      businessName:$('businessName').value,
+      tagline:$('tagline').value,
+      phone:$('phone').value,
+      email:$('email').value,
+      city:$('city').value,
+      customPrimary:$('customPrimary').value,
+      customAccent:$('customAccent').value,
+      paletteName:selectedPalette,
+      logoDataURL:logoDataURL
+    },
+    updated_at:new Date().toISOString()
+  };
+
+  try{
+    let result;
+    if(currentBuild&&currentBuild.id){
+      result=await sb.from('website_builds').update(payload).eq('id',currentBuild.id).select().single();
+    }else{
+      result=await sb.from('website_builds').insert(payload).select().single();
+    }
+    if(result.error)throw result.error;
+    currentBuild=result.data;
+    $('autosaveBadge').classList.add('saved');
+    $('autosaveBadge').innerHTML='<span class="dot"></span>Saved';
+  }catch(e){
+    console.error('Save error:',e);
+    $('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Save failed';
+  }
+}
+
+// ─── USER MENU ───────────────────────────────────────────────────
+function toggleUserMenu(e){
+  if(e)e.stopPropagation();
+  $('userMenu').classList.toggle('open');
+}
+
+async function handleLogout(){
+  await sb.auth.signOut();
+  window.location.href='login.html';
+}
+
+function showToast(msg){
+  const t=$('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+init();
+</script>
+</body>
+</html>
