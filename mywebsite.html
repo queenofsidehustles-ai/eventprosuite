@@ -166,6 +166,69 @@ input,select,textarea{font:inherit}
 
 /* BUTTONS */
 .btn{padding:.85rem 1.6rem;border:none;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .15s;font-family:inherit}
+
+/* STEP 3 ACCORDION SECTIONS */
+.accordion-list{display:flex;flex-direction:column;gap:12px;margin-top:.5rem}
+.acc-section{background:#fff;border:1.5px solid var(--line);border-radius:16px;overflow:hidden;transition:all .2s}
+.acc-section.complete{border-color:rgba(30,140,90,.35);background:linear-gradient(135deg,rgba(30,140,90,.02),#fff)}
+.acc-section.open{box-shadow:var(--shadow-sm);border-color:var(--mauve)}
+.acc-head{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;background:transparent;border:none;width:100%;text-align:left;font-family:inherit}
+.acc-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--cream);color:var(--plum-800);font-weight:800;font-size:.92rem;flex-shrink:0;border:1.5px solid var(--line);transition:all .2s}
+.acc-section.complete .acc-num{background:var(--success);color:#fff;border-color:var(--success)}
+.acc-section.complete .acc-num::after{content:"✓";font-size:1rem}
+.acc-section.complete .acc-num span{display:none}
+.acc-title{flex:1;min-width:0}
+.acc-title h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--plum-900);margin-bottom:2px;letter-spacing:-.005em;line-height:1.2}
+.acc-title p{font-size:.78rem;color:var(--muted);line-height:1.4}
+.acc-toggle{font-size:1.3rem;color:var(--muted);transition:transform .2s;flex-shrink:0;line-height:1;width:24px;text-align:center}
+.acc-section.open .acc-toggle{transform:rotate(180deg)}
+.acc-body{display:none;padding:0 20px 20px;border-top:1px solid var(--line);margin-top:0}
+.acc-section.open .acc-body{display:block}
+
+/* PACKAGE CARDS */
+.pkg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:.7rem}
+.pkg-card{border:1.5px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(135deg,#fff,var(--cream))}
+.pkg-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.pkg-tier{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;font-weight:800;font-size:.78rem;flex-shrink:0}
+.pkg-card .field{margin-bottom:.6rem}
+.pkg-card .field label{font-size:.68rem}
+.pkg-card .field input,.pkg-card .field textarea{padding:.55rem .7rem;font-size:.86rem}
+.pkg-card .field textarea{min-height:60px}
+
+/* MINI ROW (add-ons, reviews etc) */
+.mini-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;background:var(--cream);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+.mini-row.review{grid-template-columns:1fr;gap:10px}
+.mini-row .grid-2{margin:0}
+.btn-remove-mini{background:transparent;border:none;color:var(--danger);font-size:1.3rem;cursor:pointer;padding:6px 10px;border-radius:8px;transition:background .15s;line-height:1}
+.btn-remove-mini:hover{background:rgba(194,59,94,.08)}
+.btn-add-mini{background:#fff;border:1.5px dashed var(--line-strong);color:var(--muted);padding:.7rem 1rem;border-radius:10px;font-weight:600;font-size:.84rem;cursor:pointer;width:100%;font-family:inherit;transition:all .15s;margin-top:6px}
+.btn-add-mini:hover{border-color:var(--mauve);color:var(--plum-800);background:rgba(166,123,181,.04)}
+
+/* TOGGLE SWITCH */
+.toggle-row{display:flex;align-items:center;gap:14px;padding:14px;background:var(--cream);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;cursor:pointer}
+.toggle-row strong{display:block;font-size:.95rem;color:var(--plum-900);margin-bottom:2px}
+.toggle-row small{font-size:.78rem;color:var(--muted);line-height:1.5}
+.toggle-text{flex:1}
+.toggle-switch{width:46px;height:26px;background:var(--line-strong);border-radius:999px;position:relative;flex-shrink:0;transition:background .2s}
+.toggle-switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+.toggle-row.on .toggle-switch{background:linear-gradient(135deg,var(--success),#2ea872)}
+.toggle-row.on .toggle-switch::after{left:23px}
+
+/* OWNER PHOTO PREVIEW */
+.owner-photo-row{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:1rem;background:var(--cream);border:1px solid var(--line);border-radius:12px;margin-bottom:1rem}
+.owner-photo{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:#fff;font-family:'Playfair Display',serif;font-size:30px;font-weight:700}
+.owner-photo img{width:100%;height:100%;object-fit:cover}
+
+/* STAR RATING */
+.stars{display:inline-flex;gap:3px;cursor:pointer;user-select:none}
+.star{font-size:1.4rem;color:var(--line-strong);transition:color .15s}
+.star.on{color:var(--gold)}
+
+/* COMPLETION BANNER */
+.completion-banner{background:linear-gradient(135deg,#1e8c5a,#2eb87a);color:#fff;border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:14px;box-shadow:0 12px 30px rgba(30,140,90,.28)}
+.completion-banner .icon{font-size:1.8rem;flex-shrink:0}
+.completion-banner h4{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:2px}
+.completion-banner p{font-size:.86rem;color:rgba(255,255,255,.92);line-height:1.5}
 .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 10px 24px rgba(90,52,118,.22)}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(90,52,118,.3)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
@@ -282,7 +345,7 @@ input,select,textarea{font:inherit}
     <span class="step-divider">→</span>
     <button class="step-pill locked" data-step="2" onclick="goToStep(2)"><span class="num">2</span>Your brand</button>
     <span class="step-divider">→</span>
-    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Coming soon</button>
+    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Your packages</button>
     <span class="autosave-badge saved" id="autosaveBadge" style="margin-left:auto;display:none"><span class="dot"></span>Saved</span>
   </div>
 </div>
@@ -397,15 +460,215 @@ input,select,textarea{font:inherit}
     </div>
   </div>
 
-  <!-- STEP 3 — PLACEHOLDER FOR TOMORROW -->
+  <!-- STEP 3 — YOUR PACKAGES & DETAILS -->
   <div class="panel" id="panelStep3">
-    <div class="card" style="text-align:center;padding:3rem 2rem">
-      <div style="font-size:3rem;margin-bottom:1rem">🚧</div>
-      <h2 style="font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.6rem;margin-bottom:.7rem">Step 3 — Coming Tomorrow</h2>
-      <p style="color:var(--muted);max-width:520px;margin:0 auto 1.4rem;line-height:1.7">This is where you'll fill in your packages, prices, reviews, and about section. We're shipping this in the next 1-2 days.</p>
-      <p style="color:var(--muted);max-width:480px;margin:0 auto;font-size:.86rem;line-height:1.65">For now — your niche pick and brand details are saved. Come back when Step 3 is ready and pick up right where you left off.</p>
-      <div class="wizard-nav" style="justify-content:center">
-        <button class="btn btn-outline" onclick="goToStep(2)">← Back to Brand</button>
+    <div class="card">
+      <div class="card-header">
+        <h2>Your packages & details</h2>
+        <p>This is the heart of your website — what clients book, what they read, who you are. Each section is pre-filled with smart defaults for your niche. Edit what doesn't fit. Skip what you don't need.</p>
+      </div>
+
+      <div class="completion-banner" id="completionBanner" style="display:none">
+        <div class="icon">🎉</div>
+        <div>
+          <h4>All sections complete!</h4>
+          <p>Your website is ready to generate. Step 4 (download your site) ships next.</p>
+        </div>
+      </div>
+
+      <div class="accordion-list">
+
+        <!-- Section A: Niche Details -->
+        <div class="acc-section open" data-section="niche">
+          <button class="acc-head" onclick="toggleSection('niche')">
+            <div class="acc-num"><span>A</span></div>
+            <div class="acc-title">
+              <h3>Niche details</h3>
+              <p>Your service name, tagline, and short description</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div class="grid-2">
+              <div class="field">
+                <label>Service name</label>
+                <input type="text" id="nicheName" placeholder="e.g. Stuff-A-Bear Parties" oninput="onSectionInput('niche')"/>
+              </div>
+              <div class="field">
+                <label>Icon (single emoji)</label>
+                <input type="text" id="nicheIcon" placeholder="🐻" maxlength="2" oninput="onSectionInput('niche')"/>
+              </div>
+            </div>
+            <div class="field">
+              <label>Tagline (one-line hook)</label>
+              <input type="text" id="nicheTagline" placeholder="e.g. Build a memory they'll hug forever" oninput="onSectionInput('niche')"/>
+            </div>
+            <div class="field">
+              <label>Short description (2-3 sentences)</label>
+              <textarea id="nicheDescription" placeholder="What's this service about? Why is it special?" oninput="onSectionInput('niche')"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section B: Packages -->
+        <div class="acc-section" data-section="packages">
+          <button class="acc-head" onclick="toggleSection('packages')">
+            <div class="acc-num"><span>B</span></div>
+            <div class="acc-title">
+              <h3>Packages (3 tiers)</h3>
+              <p>The heart of your site — what clients can book</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div class="pkg-grid" id="pkgGrid"></div>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem;line-height:1.55">💡 Use one item per line in the "what's included" box. Each line shows as a checkmark on your site.</p>
+          </div>
+        </div>
+
+        <!-- Section C: Add-ons -->
+        <div class="acc-section" data-section="addons">
+          <button class="acc-head" onclick="toggleSection('addons')">
+            <div class="acc-num"><span>C</span></div>
+            <div class="acc-title">
+              <h3>Add-ons <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
+              <p>Small extras clients can pick — face painting, balloon arch, etc.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div id="addonsList"></div>
+            <button type="button" class="btn-add-mini" onclick="addAddon()">+ Add an add-on</button>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">Skip this section if you don't offer add-ons. You can always come back.</p>
+          </div>
+        </div>
+
+        <!-- Section D: About You -->
+        <div class="acc-section" data-section="about">
+          <button class="acc-head" onclick="toggleSection('about')">
+            <div class="acc-num"><span>D</span></div>
+            <div class="acc-title">
+              <h3>About you</h3>
+              <p>Owner photo, bio, and your story</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div class="owner-photo-row">
+              <div class="owner-photo" id="ownerPhoto">
+                <span id="ownerPhotoFallback">M</span>
+              </div>
+              <div>
+                <input type="file" id="ownerPhotoUpload" accept="image/*" style="font-size:.85rem"/>
+                <p style="font-size:.78rem;color:var(--muted);margin-top:.4rem">A natural smile and good lighting works best. Square works best.</p>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label>Your name</label>
+                <input type="text" id="ownerName" placeholder="e.g. Coach Monica" oninput="onSectionInput('about');applyOwnerPhotoPreview()"/>
+              </div>
+              <div class="field">
+                <label>Year started</label>
+                <input type="text" id="aboutYearStarted" placeholder="e.g. 2022" oninput="onSectionInput('about')"/>
+              </div>
+            </div>
+            <div class="field">
+              <label>Your bio (2-3 paragraphs)</label>
+              <textarea id="aboutBio" style="min-height:130px" placeholder="Why do you do what you do? What makes your business different?" oninput="onSectionInput('about')"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section E: Reviews -->
+        <div class="acc-section" data-section="reviews">
+          <button class="acc-head" onclick="toggleSection('reviews')">
+            <div class="acc-num"><span>E</span></div>
+            <div class="acc-title">
+              <h3>Reviews <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but recommended)</span></h3>
+              <p>What past clients say. Up to 3 testimonials.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div id="reviewsList"></div>
+            <button type="button" class="btn-add-mini" onclick="addReview()" id="addReviewBtn">+ Add a review</button>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">💛 Skip if you don't have testimonials yet — your site will hide this section.</p>
+          </div>
+        </div>
+
+        <!-- Section F: Founding Families -->
+        <div class="acc-section" data-section="founding">
+          <button class="acc-head" onclick="toggleSection('founding')">
+            <div class="acc-num"><span>F</span></div>
+            <div class="acc-title">
+              <h3>Founding Families banner <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
+              <p>Add urgency with a launch discount banner</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div class="toggle-row" id="foundingToggle" onclick="toggleFounding()">
+              <div class="toggle-text">
+                <strong>Show Founding Families banner on my site</strong>
+                <small>A featured banner that says "First X clients get Y% off" — proven to drive bookings during launch.</small>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div id="foundingFields" style="display:none">
+              <div class="grid-2">
+                <div class="field">
+                  <label>Discount percentage</label>
+                  <input type="number" id="foundingDiscount" value="25" min="5" max="80" oninput="onSectionInput('founding')"/>
+                </div>
+                <div class="field">
+                  <label>Spots remaining</label>
+                  <input type="number" id="foundingSpots" value="8" min="1" max="50" oninput="onSectionInput('founding')"/>
+                </div>
+              </div>
+              <div class="field">
+                <label>Banner headline (optional)</label>
+                <input type="text" id="foundingHeadline" placeholder="e.g. First 10 families get 25% off" oninput="onSectionInput('founding')"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section G: Booking -->
+        <div class="acc-section" data-section="booking">
+          <button class="acc-head" onclick="toggleSection('booking')">
+            <div class="acc-num"><span>G</span></div>
+            <div class="acc-title">
+              <h3>Booking inquiries</h3>
+              <p>Where booking forms get sent + your service area</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div class="field">
+              <label>Email for booking inquiries</label>
+              <input type="email" id="bookingEmail" placeholder="hello@yourbusiness.com" oninput="onSectionInput('booking')"/>
+              <div class="field-help">Booking forms on your site will email this address. Defaults to your business email from Step 2.</div>
+            </div>
+            <div class="field">
+              <label>Service area description</label>
+              <input type="text" id="bookingArea" placeholder="e.g. Orlando &amp; Central Florida — within 30 mi of downtown" oninput="onSectionInput('booking')"/>
+              <div class="field-help">Helps clients self-qualify before they book.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="wizard-nav">
+        <div class="wizard-nav-left">
+          <button class="btn btn-outline" onclick="goToStep(2)">← Back</button>
+        </div>
+        <div class="wizard-nav-right">
+          <button class="btn btn-primary" id="finishStep3Btn" onclick="finishStep3()">
+            Save All Sections ✓
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -440,6 +703,171 @@ const NICHES=[
   {type:'coordinator',name:'Event Coordinator',desc:'Obsidian + champagne. Luxe.'},
   {type:'custom',name:'Something Else (Custom)',desc:'Universal lavender + pink fallback.'}
 ];
+
+// ─── SMART PRE-FILL: NICHE DEFAULTS ───────────────────────────────
+// Each niche has default content the student edits. Saves them from blank-page paralysis.
+const NICHE_DEFAULTS={
+  bear:{
+    icon:'🐻',name:'Stuff-A-Bear Parties',
+    tagline:"Build a memory they'll hug forever",
+    description:'Each child stuffs and dresses their own bear in a guided, hands-on experience. Perfect for ages 4-10. We bring everything — bears, outfits, stuffing station, and a birth certificate ceremony.',
+    packages:[
+      {tier:'Signature',name:'Cuddle Crew',price:'350',kids:'8',duration:'1.5 hrs',included:'8 build-a-bear kits\nStuffing station setup\nBear outfits (variety)\nBirth certificate ceremony\nBackdrop for photos'},
+      {tier:'Creative',name:'Bear Hug Premium',price:'550',kids:'12',duration:'2 hrs',included:'12 build-a-bear kits\nUpgraded outfits + accessories\nStuffing station setup\nBirth certificate ceremony\nThemed backdrop + balloon arch\nParty host on-site'},
+      {tier:'Luxury',name:'Royal Cub Experience',price:'850',kids:'16',duration:'2.5 hrs',included:'16 build-a-bear kits\nLuxury outfits + crowns\nFull table styling\nBirth certificate + photo ceremony\nGrand themed backdrop + balloon installation\nDedicated host + photographer'}
+    ]
+  },
+  spa:{
+    icon:'💆‍♀️',name:'Mobile Spa Parties',
+    tagline:'Pamper, sparkle, glow.',
+    description:'A pampering pop-up spa right at your doorstep. Mini facials, mani-pedis, and sparkle stations — designed for little princesses who deserve to feel royal.',
+    packages:[
+      {tier:'Signature',name:'Pamper Plus',price:'325',kids:'6',duration:'1.5 hrs',included:'Mini facial station\nMani-pedi station\nSparkle hair tinsel\nRobes for each child\nPhoto-ready setup'},
+      {tier:'Creative',name:'Glow Up Glam',price:'525',kids:'10',duration:'2 hrs',included:'Mini facials with masks\nMani-pedi with nail art\nSparkle hair + face gems\nRobes + slippers\nThemed backdrop\nSpa hostess on-site'},
+      {tier:'Luxury',name:'Royal Spa Day',price:'825',kids:'14',duration:'2.5 hrs',included:'Full mini facial experience\nMani-pedi + design station\nGlam glitter station\nLuxe robes + headbands\nRoyal styled backdrop\nDedicated spa team\nPhotography'}
+    ]
+  },
+  slumber:{
+    icon:'🌙',name:'Slumber Parties',
+    tagline:'Dreamy nights they will not forget',
+    description:'Themed teepee or canopy slumber setups with everything they need for a magical night. We bring beds, decor, lighting, and the magic — you bring the snacks.',
+    packages:[
+      {tier:'Signature',name:'Sweet Dreams',price:'425',kids:'4',duration:'overnight',included:'4 themed teepees with mattresses\nCoordinated bedding sets\nFairy lights\nBreakfast trays\nThemed decor'},
+      {tier:'Creative',name:'Starlight',price:'650',kids:'6',duration:'overnight',included:'6 themed setups\nUpgraded bedding + pillows\nFairy lights + lanterns\nMovie projector\nSnack trays\nThemed photo wall'},
+      {tier:'Luxury',name:'Royal Slumber',price:'975',kids:'8',duration:'overnight',included:'8 luxe themed setups\nBoutique bedding + monograms\nProjector + screen\nFull dessert table\nDedicated host setup/breakdown\nPhoto styling'}
+    ]
+  },
+  teepee:{
+    icon:'⛺',name:'Teepee Adventure Setups',
+    tagline:'Boho indoor camping at home',
+    description:'Hand-styled teepee setups perfect for sleepovers, backyard campouts, or just a magical afternoon. Sage and terracotta tones, twinkle lights, and dreamy textures.',
+    packages:[
+      {tier:'Signature',name:'Wanderer',price:'375',kids:'4',duration:'24 hr setup',included:'4 styled teepees\nBoho bedding\nFairy lights\nFloor cushions\nDelivery & pickup'},
+      {tier:'Creative',name:'Adventurer',price:'575',kids:'6',duration:'24 hr setup',included:'6 styled teepees\nLayered boho textiles\nPampas grass accents\nLanterns + lights\nThemed snack trays\nSetup & breakdown'},
+      {tier:'Luxury',name:'Free Spirit',price:'875',kids:'8',duration:'24 hr setup',included:'8 luxe teepees\nDesigner textiles + pillows\nFull boho landscape decor\nPampas + dried floral install\nSnack & beverage station\nWhite-glove setup'}
+    ]
+  },
+  slime:{
+    icon:'🧪',name:'Slime / Science Parties',
+    tagline:'Mess. Mix. Magic.',
+    description:'A guided slime-making experience that doubles as edu-tainment. Kids learn the science behind the goo, take home their creations, and leave with stories.',
+    packages:[
+      {tier:'Signature',name:'Slime Lab',price:'285',kids:'8',duration:'1.5 hrs',included:'Slime-making for 8\nLab coats + goggles\n3 slime variations\nTake-home containers\nStation setup'},
+      {tier:'Creative',name:'Mad Scientist',price:'445',kids:'12',duration:'2 hrs',included:'Slime-making for 12\nLab coats + goggles\n5 slime variations\n2 mini experiments\nBackdrop + props\nScientist host'},
+      {tier:'Luxury',name:'Lab Royale',price:'695',kids:'16',duration:'2.5 hrs',included:'Slime-making for 16\nFull lab kits per child\nUnlimited variations\n4 mini experiments\nFull themed setup\nDedicated host + assistant'}
+    ]
+  },
+  paint:{
+    icon:'🎨',name:'Paint & Sip Parties',
+    tagline:"Where little artists discover what's inside",
+    description:'A guided painting experience designed for kids. Each guest paints their own keepsake canvas with step-by-step instruction. Aprons, supplies, and snacks included.',
+    packages:[
+      {tier:'Signature',name:'Little Artist',price:'265',kids:'8',duration:'1.5 hrs',included:'8 canvases + paint kits\nAprons\nGuided instruction\nMocktail station\nTake-home art'},
+      {tier:'Creative',name:'Studio Session',price:'415',kids:'12',duration:'2 hrs',included:'12 canvases + paint kits\nUpgraded aprons\nFull guided lesson\nMocktail + snack station\nGallery photo wall'},
+      {tier:'Luxury',name:'Master Class',price:'645',kids:'16',duration:'2.5 hrs',included:'16 canvases + premium kits\nDesigner aprons\nFull guided lesson + critique\nMocktail station\nGallery wall + photographer\nDedicated host'}
+    ]
+  },
+  craft:{
+    icon:'✂️',name:'DIY Craft Parties',
+    tagline:'Made by hand. Loved forever.',
+    description:'Hands-on craft stations for guests to make and take home. Multiple stations, age-appropriate materials, all the supplies — they bring the imagination.',
+    packages:[
+      {tier:'Signature',name:'Maker Mini',price:'255',kids:'8',duration:'1.5 hrs',included:'2 craft stations\nAll supplies\nApron per guest\nTake-home bags\nGuided instruction'},
+      {tier:'Creative',name:'Maker Studio',price:'395',kids:'12',duration:'2 hrs',included:'3 craft stations\nUpgraded supplies\nAprons + name tags\nTake-home bags\nDecor + signage\nHost on-site'},
+      {tier:'Luxury',name:'Workshop Royale',price:'595',kids:'16',duration:'2.5 hrs',included:'4 craft stations\nPremium supplies\nDesigner aprons\nKeepsake boxes\nFull themed setup\nDedicated craft host'}
+    ]
+  },
+  candy:{
+    icon:'🍭',name:'Candy & Dessert Stations',
+    tagline:'A dessert table that becomes the photo',
+    description:'Custom dessert table styling — coordinated colors, branded signage, premium treats. Designed to be the centerpiece of your celebration AND the most photographed thing all night.',
+    packages:[
+      {tier:'Signature',name:'Sweet Boutique',price:'395',kids:'15',duration:'4 hr display',included:'5-foot dessert table\n4 dessert varieties\nCoordinated decor\nServing ware\nSetup & styling'},
+      {tier:'Creative',name:'Confection Couture',price:'625',kids:'25',duration:'4 hr display',included:'8-foot dessert table\n7 dessert varieties\nCustom signage\nThemed backdrop\nServing ware + linens\nFull styling'},
+      {tier:'Luxury',name:'Pâtisserie Premier',price:'975',kids:'40',duration:'4 hr display',included:'12-foot grand display\n12+ dessert varieties\nCustom monogram signage\nDesigner backdrop install\nLinens + florals\nWhite-glove styling'}
+    ]
+  },
+  foodcart:{
+    icon:'🚛',name:'Mobile Food Cart Rentals',
+    tagline:'Food that becomes the experience',
+    description:'Vintage-inspired food carts that bring the experience to your event. Choose your cart — popcorn, snow cone, candy bar, or custom. Includes attendant, supplies, and styling.',
+    packages:[
+      {tier:'Signature',name:'Single Cart',price:'325',kids:'40',duration:'2 hrs',included:'1 themed cart\nAttendant\nUnlimited servings\nSupplies & ingredients\nStyled signage'},
+      {tier:'Creative',name:'Double Trouble',price:'595',kids:'60',duration:'3 hrs',included:'2 themed carts\nAttendants\nUnlimited servings\nUpgraded supplies\nCoordinated styling\nDelivery + breakdown'},
+      {tier:'Luxury',name:'Food Festival',price:'945',kids:'80',duration:'3 hrs',included:'3 themed carts\nFull attendant team\nPremium ingredients\nCustom signage per cart\nThemed installation\nWhite-glove service'}
+    ]
+  },
+  facepaint:{
+    icon:'🎭',name:'Face Paint & Balloons',
+    tagline:'Pure joy, painted on',
+    description:'Professional face painting and balloon artistry that turns every guest into a memory. Hypoallergenic paints, latex-free balloons, expert artists — designed for events of any size.',
+    packages:[
+      {tier:'Signature',name:'Sparkle Hour',price:'195',kids:'15',duration:'1 hr',included:'1 face painter OR balloon artist\nPro hypoallergenic supplies\nUp to 15 designs\nSetup & cleanup'},
+      {tier:'Creative',name:'Double Delight',price:'335',kids:'25',duration:'2 hrs',included:'1 face painter + 1 balloon artist\nFull design menu\nUp to 25 designs each\nThemed signage\nSetup & cleanup'},
+      {tier:'Luxury',name:'Carnival Crew',price:'525',kids:'40',duration:'2.5 hrs',included:'2 face painters + 2 balloon artists\nPremium supplies\nUnlimited designs\nFull styled station\nDedicated coordinator'}
+    ]
+  },
+  photo:{
+    icon:'📸',name:'Photo Booth Rentals',
+    tagline:'The night, captured beautifully',
+    description:'Editorial-quality photo booth experiences with custom backdrops, premium props, and instant prints. Designed for events that deserve more than selfie chaos.',
+    packages:[
+      {tier:'Signature',name:'Pop-In Booth',price:'395',kids:'-',duration:'2 hrs',included:'Open-air booth\nStandard backdrop\nProp box\nInstant prints\nDigital gallery'},
+      {tier:'Creative',name:'Studio Booth',price:'625',kids:'-',duration:'3 hrs',included:'Open-air booth\nCustom backdrop\nCurated prop selection\nInstant prints + custom layout\nDigital gallery + GIFs\nOn-site attendant'},
+      {tier:'Luxury',name:'Editorial Booth',price:'945',kids:'-',duration:'4 hrs',included:'Pro DSLR booth\nCustom designed backdrop\nDesigner props\nUnlimited prints + monogrammed layout\nDigital gallery + boomerangs\nDedicated attendant\nGuest book'}
+    ]
+  },
+  movie:{
+    icon:'🎬',name:'Outdoor Movie Nights',
+    tagline:'Stars above. Magic on screen.',
+    description:'Backyard movie nights done right — projector, screen, comfy seating, popcorn. We set up, you make memories, we break down. Perfect for birthdays, sleepovers, or just because.',
+    packages:[
+      {tier:'Signature',name:'Backyard Cinema',price:'285',kids:'10',duration:'4 hrs',included:'Projector + screen\nSpeakers\nSeating for 10\nPopcorn cart\nBlankets'},
+      {tier:'Creative',name:'Movie Premiere',price:'445',kids:'15',duration:'4 hrs',included:'Pro projector + screen\nUpgraded sound\nLuxe floor seating for 15\nPopcorn + candy station\nBlankets + lanterns\nThemed signage'},
+      {tier:'Luxury',name:'Drive-In Royale',price:'695',kids:'20',duration:'4 hrs',included:'Pro projector + giant screen\nFull sound system\nLounge setup for 20\nFull concession station\nLanterns + string lights\nThemed install + breakdown'}
+    ]
+  },
+  softplay:{
+    icon:'🧸',name:'Soft Play Setups',
+    tagline:'Where toddlers play safe and stylish',
+    description:'Curated soft play installations designed for ages 0-5. Coordinated colors, sanitized between events, sized for any space. Includes ball pits, slides, mats, and bouncers.',
+    packages:[
+      {tier:'Signature',name:'Mini Wonderland',price:'325',kids:'6',duration:'4 hrs',included:'Coordinated soft play set\nBall pit\n2-3 climbing pieces\nSanitized + setup\nSafety check'},
+      {tier:'Creative',name:'Rainbow Rumpus',price:'525',kids:'10',duration:'4 hrs',included:'Premium soft play set\nLarge ball pit\n4-5 pieces\nCoordinated colors\nThemed entrance\nSetup + breakdown'},
+      {tier:'Luxury',name:'Toddler Kingdom',price:'795',kids:'15',duration:'4 hrs',included:'Designer soft play install\nGrand ball pit\n6+ pieces\nFull color story\nThemed entrance + signage\nSetup + monitor + breakdown'}
+    ]
+  },
+  bounce:{
+    icon:'🎈',name:'Bounce House Rentals',
+    tagline:'Big bounces. Bigger smiles.',
+    description:'Premium bounce house rentals — sanitized, safety-checked, and setup-ready. From classic castles to combo units with slides. Insurance and attendant included on premium tiers.',
+    packages:[
+      {tier:'Signature',name:'Classic Castle',price:'185',kids:'10',duration:'4 hrs',included:'Standard bounce house\nDelivery + setup\nSanitized\nSafety check\nBreakdown'},
+      {tier:'Creative',name:'Combo Bouncer',price:'325',kids:'15',duration:'5 hrs',included:'Combo bouncer (slide + bounce)\nDelivery + setup\nSanitized\nSafety check\nBreakdown\nWeather backup option'},
+      {tier:'Luxury',name:'Mega Inflatable Park',price:'525',kids:'25',duration:'5 hrs',included:'2 inflatables + obstacle course\nDelivery + setup\nSanitized\nSafety check\nDedicated attendant\nBreakdown'}
+    ]
+  },
+  coordinator:{
+    icon:'✨',name:'Event Coordination',
+    tagline:'Your day, perfectly orchestrated',
+    description:'Full-service kids event coordination. From vendor sourcing to day-of execution, we handle every detail so you can be fully present with your child on their special day.',
+    packages:[
+      {tier:'Signature',name:'Day-Of Coordinator',price:'650',kids:'-',duration:'8 hrs',included:'Pre-event planning call\nVendor coordination\nTimeline management\nDay-of execution\n1 lead coordinator'},
+      {tier:'Creative',name:'Partial Planning',price:'1450',kids:'-',duration:'4-6 weeks',included:'4 planning sessions\nVendor sourcing + booking\nDesign concept\nFull timeline build\nDay-of execution\nLead + assistant'},
+      {tier:'Luxury',name:'Full Production',price:'2750',kids:'-',duration:'2-3 months',included:'Full production from concept\nVendor sourcing + management\nCustom design + styling\nLogistics + budget management\nDay-of execution team\nPhotographer coordination'}
+    ]
+  },
+  custom:{
+    icon:'✨',name:'Your Service',
+    tagline:'A celebration designed around your guest of honor',
+    description:'Custom party experiences designed to delight. Tell us what you need — we make it happen.',
+    packages:[
+      {tier:'Signature',name:'Starter Package',price:'350',kids:'8',duration:'2 hrs',included:'Core service\nSetup + breakdown\nBasic styling\nSupplies included'},
+      {tier:'Creative',name:'Premium Package',price:'575',kids:'12',duration:'2.5 hrs',included:'Core service upgraded\nSetup + breakdown\nThemed styling\nSupplies included\nHost on-site'},
+      {tier:'Luxury',name:'Signature Package',price:'875',kids:'16',duration:'3 hrs',included:'Full luxury experience\nSetup + breakdown\nDesigner styling\nPremium supplies\nDedicated team'}
+    ]
+  }
+};
 
 // ─── 8 PRESET PALETTES ────────────────────────────────────────────
 const PALETTES=[
@@ -506,6 +934,24 @@ async function init(){
   });
   $('logoUpload').addEventListener('change',handleLogoUpload);
 
+  // Wire Step 3 owner photo upload
+  const opu=$('ownerPhotoUpload');
+  if(opu)opu.addEventListener('change',handleOwnerPhotoUpload);
+
+  // If booking email is empty, default it to brand email
+  const beField=$('bookingEmail');
+  const eField=$('email');
+  if(beField&&!beField.value&&eField&&eField.value){
+    beField.value=eField.value;
+  }
+  // Pre-fill ownerName from businessName initial if empty
+  const onField=$('ownerName');
+  const bnField=$('businessName');
+  if(onField&&!onField.value&&bnField&&bnField.value){
+    // Don't auto-fill — owner name is personal. Just update photo fallback letter.
+    applyOwnerPhotoPreview();
+  }
+
   // Close user menu on outside click
   document.addEventListener('click',e=>{
     if(!e.target.closest('#userChip')&&!e.target.closest('#userMenu')){
@@ -522,9 +968,14 @@ async function loadExistingBuild(){
     if(!data)return;
     currentBuild=data;
 
-    // Restore niche selection
+    // Restore niche selection (without triggering pre-fill — we restore actual saved data below)
     if(data.niche_type){
-      selectNiche(data.niche_type,false);
+      selectedNiche=data.niche_type;
+      document.querySelectorAll('.niche-tile').forEach(t=>{
+        t.classList.toggle('selected',t.dataset.niche===data.niche_type);
+      });
+      $('step1NextBtn').disabled=false;
+      unlockStep(2);
     }
 
     // Restore brand
@@ -542,10 +993,79 @@ async function loadExistingBuild(){
       updateLogoTextPreview();
     }
 
-    // Unlock subsequent steps if niche is picked
-    if(data.niche_type){
-      unlockStep(2);
-      $('step1NextBtn').disabled=false;
+    // Restore Step 3 — niche details
+    if(data.niche_data){
+      const n=data.niche_data;
+      if(n.icon)$('nicheIcon').value=n.icon;
+      if(n.name)$('nicheName').value=n.name;
+      if(n.tagline)$('nicheTagline').value=n.tagline;
+      if(n.description)$('nicheDescription').value=n.description;
+    }
+
+    // Restore Step 3 — packages
+    if(data.packages_data&&Array.isArray(data.packages_data)&&data.packages_data.length){
+      packagesData=data.packages_data;
+    }else if(data.niche_type&&NICHE_DEFAULTS[data.niche_type]){
+      // No packages saved yet but niche is picked — apply defaults
+      packagesData=NICHE_DEFAULTS[data.niche_type].packages.map(p=>({...p}));
+    }
+    renderPackages();
+
+    // Pre-fill niche details from defaults if empty (returning user with niche but no Step 3)
+    if(data.niche_type&&NICHE_DEFAULTS[data.niche_type]){
+      const d=NICHE_DEFAULTS[data.niche_type];
+      if(!$('nicheName').value)$('nicheName').value=d.name;
+      if(!$('nicheIcon').value)$('nicheIcon').value=d.icon;
+      if(!$('nicheTagline').value)$('nicheTagline').value=d.tagline;
+      if(!$('nicheDescription').value)$('nicheDescription').value=d.description;
+    }
+
+    // Restore Step 3 — addons
+    if(data.addons_data&&Array.isArray(data.addons_data)){
+      addonsData=data.addons_data;
+      renderAddons();
+    }
+
+    // Restore Step 3 — reviews
+    if(data.reviews_data&&Array.isArray(data.reviews_data)){
+      reviewsData=data.reviews_data;
+      renderReviews();
+    }
+
+    // Restore Step 3 — about
+    if(data.about_data){
+      const a=data.about_data;
+      if(a.ownerName)$('ownerName').value=a.ownerName;
+      if(a.yearStarted)$('aboutYearStarted').value=a.yearStarted;
+      if(a.bio)$('aboutBio').value=a.bio;
+      if(a.photoDataURL){ownerPhotoDataURL=a.photoDataURL;applyOwnerPhotoPreview()}
+    }
+
+    // Restore Step 3 — founding
+    if(data.founding_data){
+      const f=data.founding_data;
+      foundingEnabled=!!f.enabled;
+      $('foundingToggle').classList.toggle('on',foundingEnabled);
+      $('foundingFields').style.display=foundingEnabled?'block':'none';
+      if(f.discount)$('foundingDiscount').value=f.discount;
+      if(f.spots)$('foundingSpots').value=f.spots;
+      if(f.headline)$('foundingHeadline').value=f.headline;
+    }
+
+    // Restore Step 3 — booking
+    if(data.booking_data){
+      const b=data.booking_data;
+      if(b.email)$('bookingEmail').value=b.email;
+      if(b.area)$('bookingArea').value=b.area;
+    }
+
+    // Re-evaluate all section completion states
+    ['niche','packages','addons','about','reviews','founding','booking'].forEach(evaluateSection);
+
+    // If brand step done, unlock step 3
+    if(data.brand_data&&data.brand_data.businessName){
+      markStepDone(2);
+      unlockStep(3);
     }
   }catch(e){console.error('Load exception:',e)}
 }
@@ -563,13 +1083,44 @@ function renderNicheGrid(){
 
 let selectedNiche=null;
 function selectNiche(type,save=true){
+  const isFirstPick=!selectedNiche;
+  const isChangingNiche=selectedNiche&&selectedNiche!==type;
   selectedNiche=type;
   document.querySelectorAll('.niche-tile').forEach(t=>{
     t.classList.toggle('selected',t.dataset.niche===type);
   });
   $('step1NextBtn').disabled=false;
   unlockStep(2);
+  // Smart pre-fill: only on first pick OR if Step 3 fields are still empty
+  if(save&&(isFirstPick||shouldPrefill(type,isChangingNiche))){
+    applyNicheDefaults(type);
+  }
   if(save)debouncedSave();
+}
+
+// Returns true if Step 3 niche fields are empty (safe to overwrite with defaults)
+function shouldPrefill(newType,isChangingNiche){
+  const nameField=$('nicheName');
+  if(!nameField||!nameField.value.trim())return true;
+  // If user has unedited defaults from another niche, replace them
+  if(isChangingNiche){
+    const oldDefaults=Object.values(NICHE_DEFAULTS).some(d=>d.name===nameField.value.trim());
+    return oldDefaults;
+  }
+  return false;
+}
+
+function applyNicheDefaults(type){
+  const d=NICHE_DEFAULTS[type]||NICHE_DEFAULTS.custom;
+  $('nicheIcon').value=d.icon;
+  $('nicheName').value=d.name;
+  $('nicheTagline').value=d.tagline;
+  $('nicheDescription').value=d.description;
+  // Render packages from defaults
+  packagesData=d.packages.map(p=>({...p}));
+  renderPackages();
+  evaluateSection('niche');
+  evaluateSection('packages');
 }
 
 // ─── PALETTE PICKER ──────────────────────────────────────────────
@@ -707,6 +1258,31 @@ async function saveNow(){
       paletteName:selectedPalette,
       logoDataURL:logoDataURL
     },
+    niche_data:{
+      icon:$('nicheIcon')?$('nicheIcon').value:'',
+      name:$('nicheName')?$('nicheName').value:'',
+      tagline:$('nicheTagline')?$('nicheTagline').value:'',
+      description:$('nicheDescription')?$('nicheDescription').value:''
+    },
+    packages_data:packagesData,
+    addons_data:addonsData,
+    reviews_data:reviewsData,
+    about_data:{
+      ownerName:$('ownerName')?$('ownerName').value:'',
+      yearStarted:$('aboutYearStarted')?$('aboutYearStarted').value:'',
+      bio:$('aboutBio')?$('aboutBio').value:'',
+      photoDataURL:ownerPhotoDataURL
+    },
+    founding_data:{
+      enabled:foundingEnabled,
+      discount:$('foundingDiscount')?$('foundingDiscount').value:'25',
+      spots:$('foundingSpots')?$('foundingSpots').value:'8',
+      headline:$('foundingHeadline')?$('foundingHeadline').value:''
+    },
+    booking_data:{
+      email:$('bookingEmail')?$('bookingEmail').value:'',
+      area:$('bookingArea')?$('bookingArea').value:''
+    },
     updated_at:new Date().toISOString()
   };
 
@@ -743,6 +1319,280 @@ function showToast(msg){
   t.textContent=msg;
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ─── STEP 3: STATE ────────────────────────────────────────────────
+let packagesData=[];
+let addonsData=[];
+let reviewsData=[];
+let foundingEnabled=false;
+let ownerPhotoDataURL=null;
+
+// ─── STEP 3: ACCORDION ────────────────────────────────────────────
+function toggleSection(name){
+  const sec=document.querySelector(`.acc-section[data-section="${name}"]`);
+  if(!sec)return;
+  // Close other sections (one open at a time = cleaner UX)
+  document.querySelectorAll('.acc-section').forEach(s=>{
+    if(s!==sec)s.classList.remove('open');
+  });
+  sec.classList.toggle('open');
+}
+
+function onSectionInput(name){
+  evaluateSection(name);
+  debouncedSave();
+}
+
+// Evaluates whether a section has enough content to count as "complete"
+function evaluateSection(name){
+  let complete=false;
+  switch(name){
+    case 'niche':
+      complete=!!($('nicheName')&&$('nicheName').value.trim()&&$('nicheTagline')&&$('nicheTagline').value.trim());
+      break;
+    case 'packages':
+      complete=packagesData.length>0&&packagesData.every(p=>p.name&&p.price);
+      break;
+    case 'addons':
+      complete=true; // optional — always counts
+      break;
+    case 'about':
+      complete=!!($('ownerName')&&$('ownerName').value.trim()&&$('aboutBio')&&$('aboutBio').value.trim());
+      break;
+    case 'reviews':
+      complete=true; // optional
+      break;
+    case 'founding':
+      complete=true; // optional
+      break;
+    case 'booking':
+      complete=!!($('bookingEmail')&&$('bookingEmail').value.trim());
+      break;
+  }
+  const sec=document.querySelector(`.acc-section[data-section="${name}"]`);
+  if(sec)sec.classList.toggle('complete',complete);
+  updateCompletionBanner();
+  return complete;
+}
+
+function updateCompletionBanner(){
+  const required=['niche','packages','about','booking'];
+  const allDone=required.every(s=>{
+    const sec=document.querySelector(`.acc-section[data-section="${s}"]`);
+    return sec&&sec.classList.contains('complete');
+  });
+  $('completionBanner').style.display=allDone?'flex':'none';
+  if(allDone)markStepDone(3);
+}
+
+// ─── STEP 3: PACKAGES ────────────────────────────────────────────
+function renderPackages(){
+  if(!$('pkgGrid'))return;
+  if(!packagesData.length){
+    // Default 3 empty tiers
+    packagesData=[
+      {tier:'Signature',name:'',price:'',kids:'',duration:'',included:''},
+      {tier:'Creative',name:'',price:'',kids:'',duration:'',included:''},
+      {tier:'Luxury',name:'',price:'',kids:'',duration:'',included:''}
+    ];
+  }
+  $('pkgGrid').innerHTML=packagesData.map((p,i)=>`
+    <div class="pkg-card">
+      <div class="pkg-card-head">
+        <div class="pkg-tier">${p.tier?p.tier.charAt(0):'?'}</div>
+        <strong style="font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1rem">${p.tier||'Tier'}</strong>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Package name</label>
+          <input type="text" value="${escapeHtml(p.name||'')}" data-pkg="${i}" data-field="name" oninput="updatePackageField(this)" placeholder="e.g. Cuddle Crew"/>
+        </div>
+        <div class="field">
+          <label>Price ($)</label>
+          <input type="number" value="${escapeHtml(p.price||'')}" data-pkg="${i}" data-field="price" oninput="updatePackageField(this)" placeholder="350"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Kids included</label>
+          <input type="text" value="${escapeHtml(p.kids||'')}" data-pkg="${i}" data-field="kids" oninput="updatePackageField(this)" placeholder="8"/>
+        </div>
+        <div class="field">
+          <label>Duration</label>
+          <input type="text" value="${escapeHtml(p.duration||'')}" data-pkg="${i}" data-field="duration" oninput="updatePackageField(this)" placeholder="2 hrs"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>What's included (one per line)</label>
+        <textarea data-pkg="${i}" data-field="included" oninput="updatePackageField(this)" placeholder="Item 1&#10;Item 2&#10;Item 3">${escapeHtml(p.included||'')}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updatePackageField(el){
+  const i=parseInt(el.dataset.pkg);
+  const field=el.dataset.field;
+  if(packagesData[i]){
+    packagesData[i][field]=el.value;
+  }
+  onSectionInput('packages');
+}
+
+// ─── STEP 3: ADD-ONS ────────────────────────────────────────────
+function renderAddons(){
+  if(!$('addonsList'))return;
+  $('addonsList').innerHTML=addonsData.map((a,i)=>`
+    <div class="mini-row">
+      <div class="grid-2">
+        <div class="field" style="margin:0">
+          <input type="text" value="${escapeHtml(a.name||'')}" data-addon="${i}" data-field="name" oninput="updateAddonField(this)" placeholder="Add-on name"/>
+        </div>
+        <div class="field" style="margin:0">
+          <input type="number" value="${escapeHtml(a.price||'')}" data-addon="${i}" data-field="price" oninput="updateAddonField(this)" placeholder="$ price"/>
+        </div>
+      </div>
+      <button class="btn-remove-mini" onclick="removeAddon(${i})" title="Remove">×</button>
+    </div>
+  `).join('');
+}
+
+function addAddon(){
+  if(addonsData.length>=10){showToast('Up to 10 add-ons');return}
+  addonsData.push({name:'',price:''});
+  renderAddons();
+  onSectionInput('addons');
+}
+
+function updateAddonField(el){
+  const i=parseInt(el.dataset.addon);
+  const field=el.dataset.field;
+  if(addonsData[i]){addonsData[i][field]=el.value}
+  onSectionInput('addons');
+}
+
+function removeAddon(i){
+  addonsData.splice(i,1);
+  renderAddons();
+  onSectionInput('addons');
+}
+
+// ─── STEP 3: REVIEWS ────────────────────────────────────────────
+function renderReviews(){
+  if(!$('reviewsList'))return;
+  $('reviewsList').innerHTML=reviewsData.map((r,i)=>`
+    <div class="mini-row review">
+      <div class="grid-2">
+        <div class="field" style="margin:0">
+          <label style="font-size:.68rem">Client name</label>
+          <input type="text" value="${escapeHtml(r.name||'')}" data-review="${i}" data-field="name" oninput="updateReviewField(this)" placeholder="e.g. Sarah M."/>
+        </div>
+        <div class="field" style="margin:0">
+          <label style="font-size:.68rem">Event type (optional)</label>
+          <input type="text" value="${escapeHtml(r.event||'')}" data-review="${i}" data-field="event" oninput="updateReviewField(this)" placeholder="e.g. 6-year-old's bday"/>
+        </div>
+      </div>
+      <div class="field" style="margin:0">
+        <label style="font-size:.68rem">Star rating</label>
+        <div class="stars" data-review-stars="${i}">
+          ${[1,2,3,4,5].map(n=>`<span class="star ${n<=(r.rating||5)?'on':''}" onclick="setReviewRating(${i},${n})">★</span>`).join('')}
+        </div>
+      </div>
+      <div class="field" style="margin:0">
+        <label style="font-size:.68rem">Review text</label>
+        <textarea data-review="${i}" data-field="text" oninput="updateReviewField(this)" placeholder="What they said about you...">${escapeHtml(r.text||'')}</textarea>
+      </div>
+      <button class="btn-remove-mini" onclick="removeReview(${i})" style="justify-self:end" title="Remove">× Remove this review</button>
+    </div>
+  `).join('');
+  // Hide add button if 3 reviews already
+  if($('addReviewBtn'))$('addReviewBtn').style.display=reviewsData.length>=3?'none':'block';
+}
+
+function addReview(){
+  if(reviewsData.length>=3){showToast('Up to 3 reviews — focus on your best');return}
+  reviewsData.push({name:'',event:'',text:'',rating:5});
+  renderReviews();
+  onSectionInput('reviews');
+}
+
+function updateReviewField(el){
+  const i=parseInt(el.dataset.review);
+  const field=el.dataset.field;
+  if(reviewsData[i]){reviewsData[i][field]=el.value}
+  onSectionInput('reviews');
+}
+
+function setReviewRating(i,n){
+  if(reviewsData[i]){
+    reviewsData[i].rating=n;
+    renderReviews();
+    onSectionInput('reviews');
+  }
+}
+
+function removeReview(i){
+  reviewsData.splice(i,1);
+  renderReviews();
+  onSectionInput('reviews');
+}
+
+// ─── STEP 3: ABOUT — owner photo ────────────────────────────────
+function applyOwnerPhotoPreview(){
+  const p=$('ownerPhoto');
+  if(!p)return;
+  if(ownerPhotoDataURL){
+    p.innerHTML=`<img src="${ownerPhotoDataURL}" alt="Owner"/>`;
+  }else{
+    const name=$('ownerName')&&$('ownerName').value||'M';
+    p.innerHTML=`<span>${name.charAt(0).toUpperCase()}</span>`;
+  }
+}
+
+function handleOwnerPhotoUpload(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  if(f.size>2*1024*1024){showToast('Photo too large — max 2 MB');return}
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    ownerPhotoDataURL=ev.target.result;
+    applyOwnerPhotoPreview();
+    onSectionInput('about');
+  };
+  reader.readAsDataURL(f);
+}
+
+// ─── STEP 3: FOUNDING TOGGLE ────────────────────────────────────
+function toggleFounding(){
+  foundingEnabled=!foundingEnabled;
+  $('foundingToggle').classList.toggle('on',foundingEnabled);
+  $('foundingFields').style.display=foundingEnabled?'block':'none';
+  onSectionInput('founding');
+}
+
+// ─── STEP 3: FINISH BUTTON ──────────────────────────────────────
+function finishStep3(){
+  const required=['niche','packages','about','booking'];
+  const missing=required.filter(s=>!evaluateSection(s));
+  if(missing.length){
+    const labels={niche:'Niche details',packages:'Packages',about:'About you',booking:'Booking inquiries'};
+    showToast(`Still missing: ${missing.map(m=>labels[m]).join(', ')}`);
+    // Open the first missing section
+    document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
+    const sec=document.querySelector(`.acc-section[data-section="${missing[0]}"]`);
+    if(sec)sec.classList.add('open');
+    return;
+  }
+  saveNow();
+  markStepDone(3);
+  showToast('🎉 All sections saved — Step 4 (download) ships next!');
+}
+
+// ─── Helper: HTML escape ────────────────────────────────────────
+function escapeHtml(s){
+  if(s===null||s===undefined)return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 init();
