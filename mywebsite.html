@@ -1801,16 +1801,21 @@ function buildSiteConfig(){
   const bookingEmail=$('bookingEmail')?$('bookingEmail').value.trim():email;
   const bookingArea=$('bookingArea')?$('bookingArea').value.trim():'';
 
-  // Map packages — each package has an "included" textarea (one item per line)
-  const packagesForCfg=(packagesData||[]).map((p,idx)=>({
-    id:'pkg-'+idx,
-    name:p.name||'Package',
-    price:'$'+(p.price||'0'),
-    capacity:p.kids?p.kids+' kids':'',
-    duration:p.duration||'',
-    items:(p.included||'').split('\n').map(l=>l.trim()).filter(l=>l),
-    featured:idx===1 // middle tier featured by convention
-  }));
+  // Map packages — template expects: name, price (raw number), note, includes, footer, popular
+  const packagesForCfg=(packagesData||[]).map((p,idx)=>{
+    const noteParts=[];
+    if(p.kids)noteParts.push(p.kids+' kids');
+    if(p.duration)noteParts.push(p.duration);
+    return {
+      id:'pkg-'+idx,
+      name:p.name||'Package',
+      price:String(p.price||'0').replace(/[^0-9.]/g,''),
+      note:noteParts.join(' · ')||'Per event',
+      includes:(p.included||'').split('\n').map(l=>l.trim()).filter(l=>l),
+      footer:'Tap to add to your package',
+      popular:idx===1 // middle tier featured by convention
+    };
+  });
 
   // Map add-ons
   const addonsForCfg=(addonsData||[]).filter(a=>a.name).map(a=>({
@@ -1818,14 +1823,24 @@ function buildSiteConfig(){
     price:'$'+(a.price||'0')
   }));
 
-  // Map reviews
+  // Map reviews — template expects stars/text/name/meta/initials
   const reviewsForCfg=(reviewsData||[]).filter(r=>r.text).map(r=>({
-    quote:r.text,
+    stars:r.rating||5,
+    text:r.text,
     name:r.name||'Happy Client',
     meta:r.event||'Verified booking',
-    initials:(r.name||'C').split(' ').map(s=>s.charAt(0)).join('').slice(0,2).toUpperCase(),
-    rating:r.rating||5
+    initials:(r.name||'C').split(' ').map(s=>s.charAt(0)).join('').slice(0,2).toUpperCase()
   }));
+
+  // Build About paragraphs from bio (split by blank lines for multi-para support)
+  const aboutParagraphs=(bio||'').split(/\n\s*\n/).map(p=>p.trim()).filter(p=>p);
+  const aboutStats=[];
+  if(yearStarted){
+    const years=Math.max(1,(new Date().getFullYear()-parseInt(yearStarted))||1);
+    aboutStats.push({number:years+'+',label:'Years experience'});
+  }
+  aboutStats.push({number:'5★',label:'Average rating'});
+  aboutStats.push({number:'100%',label:'Stress-free'});
 
   return {
     business:{
@@ -1836,23 +1851,40 @@ function buildSiteConfig(){
       phone:phone,
       email:email
     },
+    formEndpoint:'mailto:'+(bookingEmail||email||''),
     booking:{email:bookingEmail||email,area:bookingArea},
+    policies:{
+      depositPercent:50,
+      rushFee:100,
+      rushDays:7,
+      bundleDiscountPercent:10,
+      policyUrl:'#'
+    },
     niches:[{
       id:'main',
       type:selectedNiche||'custom',
-      icon:niche.icon,
-      name:niche.name,
-      tagline:niche.tagline,
-      description:niche.description,
-      packages:packagesForCfg,
+      icon:niche.icon||'✨',
+      name:niche.name||'Your Service',
+      tagline:niche.tagline||'',
+      description:niche.description||'',
+      packages:packagesForCfg.length?packagesForCfg:[
+        {id:'pkg-0',name:'Package',price:'0',note:'Per event',includes:[],footer:'',popular:false}
+      ],
       activities:[]
     }],
     addons:addonsForCfg,
     reviews:reviewsForCfg,
     about:{
+      eyebrow:'Meet your host',
+      headline:ownerName?`Hi, I'm ${ownerName}.`:"Hi, I'm here to make this the easiest party you'll ever throw.",
+      quote:"You relax — we've got this.",
+      paragraphs:aboutParagraphs.length?aboutParagraphs:[
+        "I'm the founder and one of our city's trusted names in unforgettable kids party experiences.",
+        "Every detail is designed to make your day feel effortless and memorable."
+      ],
+      stats:aboutStats,
       ownerName:ownerName,
       yearStarted:yearStarted,
-      bio:bio,
       photoDataURL:ownerPhotoDataURL
     },
     founding:{
