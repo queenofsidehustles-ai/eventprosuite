@@ -1842,14 +1842,45 @@ function buildSiteConfig(){
   aboutStats.push({number:'5★',label:'Average rating'});
   aboutStats.push({number:'100%',label:'Stress-free'});
 
+  // Compute starting price = lowest package price (or 450 default)
+  let startingPrice=450;
+  if(packagesForCfg.length){
+    const prices=packagesForCfg.map(p=>parseInt(p.price)||0).filter(n=>n>0);
+    if(prices.length)startingPrice=Math.min(...prices);
+  }
+
+  // Build hero headline — split tagline on first comma/period if possible
+  const tag=(tagline||niche.tagline||'Memorable parties for unforgettable kids').trim();
+  let heroHeadline=tag,heroAccent='';
+  const splitMatch=tag.match(/^(.+?)[,.]\s*(.+)$/);
+  if(splitMatch){
+    heroHeadline=splitMatch[1].trim();
+    heroAccent=splitMatch[2].trim();
+  }else{
+    // Try splitting on last word
+    const words=tag.split(' ');
+    if(words.length>=2){
+      heroAccent=words.pop();
+      heroHeadline=words.join(' ');
+    }else{
+      heroAccent='moments';
+    }
+  }
+
   return {
     business:{
       name:businessName,
       initial:initial,
-      tagline:tagline||niche.tagline,
+      tagline:tagline||niche.tagline||'',
       city:city,
-      phone:phone,
-      email:email
+      serviceArea:city||'Local area',
+      phone:phone||'(555) 123-4567',
+      email:email||'hello@yourbusiness.com',
+      heroScript:'✨ where',
+      heroHeadline:heroHeadline,
+      heroAccent:heroAccent,
+      heroLead:niche.description||'Tap a package below to start designing your celebration.',
+      startingPrice:startingPrice
     },
     formEndpoint:'mailto:'+(bookingEmail||email||''),
     booking:{email:bookingEmail||email,area:bookingArea},
