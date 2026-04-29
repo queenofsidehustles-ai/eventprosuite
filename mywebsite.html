@@ -231,6 +231,25 @@ input,select,textarea{font:inherit}
 .completion-banner h4{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:2px}
 .completion-banner p{font-size:.86rem;color:rgba(255,255,255,.92);line-height:1.5}
 
+/* PHOTO GALLERY UPLOAD UI */
+.photo-upload-row{display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--cream);border:1px solid var(--line);border-radius:12px;margin-top:6px}
+.photo-thumb{width:120px;height:80px;border-radius:10px;background:#fff;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;position:relative}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb-empty{font-size:.75rem;color:var(--muted);font-weight:600}
+.btn-photo-clear{margin-top:8px;background:transparent;border:none;color:var(--danger);font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit}
+.btn-photo-clear:hover{background:rgba(194,59,94,.08)}
+
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.gallery-slot{background:var(--cream);border:1.5px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.gallery-slot.has-photo{border-color:var(--success);background:linear-gradient(135deg,rgba(30,140,90,.04),#fff)}
+.gallery-slot-thumb{width:100%;aspect-ratio:4/3;border-radius:10px;background:#fff;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.gallery-slot.has-photo .gallery-slot-thumb{border-style:solid;border-color:rgba(30,140,90,.25)}
+.gallery-slot-thumb img{width:100%;height:100%;object-fit:cover}
+.gallery-slot-thumb-empty{font-size:.7rem;color:var(--muted);font-weight:600;text-align:center;padding:4px}
+.gallery-slot label{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.gallery-slot input[type="file"]{font-size:.72rem;padding:4px;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.gallery-slot-clear{background:transparent;border:none;color:var(--danger);font-size:.72rem;font-weight:600;cursor:pointer;padding:2px;font-family:inherit;text-align:left}
+
 /* STEP 4 — PREVIEW & DOWNLOAD */
 .preview-card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:0;overflow:hidden;margin-bottom:1.2rem;box-shadow:var(--shadow-sm)}
 .preview-toolbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(135deg,#fafafa,#f3f3f7);border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px}
@@ -711,6 +730,42 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
+        <!-- Section H: Photos & Gallery -->
+        <div class="acc-section" data-section="gallery">
+          <button class="acc-head" onclick="toggleSection('gallery')">
+            <div class="acc-num"><span>H</span></div>
+            <div class="acc-title">
+              <h3>Photos &amp; gallery <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but powerful)</span></h3>
+              <p>Hero image + up to 6 gallery photos. Real photos book parties.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <p style="font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:1rem">📸 Photos are auto-resized and compressed for fast page loads. They travel inside your downloaded site — no separate hosting needed. Skip any slot you don't have a photo for yet.</p>
+
+            <!-- Hero photo -->
+            <div class="field">
+              <label>Hero photo (the big show-stopper at the top of your site)</label>
+              <div class="photo-upload-row">
+                <div class="photo-thumb" id="heroPhotoThumb">
+                  <span class="photo-thumb-empty">No photo</span>
+                </div>
+                <div style="flex:1">
+                  <input type="file" id="heroPhotoUpload" accept="image/*"/>
+                  <div class="field-help">Best: a styled wide shot of a finished setup. 16:9 ratio works best.</div>
+                  <button type="button" class="btn-photo-clear" id="heroPhotoClear" onclick="clearGalleryPhoto('hero')" style="display:none">× Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6 gallery slots -->
+            <div style="margin-top:1.4rem">
+              <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Gallery photos (up to 6)</div>
+              <div class="gallery-grid" id="galleryGrid"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div class="wizard-nav">
@@ -1107,6 +1162,11 @@ async function init(){
   const opu=$('ownerPhotoUpload');
   if(opu)opu.addEventListener('change',handleOwnerPhotoUpload);
 
+  // Wire Step 3 Section H — hero photo + render gallery grid
+  const hpu=$('heroPhotoUpload');
+  if(hpu)hpu.addEventListener('change',handleHeroPhotoUpload);
+  renderGalleryGrid();
+
   // If booking email is empty, default it to brand email
   const beField=$('bookingEmail');
   const eField=$('email');
@@ -1228,8 +1288,20 @@ async function loadExistingBuild(){
       if(b.area)$('bookingArea').value=b.area;
     }
 
+    // Restore Step 3 — gallery
+    if(data.gallery_data){
+      if(data.gallery_data.heroPhotoDataURL){
+        heroPhotoDataURL=data.gallery_data.heroPhotoDataURL;
+        applyHeroPhotoPreview();
+      }
+      if(Array.isArray(data.gallery_data.photos)){
+        galleryPhotos=data.gallery_data.photos.concat([null,null,null,null,null,null]).slice(0,6);
+        renderGalleryGrid();
+      }
+    }
+
     // Re-evaluate all section completion states
-    ['niche','packages','addons','about','reviews','founding','booking'].forEach(evaluateSection);
+    ['niche','packages','addons','about','reviews','founding','booking','gallery'].forEach(evaluateSection);
 
     // If brand step done, unlock step 3
     if(data.brand_data&&data.brand_data.businessName){
@@ -1496,6 +1568,10 @@ async function saveNow(){
       email:$('bookingEmail')?$('bookingEmail').value:'',
       area:$('bookingArea')?$('bookingArea').value:''
     },
+    gallery_data:{
+      heroPhotoDataURL:heroPhotoDataURL,
+      photos:galleryPhotos
+    },
     updated_at:new Date().toISOString()
   };
 
@@ -1581,6 +1657,9 @@ function evaluateSection(name){
       break;
     case 'booking':
       complete=!!($('bookingEmail')&&$('bookingEmail').value.trim());
+      break;
+    case 'gallery':
+      complete=true; // optional — gallery never blocks completion
       break;
   }
   const sec=document.querySelector(`.acc-section[data-section="${name}"]`);
@@ -1972,6 +2051,10 @@ function buildSiteConfig(){
       primary:$('customPrimary')?$('customPrimary').value:'#ff7faf',
       accent:$('customAccent')?$('customAccent').value:'#d4a840',
       logoDataURL:logoDataURL
+    },
+    gallery:{
+      heroPhotoDataURL:heroPhotoDataURL,
+      photos:galleryPhotos.filter(p=>p)
     }
   };
 }
@@ -2201,6 +2284,112 @@ async function downloadSite(){
   }finally{
     btn.disabled=false;
     btn.innerHTML=origText;
+  }
+}
+
+// ─── STEP 3 SECTION H: PHOTO GALLERY ────────────────────────────
+let heroPhotoDataURL=null;
+let galleryPhotos=[null,null,null,null,null,null]; // 6 slots
+
+// Compress an image file: max 1200px wide, JPEG quality 75%
+async function compressImage(file,maxWidth=1200,quality=0.75){
+  return new Promise((resolve,reject)=>{
+    if(!file.type.startsWith('image/')){
+      reject(new Error('Not an image'));
+      return;
+    }
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        let{width,height}=img;
+        if(width>maxWidth){
+          height=Math.round(height*(maxWidth/width));
+          width=maxWidth;
+        }
+        const canvas=document.createElement('canvas');
+        canvas.width=width;
+        canvas.height=height;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,width,height);
+        const dataURL=canvas.toDataURL('image/jpeg',quality);
+        resolve(dataURL);
+      };
+      img.onerror=()=>reject(new Error('Image load failed'));
+      img.src=ev.target.result;
+    };
+    reader.onerror=()=>reject(new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderGalleryGrid(){
+  const grid=$('galleryGrid');
+  if(!grid)return;
+  grid.innerHTML=galleryPhotos.map((photo,i)=>`
+    <div class="gallery-slot ${photo?'has-photo':''}">
+      <div class="gallery-slot-thumb">
+        ${photo?`<img src="${photo}" alt="Gallery ${i+1}"/>`:`<div class="gallery-slot-thumb-empty">📷<br>Slot ${i+1}</div>`}
+      </div>
+      <input type="file" accept="image/*" data-slot="${i}" onchange="handleGallerySlotUpload(this)"/>
+      ${photo?`<button type="button" class="gallery-slot-clear" onclick="clearGalleryPhoto(${i})">× Remove photo</button>`:''}
+    </div>
+  `).join('');
+}
+
+async function handleHeroPhotoUpload(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  if(f.size>10*1024*1024){showToast('Photo too large — max 10 MB');return}
+  showToast('Compressing photo...');
+  try{
+    heroPhotoDataURL=await compressImage(f,1600,0.78);
+    applyHeroPhotoPreview();
+    onSectionInput('gallery');
+    showToast('✓ Hero photo added');
+  }catch(err){
+    console.error(err);
+    showToast('Could not process photo — try a different file');
+  }
+}
+
+async function handleGallerySlotUpload(input){
+  const f=input.files[0];
+  if(!f)return;
+  if(f.size>10*1024*1024){showToast('Photo too large — max 10 MB');return}
+  const slot=parseInt(input.dataset.slot);
+  showToast('Compressing photo...');
+  try{
+    galleryPhotos[slot]=await compressImage(f,1200,0.75);
+    renderGalleryGrid();
+    onSectionInput('gallery');
+    showToast('✓ Photo added to slot '+(slot+1));
+  }catch(err){
+    console.error(err);
+    showToast('Could not process photo — try a different file');
+  }
+}
+
+function clearGalleryPhoto(slot){
+  if(slot==='hero'){
+    heroPhotoDataURL=null;
+    applyHeroPhotoPreview();
+  }else{
+    galleryPhotos[slot]=null;
+    renderGalleryGrid();
+  }
+  onSectionInput('gallery');
+}
+
+function applyHeroPhotoPreview(){
+  const t=$('heroPhotoThumb');
+  if(!t)return;
+  if(heroPhotoDataURL){
+    t.innerHTML=`<img src="${heroPhotoDataURL}" alt="Hero"/>`;
+    if($('heroPhotoClear'))$('heroPhotoClear').style.display='inline-block';
+  }else{
+    t.innerHTML='<span class="photo-thumb-empty">No photo</span>';
+    if($('heroPhotoClear'))$('heroPhotoClear').style.display='none';
   }
 }
 
