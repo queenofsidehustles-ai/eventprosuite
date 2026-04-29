@@ -727,6 +727,21 @@ input,select,textarea{font:inherit}
               <input type="text" id="bookingArea" placeholder="e.g. Orlando &amp; Central Florida — within 30 mi of downtown" oninput="onSectionInput('booking')"/>
               <div class="field-help">Helps clients self-qualify before they book.</div>
             </div>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--line)">
+              <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Deposit &amp; payment policy</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Deposit percent</label>
+                  <input type="number" id="bookingDepositPct" placeholder="50" min="10" max="100" oninput="onSectionInput('booking')"/>
+                  <div class="field-help">% of total due at booking. Most use 50%.</div>
+                </div>
+                <div class="field">
+                  <label>Balance due (days before event)</label>
+                  <input type="number" id="bookingBalanceDays" placeholder="7" min="1" max="60" oninput="onSectionInput('booking')"/>
+                  <div class="field-help">Final payment timing. Most use 7 or 14 days.</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1286,6 +1301,8 @@ async function loadExistingBuild(){
       const b=data.booking_data;
       if(b.email)$('bookingEmail').value=b.email;
       if(b.area)$('bookingArea').value=b.area;
+      if(b.depositPct&&$('bookingDepositPct'))$('bookingDepositPct').value=b.depositPct;
+      if(b.balanceDays&&$('bookingBalanceDays'))$('bookingBalanceDays').value=b.balanceDays;
     }
 
     // Restore Step 3 — gallery
@@ -1569,7 +1586,9 @@ async function saveNow(){
     },
     booking_data:{
       email:$('bookingEmail')?$('bookingEmail').value:'',
-      area:$('bookingArea')?$('bookingArea').value:''
+      area:$('bookingArea')?$('bookingArea').value:'',
+      depositPct:$('bookingDepositPct')?$('bookingDepositPct').value:'',
+      balanceDays:$('bookingBalanceDays')?$('bookingBalanceDays').value:''
     },
     gallery_data:{
       heroPhotoDataURL:heroPhotoDataURL,
@@ -2043,7 +2062,8 @@ function buildSiteConfig(){
     formEndpoint:'mailto:'+(bookingEmail||email||''),
     booking:{email:bookingEmail||email,area:bookingArea},
     policies:{
-      depositPercent:50,
+      depositPercent:Number($('bookingDepositPct')?.value)||50,
+      balanceDays:Number($('bookingBalanceDays')?.value)||7,
       rushFee:100,
       rushDays:7,
       bundleDiscountPercent:10,
