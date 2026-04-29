@@ -1446,17 +1446,20 @@ function updateLogoTextPreview(){
 function handleLogoUpload(e){
   const f=e.target.files[0];
   if(!f)return;
-  if(f.size>2*1024*1024){
-    showToast('Logo too large — max 2 MB');
+  if(f.size>10*1024*1024){
+    showToast('Logo too large — max 10 MB');
     return;
   }
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    logoDataURL=ev.target.result;
+  showToast('Compressing logo...');
+  compressImage(f,600,0.85).then(dataURL=>{
+    logoDataURL=dataURL;
     applyLogoPreview();
     debouncedSave();
-  };
-  reader.readAsDataURL(f);
+    showToast('✓ Logo added');
+  }).catch(err=>{
+    console.error(err);
+    showToast('Could not process logo — try a different file');
+  });
 }
 
 function applyLogoPreview(){
@@ -1693,34 +1696,63 @@ function renderPackages(){
     <div class="pkg-card">
       <div class="pkg-card-head">
         <div class="pkg-tier">${p.tier?p.tier.charAt(0):'?'}</div>
-        <strong style="font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1rem">${p.tier||'Tier'}</strong>
+        <strong style="font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1rem;flex:1">${p.tier||'Tier'}</strong>
+        ${packagesData.length>1?`<button type="button" onclick="removePackage(${i})" style="background:transparent;border:none;color:var(--danger);font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit">× Remove</button>`:''}
       </div>
       <div class="grid-2">
+        <div class="field">
+          <label>Tier label</label>
+          <input type="text" value="${escapeHtml(p.tier||'')}" data-pkg="${i}" data-field="tier" oninput="updatePackageField(this)" placeholder="e.g. Signature, Premium, Adult"/>
+        </div>
         <div class="field">
           <label>Package name</label>
           <input type="text" value="${escapeHtml(p.name||'')}" data-pkg="${i}" data-field="name" oninput="updatePackageField(this)" placeholder="e.g. Cuddle Crew"/>
         </div>
+      </div>
+      <div class="grid-2">
         <div class="field">
           <label>Price ($)</label>
           <input type="number" value="${escapeHtml(p.price||'')}" data-pkg="${i}" data-field="price" oninput="updatePackageField(this)" placeholder="350"/>
         </div>
-      </div>
-      <div class="grid-2">
         <div class="field">
           <label>Kids included</label>
           <input type="text" value="${escapeHtml(p.kids||'')}" data-pkg="${i}" data-field="kids" oninput="updatePackageField(this)" placeholder="8"/>
         </div>
-        <div class="field">
-          <label>Duration</label>
-          <input type="text" value="${escapeHtml(p.duration||'')}" data-pkg="${i}" data-field="duration" oninput="updatePackageField(this)" placeholder="2 hrs"/>
-        </div>
+      </div>
+      <div class="field">
+        <label>Duration</label>
+        <input type="text" value="${escapeHtml(p.duration||'')}" data-pkg="${i}" data-field="duration" oninput="updatePackageField(this)" placeholder="2 hrs"/>
       </div>
       <div class="field">
         <label>What's included (one per line)</label>
         <textarea data-pkg="${i}" data-field="included" oninput="updatePackageField(this)" placeholder="Item 1&#10;Item 2&#10;Item 3">${escapeHtml(p.included||'')}</textarea>
       </div>
     </div>
-  `).join('');
+  `).join('')+`
+    <button type="button" onclick="addPackage()" style="grid-column:1/-1;padding:14px;background:transparent;border:2px dashed var(--line-strong);border-radius:14px;color:var(--plum-900);font-weight:600;cursor:pointer;font-family:inherit;font-size:.92rem;margin-top:8px">+ Add another package${packagesData.length>=3?' (great for multi-niche or adult tiers)':''}</button>
+  `;
+}
+
+function addPackage(){
+  packagesData.push({tier:'Custom',name:'',price:'',kids:'',duration:'',included:''});
+  renderPackages();
+  onSectionInput('packages');
+  // Scroll to new package
+  setTimeout(()=>{
+    const cards=document.querySelectorAll('#pkgGrid .pkg-card');
+    if(cards.length)cards[cards.length-1].scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function removePackage(i){
+  if(packagesData.length<=1){
+    showToast('Need at least one package');
+    return;
+  }
+  if(!confirm('Remove this package?'))return;
+  packagesData.splice(i,1);
+  renderPackages();
+  onSectionInput('packages');
 }
 
 function updatePackageField(el){
@@ -1845,14 +1877,17 @@ function applyOwnerPhotoPreview(){
 function handleOwnerPhotoUpload(e){
   const f=e.target.files[0];
   if(!f)return;
-  if(f.size>2*1024*1024){showToast('Photo too large — max 2 MB');return}
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    ownerPhotoDataURL=ev.target.result;
+  if(f.size>10*1024*1024){showToast('Photo too large — max 10 MB');return}
+  showToast('Compressing photo...');
+  compressImage(f,600,0.82).then(dataURL=>{
+    ownerPhotoDataURL=dataURL;
     applyOwnerPhotoPreview();
     onSectionInput('about');
-  };
-  reader.readAsDataURL(f);
+    showToast('✓ Profile photo added');
+  }).catch(err=>{
+    console.error(err);
+    showToast('Could not process photo — try a different file');
+  });
 }
 
 // ─── STEP 3: FOUNDING TOGGLE ────────────────────────────────────
