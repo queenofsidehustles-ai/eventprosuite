@@ -1205,6 +1205,30 @@
       font-weight: 500;
     }
 
+    /* ─── GALLERY ─── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .gallery-photo {
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffe3ef, #fff0dc);
+      box-shadow: var(--shadow-card);
+      transition: all 0.3s ease;
+    }
+    .gallery-photo:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-deep);
+    }
+    .gallery-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     /* ─── REVIEWS ─── */
     .reviews-grid {
       display: grid;
@@ -1556,6 +1580,7 @@
       .addons-grid { grid-template-columns: 1fr 1fr; }
       .reviews-grid { grid-template-columns: 1fr 1fr; }
       .activities-row { grid-template-columns: 1fr 1fr; }
+      .gallery-grid { grid-template-columns: 1fr 1fr; }
     }
 
     @media (min-width: 920px) {
@@ -1566,6 +1591,7 @@
       .about-grid { grid-template-columns: 0.85fr 1.15fr; }
       .addons-grid { grid-template-columns: repeat(3, 1fr); }
       .reviews-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
@@ -1790,7 +1816,7 @@ const CONFIG = {
         </div>
 
         <div class="hero-image">
-          <div class="hero-image-inner">
+          <div class="hero-image-inner" id="heroImageInner">
             <div class="hero-image-placeholder">
               ✨ Replace this placeholder with your styled hero image<br>
               <span style="font-size: 1rem; opacity: 0.7;">(use the photo upload guide in template-setup.md)</span>
@@ -1897,6 +1923,17 @@ const CONFIG = {
       <h2 class="display display-lg">Real words from <span class="accent-text">real families.</span></h2>
     </div>
     <div class="reviews-grid" id="reviewsGrid"></div>
+  </div>
+</section>
+
+<section id="gallery" style="display:none">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Past celebrations</div>
+      <h2 class="display display-lg">A peek at <span class="accent-text">recent moments.</span></h2>
+      <p>Real photos from real parties — so you can see what's possible.</p>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
   </div>
 </section>
 
@@ -2138,6 +2175,26 @@ const CONFIG = {
   // Form org_id (Hub-ready)
   document.getElementById('orgIdField').value = c.orgId;
   document.getElementById('policyLink').href = c.policies.policyUrl || '#';
+
+  // Hero photo (replaces placeholder if uploaded)
+  if (c.gallery && c.gallery.heroPhotoDataURL) {
+    const heroInner = document.getElementById('heroImageInner');
+    if (heroInner) {
+      heroInner.innerHTML = '<img src="' + c.gallery.heroPhotoDataURL + '" alt="' + (c.business.name || '') + '"/>';
+    }
+  }
+
+  // Gallery section (only shows if at least one photo)
+  if (c.gallery && c.gallery.photos && c.gallery.photos.length > 0) {
+    const gallerySection = document.getElementById('gallery');
+    const galleryGrid = document.getElementById('galleryGrid');
+    if (gallerySection && galleryGrid) {
+      gallerySection.style.display = 'block';
+      galleryGrid.innerHTML = c.gallery.photos.map((src, i) =>
+        '<div class="gallery-photo"><img src="' + src + '" alt="Gallery photo ' + (i+1) + '" loading="lazy"/></div>'
+      ).join('');
+    }
+  }
 })();
 
 function renderNiche(n) {
