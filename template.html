@@ -1898,7 +1898,7 @@ const CONFIG = {
   <div class="container">
     <div class="about-card">
       <div class="about-grid">
-        <div class="about-photo">
+        <div class="about-photo" id="aboutPhoto">
           <div style="font-family: 'Caveat', cursive; font-size: 1.4rem; color: rgba(122, 83, 104, 0.55); text-align: center; padding: 20px;">
             ✨ Replace with your photo<br>
             <span style="font-size: 0.9rem; opacity: 0.7;">(see template-setup.md)</span>
@@ -2037,7 +2037,7 @@ const CONFIG = {
           </div>
           <div class="deposit-step">
             <span class="num">2</span>
-            <span>You'll receive a secure invoice via email for your 50% deposit.</span>
+            <span>You'll receive a secure invoice via email for your <span data-deposit-pct>50%</span> deposit.</span>
           </div>
           <div class="deposit-step">
             <span class="num">3</span>
@@ -2045,7 +2045,7 @@ const CONFIG = {
           </div>
           <div class="deposit-step">
             <span class="num">4</span>
-            <span>Your remaining balance is invoiced 7 days before your event.</span>
+            <span>Your remaining balance is invoiced <span data-balance-days>7</span> days before your event.</span>
           </div>
         </div>
       </div>
@@ -2067,8 +2067,8 @@ const CONFIG = {
 
         <div class="deposit-box">
           <strong>Quick details</strong>
-          <div class="deposit-step"><span class="num">✦</span><span>50% deposit goes toward your event total</span></div>
-          <div class="deposit-step"><span class="num">✦</span><span>Balance due 7 days before event</span></div>
+          <div class="deposit-step"><span class="num">✦</span><span><span data-deposit-pct>50%</span> deposit goes toward your event total</span></div>
+          <div class="deposit-step"><span class="num">✦</span><span>Balance due <span data-balance-days>7</span> days before event</span></div>
           <div class="deposit-step"><span class="num">✦</span><span>Bundle 2+ experiences — save 10%</span></div>
           <div class="deposit-step"><span class="num">✦</span><span>Weekend dates book quickly</span></div>
         </div>
@@ -2176,6 +2176,24 @@ const CONFIG = {
   document.getElementById('orgIdField').value = c.orgId;
   document.getElementById('policyLink').href = c.policies.policyUrl || '#';
 
+  // Logo (replaces text initial when uploaded)
+  if (c.brand && c.brand.logoDataURL) {
+    const brandMark = document.getElementById('brandMark');
+    if (brandMark) {
+      brandMark.style.padding = '0';
+      brandMark.style.background = '#fff';
+      brandMark.innerHTML = '<img src="' + c.brand.logoDataURL + '" alt="' + (c.business.name || '') + ' logo" style="width:100%;height:100%;object-fit:contain;border-radius:inherit"/>';
+    }
+  }
+
+  // Owner photo (replaces about photo placeholder when uploaded)
+  if (c.about && c.about.photoDataURL) {
+    const aboutPhoto = document.getElementById('aboutPhoto');
+    if (aboutPhoto) {
+      aboutPhoto.innerHTML = '<img src="' + c.about.photoDataURL + '" alt="' + (c.about.ownerName || c.business.name || '') + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"/>';
+    }
+  }
+
   // Hero photo (replaces placeholder if uploaded)
   if (c.gallery && c.gallery.heroPhotoDataURL) {
     const heroInner = document.getElementById('heroImageInner');
@@ -2195,6 +2213,14 @@ const CONFIG = {
       ).join('');
     }
   }
+
+  // Customizable deposit + booking policy info
+  const depositPct = c.policies.depositPercent || 50;
+  const balanceDays = c.policies.balanceDays || 7;
+  const depositInfoEls = document.querySelectorAll('[data-deposit-pct]');
+  depositInfoEls.forEach(el => el.textContent = depositPct + '%');
+  const balanceInfoEls = document.querySelectorAll('[data-balance-days]');
+  balanceInfoEls.forEach(el => el.textContent = balanceDays);
 })();
 
 function renderNiche(n) {
