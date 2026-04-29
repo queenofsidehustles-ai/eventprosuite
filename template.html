@@ -32,8 +32,10 @@
       --primary: #ff7faf;
       --primary-soft: #ffe6f0;
       --accent: #ffd7a8;
-      /* __CUSTOMIZER_COLORS_END__ */
       --soft: #e6dcff;
+      --gold: #d8a84e;
+      --gold-bright: #e6bb54;
+      /* __CUSTOMIZER_COLORS_END__ */
       --sky: #dff4ff;
       --cream: #fff9f5;
       --gold: #d8a84e;
@@ -1579,13 +1581,13 @@ const CONFIG = {
 
   // ─── BRAND ─────────────────────────────────────────────────
   business: {
-    name: "Sample Party Co.",
-    initial: "S",
-    tagline: "Luxury kids party experiences",
-    heroScript: "This is your sign to celebrate.",
-    heroHeadline: "Beautifully styled kids parties that feel like a moment.",
-    heroAccent: "Built around joy.",
-    heroLead: "From signature party experiences to bespoke styled celebrations, we create unforgettable moments for families across our city — without the overwhelm.",
+    name: "Bear Hugs Events",
+    initial: "B",
+    tagline: "Where memories get stuffed with love",
+    heroScript: "✨ where",
+    heroHeadline: "Memories get stuffed with",
+    heroAccent: "love.",
+    heroLead: "Our signature Stuff-A-Bear party experience brings the magic to your doorstep — kids stuff, dress, and name their own bear in a beautifully styled setup. You relax. We handle the rest.",
     startingPrice: 450,
     city: "Your City, ST",
     serviceArea: "Your service area",
@@ -1599,7 +1601,7 @@ const CONFIG = {
   // Phase 1: Formspree → email
   // Phase 2: Replace with Party Biz Hub API endpoint
   formEndpoint: "https://formspree.io/f/YOUR_FORMSPREE_ID",
-  orgId: "sample-party-co",   // unique per student — used by Hub for routing
+  orgId: "bear-hugs-events",   // unique per student — used by Hub for routing
 
   // ─── FOUNDING FAMILIES (toggle off if not running this offer) ───
   foundingFamilies: {
@@ -1679,65 +1681,6 @@ const CONFIG = {
         }
       ],
       activities: ["Sip and Paint", "Slime Activity", "DIY Spa"]
-    },
-    {
-      id: "custom-bloom",
-      type: "custom",
-      icon: "🌸",
-      name: "Bloom Bar Experiences",
-      tagline: "Hands-on floral fun for little stylists",
-      description: "A custom hands-on flower-arranging experience where kids create their own beautiful bouquet to take home. Styled, themed, and unforgettable.",
-      packages: [
-        {
-          name: "Petite Bloom",
-          price: 350,
-          note: "An entry-level bloom bar for smaller groups.",
-          includes: [
-            "Curated flower selection",
-            "Vases & wraps included",
-            "Styled bloom station",
-            "Up to 6 kids · 60 min"
-          ],
-          footer: "A sweet, simple introduction to floral creativity."
-        },
-        {
-          name: "Garden Bloom",
-          price: 550,
-          popular: true,
-          note: "Our most-booked bloom experience with an expanded flower selection.",
-          includes: [
-            "Premium flower variety",
-            "Decorated vases",
-            "Floral crown option",
-            "Up to 10 kids · 75 min"
-          ],
-          footer: "Perfect for birthday parties and themed celebrations."
-        }
-      ],
-      activities: []
-    },
-    {
-      id: "custom-candy",
-      type: "custom",
-      icon: "🍭",
-      name: "Candy Stick Stations",
-      tagline: "Sweet stations that feel like art",
-      description: "A beautifully styled candy stick station — kids design their own keepsake candy bouquet. A custom add-on or standalone celebration moment.",
-      packages: [
-        {
-          name: "Sweet Station",
-          price: 275,
-          note: "A complete candy stick station for your event.",
-          includes: [
-            "Curated candy selection",
-            "Ribbons & wrapping",
-            "Styled display",
-            "Up to 12 kids"
-          ],
-          footer: "Beautiful as a standalone or paired with another experience."
-        }
-      ],
-      activities: []
     }
   ],
 
