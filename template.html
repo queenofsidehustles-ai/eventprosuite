@@ -1229,6 +1229,90 @@
       object-fit: cover;
     }
 
+    /* ─── FAQ ─── */
+    .faq-list {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .faq-item {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 251, 0.92));
+      border: 1px solid rgba(255, 232, 239, 0.92);
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.25s ease;
+    }
+    .faq-item[open] {
+      box-shadow: var(--shadow-card);
+    }
+    .faq-item summary {
+      cursor: pointer;
+      font-family: "Playfair Display", serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-right: 4px;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: "+";
+      color: var(--primary);
+      font-size: 1.6rem;
+      font-weight: 700;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .faq-item[open] summary::after {
+      transform: rotate(45deg);
+    }
+    .faq-answer {
+      margin-top: 10px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(255, 127, 175, 0.25);
+      color: var(--text-soft);
+      font-size: 0.94rem;
+      line-height: 1.7;
+    }
+
+    /* ─── SOCIAL ICONS ─── */
+    .footer-socials {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .footer-socials:empty { display: none; }
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(216, 168, 78, 0.20);
+      font-size: 1.15rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-soft);
+      text-decoration: none;
+    }
+    .social-link:hover {
+      transform: translateY(-2px);
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-card);
+    }
+
     /* ─── REVIEWS ─── */
     .reviews-grid {
       display: grid;
@@ -1610,7 +1694,6 @@ const CONFIG = {
     name: "Bear Hugs Events",
     initial: "B",
     tagline: "Where memories get stuffed with love",
-    heroScript: "✨ where",
     heroHeadline: "Memories get stuffed with",
     heroAccent: "love.",
     heroLead: "Our signature Stuff-A-Bear party experience brings the magic to your doorstep — kids stuff, dress, and name their own bear in a beautifully styled setup. You relax. We handle the rest.",
@@ -1802,7 +1885,6 @@ const CONFIG = {
   <div class="container">
     <div class="hero-shell">
       <div class="hero-content">
-        <span class="script" id="heroScript"></span>
         <h1 class="display display-xl" id="heroHeadline"></h1>
         <p class="lead" id="heroLead"></p>
 
@@ -1934,6 +2016,17 @@ const CONFIG = {
       <p>Real photos from real parties — so you can see what's possible.</p>
     </div>
     <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+</section>
+
+<section id="faq" style="display:none">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Common questions</div>
+      <h2 class="display display-lg">Everything you might be <span class="accent-text">wondering.</span></h2>
+      <p>Quick answers to help you plan with confidence.</p>
+    </div>
+    <div class="faq-list" id="faqList"></div>
   </div>
 </section>
 
@@ -2087,6 +2180,7 @@ const CONFIG = {
       <a href="#booking">Book Now</a>
       <a id="footerPhone" href="#">Call Us</a>
     </div>
+    <div class="footer-socials" id="footerSocials"></div>
     <div class="built-by">
       Built with the <a href="https://partybusinesscoach.com" target="_blank" rel="noopener">KPPS Flagship Template</a> 👑
     </div>
@@ -2108,7 +2202,6 @@ const CONFIG = {
   document.title = c.business.name + ' | ' + c.business.tagline;
 
   // Hero
-  document.getElementById('heroScript').textContent = c.business.heroScript;
   document.getElementById('heroHeadline').innerHTML = c.business.heroHeadline + ' <span class="accent-text">' + c.business.heroAccent + '</span>';
   document.getElementById('heroLead').textContent = c.business.heroLead;
   document.getElementById('heroPrice').textContent = '$' + c.business.startingPrice;
@@ -2211,6 +2304,68 @@ const CONFIG = {
       galleryGrid.innerHTML = c.gallery.photos.map((src, i) =>
         '<div class="gallery-photo"><img src="' + src + '" alt="Gallery photo ' + (i+1) + '" loading="lazy"/></div>'
       ).join('');
+    }
+  }
+
+  // FAQ section (only shows if at least one FAQ)
+  if (c.faqs && c.faqs.length > 0) {
+    const faqSection = document.getElementById('faq');
+    const faqList = document.getElementById('faqList');
+    if (faqSection && faqList) {
+      faqSection.style.display = 'block';
+      faqList.innerHTML = c.faqs.map((f, i) =>
+        '<details class="faq-item"' + (i === 0 ? ' open' : '') + '>' +
+          '<summary>' + (f.question || '') + '</summary>' +
+          '<div class="faq-answer">' + (f.answer || '').replace(/\n/g, '<br>') + '</div>' +
+        '</details>'
+      ).join('');
+    }
+  }
+
+  // Social media icons (in nav + footer)
+  if (c.socials) {
+    const formatUrl = (platform, handle) => {
+      if (!handle) return null;
+      handle = handle.trim().replace(/^@/, '');
+      if (handle.startsWith('http://') || handle.startsWith('https://')) return handle;
+      const map = {
+        instagram: 'https://instagram.com/',
+        tiktok: 'https://tiktok.com/@',
+        facebook: 'https://facebook.com/',
+        youtube: 'https://youtube.com/@'
+      };
+      return (map[platform] || '') + handle.replace(/^@/, '');
+    };
+    const icons = {
+      instagram: '📷',
+      tiktok: '🎵',
+      facebook: '📘',
+      youtube: '▶️',
+      custom: '🔗'
+    };
+    const labels = {
+      instagram: 'Instagram',
+      tiktok: 'TikTok',
+      facebook: 'Facebook',
+      youtube: 'YouTube',
+      custom: 'Link'
+    };
+    const socialLinks = [];
+    ['instagram', 'tiktok', 'facebook', 'youtube'].forEach(p => {
+      const url = formatUrl(p, c.socials[p]);
+      if (url) socialLinks.push({ platform: p, url, icon: icons[p], label: labels[p] });
+    });
+    if (c.socials.custom) {
+      const customUrl = c.socials.custom.startsWith('http') ? c.socials.custom : 'https://' + c.socials.custom;
+      socialLinks.push({ platform: 'custom', url: customUrl, icon: icons.custom, label: labels.custom });
+    }
+    if (socialLinks.length > 0) {
+      const socialHtml = socialLinks.map(s =>
+        '<a class="social-link" href="' + s.url + '" target="_blank" rel="noopener" aria-label="' + s.label + '" title="' + s.label + '">' + s.icon + '</a>'
+      ).join('');
+      // Inject into footer (and optionally a hero strip)
+      const footerSocialEl = document.getElementById('footerSocials');
+      if (footerSocialEl) footerSocialEl.innerHTML = socialHtml;
     }
   }
 
