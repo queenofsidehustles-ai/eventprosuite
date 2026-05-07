@@ -245,6 +245,11 @@ input,select,textarea{font:inherit}
 .gallery-slot-thumb{width:100%;aspect-ratio:4/3;border-radius:10px;background:#fff;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .gallery-slot.has-photo .gallery-slot-thumb{border-style:solid;border-color:rgba(30,140,90,.25)}
 .gallery-slot-thumb img{width:100%;height:100%;object-fit:cover}
+.gallery-slot-order{position:absolute;bottom:6px;left:6px;right:6px;display:flex;justify-content:space-between;gap:4px;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.gallery-slot.has-photo:hover .gallery-slot-order{opacity:1;pointer-events:auto}
+.gallery-order-btn{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--plum-900);font-family:inherit;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.gallery-order-btn:hover:not(:disabled){background:var(--plum-900);color:#fff}
+.gallery-order-btn:disabled{opacity:.3;cursor:not-allowed}
 .gallery-slot-thumb-empty{font-size:.7rem;color:var(--muted);font-weight:600;text-align:center;padding:4px}
 .gallery-slot label{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 .gallery-slot input[type="file"]{font-size:.72rem;padding:4px;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:pointer}
@@ -497,6 +502,37 @@ input,select,textarea{font:inherit}
           <label>Logo upload</label>
           <input type="file" id="logoUpload" accept="image/*"/>
           <div class="field-help">Square or transparent PNG works best (max 2 MB). Your logo gets baked right into your downloaded site — no separate hosting needed. Just upload here.</div>
+        </div>
+      </div>
+
+      <!-- Social Media Handles -->
+      <div style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px dashed var(--line)">
+        <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Social media (optional)</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem;line-height:1.55">Add the handle (without @) or full URL. Icons appear in your site nav and footer. Skip any you don't use.</p>
+        <div class="grid-2">
+          <div class="field">
+            <label>📷 Instagram</label>
+            <input type="text" id="socialInstagram" placeholder="e.g. yourbrand" oninput="onSectionInput('brand')"/>
+          </div>
+          <div class="field">
+            <label>🎵 TikTok</label>
+            <input type="text" id="socialTiktok" placeholder="e.g. yourbrand" oninput="onSectionInput('brand')"/>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>📘 Facebook</label>
+            <input type="text" id="socialFacebook" placeholder="e.g. yourbrand or full URL" oninput="onSectionInput('brand')"/>
+          </div>
+          <div class="field">
+            <label>▶️ YouTube</label>
+            <input type="text" id="socialYoutube" placeholder="e.g. @yourbrand" oninput="onSectionInput('brand')"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>🔗 Custom link (Pinterest, website, etc.)</label>
+          <input type="text" id="socialCustom" placeholder="e.g. https://pinterest.com/yourbrand" oninput="onSectionInput('brand')"/>
+          <div class="field-help">Optional 5th icon for any other platform you want to link.</div>
         </div>
       </div>
 
@@ -775,9 +811,26 @@ input,select,textarea{font:inherit}
 
             <!-- 6 gallery slots -->
             <div style="margin-top:1.4rem">
-              <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Gallery photos (up to 6)</div>
+              <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Gallery photos (up to 12) <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.85em">— use ◀ ▶ to reorder</span></div>
               <div class="gallery-grid" id="galleryGrid"></div>
             </div>
+          </div>
+        </div>
+
+        <!-- Section I: FAQ -->
+        <div class="acc-section" data-section="faq">
+          <button class="acc-head" onclick="toggleSection('faq')">
+            <div class="acc-num"><span>I</span></div>
+            <div class="acc-title">
+              <h3>FAQ <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but converts)</span></h3>
+              <p>Answer common questions before clients have to ask. Reduces back-and-forth.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <p style="font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:1rem">💡 Common ones to include: travel area, what's required to book, ages served, payment plans, what's provided vs what they bring. Add up to 10.</p>
+            <div id="faqList"></div>
+            <button type="button" onclick="addFAQ()" style="margin-top:.8rem;padding:12px;background:transparent;border:2px dashed var(--line-strong);border-radius:12px;color:var(--plum-900);font-weight:600;cursor:pointer;font-family:inherit;font-size:.92rem;width:100%">+ Add a question</button>
           </div>
         </div>
 
@@ -1182,6 +1235,9 @@ async function init(){
   if(hpu)hpu.addEventListener('change',handleHeroPhotoUpload);
   renderGalleryGrid();
 
+  // Wire Step 3 Section I — render FAQ list
+  renderFAQList();
+
   // If booking email is empty, default it to brand email
   const beField=$('bookingEmail');
   const eField=$('email');
@@ -1234,6 +1290,11 @@ async function loadExistingBuild(){
       if(b.customAccent){$('customAccent').value=b.customAccent}
       if(b.paletteName){selectPalette(b.paletteName,false)}
       if(b.logoDataURL){logoDataURL=b.logoDataURL;applyLogoPreview()}
+      if(b.socialInstagram&&$('socialInstagram'))$('socialInstagram').value=b.socialInstagram;
+      if(b.socialTiktok&&$('socialTiktok'))$('socialTiktok').value=b.socialTiktok;
+      if(b.socialFacebook&&$('socialFacebook'))$('socialFacebook').value=b.socialFacebook;
+      if(b.socialYoutube&&$('socialYoutube'))$('socialYoutube').value=b.socialYoutube;
+      if(b.socialCustom&&$('socialCustom'))$('socialCustom').value=b.socialCustom;
       updateLogoTextPreview();
     }
 
@@ -1312,13 +1373,19 @@ async function loadExistingBuild(){
         applyHeroPhotoPreview();
       }
       if(Array.isArray(data.gallery_data.photos)){
-        galleryPhotos=data.gallery_data.photos.concat([null,null,null,null,null,null]).slice(0,6);
+        galleryPhotos=data.gallery_data.photos.concat(Array(12).fill(null)).slice(0,12);
         renderGalleryGrid();
       }
     }
 
+    // Restore Step 3 — FAQ
+    if(data.faq_data&&Array.isArray(data.faq_data.items)){
+      faqData=data.faq_data.items;
+      renderFAQList();
+    }
+
     // Re-evaluate all section completion states
-    ['niche','packages','addons','about','reviews','founding','booking','gallery'].forEach(evaluateSection);
+    ['niche','packages','addons','about','reviews','founding','booking','gallery','faq'].forEach(evaluateSection);
 
     // If brand step done, unlock step 3
     if(data.brand_data&&data.brand_data.businessName){
@@ -1561,7 +1628,12 @@ async function saveNow(){
       customPrimary:$('customPrimary').value,
       customAccent:$('customAccent').value,
       paletteName:selectedPalette,
-      logoDataURL:logoDataURL
+      logoDataURL:logoDataURL,
+      socialInstagram:$('socialInstagram')?$('socialInstagram').value:'',
+      socialTiktok:$('socialTiktok')?$('socialTiktok').value:'',
+      socialFacebook:$('socialFacebook')?$('socialFacebook').value:'',
+      socialYoutube:$('socialYoutube')?$('socialYoutube').value:'',
+      socialCustom:$('socialCustom')?$('socialCustom').value:''
     },
     niche_data:{
       icon:$('nicheIcon')?$('nicheIcon').value:'',
@@ -1594,6 +1666,7 @@ async function saveNow(){
       heroPhotoDataURL:heroPhotoDataURL,
       photos:galleryPhotos
     },
+    faq_data:{items:faqData},
     updated_at:new Date().toISOString()
   };
 
@@ -1682,6 +1755,9 @@ function evaluateSection(name){
       break;
     case 'gallery':
       complete=true; // optional — gallery never blocks completion
+      break;
+    case 'faq':
+      complete=true; // optional — FAQ never blocks completion
       break;
   }
   const sec=document.querySelector(`.acc-section[data-section="${name}"]`);
@@ -2107,6 +2183,14 @@ function buildSiteConfig(){
       accent:$('customAccent')?$('customAccent').value:'#d4a840',
       logoDataURL:logoDataURL
     },
+    socials:{
+      instagram:$('socialInstagram')?$('socialInstagram').value.trim():'',
+      tiktok:$('socialTiktok')?$('socialTiktok').value.trim():'',
+      facebook:$('socialFacebook')?$('socialFacebook').value.trim():'',
+      youtube:$('socialYoutube')?$('socialYoutube').value.trim():'',
+      custom:$('socialCustom')?$('socialCustom').value.trim():''
+    },
+    faqs:faqData.filter(f=>f.question&&f.question.trim()),
     gallery:{
       heroPhotoDataURL:heroPhotoDataURL,
       photos:galleryPhotos.filter(p=>p)
@@ -2344,7 +2428,79 @@ async function downloadSite(){
 
 // ─── STEP 3 SECTION H: PHOTO GALLERY ────────────────────────────
 let heroPhotoDataURL=null;
-let galleryPhotos=[null,null,null,null,null,null]; // 6 slots
+let galleryPhotos=Array(12).fill(null); // 12 slots max
+let faqData=[]; // FAQ items: [{question:'', answer:''}]
+
+function renderFAQList(){
+  const list=$('faqList');
+  if(!list)return;
+  if(!faqData.length){
+    list.innerHTML='<p style="font-size:.85rem;color:var(--muted);text-align:center;padding:1.5rem;background:var(--cream);border-radius:10px;font-style:italic">No questions yet. Click "+ Add a question" below to start.</p>';
+    return;
+  }
+  list.innerHTML=faqData.map((f,i)=>`
+    <div class="faq-item" style="background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px">
+        <strong style="font-size:.78rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase">Question ${i+1}</strong>
+        <div style="display:flex;gap:4px">
+          <button type="button" onclick="moveFAQ(${i},-1)" ${i===0?'disabled':''} style="background:transparent;border:1px solid var(--line);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:.7rem;font-family:inherit" title="Move up">▲</button>
+          <button type="button" onclick="moveFAQ(${i},1)" ${i===faqData.length-1?'disabled':''} style="background:transparent;border:1px solid var(--line);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:.7rem;font-family:inherit" title="Move down">▼</button>
+          <button type="button" onclick="removeFAQ(${i})" style="background:transparent;border:none;color:var(--danger);font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 8px;font-family:inherit">× Remove</button>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <input type="text" value="${escapeHtml(f.question||'')}" data-faq="${i}" data-field="question" oninput="updateFAQField(this)" placeholder="e.g. Do you travel outside Orlando?"/>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <textarea data-faq="${i}" data-field="answer" oninput="updateFAQField(this)" placeholder="e.g. Yes! We travel within 30 miles of Orlando at no charge. Beyond that, a small travel fee applies." style="min-height:70px">${escapeHtml(f.answer||'')}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addFAQ(){
+  if(faqData.length>=10){
+    showToast('Max 10 FAQs');
+    return;
+  }
+  faqData.push({question:'',answer:''});
+  renderFAQList();
+  onSectionInput('faq');
+  setTimeout(()=>{
+    const items=document.querySelectorAll('.faq-item');
+    if(items.length){
+      items[items.length-1].scrollIntoView({behavior:'smooth',block:'center'});
+      const inp=items[items.length-1].querySelector('input');
+      if(inp)inp.focus();
+    }
+  },100);
+}
+
+function removeFAQ(i){
+  if(!confirm('Remove this FAQ?'))return;
+  faqData.splice(i,1);
+  renderFAQList();
+  onSectionInput('faq');
+}
+
+function moveFAQ(i,direction){
+  const newIdx=i+direction;
+  if(newIdx<0||newIdx>=faqData.length)return;
+  const tmp=faqData[i];
+  faqData[i]=faqData[newIdx];
+  faqData[newIdx]=tmp;
+  renderFAQList();
+  onSectionInput('faq');
+}
+
+function updateFAQField(el){
+  const i=parseInt(el.dataset.faq);
+  const field=el.dataset.field;
+  if(faqData[i]){
+    faqData[i][field]=el.value;
+  }
+  onSectionInput('faq');
+}
 
 // Compress an image file: max 1200px wide, JPEG quality 75%
 async function compressImage(file,maxWidth=1200,quality=0.75){
@@ -2385,11 +2541,25 @@ function renderGalleryGrid(){
     <div class="gallery-slot ${photo?'has-photo':''}">
       <div class="gallery-slot-thumb">
         ${photo?`<img src="${photo}" alt="Gallery ${i+1}"/>`:`<div class="gallery-slot-thumb-empty">📷<br>Slot ${i+1}</div>`}
+        ${photo?`<div class="gallery-slot-order">
+          <button type="button" class="gallery-order-btn" onclick="movePhoto(${i},-1)" ${i===0?'disabled':''} title="Move left">◀</button>
+          <button type="button" class="gallery-order-btn" onclick="movePhoto(${i},1)" ${i===galleryPhotos.length-1?'disabled':''} title="Move right">▶</button>
+        </div>`:''}
       </div>
       <input type="file" accept="image/*" data-slot="${i}" onchange="handleGallerySlotUpload(this)"/>
       ${photo?`<button type="button" class="gallery-slot-clear" onclick="clearGalleryPhoto(${i})">× Remove photo</button>`:''}
     </div>
   `).join('');
+}
+
+function movePhoto(i,direction){
+  const newIdx=i+direction;
+  if(newIdx<0||newIdx>=galleryPhotos.length)return;
+  const tmp=galleryPhotos[i];
+  galleryPhotos[i]=galleryPhotos[newIdx];
+  galleryPhotos[newIdx]=tmp;
+  renderGalleryGrid();
+  onSectionInput('gallery');
 }
 
 async function handleHeroPhotoUpload(e){
@@ -2415,7 +2585,7 @@ async function handleGallerySlotUpload(input){
   const slot=parseInt(input.dataset.slot);
   showToast('Compressing photo...');
   try{
-    galleryPhotos[slot]=await compressImage(f,1200,0.75);
+    galleryPhotos[slot]=await compressImage(f,800,0.7);
     renderGalleryGrid();
     onSectionInput('gallery');
     showToast('✓ Photo added to slot '+(slot+1));
