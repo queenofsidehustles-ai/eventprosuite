@@ -173,9 +173,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.85rem 1.4rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.auth-gate{position:fixed;inset:0;background:linear-gradient(155deg,var(--plum-900),var(--brand) 60%,var(--mauve));display:none;align-items:center;justify-content:center;z-index:9999;color:#fff;text-align:center;padding:2rem;flex-direction:column}
-.auth-gate.show{display:flex}
-.auth-gate a{background:linear-gradient(135deg,var(--gold),#A78420);color:#3A2A1A;padding:.85rem 2rem;border-radius:11px;text-decoration:none;font-weight:700;margin-top:1.5rem;display:inline-block;box-shadow:0 10px 24px rgba(201,162,39,.3)}
 
 .tmpl-picker{background:linear-gradient(135deg,var(--tool-accent-soft),rgba(183,224,223,.2));border:1px solid rgba(42,127,126,.3);border-radius:14px;padding:1.1rem;margin-bottom:1rem}
 .tmpl-title{font-size:.82rem;font-weight:700;color:var(--tool-accent-deep);margin-bottom:.7rem}
@@ -185,7 +182,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 </head>
 <body>
 
-<div class="auth-gate" id="authGate"><div><h2 style="font-family:'Playfair Display',serif;color:#B7E0DF;margin-bottom:.8rem;font-size:1.8rem">Sign in required</h2><p style="color:rgba(255,255,255,.8);max-width:380px;margin:0 auto;line-height:1.55">Please sign in to continue to your Event Checklist.</p><a href="login.html">Sign In →</a></div></div>
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading your workspace…</div></div>
 
 <!-- Sidebar overlay (mobile) -->
 <div class="pbh-overlay" id="pbhOverlay"></div>
@@ -352,7 +349,7 @@ const TEMPLATES={
 
 async function init(){
   const{data:{session}}=await sb.auth.getSession();
-  if(!session){document.getElementById('authGate').classList.add('show');return}
+  if(!session){window.location.href='login.html';return}
   currentUser=session.user;
 
   try{
