@@ -21,7 +21,7 @@ img{max-width:100%;display:block}
 a{text-decoration:none}
 button{font:inherit;cursor:pointer;border:none;background:none}
 
-/* ── Brand token — overridden at runtime ── */
+/* ── Brand tokens — overridden at runtime ── */
 :root{
   --brand:#6A3F8A;
   --brand-dark:#4E2E6A;
@@ -125,10 +125,19 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   position:relative;
   overflow:hidden;
 }
+.hero.has-photo{
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  padding:100px 24px 110px;
+}
 .hero::before{
   content:'';position:absolute;inset:0;
   background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   pointer-events:none;
+}
+.hero.has-photo::before{
+  background:linear-gradient(135deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.35) 100%);
 }
 .hero-inner{position:relative;max-width:700px;margin:0 auto}
 .hero-niche{
@@ -145,7 +154,7 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   font-size:clamp(32px,6vw,58px);
   font-weight:800;line-height:1.1;
   margin-bottom:18px;
-  text-shadow:0 2px 12px rgba(0,0,0,.15);
+  text-shadow:0 2px 12px rgba(0,0,0,.2);
 }
 .hero-tagline{
   font-size:clamp(16px,2.5vw,20px);
@@ -199,6 +208,8 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:24px;
 }
+
+/* ── Simple (profile_data) service cards ── */
 .service-card{
   background:#fff;border-radius:20px;
   border:1px solid var(--line);
@@ -238,6 +249,75 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   box-shadow:0 4px 12px rgba(0,0,0,.12);
 }
 .service-book-btn:hover{background:var(--brand-dark);transform:translateY(-1px)}
+
+/* ── Tier (website_builds) package cards ── */
+.tier-card{
+  background:#fff;border-radius:20px;
+  border:2px solid var(--line);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:transform .22s ease,box-shadow .22s ease;
+  display:flex;flex-direction:column;
+  position:relative;
+}
+.tier-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.tier-card.popular{
+  border-color:var(--brand);
+  box-shadow:0 8px 32px rgba(0,0,0,.14);
+  transform:translateY(-4px);
+}
+.tier-card.popular:hover{transform:translateY(-10px)}
+.tier-popular-badge{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  background:var(--brand);color:#fff;
+  font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 16px;border-radius:0 0 10px 10px;
+  white-space:nowrap;
+}
+.tier-card-top{
+  padding:28px 24px 20px;
+  border-bottom:1px solid var(--line);
+}
+.tier-label{
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--brand);margin-bottom:6px;
+}
+.tier-name{font-size:20px;font-weight:800;color:var(--ink);margin-bottom:10px}
+.tier-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tier-meta-pill{
+  font-size:11px;font-weight:600;color:var(--muted);
+  background:#F5F0FA;padding:3px 10px;border-radius:999px;
+}
+.tier-price{font-size:32px;font-weight:800;color:var(--brand);line-height:1}
+.tier-price-label{font-size:12px;font-weight:500;color:var(--muted);margin-top:2px}
+.tier-card-body{padding:20px 24px;flex:1}
+.tier-includes-label{
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);margin-bottom:10px;
+}
+.tier-checklist{list-style:none;display:flex;flex-direction:column;gap:7px}
+.tier-checklist li{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:13.5px;color:var(--ink);line-height:1.4;
+}
+.tier-check{
+  color:var(--brand);font-weight:800;flex-shrink:0;margin-top:1px;
+}
+.tier-card-footer{padding:0 24px 24px}
+.tier-book-btn{
+  display:block;width:100%;
+  background:var(--brand);color:#fff;
+  padding:13px 20px;border-radius:12px;
+  font-size:14px;font-weight:700;text-align:center;
+  transition:background .18s,transform .15s;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+.tier-book-btn:hover{background:var(--brand-dark);transform:translateY(-1px)}
+.tier-card.popular .tier-book-btn{
+  background:var(--gold);color:#1A1625;
+}
+.tier-card.popular .tier-book-btn:hover{background:var(--gold-dark)}
+
 .coming-soon-note{
   text-align:center;margin-top:24px;
   font-size:13px;color:var(--muted);
@@ -245,6 +325,50 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   border:1px dashed var(--line);
   border-radius:12px;padding:14px 20px;
   max-width:480px;margin-left:auto;margin-right:auto;
+}
+
+/* ════════════════════════════
+   GALLERY SECTION
+════════════════════════════ */
+.gallery-section{
+  padding:64px 24px;
+  background:var(--cream);
+}
+.gallery-header{text-align:center;margin-bottom:36px}
+.gallery-hero-img{
+  max-width:1100px;margin:0 auto 32px;
+  border-radius:20px;overflow:hidden;
+  box-shadow:var(--shadow-lg);
+}
+.gallery-hero-img img{
+  width:100%;height:420px;object-fit:cover;display:block;
+}
+.gallery-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+.gallery-thumb{
+  border-radius:14px;overflow:hidden;
+  aspect-ratio:1/1;
+  box-shadow:var(--shadow);
+  background:var(--line);
+  cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+}
+.gallery-thumb:hover{transform:scale(1.03);box-shadow:var(--shadow-lg)}
+.gallery-thumb img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.gallery-thumb-caption{
+  padding:8px 10px;font-size:11px;
+  color:var(--muted);text-align:center;
+  background:#fff;
+}
+@media(max-width:600px){
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-hero-img img{height:240px}
 }
 
 /* ════════════════════════════
@@ -259,20 +383,26 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   text-align:center;display:flex;flex-direction:column;align-items:center;gap:24px;
 }
 .about-avatar{
-  width:100px;height:100px;border-radius:50%;
+  width:120px;height:120px;border-radius:50%;
   object-fit:cover;
   border:4px solid var(--brand);
   box-shadow:0 8px 24px rgba(0,0,0,.12);
 }
 .about-initial{
-  width:100px;height:100px;border-radius:50%;
+  width:120px;height:120px;border-radius:50%;
   background:linear-gradient(135deg,var(--brand),var(--brand-dark));
-  color:#fff;font-size:38px;font-weight:800;
+  color:#fff;font-size:42px;font-weight:800;
   display:flex;align-items:center;justify-content:center;
   border:4px solid rgba(255,255,255,.5);
   box-shadow:0 8px 28px rgba(0,0,0,.15);
 }
 .about-name{font-size:22px;font-weight:800;color:var(--ink)}
+.about-since{
+  font-size:13px;font-weight:600;color:var(--muted);
+  background:var(--brand-light);
+  padding:4px 14px;border-radius:999px;
+  margin-top:-10px;
+}
 .about-bio{font-size:16px;color:var(--muted);line-height:1.65;max-width:560px}
 
 /* ════════════════════════════
@@ -296,6 +426,87 @@ button{font:inherit;cursor:pointer;border:none;background:none}
 }
 .contact-item:hover{border-color:var(--brand);background:var(--brand-light)}
 .contact-icon{font-size:16px;flex-shrink:0}
+
+/* ════════════════════════════
+   REVIEWS SECTION
+════════════════════════════ */
+.reviews-section{
+  padding:72px 24px;
+  background:#fff;
+}
+.reviews-header{text-align:center;margin-bottom:40px}
+.reviews-grid{
+  max-width:1000px;margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:24px;
+}
+.review-card{
+  background:var(--cream);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:24px;
+  display:flex;flex-direction:column;gap:10px;
+  box-shadow:var(--shadow);
+  transition:transform .2s,box-shadow .2s;
+}
+.review-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.review-stars{color:var(--gold);font-size:18px;letter-spacing:2px;line-height:1}
+.review-text{
+  font-size:14.5px;color:var(--ink);line-height:1.6;
+  font-style:italic;flex:1;
+}
+.review-author{
+  font-size:13px;font-weight:700;color:var(--muted);
+  border-top:1px solid var(--line);padding-top:10px;margin-top:4px;
+}
+@media(max-width:600px){
+  .reviews-grid{grid-template-columns:1fr}
+}
+
+/* ════════════════════════════
+   FAQ SECTION
+════════════════════════════ */
+.faq-section{
+  padding:72px 24px;
+  background:linear-gradient(135deg,#F9F6FD 0%,var(--cream) 100%);
+}
+.faq-header{text-align:center;margin-bottom:40px}
+.faq-list{
+  max-width:720px;margin:0 auto;
+  display:flex;flex-direction:column;gap:14px;
+}
+details.faq-item{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+details.faq-item[open]{border-color:var(--brand)}
+summary.faq-q{
+  font-size:15px;font-weight:700;color:var(--ink);
+  padding:18px 20px;
+  cursor:pointer;
+  list-style:none;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  user-select:none;
+}
+summary.faq-q::-webkit-details-marker{display:none}
+summary.faq-q::after{
+  content:'＋';
+  font-size:18px;font-weight:400;
+  color:var(--brand);flex-shrink:0;
+  transition:transform .2s;
+}
+details.faq-item[open] summary.faq-q::after{
+  content:'－';
+}
+.faq-a{
+  padding:0 20px 18px;
+  font-size:14.5px;color:var(--muted);line-height:1.65;
+}
 
 /* ════════════════════════════
    BIG BOOK NOW CTA
@@ -359,10 +570,15 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   .nav-biz-name{max-width:140px;font-size:13px}
   .nav-book-btn{padding:9px 16px;font-size:13px}
   .hero{padding:56px 20px 64px}
+  .hero.has-photo{padding:72px 20px 80px}
   .services-section{padding:52px 16px}
   .about-section{padding:52px 16px}
   .cta-section{padding:60px 20px}
   .services-grid{grid-template-columns:1fr}
+  .tier-card.popular{transform:none}
+  .reviews-section{padding:52px 16px}
+  .faq-section{padding:52px 16px}
+  .gallery-section{padding:48px 16px}
 }
 </style>
 </head>
@@ -396,7 +612,7 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   </nav>
 
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" id="hero-section">
     <div class="hero-inner">
       <div class="hero-niche" id="hero-niche" style="display:none"></div>
       <h1 class="hero-biz-name" id="hero-biz-name"></h1>
@@ -418,12 +634,23 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     </div>
   </section>
 
+  <!-- GALLERY (injected if gallery_data exists) -->
+  <section class="gallery-section" id="gallery-section" style="display:none">
+    <div class="gallery-header">
+      <div class="section-label">Gallery</div>
+      <h2 class="section-title">A peek at the magic</h2>
+    </div>
+    <div class="gallery-hero-img" id="gallery-hero-wrap" style="display:none"></div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+  </section>
+
   <!-- ABOUT -->
   <section class="about-section">
     <div class="about-inner">
       <div id="about-avatar-wrap"></div>
       <div class="section-label">About</div>
       <h2 class="about-name" id="about-name"></h2>
+      <div class="about-since" id="about-since" style="display:none"></div>
       <p class="about-bio" id="about-bio"></p>
     </div>
   </section>
@@ -431,6 +658,24 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   <!-- CONTACT / SOCIAL -->
   <section class="contact-section" id="contact-row" style="display:none">
     <div class="contact-inner" id="contact-inner"></div>
+  </section>
+
+  <!-- REVIEWS (injected if reviews_data exists) -->
+  <section class="reviews-section" id="reviews-section" style="display:none">
+    <div class="reviews-header">
+      <div class="section-label">Reviews</div>
+      <h2 class="section-title">What families are saying</h2>
+    </div>
+    <div class="reviews-grid" id="reviews-grid"></div>
+  </section>
+
+  <!-- FAQ (injected if faq_data exists) -->
+  <section class="faq-section" id="faq-section" style="display:none">
+    <div class="faq-header">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-title">Common questions</h2>
+    </div>
+    <div class="faq-list" id="faq-list"></div>
   </section>
 
   <!-- BIG CTA -->
@@ -468,14 +713,20 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   }
 
   function darkenHex(hex, amount) {
-    // Darken a hex color by reducing each channel
     hex = hex.replace('#','');
     if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
     const num = parseInt(hex, 16);
-    let r = Math.max(0, (num >> 16) - amount);
-    let g = Math.max(0, ((num >> 8) & 0xff) - amount);
-    let b = Math.max(0, (num & 0xff) - amount);
+    const r = Math.max(0, (num >> 16) - amount);
+    const g = Math.max(0, ((num >> 8) & 0xff) - amount);
+    const b = Math.max(0, (num & 0xff) - amount);
     return '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+
+  function first(...vals) {
+    for (const v of vals) {
+      if (v != null && v !== '') return v;
+    }
+    return null;
   }
 
   function showError() {
@@ -500,166 +751,378 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   const uid = params.get('uid');
   if (!uid) { showError(); return; }
 
-  /* ── Book URL helper ── */
+  /* ── Book URL ── */
   const bookURL = 'book.html?uid=' + encodeURIComponent(uid);
 
-  /* ── Fetch from Supabase ── */
+  /* ── Supabase client ── */
   const supabase = window.supabase.createClient(SUPA_URL, SUPA_ANON);
 
-  supabase
-    .from('profiles')
-    .select('profile_data, full_name')
-    .eq('id', uid)
-    .single()
-    .then(({ data, error }) => {
-      if (error || !data) { showError(); return; }
+  /* ── Fetch profile and website_builds in parallel ── */
+  Promise.all([
+    supabase
+      .from('profiles')
+      .select('profile_data, full_name')
+      .eq('id', uid)
+      .single(),
+    supabase
+      .from('website_builds')
+      .select('*')
+      .eq('user_id', uid)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+  ]).then(([profileRes, buildRes]) => {
+    if (profileRes.error || !profileRes.data) { showError(); return; }
 
-      const pd   = data.profile_data || {};
-      const full = data.full_name || '';
+    const pd   = profileRes.data.profile_data || {};
+    const full = profileRes.data.full_name || '';
 
-      /* ── Brand color ── */
-      const brand     = (pd.brandColor && /^#[0-9A-Fa-f]{3,6}$/.test(pd.brandColor))
-                          ? pd.brandColor : '#6A3F8A';
-      const brandDark = darkenHex(brand, 40);
+    /* website_builds row (may be null if wizard not used) */
+    const wb          = buildRes.data || null;
+    const brand_data  = (wb && wb.brand_data)   || {};
+    const niche_data  = (wb && wb.niche_data)   || {};
+    const about_data  = (wb && wb.about_data)   || {};
+    const gallery_data= (wb && wb.gallery_data) || {};
+    const packages_data = (wb && Array.isArray(wb.packages_data) && wb.packages_data.length > 0)
+                          ? wb.packages_data : null;
+    const reviews_data  = (wb && Array.isArray(wb.reviews_data) && wb.reviews_data.length > 0)
+                          ? wb.reviews_data : null;
+    const faq_data      = (wb && wb.faq_data && Array.isArray(wb.faq_data.items) && wb.faq_data.items.length > 0)
+                          ? wb.faq_data : null;
 
-      document.documentElement.style.setProperty('--brand', brand);
-      document.documentElement.style.setProperty('--brand-dark', brandDark);
+    /* ── Brand color ── */
+    const rawBrand  = first(brand_data.customPrimary, pd.brandColor, '#6A3F8A');
+    const brand     = /^#[0-9A-Fa-f]{3,6}$/.test(rawBrand) ? rawBrand : '#6A3F8A';
+    const brandDark = darkenHex(brand, 40);
+    document.documentElement.style.setProperty('--brand', brand);
+    document.documentElement.style.setProperty('--brand-dark', brandDark);
+    document.documentElement.style.setProperty('--brand-light', hexToRgba(brand, 0.12));
 
-      const bizName   = pd.businessName || full || 'Party Business';
-      const tagline   = pd.tagline || 'Creating unforgettable parties for your little ones.';
-      const ownerName = pd.ownerName || full || bizName;
-      const ownerBio  = pd.ownerBio  || (bizName + ' is dedicated to creating unforgettable kids parties.');
-      const niche     = pd.niche || '';
-      const services  = Array.isArray(pd.bookingServices) ? pd.bookingServices : [];
+    function hexToRgba(hex, alpha) {
+      hex = hex.replace('#','');
+      if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+      const num = parseInt(hex, 16);
+      return 'rgba('+((num>>16)&255)+','+((num>>8)&255)+','+(num&255)+','+alpha+')';
+    }
 
-      /* ── Page title ── */
-      document.title = esc(bizName);
+    /* ── Resolved values ── */
+    const bizName   = first(brand_data.businessName, pd.businessName, full) || 'Party Business';
+    const tagline   = first(niche_data.tagline, brand_data.tagline, pd.tagline,
+                            'Creating unforgettable parties for your little ones.');
+    const logo      = first(brand_data.logoDataURL, pd.logo);
+    const ownerName = first(about_data.ownerName, pd.ownerName, full) || bizName;
+    const ownerBio  = first(about_data.bio, pd.ownerBio,
+                            bizName + ' is dedicated to creating unforgettable kids parties.');
+    const ownerPhoto= first(about_data.photoDataURL);
+    const heroPhoto = first(gallery_data.heroPhotoDataURL);
 
-      /* ── Nav ── */
-      document.getElementById('nav-biz-name').textContent = bizName;
-      document.getElementById('nav-book-link').href = bookURL;
+    /* Social links — prefer website_builds brand_data, fall back to profile_data */
+    const socialInstagram = first(brand_data.socialInstagram, pd.instagram);
+    const socialFacebook  = first(brand_data.socialFacebook,  pd.facebook);
+    const socialTiktok    = first(brand_data.socialTiktok,    pd.tiktok);
+    const socialYoutube   = first(brand_data.socialYoutube);
+    const socialCustom    = first(brand_data.socialCustom);
+    const phone           = first(pd.contactPhone, brand_data.phone);
+    const email           = first(pd.contactEmail, brand_data.email);
 
-      // Logo or initial circle
-      const logoWrap = document.getElementById('nav-logo-wrap');
-      if (pd.logo) {
-        const img = document.createElement('img');
-        img.src = pd.logo;
-        img.alt = esc(bizName);
-        img.className = 'nav-logo-img';
-        logoWrap.appendChild(img);
+    /* ── Page title ── */
+    document.title = bizName;
+
+    /* ── Nav ── */
+    document.getElementById('nav-biz-name').textContent = bizName;
+    document.getElementById('nav-book-link').href = bookURL;
+    document.getElementById('cta-book-link').href = bookURL;
+    document.getElementById('footer-biz-name').textContent = bizName;
+
+    const logoWrap = document.getElementById('nav-logo-wrap');
+    if (logo) {
+      const img = document.createElement('img');
+      img.src = logo;
+      img.alt = esc(bizName);
+      img.className = 'nav-logo-img';
+      logoWrap.appendChild(img);
+    } else {
+      const circle = document.createElement('div');
+      circle.className = 'nav-initial';
+      circle.textContent = bizName.charAt(0).toUpperCase();
+      logoWrap.appendChild(circle);
+    }
+
+    /* ── Hero ── */
+    document.getElementById('hero-biz-name').textContent = bizName;
+    document.getElementById('hero-tagline').textContent  = tagline;
+
+    if (heroPhoto) {
+      const hero = document.getElementById('hero-section');
+      hero.classList.add('has-photo');
+      hero.style.backgroundImage = 'url(' + heroPhoto + ')';
+    }
+
+    const nicheLabel = first(niche_data.name, wb && wb.niche_type);
+    if (nicheLabel) {
+      const nicheEl = document.getElementById('hero-niche');
+      nicheEl.textContent = nicheLabel;
+      nicheEl.style.display = 'inline-block';
+    }
+
+    /* ── Services / Packages ── */
+    const grid = document.getElementById('services-grid');
+
+    if (packages_data) {
+      /* Rich tier cards from website_builds */
+      packages_data.forEach((pkg, idx) => {
+        grid.appendChild(buildTierCard(pkg, idx, bookURL));
+      });
+    } else {
+      const services = Array.isArray(pd.bookingServices) ? pd.bookingServices : [];
+      if (services.length > 0) {
+        /* Simple profile_data cards */
+        services.forEach(svc => grid.appendChild(buildSimpleCard(svc, bookURL, false)));
       } else {
-        const circle = document.createElement('div');
-        circle.className = 'nav-initial';
-        circle.textContent = bizName.charAt(0).toUpperCase();
-        logoWrap.appendChild(circle);
-      }
-
-      /* ── Hero ── */
-      document.getElementById('hero-biz-name').textContent = bizName;
-      document.getElementById('hero-tagline').textContent  = tagline;
-      if (niche) {
-        const nicheEl = document.getElementById('hero-niche');
-        nicheEl.textContent = niche;
-        nicheEl.style.display = 'inline-block';
-      }
-
-      /* ── Services ── */
-      const grid = document.getElementById('services-grid');
-      if (services.length === 0) {
-        // 3 placeholder cards
+        /* Placeholder cards */
         const placeholders = [
-          { name:'Deluxe Party Package',  duration:'2 hours', price:'Starting at $250', description:'Everything you need for an amazing celebration — décor, activities, and smiles guaranteed.' },
-          { name:'Mini Party Package',    duration:'1 hour',  price:'Starting at $150', description:'A shorter, sweet celebration perfect for intimate gatherings and birthday surprises.' },
-          { name:'Premium Party Package', duration:'3 hours', price:'Starting at $450', description:'The full luxury experience — premium décor, custom themes, and premium entertainment.' },
+          { name:'Deluxe Party Package',  duration:'2 hours', price:'Starting at $250',
+            description:'Everything you need for an amazing celebration — décor, activities, and smiles guaranteed.' },
+          { name:'Mini Party Package',    duration:'1 hour',  price:'Starting at $150',
+            description:'A shorter, sweet celebration perfect for intimate gatherings.' },
+          { name:'Premium Party Package', duration:'3 hours', price:'Starting at $450',
+            description:'The full luxury experience — premium décor, custom themes, and premium entertainment.' },
         ];
-        placeholders.forEach(pkg => grid.appendChild(buildCard(pkg, bookURL, true)));
+        placeholders.forEach(pkg => grid.appendChild(buildSimpleCard(pkg, bookURL, true)));
         document.getElementById('coming-soon-note').style.display = 'block';
-      } else {
-        services.forEach(svc => grid.appendChild(buildCard(svc, bookURL, false)));
+      }
+    }
+
+    /* ── Gallery ── */
+    const gallerySection = document.getElementById('gallery-section');
+    const galleryHeroWrap = document.getElementById('gallery-hero-wrap');
+    const galleryGrid = document.getElementById('gallery-grid');
+    const galleryPhotos = Array.isArray(gallery_data.photos) ? gallery_data.photos : [];
+
+    if (heroPhoto || galleryPhotos.length > 0) {
+      gallerySection.style.display = 'block';
+
+      if (heroPhoto) {
+        galleryHeroWrap.style.display = 'block';
+        const hImg = document.createElement('img');
+        hImg.src = heroPhoto;
+        hImg.alt = esc(bizName) + ' hero photo';
+        hImg.loading = 'lazy';
+        galleryHeroWrap.appendChild(hImg);
       }
 
-      /* ── About ── */
-      document.getElementById('about-name').textContent = ownerName;
-      document.getElementById('about-bio').textContent  = ownerBio;
+      const maxPhotos = 6;
+      galleryPhotos.slice(0, maxPhotos).forEach(photo => {
+        if (!photo.dataURL) return;
+        const thumb = document.createElement('div');
+        thumb.className = 'gallery-thumb';
+        const tImg = document.createElement('img');
+        tImg.src = photo.dataURL;
+        tImg.alt = esc(photo.caption || bizName);
+        tImg.loading = 'lazy';
+        thumb.appendChild(tImg);
+        if (photo.caption) {
+          const cap = document.createElement('div');
+          cap.className = 'gallery-thumb-caption';
+          cap.textContent = photo.caption;
+          thumb.appendChild(cap);
+        }
+        galleryGrid.appendChild(thumb);
+      });
 
-      const avatarWrap = document.getElementById('about-avatar-wrap');
-      if (pd.logo) {
-        const img = document.createElement('img');
-        img.src = pd.logo;
-        img.alt = esc(ownerName);
-        img.className = 'about-avatar';
-        avatarWrap.appendChild(img);
-      } else {
-        const circle = document.createElement('div');
-        circle.className = 'about-initial';
-        circle.textContent = ownerName.charAt(0).toUpperCase();
-        avatarWrap.appendChild(circle);
+      /* If only hero photo and no grid photos, remove empty grid */
+      if (galleryPhotos.length === 0) {
+        galleryGrid.style.display = 'none';
       }
+    }
 
-      /* ── Contact / Social ── */
-      const contactItems = [];
-      if (pd.contactPhone) {
-        contactItems.push({
-          href: 'tel:' + pd.contactPhone.replace(/\D/g,''),
-          icon: '📞',
-          label: pd.contactPhone,
-        });
-      }
-      if (pd.instagram) {
-        contactItems.push({
-          href: 'https://instagram.com/' + encodeURIComponent(pd.instagram.replace(/^@/,'')),
-          icon: '📸',
-          label: '@' + pd.instagram.replace(/^@/,''),
-        });
-      }
-      if (pd.facebook) {
-        contactItems.push({
-          href: pd.facebook.startsWith('http') ? pd.facebook : 'https://facebook.com/' + encodeURIComponent(pd.facebook),
-          icon: '👍',
-          label: pd.facebook.replace(/^@/,''),
-        });
-      }
-      if (pd.tiktok) {
-        contactItems.push({
-          href: 'https://tiktok.com/@' + encodeURIComponent(pd.tiktok.replace(/^@/,'')),
-          icon: '🎵',
-          label: '@' + pd.tiktok.replace(/^@/,''),
-        });
-      }
-      if (contactItems.length > 0) {
-        const row = document.getElementById('contact-row');
-        const inner = document.getElementById('contact-inner');
-        row.style.display = 'block';
-        contactItems.forEach(item => {
-          const a = document.createElement('a');
-          a.href = item.href;
-          a.className = 'contact-item';
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
-          a.innerHTML = '<span class="contact-icon">' + item.icon + '</span>' +
-                        '<span>' + esc(item.label) + '</span>';
-          inner.appendChild(a);
-        });
-      }
+    /* ── About ── */
+    document.getElementById('about-name').textContent = ownerName;
+    document.getElementById('about-bio').textContent  = ownerBio;
 
-      /* ── CTA & Footer ── */
-      document.getElementById('cta-book-link').href = bookURL;
-      document.getElementById('footer-biz-name').textContent = bizName;
+    if (about_data.yearStarted) {
+      const sinceEl = document.getElementById('about-since');
+      sinceEl.textContent = 'In business since ' + esc(String(about_data.yearStarted));
+      sinceEl.style.display = 'inline-block';
+    }
 
-      /* ── Show content ── */
-      showContent();
-    })
-    .catch(() => showError());
+    const avatarWrap = document.getElementById('about-avatar-wrap');
+    if (ownerPhoto) {
+      const img = document.createElement('img');
+      img.src = ownerPhoto;
+      img.alt = esc(ownerName);
+      img.className = 'about-avatar';
+      avatarWrap.appendChild(img);
+    } else if (logo) {
+      const img = document.createElement('img');
+      img.src = logo;
+      img.alt = esc(ownerName);
+      img.className = 'about-avatar';
+      avatarWrap.appendChild(img);
+    } else {
+      const circle = document.createElement('div');
+      circle.className = 'about-initial';
+      circle.textContent = ownerName.charAt(0).toUpperCase();
+      avatarWrap.appendChild(circle);
+    }
 
-  /* ── Build service card DOM ── */
-  function buildCard(svc, bookURL, isPlaceholder) {
+    /* ── Contact / Social ── */
+    const contactItems = [];
+    if (phone) {
+      contactItems.push({ href:'tel:'+phone.replace(/\D/g,''), icon:'📞', label:phone });
+    }
+    if (email) {
+      contactItems.push({ href:'mailto:'+email, icon:'✉️', label:email });
+    }
+    if (socialInstagram) {
+      const handle = socialInstagram.replace(/^@/,'');
+      contactItems.push({
+        href:'https://instagram.com/'+encodeURIComponent(handle),
+        icon:'📸', label:'@'+handle
+      });
+    }
+    if (socialTiktok) {
+      const handle = socialTiktok.replace(/^@/,'');
+      contactItems.push({
+        href:'https://tiktok.com/@'+encodeURIComponent(handle),
+        icon:'🎵', label:'@'+handle
+      });
+    }
+    if (socialFacebook) {
+      const href = socialFacebook.startsWith('http') ? socialFacebook
+                   : 'https://facebook.com/'+encodeURIComponent(socialFacebook.replace(/^@/,''));
+      contactItems.push({ href, icon:'👍', label:socialFacebook.replace(/^@/,'') });
+    }
+    if (socialYoutube) {
+      const href = socialYoutube.startsWith('http') ? socialYoutube
+                   : 'https://youtube.com/'+encodeURIComponent(socialYoutube.replace(/^@/,''));
+      contactItems.push({ href, icon:'▶️', label:socialYoutube });
+    }
+    if (socialCustom) {
+      contactItems.push({ href: socialCustom.startsWith('http') ? socialCustom : 'https://'+socialCustom,
+                          icon:'🔗', label:socialCustom });
+    }
+
+    if (contactItems.length > 0) {
+      const row   = document.getElementById('contact-row');
+      const inner = document.getElementById('contact-inner');
+      row.style.display = 'block';
+      contactItems.forEach(item => {
+        const a = document.createElement('a');
+        a.href = item.href;
+        a.className = 'contact-item';
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.innerHTML = '<span class="contact-icon">'+item.icon+'</span><span>'+esc(item.label)+'</span>';
+        inner.appendChild(a);
+      });
+    }
+
+    /* ── Reviews ── */
+    if (reviews_data) {
+      const revSection = document.getElementById('reviews-section');
+      const revGrid    = document.getElementById('reviews-grid');
+      revSection.style.display = 'block';
+      reviews_data.slice(0, 3).forEach(rev => {
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        const stars = Math.min(5, Math.max(1, parseInt(rev.rating) || 5));
+        card.innerHTML =
+          '<div class="review-stars">' + '★'.repeat(stars) + '☆'.repeat(5 - stars) + '</div>' +
+          '<div class="review-text">"' + esc(rev.text || '') + '"</div>' +
+          '<div class="review-author">— ' + esc(rev.author || 'Happy Customer') + '</div>';
+        revGrid.appendChild(card);
+      });
+    }
+
+    /* ── FAQ ── */
+    if (faq_data) {
+      const faqSection = document.getElementById('faq-section');
+      const faqList    = document.getElementById('faq-list');
+      faqSection.style.display = 'block';
+      faq_data.items.forEach(item => {
+        const det = document.createElement('details');
+        det.className = 'faq-item';
+        const sum = document.createElement('summary');
+        sum.className = 'faq-q';
+        sum.textContent = item.q || '';
+        const ans = document.createElement('div');
+        ans.className = 'faq-a';
+        ans.textContent = item.a || '';
+        det.appendChild(sum);
+        det.appendChild(ans);
+        faqList.appendChild(det);
+      });
+    }
+
+    /* ── Done ── */
+    showContent();
+  }).catch(() => showError());
+
+  /* ════════════════════════════
+     CARD BUILDERS
+  ════════════════════════════ */
+
+  /* Tier card — from website_builds.packages_data */
+  function buildTierCard(pkg, idx, bookURL) {
+    const card = document.createElement('div');
+    const isPopular = idx === 1;
+    card.className = 'tier-card' + (isPopular ? ' popular' : '');
+
+    if (isPopular) {
+      const badge = document.createElement('div');
+      badge.className = 'tier-popular-badge';
+      badge.textContent = 'Most Popular';
+      card.appendChild(badge);
+    }
+
+    const priceRaw = pkg.price;
+    const priceStr = priceRaw != null
+      ? (typeof priceRaw === 'number' ? '$' + priceRaw : esc(String(priceRaw)))
+      : 'Contact for Pricing';
+
+    /* Build checklist from included field (one item per line) */
+    let checklistHTML = '';
+    if (pkg.included) {
+      const lines = String(pkg.included).split('\n').map(l=>l.trim()).filter(Boolean);
+      if (lines.length > 0) {
+        checklistHTML =
+          '<div class="tier-includes-label">What\'s included</div>' +
+          '<ul class="tier-checklist">' +
+          lines.map(l => '<li><span class="tier-check">✓</span><span>'+esc(l)+'</span></li>').join('') +
+          '</ul>';
+      }
+    }
+
+    /* Meta pills */
+    let metaHTML = '';
+    if (pkg.duration) metaHTML += '<span class="tier-meta-pill">⏱ '+esc(String(pkg.duration))+'</span>';
+    if (pkg.kids)     metaHTML += '<span class="tier-meta-pill">👧 Up to '+esc(String(pkg.kids))+' kids</span>';
+
+    card.innerHTML +=
+      '<div class="tier-card-top">' +
+        (pkg.tier ? '<div class="tier-label">'+esc(pkg.tier)+'</div>' : '') +
+        '<div class="tier-name">'+esc(pkg.name || 'Package')+'</div>' +
+        (metaHTML ? '<div class="tier-meta">'+metaHTML+'</div>' : '') +
+        '<div class="tier-price">'+priceStr+'</div>' +
+        '<div class="tier-price-label">per event</div>' +
+      '</div>' +
+      '<div class="tier-card-body">' + checklistHTML + '</div>' +
+      '<div class="tier-card-footer">' +
+        '<a href="'+esc(bookURL)+'" class="tier-book-btn">Book This Package</a>' +
+      '</div>';
+
+    return card;
+  }
+
+  /* Simple card — from profile_data.bookingServices or placeholder */
+  function buildSimpleCard(svc, bookURL, isPlaceholder) {
     const card = document.createElement('div');
     card.className = 'service-card';
 
-    const price = svc.price
+    const price = svc.price != null
       ? (typeof svc.price === 'number' ? '$' + svc.price : esc(String(svc.price)))
       : 'Contact for Pricing';
-
     const duration = svc.duration ? esc(String(svc.duration)) : '';
     const name     = esc(svc.name || 'Party Package');
     const desc     = esc(svc.description || 'A magical party experience your kids will never forget.');
@@ -667,15 +1130,15 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     card.innerHTML =
       '<div class="service-card-stripe"></div>' +
       '<div class="service-card-body">' +
-        '<div class="service-card-name">' + name + '</div>' +
+        '<div class="service-card-name">'+name+'</div>' +
         '<div class="service-card-meta">' +
-          (duration ? '<span class="service-card-duration">⏱ ' + duration + '</span>' : '') +
+          (duration ? '<span class="service-card-duration">⏱ '+duration+'</span>' : '') +
         '</div>' +
-        '<div class="service-card-price">' + price + '</div>' +
-        '<div class="service-card-desc">' + desc + '</div>' +
+        '<div class="service-card-price">'+price+'</div>' +
+        '<div class="service-card-desc">'+desc+'</div>' +
       '</div>' +
       '<div class="service-card-footer">' +
-        '<a href="' + (isPlaceholder ? '#' : esc(bookURL)) + '" class="service-book-btn">' +
+        '<a href="'+(isPlaceholder ? '#' : esc(bookURL))+'" class="service-book-btn">' +
           (isPlaceholder ? 'Coming Soon' : 'Book This Package') +
         '</a>' +
       '</div>';
