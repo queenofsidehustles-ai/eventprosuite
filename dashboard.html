@@ -284,9 +284,25 @@ async function boot() {
 async function loadData() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return;
-  const { data } = await sb.from('saved_quotes').select('*')
-    .eq('user_id', session.user.id).order('created_at', { ascending: false });
-  allQuotes = data || [];
+
+  const [quotesRes, bookingsRes] = await Promise.all([
+    sb.from('saved_quotes').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }),
+    sb.from('bookings').select('*').eq('owner_id', session.user.id).order('created_at', { ascending: false })
+  ]);
+
+  const quotes = (quotesRes.data || []).map(q => ({ ...q, _source: 'quote' }));
+  const incoming = (bookingsRes.data || []).map(b => ({
+    id: b.id,
+    client_name: b.client_name,
+    event_type: b.service_name || 'Booking Request',
+    event_date: b.event_date,
+    total_amount: b.service_price || null,
+    created_at: b.created_at,
+    _source: 'booking',
+    _raw: b
+  }));
+
+  allQuotes = [...incoming, ...quotes];
   renderStats();
   renderBookings();
 }
@@ -295,7 +311,10 @@ function getStatuses() {
   try { return JSON.parse(localStorage.getItem('pbh_statuses') || '{}'); } catch { return {}; }
 }
 function saveStatuses(o) { localStorage.setItem('pbh_statuses', JSON.stringify(o)); }
-function statusOf(q) { return getStatuses()[q.id] || 'quote-sent'; }
+function statusOf(q) {
+  if (q._source === 'booking') return getStatuses()[q.id] || 'inquiry';
+  return getStatuses()[q.id] || 'quote-sent';
+}
 
 /* ── STATS ── */
 function renderStats() {
@@ -335,13 +354,15 @@ function renderBookings() {
     return;
   }
 
-  const rows = allQuotes.slice(0, 15).map(q => {
+  const rows = allQuotes.slice(0, 20).map(q => {
     const status = statusOf(q);
-    const label  = STATUS_LABELS[status] || 'Quote Sent';
+    const label  = STATUS_LABELS[status] || 'New Booking';
     const date   = q.event_date ? fmtDate(q.event_date) : '—';
-    const amt    = q.total_amount ? '$' + Number(q.total_amount).toLocaleString('en-US', { minimumFractionDigits: 0 }) : '$—';
+    const amt    = q.total_amount ? '$' + Number(q.total_amount).toLocaleString('en-US', { minimumFractionDigits: 0 }) : '—';
+    const isNew  = q._source === 'booking' && status === 'inquiry';
+    const newBadge = isNew ? ' <span style="display:inline-block;background:#DC2626;color:#fff;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:999px;letter-spacing:.04em;vertical-align:middle">NEW</span>' : '';
     return `<tr onclick="openModal('${q.id}')">
-      <td><div class="bq-name">${esc(q.client_name || 'Unnamed')}</div><div class="bq-type">${esc(q.event_type || '')}</div></td>
+      <td><div class="bq-name">${esc(q.client_name || 'Unnamed')}${newBadge}</div><div class="bq-type">${esc(q.event_type || '')}</div></td>
       <td class="bq-date">${date}</td>
       <td><span class="bq-status ${status}">${label}</span></td>
       <td class="bq-amount">${amt}</td>

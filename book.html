@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Book Your Party</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  background:#F5F5F7;
+  color:#1A1625;
+  min-height:100vh;
+  line-height:1.5;
+}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit}
+img{max-width:100%;display:block}
+
+/* ── Brand Token (overridden by JS) ── */
+:root{
+  --brand:#6A417E;
+  --brand-rgb:106,65,126;
+  --brand-light:rgba(106,65,126,.12);
+  --brand-tint:rgba(106,65,126,.07);
+}
+
+/* ── Page Layout ── */
+.page-wrap{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  box-shadow:0 0 60px rgba(0,0,0,.08);
+}
+
+/* ── Header Banner ── */
+.booking-header{
+  background:var(--brand);
+  padding:28px 24px 44px;
+  position:relative;
+  text-align:center;
+  color:#fff;
+}
+.booking-header::after{
+  content:'';
+  position:absolute;
+  bottom:-24px;
+  left:0;right:0;
+  height:48px;
+  background:#fff;
+  border-radius:50% 50% 0 0 / 100% 100% 0 0;
+}
+.header-logo-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+.header-logo{
+  width:52px;height:52px;
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:800;color:#fff;
+  flex-shrink:0;
+  border:2px solid rgba(255,255,255,.35);
+}
+.header-logo img{width:100%;height:100%;object-fit:cover}
+.header-biz-name{
+  font-size:1.2rem;font-weight:800;letter-spacing:-.02em;
+  text-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.header-tagline{
+  font-size:.82rem;font-weight:500;opacity:.82;
+  margin-top:4px;letter-spacing:.01em;
+}
+
+/* ── Progress Dots ── */
+.progress-bar{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;padding:20px 24px 0;
+  position:relative;z-index:1;
+}
+.progress-step{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  flex:1;
+}
+.progress-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;
+  border:2px solid #D1C9DE;
+  background:#fff;
+  color:#A0A0B0;
+  transition:all .25s ease;
+  position:relative;z-index:2;
+}
+.progress-dot.done{
+  background:#16A05A;border-color:#16A05A;color:#fff;
+}
+.progress-dot.active{
+  background:var(--brand);border-color:var(--brand);color:#fff;
+  box-shadow:0 0 0 4px var(--brand-light);
+}
+.progress-label{
+  font-size:.6rem;font-weight:600;color:#A0A0B0;text-align:center;
+  white-space:nowrap;letter-spacing:.02em;
+}
+.progress-step.done .progress-label{color:#16A05A}
+.progress-step.active .progress-label{color:var(--brand)}
+.progress-connector{
+  flex:1;height:2px;background:#D1C9DE;
+  margin-bottom:20px;
+  max-width:40px;
+  transition:background .25s;
+}
+.progress-connector.done{background:#16A05A}
+
+/* ── Body Content ── */
+.body-content{
+  flex:1;
+  padding:8px 20px 40px;
+}
+
+/* ── Step Cards ── */
+.step{display:none}
+.step.active{display:block}
+
+.step-title{
+  font-size:1.15rem;font-weight:800;
+  color:#1A1625;margin-bottom:4px;letter-spacing:-.02em;
+}
+.step-sub{font-size:.82rem;color:#78718A;margin-bottom:20px}
+
+/* ── Service Cards ── */
+.service-grid{
+  display:flex;flex-direction:column;gap:10px;
+  margin-bottom:24px;
+}
+.service-card{
+  border:2px solid #E5E0EE;
+  border-radius:14px;
+  padding:14px 16px;
+  cursor:pointer;
+  transition:all .18s ease;
+  position:relative;
+  background:#fff;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.service-card:hover{border-color:var(--brand);background:var(--brand-tint)}
+.service-card.selected{
+  border-color:var(--brand);
+  background:var(--brand-light);
+  box-shadow:0 0 0 3px rgba(var(--brand-rgb),.12);
+}
+.service-radio{
+  width:20px;height:20px;
+  border-radius:50%;border:2px solid #C5BCDB;
+  background:#fff;
+  flex-shrink:0;
+  margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;
+}
+.service-card.selected .service-radio{
+  border-color:var(--brand);background:var(--brand);
+}
+.service-radio::after{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:#fff;opacity:0;transition:opacity .15s;
+}
+.service-card.selected .service-radio::after{opacity:1}
+.service-info{flex:1;min-width:0}
+.service-name{font-size:.9rem;font-weight:700;color:#1A1625;margin-bottom:3px}
+.service-desc{font-size:.77rem;color:#78718A;line-height:1.45}
+.service-price{
+  font-size:.82rem;font-weight:700;
+  color:var(--brand);
+  margin-top:5px;
+  display:inline-block;
+}
+
+/* ── Form Fields ── */
+.form-group{margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-label{
+  display:block;font-size:.78rem;font-weight:600;
+  color:#4A4358;margin-bottom:6px;
+}
+.form-label .req{color:#DC2626;margin-left:2px}
+.form-input{
+  width:100%;
+  border:1.5px solid #E5E0EE;
+  border-radius:10px;
+  padding:10px 13px;
+  font-size:.9rem;
+  color:#1A1625;
+  background:#fff;
+  transition:border-color .18s,box-shadow .18s;
+  outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.form-input:focus{
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(var(--brand-rgb),.1);
+}
+.form-input::placeholder{color:#B0A8C0}
+select.form-input{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2378718A' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:32px;
+}
+textarea.form-input{resize:vertical;min-height:90px}
+
+/* ── Review Card ── */
+.review-card{
+  background:#F9F8FC;border:1.5px solid #E5E0EE;
+  border-radius:14px;padding:18px;margin-bottom:20px;
+}
+.review-section-title{
+  font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:#A0A0B0;margin-bottom:12px;
+}
+.review-row{
+  display:flex;align-items:baseline;gap:8px;
+  margin-bottom:9px;padding-bottom:9px;
+  border-bottom:1px solid #EEEAF5;
+}
+.review-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.review-key{font-size:.75rem;font-weight:600;color:#78718A;min-width:110px;flex-shrink:0}
+.review-val{font-size:.82rem;font-weight:600;color:#1A1625;flex:1}
+.review-service-highlight{
+  background:var(--brand-light);
+  border:1.5px solid rgba(var(--brand-rgb),.2);
+  border-radius:10px;padding:12px 14px;
+  margin-bottom:16px;
+}
+.review-service-name{font-size:.95rem;font-weight:800;color:var(--brand)}
+.review-service-price{font-size:.82rem;font-weight:600;color:#78718A;margin-top:3px}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:12px;
+  font-weight:700;font-size:.9rem;
+  padding:13px 22px;cursor:pointer;
+  transition:all .2s ease;
+  text-decoration:none;
+}
+.btn-primary{
+  background:var(--brand);color:#fff;width:100%;
+  box-shadow:0 4px 14px rgba(var(--brand-rgb),.35);
+}
+.btn-primary:hover{
+  filter:brightness(1.08);
+  box-shadow:0 6px 20px rgba(var(--brand-rgb),.45);
+  transform:translateY(-1px);
+}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{
+  background:#fff;color:#4A4358;
+  border:1.5px solid #E5E0EE;
+  flex:1;
+}
+.btn-ghost:hover{background:#F5F2FA;border-color:#C5BCDB}
+
+.nav-row{
+  display:flex;gap:10px;margin-top:4px;
+}
+.nav-row-single{margin-top:4px}
+
+/* ── Confirmation Screen ── */
+.confirm-wrap{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  padding:32px 24px 48px;
+}
+.confirm-wrap.visible{display:flex}
+.confirm-icon{
+  width:80px;height:80px;
+  background:linear-gradient(135deg,#E8F9F1,#C3EDD8);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;
+  margin-bottom:20px;
+  box-shadow:0 4px 24px rgba(22,160,90,.18);
+}
+.confirm-heading{
+  font-size:1.55rem;font-weight:800;
+  color:#1A1625;letter-spacing:-.025em;
+  margin-bottom:8px;
+}
+.confirm-sub{font-size:.9rem;color:#78718A;line-height:1.6;margin-bottom:24px;max-width:340px}
+.confirm-ref{
+  background:#F5F2FA;border:1.5px solid #E5E0EE;
+  border-radius:10px;padding:12px 24px;
+  font-size:.82rem;color:#78718A;font-weight:600;
+  margin-bottom:20px;
+}
+.confirm-ref strong{
+  display:block;font-size:1.2rem;font-weight:800;
+  color:var(--brand);letter-spacing:.08em;margin-top:4px;
+}
+.deposit-box{
+  background:linear-gradient(135deg,#FFF9ED,#FEF3C7);
+  border:1.5px solid #FBD87F;
+  border-radius:14px;
+  padding:18px 20px;
+  width:100%;max-width:400px;
+  text-align:left;
+  margin-bottom:16px;
+}
+.deposit-box h3{
+  font-size:.9rem;font-weight:800;color:#92400E;
+  margin-bottom:6px;
+}
+.deposit-box p{font-size:.8rem;color:#78350F;line-height:1.5;margin-bottom:12px}
+.btn-stripe{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:#635BFF;color:#fff;
+  border:none;border-radius:10px;
+  font-weight:700;font-size:.85rem;
+  padding:11px 20px;width:100%;cursor:pointer;
+  transition:all .2s;text-decoration:none;
+}
+.btn-stripe:hover{background:#4E47CC;transform:translateY(-1px)}
+.contact-phone-note{
+  font-size:.8rem;color:#78718A;margin-top:16px;
+}
+.contact-phone-note a{color:var(--brand);font-weight:600;text-decoration:none}
+
+/* ── Error State ── */
+.error-state{
+  display:none;flex-direction:column;
+  align-items:center;text-align:center;
+  padding:60px 24px;
+}
+.error-state.visible{display:flex}
+.error-icon{font-size:48px;margin-bottom:16px}
+.error-heading{font-size:1.2rem;font-weight:800;color:#DC2626;margin-bottom:8px}
+.error-sub{font-size:.85rem;color:#78718A;max-width:300px;line-height:1.6}
+
+/* ── Loading State ── */
+.loading-state{
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:80px 24px;
+}
+.loading-state.visible{display:flex}
+.spinner{
+  width:36px;height:36px;
+  border:3px solid #E5E0EE;
+  border-top-color:var(--brand);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin-bottom:14px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:.85rem;color:#78718A;font-weight:500}
+
+/* ── Footer ── */
+.booking-footer{
+  text-align:center;padding:16px 24px;
+  border-top:1px solid #F0ECF8;
+  font-size:.7rem;color:#B0A8C0;font-weight:500;
+  letter-spacing:.02em;
+}
+.booking-footer a{color:#A09AB8;text-decoration:none}
+.booking-footer a:hover{color:var(--brand)}
+
+/* ── Utility ── */
+.hidden{display:none!important}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mt-4{margin-top:16px}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#D1C9DE;border-radius:99px}
+
+/* ── Responsive fine-tuning ── */
+@media(max-width:520px){
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrap" id="pageWrap">
+
+  <!-- Loading State -->
+  <div class="loading-state visible" id="loadingState">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading booking page…</div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" id="errorState">
+    <div class="error-icon">⚠️</div>
+    <div class="error-heading">Booking Link Invalid</div>
+    <div class="error-sub">This booking link is missing or invalid. Please contact the business directly for a correct link.</div>
+  </div>
+
+  <!-- Main booking UI (hidden until data loads) -->
+  <div id="mainUI" class="hidden">
+
+    <!-- Header -->
+    <div class="booking-header" id="bookingHeader">
+      <div class="header-logo-wrap">
+        <div class="header-logo" id="headerLogo">🎉</div>
+        <div>
+          <div class="header-biz-name" id="headerBizName">Loading…</div>
+        </div>
+      </div>
+      <div class="header-tagline">Request a Booking</div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-step active" id="pstep1">
+        <div class="progress-dot active" id="pdot1">1</div>
+        <div class="progress-label">Service</div>
+      </div>
+      <div class="progress-connector" id="pcon1"></div>
+      <div class="progress-step" id="pstep2">
+        <div class="progress-dot" id="pdot2">2</div>
+        <div class="progress-label">Details</div>
+      </div>
+      <div class="progress-connector" id="pcon2"></div>
+      <div class="progress-step" id="pstep3">
+        <div class="progress-dot" id="pdot3">3</div>
+        <div class="progress-label">Contact</div>
+      </div>
+      <div class="progress-connector" id="pcon3"></div>
+      <div class="progress-step" id="pstep4">
+        <div class="progress-dot" id="pdot4">4</div>
+        <div class="progress-label">Review</div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="body-content">
+
+      <!-- STEP 1: Choose Service -->
+      <div class="step active" id="step1">
+        <div class="step-title">Choose your service 🎉</div>
+        <div class="step-sub">Select the type of party entertainment you'd like.</div>
+        <div class="service-grid" id="serviceGrid">
+          <!-- populated by JS -->
+        </div>
+        <div class="nav-row-single">
+          <button class="btn btn-primary" id="step1Next" onclick="goTo(2)" disabled>
+            Continue →
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Event Details -->
+      <div class="step" id="step2">
+        <div class="step-title">Event details 📅</div>
+        <div class="step-sub">Tell us about your party so we can prepare!</div>
+
+        <div class="form-group">
+          <label class="form-label" for="eventDate">Party Date <span class="req">*</span></label>
+          <input class="form-input" type="date" id="eventDate" min=""/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="startTime">Start Time <span class="req">*</span></label>
+          <input class="form-input" type="time" id="startTime"/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="eventAddress">Event Address <span class="req">*</span></label>
+          <input class="form-input" type="text" id="eventAddress" placeholder="123 Main St, City, State ZIP"/>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="numKids">Number of Kids <span class="req">*</span></label>
+            <input class="form-input" type="number" id="numKids" min="1" max="500" placeholder="e.g. 15"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="duration">Duration</label>
+            <select class="form-input" id="duration">
+              <option value="1hr">1 hour</option>
+              <option value="1.5hr">1.5 hours</option>
+              <option value="2hr" selected>2 hours</option>
+              <option value="3hr">3 hours</option>
+              <option value="Half day">Half day</option>
+              <option value="Full day">Full day</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="honoreeNameField">Birthday Child's Name</label>
+            <input class="form-input" type="text" id="honoreeNameField" placeholder="Optional"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="honoreeAge">Birthday Child's Age</label>
+            <input class="form-input" type="number" id="honoreeAge" min="1" max="18" placeholder="e.g. 7"/>
+          </div>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
+          <button class="btn btn-primary" onclick="validateStep2()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Contact Info -->
+      <div class="step" id="step3">
+        <div class="step-title">Your contact info 👋</div>
+        <div class="step-sub">We'll send your confirmation here.</div>
+
+        <div class="form-group">
+          <label class="form-label" for="clientName">Full Name <span class="req">*</span></label>
+          <input class="form-input" type="text" id="clientName" placeholder="Jane Smith"/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="clientEmail">Email Address <span class="req">*</span></label>
+          <input class="form-input" type="email" id="clientEmail" placeholder="jane@example.com"/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="clientPhone">Phone Number <span class="req">*</span></label>
+          <input class="form-input" type="tel" id="clientPhone" placeholder="(555) 555-5555"/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="referral">How did you hear about us?</label>
+          <select class="form-input" id="referral">
+            <option value="">Select one (optional)</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="Google">Google</option>
+            <option value="Friend/Family">Friend / Family</option>
+            <option value="Nextdoor">Nextdoor</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="notes">Special Notes / Requests</label>
+          <textarea class="form-input" id="notes" placeholder="Allergies, themes, special requests, etc."></textarea>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn btn-ghost" onclick="goTo(2)">← Back</button>
+          <button class="btn btn-primary" onclick="validateStep3()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Review -->
+      <div class="step" id="step4">
+        <div class="step-title">Review your booking ✨</div>
+        <div class="step-sub">Everything look right? Hit Book Now to confirm.</div>
+
+        <div class="review-service-highlight" id="reviewServiceHighlight">
+          <div class="review-service-name" id="reviewServiceName">—</div>
+          <div class="review-service-price" id="reviewServicePrice"></div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-section-title">Event Info</div>
+          <div class="review-row"><span class="review-key">Date</span><span class="review-val" id="rDate">—</span></div>
+          <div class="review-row"><span class="review-key">Time</span><span class="review-val" id="rTime">—</span></div>
+          <div class="review-row"><span class="review-key">Address</span><span class="review-val" id="rAddress">—</span></div>
+          <div class="review-row"><span class="review-key">Kids</span><span class="review-val" id="rKids">—</span></div>
+          <div class="review-row"><span class="review-key">Duration</span><span class="review-val" id="rDuration">—</span></div>
+          <div class="review-row" id="rHonoreeRow"><span class="review-key">Birthday Child</span><span class="review-val" id="rHonoree">—</span></div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-section-title">Contact Info</div>
+          <div class="review-row"><span class="review-key">Name</span><span class="review-val" id="rName">—</span></div>
+          <div class="review-row"><span class="review-key">Email</span><span class="review-val" id="rEmail">—</span></div>
+          <div class="review-row"><span class="review-key">Phone</span><span class="review-val" id="rPhone">—</span></div>
+          <div class="review-row" id="rReferralRow"><span class="review-key">How you found us</span><span class="review-val" id="rReferral">—</span></div>
+          <div class="review-row" id="rNotesRow"><span class="review-key">Notes</span><span class="review-val" id="rNotes">—</span></div>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn btn-ghost" onclick="goTo(3)">← Back</button>
+          <button class="btn btn-primary" id="bookNowBtn" onclick="submitBooking()">
+            🎊 Book Now
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /body-content -->
+
+    <!-- Confirmation Screen -->
+    <div class="confirm-wrap" id="confirmWrap">
+      <div class="confirm-icon">✅</div>
+      <div class="confirm-heading">You're booked! 🎉</div>
+      <div class="confirm-sub" id="confirmSub">Your booking request has been received. We can't wait to make your party amazing!</div>
+
+      <div class="confirm-ref">
+        Booking Reference
+        <strong id="confirmRef">—</strong>
+      </div>
+
+      <!-- Deposit box (shown if depositUpfront = true) -->
+      <div class="deposit-box hidden" id="depositBox">
+        <h3>💳 Secure Your Date with a Deposit</h3>
+        <p id="depositDesc">A deposit is required to hold your date. Click below to pay securely via Stripe.</p>
+        <a id="depositLink" href="#" target="_blank" class="btn-stripe">
+          Pay Deposit Securely →
+        </a>
+      </div>
+
+      <!-- No deposit message (shown if depositUpfront = false or not set) -->
+      <div id="noDepositMsg" class="hidden">
+        <div style="background:#F0FAF5;border:1.5px solid #A3E6C5;border-radius:12px;padding:14px 18px;font-size:.83rem;color:#0D6E3E;line-height:1.6;margin-bottom:16px;">
+          We'll contact you at <strong id="confirmEmailDisplay">your email</strong> within 24 hours with deposit instructions.
+        </div>
+      </div>
+
+      <div class="contact-phone-note hidden" id="confirmPhoneNote">
+        Questions? Call <a href="#" id="confirmPhoneLink"></a>
+      </div>
+    </div>
+    <!-- /confirm -->
+
+    <div class="booking-footer">
+      Powered by <a href="https://partybizhub.com" target="_blank">Party Biz Hub</a>
+    </div>
+
+  </div><!-- /mainUI -->
+
+</div><!-- /page-wrap -->
+
+<script>
+// ──────────────────────────────────────────────
+// Supabase init
+// ──────────────────────────────────────────────
+const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ──────────────────────────────────────────────
+// State
+// ──────────────────────────────────────────────
+let ownerUID = null;
+let profileData = {};
+let selectedService = null;
+let currentStep = 1;
+let bookingId = null;
+
+const DEFAULT_SERVICES = [
+  { name: 'Princess / Character Party', description: 'Bring your child\'s favorite character to life! Full costume, activities, and magic.', price: '', duration: '' },
+  { name: 'Balloon Twisting', description: 'Colorful balloon animals and creations that kids absolutely love.', price: '', duration: '' },
+  { name: 'Face Painting', description: 'Professional face painting with glitter, themes, and custom designs.', price: '', duration: '' },
+  { name: 'Custom Package', description: 'Mix and match services for a totally unique party experience.', price: '', duration: '' },
+];
+
+// ──────────────────────────────────────────────
+// Init on load
+// ──────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  // Set min date = tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('eventDate').min = tomorrow.toISOString().split('T')[0];
+
+  // Get uid from URL
+  const params = new URLSearchParams(window.location.search);
+  ownerUID = params.get('uid');
+
+  if (!ownerUID) {
+    showError();
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, profile_data')
+      .eq('id', ownerUID)
+      .single();
+
+    if (error || !data) {
+      showError();
+      return;
+    }
+
+    profileData = data.profile_data || {};
+    applyBranding();
+    renderServices();
+    showMain();
+  } catch (e) {
+    console.error(e);
+    showError();
+  }
+});
+
+// ──────────────────────────────────────────────
+// Branding
+// ──────────────────────────────────────────────
+function applyBranding() {
+  const brandColor = profileData.brandColor || '#6A417E';
+  document.documentElement.style.setProperty('--brand', brandColor);
+
+  // Compute a lighter version for tints
+  document.documentElement.style.setProperty('--brand-light', hexToRgba(brandColor, 0.12));
+  document.documentElement.style.setProperty('--brand-tint', hexToRgba(brandColor, 0.07));
+
+  // Also set brand-rgb for box-shadow usage
+  const rgb = hexToRgbParts(brandColor);
+  if (rgb) {
+    document.documentElement.style.setProperty('--brand-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+  }
+
+  // Header color
+  document.getElementById('bookingHeader').style.background = brandColor;
+
+  // Business name
+  const bizName = profileData.businessName || 'Party Services';
+  document.getElementById('headerBizName').textContent = bizName;
+  document.title = `Book with ${bizName}`;
+
+  // Logo
+  const logoEl = document.getElementById('headerLogo');
+  if (profileData.logoDataURL) {
+    logoEl.innerHTML = `<img src="${profileData.logoDataURL}" alt="${bizName} logo"/>`;
+  } else {
+    logoEl.textContent = bizName.charAt(0).toUpperCase();
+  }
+}
+
+function hexToRgba(hex, alpha) {
+  const rgb = hexToRgbParts(hex);
+  if (!rgb) return `rgba(106,65,126,${alpha})`;
+  return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+}
+
+function hexToRgbParts(hex) {
+  if (!hex) return null;
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (hex.length !== 6) return null;
+  const num = parseInt(hex, 16);
+  return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+// ──────────────────────────────────────────────
+// Render Services
+// ──────────────────────────────────────────────
+function renderServices() {
+  const services = (profileData.bookingServices && profileData.bookingServices.length > 0)
+    ? profileData.bookingServices
+    : DEFAULT_SERVICES;
+
+  const grid = document.getElementById('serviceGrid');
+  grid.innerHTML = '';
+
+  services.forEach((svc, i) => {
+    const card = document.createElement('div');
+    card.className = 'service-card';
+    card.dataset.index = i;
+
+    const priceHTML = svc.price
+      ? `<span class="service-price">${formatPrice(svc.price)}</span>`
+      : '';
+
+    card.innerHTML = `
+      <div class="service-radio"></div>
+      <div class="service-info">
+        <div class="service-name">${escHtml(svc.name)}</div>
+        ${svc.description ? `<div class="service-desc">${escHtml(svc.description)}</div>` : ''}
+        ${priceHTML}
+      </div>
+    `;
+
+    card.addEventListener('click', () => selectService(i, svc, card));
+    grid.appendChild(card);
+  });
+}
+
+function selectService(index, svc, cardEl) {
+  // Deselect all
+  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  // Select this
+  cardEl.classList.add('selected');
+  selectedService = { ...svc, index };
+  document.getElementById('step1Next').disabled = false;
+}
+
+// ──────────────────────────────────────────────
+// Step Navigation
+// ──────────────────────────────────────────────
+function goTo(n) {
+  // Hide current step
+  document.getElementById(`step${currentStep}`).classList.remove('active');
+  // Show new step
+  currentStep = n;
+  document.getElementById(`step${currentStep}`).classList.add('active');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (n === 4) populateReview();
+}
+
+function updateProgress() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`pdot${i}`);
+    const step = document.getElementById(`pstep${i}`);
+    dot.className = 'progress-dot';
+    step.className = 'progress-step';
+
+    if (i < currentStep) {
+      dot.classList.add('done');
+      dot.innerHTML = '✓';
+      step.classList.add('done');
+    } else if (i === currentStep) {
+      dot.classList.add('active');
+      dot.textContent = i;
+      step.classList.add('active');
+    } else {
+      dot.textContent = i;
+    }
+  }
+
+  // Update connectors
+  for (let i = 1; i <= 3; i++) {
+    const con = document.getElementById(`pcon${i}`);
+    if (i < currentStep) {
+      con.classList.add('done');
+    } else {
+      con.classList.remove('done');
+    }
+  }
+}
+
+// ──────────────────────────────────────────────
+// Validation
+// ──────────────────────────────────────────────
+function validateStep2() {
+  const date = document.getElementById('eventDate').value;
+  const time = document.getElementById('startTime').value;
+  const address = document.getElementById('eventAddress').value.trim();
+  const kids = document.getElementById('numKids').value;
+
+  if (!date) { alert('Please select a party date.'); return; }
+  if (!time) { alert('Please select a start time.'); return; }
+  if (!address) { alert('Please enter the event address.'); return; }
+  if (!kids || parseInt(kids) < 1) { alert('Please enter the number of kids.'); return; }
+
+  goTo(3);
+}
+
+function validateStep3() {
+  const name = document.getElementById('clientName').value.trim();
+  const email = document.getElementById('clientEmail').value.trim();
+  const phone = document.getElementById('clientPhone').value.trim();
+
+  if (!name) { alert('Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  if (!phone) { alert('Please enter your phone number.'); return; }
+
+  goTo(4);
+}
+
+// ──────────────────────────────────────────────
+// Review Population
+// ──────────────────────────────────────────────
+function populateReview() {
+  // Service
+  document.getElementById('reviewServiceName').textContent = selectedService.name;
+  const priceStr = selectedService.price ? formatPrice(selectedService.price) : 'Price TBD';
+  document.getElementById('reviewServicePrice').textContent = priceStr;
+
+  // Event
+  const dateVal = document.getElementById('eventDate').value;
+  document.getElementById('rDate').textContent = dateVal ? formatDate(dateVal) : '—';
+  const timeVal = document.getElementById('startTime').value;
+  document.getElementById('rTime').textContent = timeVal ? formatTime(timeVal) : '—';
+  document.getElementById('rAddress').textContent = document.getElementById('eventAddress').value.trim();
+  document.getElementById('rKids').textContent = document.getElementById('numKids').value;
+  document.getElementById('rDuration').textContent = document.getElementById('duration').value;
+
+  const honoree = document.getElementById('honoreeNameField').value.trim();
+  const age = document.getElementById('honoreeAge').value;
+  if (honoree) {
+    document.getElementById('rHonoree').textContent = honoree + (age ? `, age ${age}` : '');
+    document.getElementById('rHonoreeRow').classList.remove('hidden');
+  } else {
+    document.getElementById('rHonoreeRow').classList.add('hidden');
+  }
+
+  // Contact
+  document.getElementById('rName').textContent = document.getElementById('clientName').value.trim();
+  document.getElementById('rEmail').textContent = document.getElementById('clientEmail').value.trim();
+  document.getElementById('rPhone').textContent = document.getElementById('clientPhone').value.trim();
+
+  const referral = document.getElementById('referral').value;
+  if (referral) {
+    document.getElementById('rReferral').textContent = referral;
+    document.getElementById('rReferralRow').classList.remove('hidden');
+  } else {
+    document.getElementById('rReferralRow').classList.add('hidden');
+  }
+
+  const notes = document.getElementById('notes').value.trim();
+  if (notes) {
+    document.getElementById('rNotes').textContent = notes;
+    document.getElementById('rNotesRow').classList.remove('hidden');
+  } else {
+    document.getElementById('rNotesRow').classList.add('hidden');
+  }
+}
+
+// ──────────────────────────────────────────────
+// Submit Booking
+// ──────────────────────────────────────────────
+async function submitBooking() {
+  const btn = document.getElementById('bookNowBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const clientEmail = document.getElementById('clientEmail').value.trim();
+
+  const payload = {
+    owner_id: ownerUID,
+    client_name: document.getElementById('clientName').value.trim(),
+    client_email: clientEmail,
+    client_phone: document.getElementById('clientPhone').value.trim(),
+    event_date: document.getElementById('eventDate').value,
+    event_time: document.getElementById('startTime').value,
+    event_address: document.getElementById('eventAddress').value.trim(),
+    num_kids: parseInt(document.getElementById('numKids').value) || null,
+    duration: document.getElementById('duration').value,
+    honoree_name: document.getElementById('honoreeNameField').value.trim() || null,
+    honoree_age: document.getElementById('honoreeAge').value ? parseInt(document.getElementById('honoreeAge').value) : null,
+    service_name: selectedService.name,
+    service_price: selectedService.price || null,
+    referral: document.getElementById('referral').value || null,
+    notes: document.getElementById('notes').value.trim() || null,
+    status: 'new',
+    created_at: new Date().toISOString(),
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Booking insert error:', error);
+      alert('Something went wrong submitting your booking. Please try again or contact the business directly.');
+      btn.disabled = false;
+      btn.textContent = '🎊 Book Now';
+      return;
+    }
+
+    bookingId = data.id || null;
+    showConfirmation(clientEmail, bookingId);
+
+  } catch (e) {
+    console.error(e);
+    alert('A network error occurred. Please check your connection and try again.');
+    btn.disabled = false;
+    btn.textContent = '🎊 Book Now';
+  }
+}
+
+// ──────────────────────────────────────────────
+// Confirmation Screen
+// ──────────────────────────────────────────────
+function showConfirmation(clientEmail, id) {
+  // Hide wizard steps + progress
+  document.getElementById('progressBar').classList.add('hidden');
+  document.getElementById('body-content-wrapper') // not needed
+
+  // Hide all steps
+  document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
+  // Hide body content padding area — show confirm instead
+  document.querySelector('.body-content').style.padding = '0';
+
+  // Show confirm wrap
+  const wrap = document.getElementById('confirmWrap');
+  wrap.classList.add('visible');
+
+  // Booking ref
+  const refText = id ? id.toString().replace(/-/g, '').toUpperCase().substring(0, 8) : 'PENDING';
+  document.getElementById('confirmRef').textContent = refText;
+
+  // Deposit logic
+  const depositUpfront = profileData.depositUpfront === true;
+
+  if (depositUpfront) {
+    // Pick stripe link by price
+    const price = parseFloat((selectedService.price || '0').toString().replace(/[^0-9.]/g, '')) || 0;
+    const stripeLink = pickStripeLink(price);
+
+    const depositBox = document.getElementById('depositBox');
+    depositBox.classList.remove('hidden');
+
+    if (stripeLink) {
+      document.getElementById('depositLink').href = stripeLink;
+      document.getElementById('depositDesc').textContent =
+        `A deposit is required to hold your date. Click below to pay securely via Stripe.`;
+    } else {
+      // No stripe link found — fallback
+      document.getElementById('depositLink').style.display = 'none';
+      document.getElementById('depositDesc').textContent =
+        `We'll send deposit instructions to ${clientEmail} shortly. Please hold tight!`;
+    }
+
+    document.getElementById('noDepositMsg').classList.add('hidden');
+  } else {
+    // No deposit upfront
+    document.getElementById('depositBox').classList.add('hidden');
+    const noDepMsg = document.getElementById('noDepositMsg');
+    noDepMsg.classList.remove('hidden');
+    document.getElementById('confirmEmailDisplay').textContent = clientEmail;
+  }
+
+  // Contact phone
+  if (profileData.contactPhone) {
+    const phoneNote = document.getElementById('confirmPhoneNote');
+    const phoneLink = document.getElementById('confirmPhoneLink');
+    phoneNote.classList.remove('hidden');
+    phoneLink.href = `tel:${profileData.contactPhone.replace(/\D/g, '')}`;
+    phoneLink.textContent = profileData.contactPhone;
+  }
+}
+
+function pickStripeLink(price) {
+  const links = profileData;
+  // brackets: ≤150 → stripe100, ≤375 → stripe250, ≤750 → stripe500, else → stripe1000
+  if (price <= 150) return links.stripe100 || links.stripe250 || links.stripe500 || links.stripe1000 || null;
+  if (price <= 375) return links.stripe250 || links.stripe500 || links.stripe1000 || null;
+  if (price <= 750) return links.stripe500 || links.stripe1000 || null;
+  return links.stripe1000 || null;
+}
+
+// ──────────────────────────────────────────────
+// UI State helpers
+// ──────────────────────────────────────────────
+function showMain() {
+  document.getElementById('loadingState').classList.remove('visible');
+  document.getElementById('mainUI').classList.remove('hidden');
+}
+
+function showError() {
+  document.getElementById('loadingState').classList.remove('visible');
+  const err = document.getElementById('errorState');
+  err.classList.add('visible');
+}
+
+// ──────────────────────────────────────────────
+// Formatting helpers
+// ──────────────────────────────────────────────
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return '—';
+  const [h, m] = timeStr.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function formatPrice(price) {
+  if (!price) return '';
+  const str = price.toString().trim();
+  if (str.startsWith('$')) return str;
+  const num = parseFloat(str);
+  if (!isNaN(num)) return `$${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  return str;
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
