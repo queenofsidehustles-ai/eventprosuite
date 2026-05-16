@@ -240,7 +240,7 @@ input[type="file"]{padding:8px;background:var(--cream);cursor:pointer}
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── RESPONSIVE ── */
+/* ── RESPONSIVE (legacy topnav) ── */
 @media(max-width:960px){
   .topnav-inner{grid-template-columns:auto 1fr auto}
   .topnav-tabs{overflow-x:auto;max-width:100%;gap:1px}
@@ -251,4 +251,115 @@ input[type="file"]{padding:8px;background:var(--cream);cursor:pointer}
 @media(max-width:640px){
   .topnav-inner{padding:8px 14px}
   .panel{padding:16px}
+}
+
+/* ════════════════════════════════════════════════════
+   SIDEBAR APP LAYOUT  (replaces top-tab nav)
+   ════════════════════════════════════════════════════ */
+
+.pbh-layout{display:flex;min-height:100vh}
+
+/* ── Sidebar ── */
+.pbh-sidebar{
+  width:224px;flex-shrink:0;
+  background:#fff;border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  display:flex;flex-direction:column;z-index:40
+}
+.sidebar-inner{display:flex;flex-direction:column;height:100%}
+
+.sidebar-brand{
+  padding:18px 16px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between
+}
+.sidebar-brand a{display:flex;align-items:center}
+.sidebar-brand img{height:38px;width:auto}
+.sidebar-close{
+  display:none;background:none;border:none;cursor:pointer;
+  color:var(--muted);padding:4px;border-radius:6px;line-height:0
+}
+.sidebar-close:hover{background:var(--cream);color:var(--ink)}
+
+.sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+
+.snav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:10px;color:var(--muted);text-decoration:none;
+  font-size:13.5px;font-weight:600;transition:all .14s;
+  border:none;background:transparent;width:100%;cursor:pointer;font-family:inherit
+}
+.snav-item:hover{background:rgba(106,65,126,.07);color:var(--plum-900)}
+.snav-item.active{
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));
+  color:#fff;box-shadow:0 4px 12px rgba(90,52,118,.22)
+}
+.snav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.snav-label{flex:1;text-align:left}
+
+.sidebar-footer{padding:8px 8px 14px;border-top:1px solid var(--border);margin-top:auto}
+.snav-settings{margin-bottom:4px}
+
+.sidebar-user{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 12px;margin-top:2px
+}
+.sidebar-avatar{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--brand),var(--pink));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px
+}
+.sidebar-user-info{flex:1;min-width:0}
+.sidebar-user-name{
+  font-size:12px;font-weight:700;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px
+}
+.sidebar-signout{
+  font-size:11px;color:var(--muted);background:none;
+  border:none;cursor:pointer;padding:0;font-family:inherit;font-weight:500
+}
+.sidebar-signout:hover{color:var(--danger)}
+
+/* ── Content area ── */
+.pbh-content{
+  flex:1;min-width:0;
+  background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);
+  min-height:100vh
+}
+
+/* ── Mobile top bar ── */
+.pbh-mobile-bar{
+  display:none;position:sticky;top:0;z-index:50;
+  background:rgba(255,253,252,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:9px 16px;align-items:center;justify-content:space-between
+}
+.pbh-mobile-logo img{height:30px;width:auto}
+.pbh-ham{
+  background:none;border:none;cursor:pointer;
+  padding:6px;border-radius:8px;color:var(--ink);line-height:0
+}
+.pbh-ham:hover{background:var(--cream)}
+
+/* ── Overlay ── */
+.pbh-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(31,26,36,.45);backdrop-filter:blur(2px);z-index:39
+}
+.pbh-overlay.show{display:block}
+
+/* ── Mobile: sidebar off-canvas ── */
+@media(max-width:900px){
+  .pbh-sidebar{
+    position:fixed;left:-240px;top:0;bottom:0;
+    z-index:100;height:100vh;transition:left .22s ease;
+    box-shadow:var(--shadow-lg)
+  }
+  .pbh-sidebar.open{left:0}
+  .pbh-mobile-bar{display:flex}
+  .sidebar-close{display:flex;align-items:center;justify-content:center}
+  .pbh-overlay{z-index:99}
+}
+@media(max-width:600px){
+  .pbh-content-wrap{padding:16px 14px 60px}
 }

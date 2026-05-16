@@ -144,32 +144,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
   <div><h2>Sign in required</h2><p>Please sign in to continue to your Contract Generator.</p><a href="login.html">Sign In →</a></div>
 </div>
 
-<div class="topnav" id="topnav" style="display:none">
-  <div class="topnav-inner">
-    <a href="dashboard.html" class="topnav-left"><img src="partybizhub-logo.png" alt="Party Biz Hub"/></a>
-    <div class="topnav-tabs">
-      <a href="dashboard.html" class="topnav-tab"><span>🏠</span>Home</a>
-      <a href="app.html" class="topnav-tab"><span>📄</span>Quote</a>
-      <a href="contract.html" class="topnav-tab active"><span>📝</span>Contract</a>
-      <a href="profit.html" class="topnav-tab"><span>💰</span>Profit</a>
-      <a href="prep.html" class="topnav-tab"><span>📋</span>Checklist</a>
-      <a href="vendors.html" class="topnav-tab"><span>🤝</span>Vendors</a>
-      <a href="mywebsite.html" class="topnav-tab"><span class="tab-ico">🌐</span>My Website</a>
+<!-- Sidebar overlay (mobile) -->
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<!-- APP LAYOUT -->
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <!-- Mobile top bar -->
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.png" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
     </div>
-    <div class="topnav-right">
-      <div class="user-chip" id="userChip" onclick="toggleUserMenu(event)">
-        <div class="user-avatar" id="userAvatar">?</div>
-        <div class="user-chip-text" id="userName">Loading...</div>
-      </div>
-    </div>
-  </div>
-  <div class="user-menu" id="userMenu">
-    <a href="app.html" class="user-menu-item">📄 Quote Builder</a>
-    <a href="profile.html" class="user-menu-item">⚙ Business Profile</a>
-    <div class="user-menu-divider"></div>
-    <button class="user-menu-item danger" onclick="handleLogout()">🚪 Sign Out</button>
-  </div>
-</div>
 
 <div class="page-header">
   <div class="page-header-inner">
@@ -368,6 +357,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
 <div class="toast" id="toast"></div>
 
+  </div><!-- /pbh-content -->
+</div><!-- /pbh-layout -->
+
+<script src="nav.js"></script>
 <script>
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
@@ -424,12 +417,15 @@ async function init(){
     const displayName=(p && p.profile_data && p.profile_data.businessName)||p?.full_name||(session.user.email||'user').split('@')[0];
     $('userName').textContent=displayName;
     $('userAvatar').textContent=(displayName[0]||'?').toUpperCase();
+    setNavUser(displayName);
   }catch(e){
     const email=session.user.email||'user';
     $('userName').textContent=email.split('@')[0];
     $('userAvatar').textContent=(email[0]||'?').toUpperCase();
+    setNavUser(email.split('@')[0]);
   }
-  $('topnav').style.display='block';
+  $('pbhLayout').style.display='flex';
+  initNavSignout(handleLogout);
   document.addEventListener('click',e=>{if(!e.target.closest('#userChip') && !e.target.closest('#userMenu'))$('userMenu').classList.remove('open')});
   ['Deposit','Cancellation','Payment'].forEach(k=>{
     const el=$('clause'+k+'Custom');

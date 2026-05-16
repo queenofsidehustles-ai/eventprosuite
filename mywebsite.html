@@ -357,35 +357,21 @@ input,select,textarea{font:inherit}
   <div class="auth-gate-sub">Build · Book · Be Paid</div>
 </div>
 
-<!-- TOP NAV -->
-<div class="topnav" id="topnav" style="display:none">
-  <div class="topnav-inner">
-    <a href="dashboard.html" class="topnav-left">
-      <img src="partybizhub-logo.png" alt="Party Biz Hub"/>
-    </a>
-    <div class="topnav-tabs">
-      <a href="dashboard.html" class="topnav-tab"><span>🏠</span>Home</a>
-      <a href="app.html" class="topnav-tab"><span>📄</span>Quote</a>
-      <a href="contract.html" class="topnav-tab"><span>📝</span>Contract</a>
-      <a href="profit.html" class="topnav-tab"><span>💰</span>Profit</a>
-      <a href="prep.html" class="topnav-tab"><span>📋</span>Prep</a>
-      <a href="vendors.html" class="topnav-tab"><span>🤝</span>Vendors</a>
-      <a href="mywebsite.html" class="topnav-tab active"><span>🌐</span>My Website</a>
+<!-- Sidebar overlay (mobile) -->
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<!-- APP LAYOUT -->
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <!-- Mobile top bar -->
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.png" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
     </div>
-    <div class="topnav-right">
-      <div class="user-chip" id="userChip" onclick="toggleUserMenu(event)">
-        <div class="user-avatar" id="userAvatar">?</div>
-        <div class="user-chip-text" id="userChipText">Loading...</div>
-      </div>
-    </div>
-  </div>
-  <div class="user-menu" id="userMenu">
-    <a href="app.html" class="user-menu-item">📄 Quote Builder</a>
-    <a href="profile.html" class="user-menu-item">⚙ Business Profile</a>
-    <div class="user-menu-divider"></div>
-    <button class="user-menu-item danger" onclick="handleLogout()">🚪 Sign Out</button>
-  </div>
-</div>
 
 <!-- KPPS UPGRADE GATE — shown when user is Hub-only (not KPPS) -->
 <div id="upgradeGate" style="display:none">
@@ -1190,15 +1176,18 @@ async function init(){
       const display=(p.profile_data&&p.profile_data.businessName)||p.full_name||currentUser.email.split('@')[0];
       $('userChipText').textContent=display;
       $('userAvatar').textContent=display.charAt(0).toUpperCase();
+      setNavUser(display);
     }else{
       $('userChipText').textContent=currentUser.email.split('@')[0];
       $('userAvatar').textContent=currentUser.email.charAt(0).toUpperCase();
+      setNavUser(currentUser.email.split('@')[0]);
     }
   }catch(e){console.error('Profile load:',e)}
 
   // Hide auth gate, show nav
   $('authGate').style.display='none';
-  $('topnav').style.display='block';
+  $('pbhLayout').style.display='flex';
+  initNavSignout(handleLogout);
 
   // ── KPPS GATE ──
   // For now: gate is "soft" — show upgrade screen unless has_kpps_access=true.
@@ -2622,5 +2611,10 @@ function applyHeroPhotoPreview(){
 
 init();
 </script>
+
+  </div><!-- /pbh-content -->
+</div><!-- /pbh-layout -->
+
+<script src="nav.js"></script>
 </body>
 </html>
