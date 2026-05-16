@@ -709,7 +709,60 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- ── OPTIONAL SECTIONS ─────────────────── -->
-        <div class="section-group-label optional">Optional extras — add these when you're ready</div>
+        <div class="section-group-label optional">Boost your site — add when ready</div>
+
+        <!-- Section: Photos & Gallery — FIRST, most impactful -->
+        <div class="acc-section" data-section="gallery">
+          <button class="acc-head" onclick="toggleSection('gallery')">
+            <div class="acc-num opt" style="font-size:1rem"><span>📸</span></div>
+            <div class="acc-title">
+              <h3>Photos &amp; gallery <span style="font-size:.78rem;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;padding:.15rem .5rem;border-radius:50px;font-weight:700;letter-spacing:.05em;vertical-align:middle;margin-left:.4rem;font-family:'Inter',sans-serif">Best ROI</span></h3>
+              <p>Hero image + up to 12 gallery photos. Real photos book 3× more parties.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <p style="font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:1rem">📸 Photos are auto-resized and compressed for fast page loads. They travel inside your downloaded site — no separate hosting needed. Skip any slot you don't have a photo for yet.</p>
+
+            <!-- Hero photo -->
+            <div class="field">
+              <label>Hero photo (the big show-stopper at the top of your site)</label>
+              <div class="photo-upload-row">
+                <div class="photo-thumb" id="heroPhotoThumb">
+                  <span class="photo-thumb-empty">No photo</span>
+                </div>
+                <div style="flex:1">
+                  <input type="file" id="heroPhotoUpload" accept="image/*"/>
+                  <div class="field-help">Best: a styled wide shot of a finished setup. 16:9 ratio works best.</div>
+                  <button type="button" class="btn-photo-clear" id="heroPhotoClear" onclick="clearGalleryPhoto('hero')" style="display:none">× Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gallery slots -->
+            <div style="margin-top:1.4rem">
+              <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Gallery photos (up to 12) <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.85em">— use ◀ ▶ to reorder</span></div>
+              <div class="gallery-grid" id="galleryGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Reviews -->
+        <div class="acc-section" data-section="reviews">
+          <button class="acc-head" onclick="toggleSection('reviews')">
+            <div class="acc-num opt"><span>+</span></div>
+            <div class="acc-title">
+              <h3>Client reviews <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but powerful)</span></h3>
+              <p>What past clients say. Up to 3 testimonials shown on your site.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div id="reviewsList"></div>
+            <button type="button" class="btn-add-mini" onclick="addReview()" id="addReviewBtn">+ Add a review</button>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">💛 Skip if you don't have testimonials yet — your site will hide this section.</p>
+          </div>
+        </div>
 
         <!-- Section: Add-ons -->
         <div class="acc-section" data-section="addons">
@@ -728,30 +781,13 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
-        <!-- Section: Reviews -->
-        <div class="acc-section" data-section="reviews">
-          <button class="acc-head" onclick="toggleSection('reviews')">
-            <div class="acc-num opt"><span>+</span></div>
-            <div class="acc-title">
-              <h3>Reviews <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but recommended)</span></h3>
-              <p>What past clients say. Up to 3 testimonials.</p>
-            </div>
-            <div class="acc-toggle">▼</div>
-          </button>
-          <div class="acc-body">
-            <div id="reviewsList"></div>
-            <button type="button" class="btn-add-mini" onclick="addReview()" id="addReviewBtn">+ Add a review</button>
-            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">💛 Skip if you don't have testimonials yet — your site will hide this section.</p>
-          </div>
-        </div>
-
         <!-- Section: Founding Families -->
         <div class="acc-section" data-section="founding">
           <button class="acc-head" onclick="toggleSection('founding')">
             <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
               <h3>Founding Families banner <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
-              <p>Add urgency with a launch discount banner</p>
+              <p>Add urgency with a launch discount banner — great for a new business</p>
             </div>
             <div class="acc-toggle">▼</div>
           </button>
@@ -778,42 +814,6 @@ input,select,textarea{font:inherit}
                 <label>Banner headline (optional)</label>
                 <input type="text" id="foundingHeadline" placeholder="e.g. First 10 families get 25% off" oninput="onSectionInput('founding')"/>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Photos & Gallery -->
-        <div class="acc-section" data-section="gallery">
-          <button class="acc-head" onclick="toggleSection('gallery')">
-            <div class="acc-num opt"><span>+</span></div>
-            <div class="acc-title">
-              <h3>Photos &amp; gallery <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but powerful)</span></h3>
-              <p>Hero image + up to 12 gallery photos. Real photos book parties.</p>
-            </div>
-            <div class="acc-toggle">▼</div>
-          </button>
-          <div class="acc-body">
-            <p style="font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:1rem">📸 Photos are auto-resized and compressed for fast page loads. They travel inside your downloaded site — no separate hosting needed. Skip any slot you don't have a photo for yet.</p>
-
-            <!-- Hero photo -->
-            <div class="field">
-              <label>Hero photo (the big show-stopper at the top of your site)</label>
-              <div class="photo-upload-row">
-                <div class="photo-thumb" id="heroPhotoThumb">
-                  <span class="photo-thumb-empty">No photo</span>
-                </div>
-                <div style="flex:1">
-                  <input type="file" id="heroPhotoUpload" accept="image/*"/>
-                  <div class="field-help">Best: a styled wide shot of a finished setup. 16:9 ratio works best.</div>
-                  <button type="button" class="btn-photo-clear" id="heroPhotoClear" onclick="clearGalleryPhoto('hero')" style="display:none">× Remove</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gallery slots -->
-            <div style="margin-top:1.4rem">
-              <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Gallery photos (up to 12) <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.85em">— use ◀ ▶ to reorder</span></div>
-              <div class="gallery-grid" id="galleryGrid"></div>
             </div>
           </div>
         </div>
