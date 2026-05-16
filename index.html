@@ -65,9 +65,35 @@
   .hero-proof{display:flex;align-items:center;gap:18px;font-size:13px;color:var(--muted)}
   .hero-proof strong{color:var(--plum-900)}
   .hero-visual{position:relative;text-align:center}
-  .hero-logo-wrap{position:relative;border-radius:32px;padding:32px 32px 36px;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.9),rgba(252,248,244,.7));border:1px solid var(--line);box-shadow:var(--shadow-lg)}
-  .hero-logo-wrap img{width:100%;max-width:340px;margin:0 auto}
   .hero-badge{display:inline-flex;align-items:center;gap:8px;margin:0 auto 18px;background:linear-gradient(135deg,var(--gold),#e0b850);color:#3A2A1A;padding:9px 18px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;box-shadow:0 10px 25px rgba(201,162,39,.35)}
+  /* ── PRODUCT MOCKUP ── */
+  .app-mockup{background:#fff;border-radius:22px;border:1px solid var(--line);box-shadow:var(--shadow-lg);overflow:hidden;font-family:'Inter',system-ui,sans-serif}
+  .mockup-bar{background:linear-gradient(135deg,var(--plum-900),var(--brand));padding:10px 14px;display:flex;align-items:center;gap:7px}
+  .mockup-dot{width:9px;height:9px;border-radius:50%}
+  .mockup-title{margin-left:auto;font-size:10px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.1em;text-transform:uppercase}
+  .mockup-nav{background:rgba(255,253,252,.98);border-bottom:1px solid var(--line);padding:8px 14px;display:flex;gap:5px}
+  .mnav-tab{font-size:10px;font-weight:700;padding:5px 10px;border-radius:999px;color:var(--muted)}
+  .mnav-tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff}
+  .mockup-body{padding:14px}
+  .mockup-greeting{font-size:12px;font-weight:700;color:var(--plum-900);margin-bottom:10px;font-family:'Playfair Display',serif}
+  .mockup-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+  .mstat{background:var(--cream);border-radius:10px;padding:8px 10px;border:1px solid var(--line)}
+  .mstat-label{font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .mstat-val{font-size:16px;font-weight:800;color:var(--plum-900);margin-top:2px;font-variant-numeric:tabular-nums}
+  .mstat-val.money{color:#1e8c5a}
+  .mockup-section{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px;border-bottom:1px solid var(--line);padding-bottom:5px}
+  .mquote-row{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:5px}
+  .mq-name{font-size:11px;font-weight:700;color:var(--ink)}
+  .mq-type{font-size:9px;color:var(--muted)}
+  .mq-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:999px}
+  .mq-badge.sent{background:rgba(201,162,39,.14);color:#7A5A10}
+  .mq-badge.deposit{background:rgba(230,162,190,.2);color:#8A3060}
+  .mq-badge.confirmed{background:rgba(30,140,90,.1);color:#1e8c5a}
+  .mq-amount{font-size:11px;font-weight:800;color:var(--plum-800);font-variant-numeric:tabular-nums}
+  .mockup-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+  .mtool{background:var(--cream);border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center}
+  .mtool-ico{font-size:14px;margin-bottom:2px}
+  .mtool-name{font-size:9px;font-weight:700;color:var(--plum-800)}
   @media(max-width:960px){.hero{padding:56px 20px 70px}.hero-inner{grid-template-columns:1fr;gap:40px}.hero-logo-wrap{padding:28px}}
 
   /* TRUST STRIP */
@@ -298,9 +324,62 @@
       </div>
     </div>
     <div class="hero-visual">
-      <div class="hero-badge">Plan · Organize · Profit</div>
-      <div class="hero-logo-wrap">
-        <img src="partybizhub-logo.png" alt="Party Biz Hub — Build. Book. Be Paid."/>
+      <div class="hero-badge">Live App · Real Data</div>
+      <div class="app-mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#febc2e"></div>
+          <div class="mockup-dot" style="background:#28c840"></div>
+          <span class="mockup-title">Party Biz Hub · Dashboard</span>
+        </div>
+        <div class="mockup-nav">
+          <span class="mnav-tab active">🏠 Home</span>
+          <span class="mnav-tab">📄 Quote</span>
+          <span class="mnav-tab">📝 Contract</span>
+          <span class="mnav-tab">💰 Profit</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-greeting">Good morning, Luxe Kids Events! 🎉</div>
+          <div class="mockup-stats">
+            <div class="mstat">
+              <div class="mstat-label">This Month</div>
+              <div class="mstat-val">7</div>
+            </div>
+            <div class="mstat">
+              <div class="mstat-label">Pipeline</div>
+              <div class="mstat-val money">$4,850</div>
+            </div>
+            <div class="mstat">
+              <div class="mstat-label">Upcoming</div>
+              <div class="mstat-val">3</div>
+            </div>
+          </div>
+          <div class="mockup-section">Active Bookings</div>
+          <div class="mquote-row">
+            <div><div class="mq-name">Sophia T.</div><div class="mq-type">Princess Tea · Jun 14</div></div>
+            <span class="mq-badge deposit">Deposit Paid</span>
+            <span class="mq-amount">$975</span>
+          </div>
+          <div class="mquote-row">
+            <div><div class="mq-name">Amara J.</div><div class="mq-type">Unicorn Party · Jun 28</div></div>
+            <span class="mq-badge confirmed">Confirmed ✓</span>
+            <span class="mq-amount">$1,200</span>
+          </div>
+          <div class="mquote-row">
+            <div><div class="mq-name">Riley K.</div><div class="mq-type">Spa Party · Jul 5</div></div>
+            <span class="mq-badge sent">Quote Sent</span>
+            <span class="mq-amount">$650</span>
+          </div>
+          <div class="mockup-section">Your Tools</div>
+          <div class="mockup-tools">
+            <div class="mtool"><div class="mtool-ico">📄</div><div class="mtool-name">Quote Builder</div></div>
+            <div class="mtool"><div class="mtool-ico">📝</div><div class="mtool-name">Contract</div></div>
+            <div class="mtool"><div class="mtool-ico">💰</div><div class="mtool-name">Profit Calc</div></div>
+            <div class="mtool"><div class="mtool-ico">📋</div><div class="mtool-name">Checklist</div></div>
+            <div class="mtool"><div class="mtool-ico">🤝</div><div class="mtool-name">Vendors</div></div>
+            <div class="mtool"><div class="mtool-ico">🌐</div><div class="mtool-name">My Website</div></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -309,10 +388,11 @@
 <!-- TRUST STRIP -->
 <div class="trust">
   <div class="trust-inner">
-    <div class="trust-item"><span>✨</span> Fully branded quotes</div>
-    <div class="trust-item"><span>✨</span> Stripe deposit links built in</div>
-    <div class="trust-item"><span>✨</span> 80+ party services pre-loaded</div>
-    <div class="trust-item"><span>✨</span> PDF-ready invoices</div>
+    <div class="trust-item"><span>🎉</span> <strong>Built for kids party pros</strong></div>
+    <div class="trust-item"><span>⚡</span> Quote built in under 5 min</div>
+    <div class="trust-item"><span>💳</span> Stripe deposits built in</div>
+    <div class="trust-item"><span>🎨</span> Your logo · your brand</div>
+    <div class="trust-item"><span>📄</span> 80+ services pre-loaded</div>
   </div>
 </div>
 
