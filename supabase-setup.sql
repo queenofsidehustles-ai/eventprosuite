@@ -1,0 +1,198 @@
+-- ================================================================
+-- Party Biz Hub — Supabase Database Setup
+-- ================================================================
+-- Run this in Supabase → SQL Editor (supabase.com → your project → SQL Editor)
+-- It is safe to run more than once. All statements use IF NOT EXISTS / IF EXISTS.
+-- ================================================================
+
+
+-- ── 1. PROFILES TABLE ──────────────────────────────────────────
+-- Core user record. Created automatically by Supabase Auth trigger
+-- OR manually here. The ALTER TABLE lines add missing columns safely.
+
+create table if not exists profiles (
+  id          uuid references auth.users on delete cascade primary key,
+  email       text,
+  full_name   text,
+  has_paid    boolean default true,
+  has_kpps_access boolean default false,
+  profile_data jsonb  default '{}'::jsonb,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+
+-- Add columns if they don't exist yet (safe to run on an existing table)
+alter table profiles add column if not exists has_paid         boolean default true;
+alter table profiles add column if not exists has_kpps_access  boolean default false;
+alter table profiles add column if not exists profile_data     jsonb   default '{}'::jsonb;
+alter table profiles add column if not exists full_name        text;
+
+-- Enable RLS
+alter table profiles enable row level security;
+
+-- Logged-in users: full access to their own row
+drop policy if exists "profiles: owner can do all" on profiles;
+create policy "profiles: owner can do all" on profiles
+  for all
+  using  (auth.uid() = id)
+  with check (auth.uid() = id);
+
+-- Anonymous visitors: read-only access needed by book.html and site.html
+drop policy if exists "profiles: anon can read" on profiles;
+create policy "profiles: anon can read" on profiles
+  for select to anon using (true);
+
+
+-- ── 2. BOOKINGS TABLE ─────────────────────────────────────────
+-- Public-facing: clients submit via book.html?uid=OWNER_ID
+
+create table if not exists bookings (
+  id            uuid default gen_random_uuid() primary key,
+  owner_id      uuid references profiles(id) on delete cascade,
+  client_name   text not null,
+  client_email  text not null,
+  client_phone  text,
+  event_date    date,
+  event_time    time,
+  event_address text,
+  num_kids      integer,
+  duration      text,
+  honoree_name  text,
+  honoree_age   integer,
+  service_name  text,
+  service_price text,
+  referral      text,
+  notes         text,
+  status        text default 'new',
+  created_at    timestamptz default now()
+);
+
+alter table bookings enable row level security;
+
+-- Anonymous visitors can INSERT (they submit the booking form)
+drop policy if exists "bookings: anon can insert" on bookings;
+create policy "bookings: anon can insert" on bookings
+  for insert to anon with check (true);
+
+-- Business owner can read their incoming bookings
+drop policy if exists "bookings: owner can select" on bookings;
+create policy "bookings: owner can select" on bookings
+  for select using (auth.uid() = owner_id);
+
+-- Business owner can update status (e.g. confirm/cancel)
+drop policy if exists "bookings: owner can update" on bookings;
+create policy "bookings: owner can update" on bookings
+  for update using (auth.uid() = owner_id);
+
+
+-- ── 3. VENDORS TABLE ──────────────────────────────────────────
+-- Private: each user manages their own preferred vendor network
+
+create table if not exists vendors (
+  id          uuid default gen_random_uuid() primary key,
+  user_id     uuid references profiles(id) on delete cascade,
+  name        text not null,
+  category    text,
+  vendor_data jsonb default '{}'::jsonb,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+
+alter table vendors enable row level security;
+
+drop policy if exists "vendors: owner can do all" on vendors;
+create policy "vendors: owner can do all" on vendors
+  for all
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+
+-- ── 4. SAVED QUOTES TABLE ─────────────────────────────────────
+-- Stores quotes built in the Quote Builder (app.html)
+
+create table if not exists saved_quotes (
+  id            uuid default gen_random_uuid() primary key,
+  user_id       uuid references profiles(id) on delete cascade,
+  client_name   text,
+  event_type    text,
+  event_date    date,
+  total_amount  numeric,
+  quote_data    jsonb default '{}'::jsonb,
+  created_at    timestamptz default now()
+);
+
+alter table saved_quotes enable row level security;
+
+drop policy if exists "saved_quotes: owner can do all" on saved_quotes;
+create policy "saved_quotes: owner can do all" on saved_quotes
+  for all
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+
+-- ── 5. PROFIT RECORDS TABLE ───────────────────────────────────
+-- Used by profit.html and the dashboard P&L snapshot
+
+create table if not exists profit_records (
+  id              uuid default gen_random_uuid() primary key,
+  user_id         uuid references profiles(id) on delete cascade,
+  record_type     text check (record_type in ('event','monthly')),
+  record_date     date,
+  record_month    integer,
+  record_year     integer,
+  revenue         numeric default 0,
+  total_expenses  numeric default 0,
+  expenses_json   jsonb default '[]'::jsonb,
+  income_json     jsonb default '[]'::jsonb,
+  created_at      timestamptz default now(),
+  updated_at      timestamptz default now()
+);
+
+alter table profit_records enable row level security;
+
+drop policy if exists "profit_records: owner can do all" on profit_records;
+create policy "profit_records: owner can do all" on profit_records
+  for all
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+
+-- ── 6. WEBSITE BUILDS TABLE ───────────────────────────────────
+-- Stores the My Website wizard output. Public reads needed by site.html.
+
+create table if not exists website_builds (
+  id                uuid default gen_random_uuid() primary key,
+  user_id           uuid references profiles(id) on delete cascade,
+  brand_data        jsonb default '{}'::jsonb,
+  niche_data        jsonb default '{}'::jsonb,
+  packages_data     jsonb default '{}'::jsonb,
+  about_data        jsonb default '{}'::jsonb,
+  gallery_data      jsonb default '{}'::jsonb,
+  reviews_data      jsonb default '{}'::jsonb,
+  faq_data          jsonb default '{}'::jsonb,
+  booking_data      jsonb default '{}'::jsonb,
+  addons_data       jsonb default '{}'::jsonb,
+  founding_data     jsonb default '{}'::jsonb,
+  last_published_at timestamptz,
+  created_at        timestamptz default now(),
+  updated_at        timestamptz default now()
+);
+
+alter table website_builds enable row level security;
+
+-- Owner: full access
+drop policy if exists "website_builds: owner can do all" on website_builds;
+create policy "website_builds: owner can do all" on website_builds
+  for all
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- Anonymous visitors: read-only (needed by site.html public landing page)
+drop policy if exists "website_builds: anon can read" on website_builds;
+create policy "website_builds: anon can read" on website_builds
+  for select to anon using (true);
+
+
+-- ── DONE ────────────────────────────────────────────────────────
+-- All 6 tables are now set up with proper Row Level Security.
+-- ================================================================

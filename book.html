@@ -700,8 +700,17 @@ window.addEventListener('DOMContentLoaded', async () => {
       .eq('id', ownerUID)
       .single();
 
-    if (error || !data) {
-      showError();
+    if (error) {
+      console.error('Profile load error:', error);
+      showError(
+        error.code === 'PGRST116'
+          ? 'No business found for this booking link. Please contact the business directly.'
+          : 'Could not load this booking page. Please try again or contact the business.'
+      );
+      return;
+    }
+    if (!data) {
+      showError('This booking link is not active. Please contact the business directly.');
       return;
     }
 
@@ -711,7 +720,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     showMain();
   } catch (e) {
     console.error(e);
-    showError();
+    showError('A network error occurred. Please check your connection and try again.');
   }
 });
 
@@ -970,7 +979,7 @@ async function submitBooking() {
 
     if (error) {
       console.error('Booking insert error:', error);
-      alert('Something went wrong submitting your booking. Please try again or contact the business directly.');
+      alert('Something went wrong submitting your booking. Please try again or reach out to the business directly by phone.');
       btn.disabled = false;
       btn.textContent = '🎊 Book Now';
       return;
@@ -993,7 +1002,6 @@ async function submitBooking() {
 function showConfirmation(clientEmail, id) {
   // Hide wizard steps + progress
   document.getElementById('progressBar').classList.add('hidden');
-  document.getElementById('body-content-wrapper') // not needed
 
   // Hide all steps
   document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
@@ -1066,10 +1074,10 @@ function showMain() {
   document.getElementById('mainUI').classList.remove('hidden');
 }
 
-function showError() {
+function showError(msg) {
   document.getElementById('loadingState').classList.remove('visible');
-  const err = document.getElementById('errorState');
-  err.classList.add('visible');
+  if (msg) document.querySelector('.error-sub').textContent = msg;
+  document.getElementById('errorState').classList.add('visible');
 }
 
 // ──────────────────────────────────────────────
