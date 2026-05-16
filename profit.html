@@ -339,6 +339,7 @@ async function init(){
     setNavUser(email.split('@')[0]);
   }
 
+  document.getElementById('authGate').style.display='none';
   document.getElementById('pbhLayout').style.display='flex';
   initNavSignout(handleLogout);
 

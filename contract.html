@@ -424,6 +424,7 @@ async function init(){
     $('userAvatar').textContent=(email[0]||'?').toUpperCase();
     setNavUser(email.split('@')[0]);
   }
+  $('authGate').style.display='none';
   $('pbhLayout').style.display='flex';
   initNavSignout(handleLogout);
   document.addEventListener('click',e=>{if(!e.target.closest('#userChip') && !e.target.closest('#userMenu'))$('userMenu').classList.remove('open')});
