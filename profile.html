@@ -302,14 +302,25 @@ input,select,textarea{font:inherit}
       <div class="section-badge">Step 4</div>
     </div>
 
+    <!-- Website link -->
+    <div class="field" style="margin-bottom:1.4rem">
+      <label>Your Website Link</label>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <input type="text" id="siteLink" readonly style="background:var(--cream);font-size:.82rem;color:var(--muted);flex:1"/>
+        <button class="btn btn-outline" onclick="copySiteLink()" style="white-space:nowrap;flex-shrink:0">Copy</button>
+        <a id="siteLinkPreview" href="#" target="_blank" class="btn btn-primary" style="white-space:nowrap;flex-shrink:0;text-decoration:none;font-size:.82rem">Preview ↗</a>
+      </div>
+      <div class="field-help">This is your full public page — hero, packages, about, Book Now. Share it as your "link in bio" or anywhere clients find you. No separate website needed.</div>
+    </div>
+
     <!-- Booking link -->
     <div class="field" style="margin-bottom:1.4rem">
-      <label>Your Booking Link</label>
+      <label>Booking Form Link <span style="font-size:.75rem;color:var(--muted);font-weight:400">(embed this or share it directly)</span></label>
       <div style="display:flex;gap:.5rem;align-items:center">
         <input type="text" id="bookingLink" readonly style="background:var(--cream);font-size:.82rem;color:var(--muted);flex:1"/>
         <button class="btn btn-outline" onclick="copyBookingLink()" style="white-space:nowrap;flex-shrink:0">Copy Link</button>
       </div>
-      <div class="field-help">Share this link in your Instagram bio, Facebook page, or Google Business profile. Clients land here, pick a service, and book.</div>
+      <div class="field-help">Share this link when you only want clients to see the booking form itself. Or use the embed code below to add it to your own website.</div>
     </div>
 
     <!-- Embed code -->
@@ -412,8 +423,12 @@ async function init(){
     renderServices();
 
     // Booking link
-    const bookingUrl=`${location.origin}${location.pathname.replace('profile.html','book.html')}?uid=${currentUser.id}`;
+    const base=location.origin+location.pathname.replace('profile.html','');
+    const bookingUrl=`${base}book.html?uid=${currentUser.id}`;
+    const siteUrl=`${base}site.html?uid=${currentUser.id}`;
     $('bookingLink').value=bookingUrl;
+    $('siteLink').value=siteUrl;
+    $('siteLinkPreview').href=siteUrl;
     $('embedCode').value=`<iframe src="${bookingUrl}" width="100%" height="700" frameborder="0" style="border-radius:12px"></iframe>`;
   }catch(e){console.error('Load error:',e)}
 
@@ -470,6 +485,9 @@ function removeService(i){
 }
 
 /* ── Embed / link helpers ── */
+function copySiteLink(){
+  navigator.clipboard.writeText($('siteLink').value).then(()=>showToast('✓ Website link copied!'));
+}
 function copyBookingLink(){
   navigator.clipboard.writeText($('bookingLink').value).then(()=>showToast('✓ Booking link copied!'));
 }

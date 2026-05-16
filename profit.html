@@ -283,8 +283,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
   <div class="summary-grid" id="yearSummary"></div>
   <div id="yearBreakdown"></div>
   <div class="btn-row">
-    <button class="btn btn-gold" onclick="downloadYearPDF()">📄 Download Year Report</button>
-    <button class="btn btn-outline" onclick="downloadYearCSV()">📊 Download CSV (for accountant)</button>
+    <button class="btn btn-gold" onclick="downloadYearPDF()">📄 Download PDF</button>
+    <button class="btn btn-outline" onclick="downloadYearCSV()">📊 Download CSV</button>
+    <button class="btn btn-outline" onclick="emailAccountant()">✉ Email to Accountant</button>
   </div>
 </div>
 
@@ -884,6 +885,27 @@ function downloadYearCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='YearSummary_'+year+'.csv';a.click();
 }
 
+function emailAccountant(){
+  const year=document.getElementById('yearSummarySelect').value;
+  const tbl=document.querySelector('.year-table');
+  if(!tbl){showToast('Load the Year Summary first');return}
+  const c=currencySymbol;
+  let body=`Hi,\n\nPlease find my ${year} business income and expense summary below for tax preparation.\n\n`;
+  body+=`YEAR-END FINANCIAL SUMMARY — ${year}\n`;
+  body+=`${'─'.repeat(50)}\n`;
+  body+=`${'Month'.padEnd(14)}${'Revenue'.padEnd(14)}${'Expenses'.padEnd(14)}Profit\n`;
+  body+=`${'─'.repeat(50)}\n`;
+  tbl.querySelectorAll('tbody tr').forEach(r=>{
+    const cells=r.querySelectorAll('td');
+    body+=`${(cells[0]?.textContent||'').padEnd(14)}${(cells[1]?.textContent||'').padEnd(14)}${(cells[2]?.textContent||'').padEnd(14)}${cells[3]?.textContent||''}\n`;
+  });
+  body+=`${'─'.repeat(50)}\n`;
+  const foot=tbl.querySelector('tfoot tr')?.querySelectorAll('td');
+  if(foot) body+=`${(foot[0]?.textContent||'TOTAL').padEnd(14)}${(foot[1]?.textContent||'').padEnd(14)}${(foot[2]?.textContent||'').padEnd(14)}${foot[3]?.textContent||''}\n`;
+  body+=`\nThank you,\n${currentProfile?.businessName||'My Party Business'}`;
+  const subject=encodeURIComponent(`${year} Year-End Financial Summary — ${currentProfile?.businessName||'Party Business'}`);
+  window.location.href=`mailto:?subject=${subject}&body=${encodeURIComponent(body)}`;
+}
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 async function handleLogout(){await sb.auth.signOut();window.location.href='login.html'}
 init();

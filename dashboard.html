@@ -121,12 +121,23 @@
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+.fin-section{margin-bottom:28px}
+.fin-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.fin-section-label{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.fin-section-link{font-size:.78rem;font-weight:600;color:var(--brand);text-decoration:none}
+.fin-section-link:hover{text-decoration:underline}
+.fin-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.stat-card.fin-revenue .stat-value{color:var(--success)}
+.stat-card.fin-profit.positive .stat-value{color:var(--success)}
+.stat-card.fin-profit.negative .stat-value{color:#DC2626}
+.fin-zero{color:var(--text-muted)!important}
 @media(max-width:700px){
   .stats-row{grid-template-columns:repeat(2,1fr)}
+  .fin-row{grid-template-columns:repeat(2,1fr)}
   .dash-wrap{padding:20px 16px 60px}
   .bookings-table .bq-date{display:none}
 }
-@media(max-width:420px){.stats-row{grid-template-columns:1fr}}
+@media(max-width:420px){.stats-row{grid-template-columns:1fr}.fin-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -189,6 +200,31 @@
           <div class="stat-label">Upcoming Events</div>
           <div class="stat-value" id="statUpcoming">—</div>
           <div class="stat-sub">next 90 days</div>
+        </div>
+      </div>
+
+      <!-- Financial Snapshot -->
+      <div class="fin-section">
+        <div class="fin-section-head">
+          <span class="fin-section-label">Money This Month</span>
+          <a href="profit.html" class="fin-section-link">Full Report →</a>
+        </div>
+        <div class="fin-row">
+          <div class="stat-card fin-revenue">
+            <div class="stat-label">Revenue</div>
+            <div class="stat-value" id="statRevenue">—</div>
+            <div class="stat-sub">from events & bookings</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Expenses</div>
+            <div class="stat-value" id="statExpenses">—</div>
+            <div class="stat-sub">costs tracked</div>
+          </div>
+          <div class="stat-card fin-profit" id="profitCard">
+            <div class="stat-label">Net Profit</div>
+            <div class="stat-value" id="statProfit">—</div>
+            <div class="stat-sub" id="statProfitSub">bottom line</div>
+          </div>
         </div>
       </div>
 
@@ -285,9 +321,19 @@ async function loadData() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return;
 
-  const [quotesRes, bookingsRes] = await Promise.all([
+  const now = new Date();
+  const mon = now.getMonth() + 1;
+  const yr  = now.getFullYear();
+  const firstDay = `${yr}-${String(mon).padStart(2,'0')}-01`;
+  const nm = mon === 12 ? 1 : mon + 1;
+  const ny = mon === 12 ? yr + 1 : yr;
+  const nextFirst = `${ny}-${String(nm).padStart(2,'0')}-01`;
+
+  const [quotesRes, bookingsRes, profitRes] = await Promise.all([
     sb.from('saved_quotes').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }),
-    sb.from('bookings').select('*').eq('owner_id', session.user.id).order('created_at', { ascending: false })
+    sb.from('bookings').select('*').eq('owner_id', session.user.id).order('created_at', { ascending: false }),
+    sb.from('profit_records').select('revenue,total_expenses,record_type,record_month,record_year,record_date')
+      .eq('user_id', session.user.id).gte('record_date', firstDay).lt('record_date', nextFirst)
   ]);
 
   const quotes = (quotesRes.data || []).map(q => ({ ...q, _source: 'quote' }));
@@ -305,6 +351,7 @@ async function loadData() {
   allQuotes = [...incoming, ...quotes];
   renderStats();
   renderBookings();
+  renderFinancials(profitRes.data || []);
 }
 
 function getStatuses() {
@@ -332,6 +379,29 @@ function renderStats() {
   $('statMonth').textContent    = thisMonth;
   $('statPipeline').textContent = '$' + pipeline.toLocaleString('en-US', { minimumFractionDigits: 0 });
   $('statUpcoming').textContent = upcoming;
+}
+
+/* ── FINANCIAL SNAPSHOT ── */
+function renderFinancials(records) {
+  let rev = 0, exp = 0;
+  records.forEach(r => {
+    rev += parseFloat(r.revenue) || 0;
+    exp += parseFloat(r.total_expenses) || 0;
+  });
+  const profit = rev - exp;
+  const fmt = n => n === 0 ? '—' : '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0 });
+
+  $('statRevenue').textContent  = rev > 0 ? '$' + rev.toLocaleString('en-US', { minimumFractionDigits: 0 }) : '—';
+  $('statExpenses').textContent = exp > 0 ? '$' + exp.toLocaleString('en-US', { minimumFractionDigits: 0 }) : '—';
+  $('statProfit').textContent   = rev === 0 && exp === 0 ? '—' : (profit < 0 ? '-' : '') + fmt(profit);
+
+  const card = $('profitCard');
+  if (rev > 0 || exp > 0) {
+    card.classList.add(profit >= 0 ? 'positive' : 'negative');
+  }
+  $('statProfitSub').textContent = rev === 0 && exp === 0
+    ? 'log events in Profit Calc'
+    : profit >= 0 ? 'you\'re in the green!' : 'expenses exceed revenue';
 }
 
 /* ── BOOKINGS TABLE ── */

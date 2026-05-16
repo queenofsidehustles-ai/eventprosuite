@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Loading…</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  color:#1A1625;
+  line-height:1.6;
+  background:#fff;
+}
+img{max-width:100%;display:block}
+a{text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none}
+
+/* ── Brand token — overridden at runtime ── */
+:root{
+  --brand:#6A3F8A;
+  --brand-dark:#4E2E6A;
+  --brand-light:rgba(106,63,138,.12);
+  --gold:#D4AE52;
+  --gold-dark:#B8942E;
+  --ink:#1A1625;
+  --muted:#6C6473;
+  --line:#EAE3ED;
+  --cream:#FCF8F4;
+  --white:#ffffff;
+  --radius:16px;
+  --shadow:0 4px 20px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 48px rgba(0,0,0,.14);
+}
+
+/* ── Loading gate ── */
+#loading-gate{
+  position:fixed;inset:0;
+  background:#fff;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:20px;z-index:9999;
+  transition:opacity .35s ease;
+}
+#loading-gate.fade-out{opacity:0;pointer-events:none}
+.spinner{
+  width:52px;height:52px;
+  border:4px solid var(--brand-light);
+  border-top-color:var(--brand);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+
+/* ── Error state ── */
+#error-state{
+  display:none;
+  min-height:100vh;
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+  text-align:center;padding:40px 24px;
+  background:linear-gradient(135deg,#FDF6FF 0%,#F5F0FB 100%);
+}
+#error-state.visible{display:flex}
+.error-emoji{font-size:64px;line-height:1}
+.error-title{font-size:24px;font-weight:800;color:var(--ink)}
+.error-sub{font-size:15px;color:var(--muted);max-width:320px}
+
+/* ── Main content (hidden until loaded) ── */
+#site-content{display:none}
+#site-content.visible{display:block}
+
+/* ════════════════════════════
+   STICKY NAV
+════════════════════════════ */
+.site-nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:1100px;margin:0 auto;
+  padding:12px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.nav-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.nav-logo-img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.nav-initial{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--brand);
+  color:#fff;font-weight:800;font-size:17px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.nav-biz-name{
+  font-size:15px;font-weight:700;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:220px;
+}
+.nav-book-btn{
+  background:var(--brand);color:#fff;
+  padding:10px 22px;border-radius:999px;
+  font-size:14px;font-weight:700;
+  white-space:nowrap;
+  transition:background .18s,transform .18s,box-shadow .18s;
+  box-shadow:0 4px 14px rgba(0,0,0,.15);
+}
+.nav-book-btn:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+
+/* ════════════════════════════
+   HERO
+════════════════════════════ */
+.hero{
+  background:linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  padding:80px 24px 90px;
+  text-align:center;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.hero-inner{position:relative;max-width:700px;margin:0 auto}
+.hero-niche{
+  display:inline-block;
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.3);
+  color:#fff;font-size:12px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 14px;border-radius:999px;
+  margin-bottom:22px;
+}
+.hero-biz-name{
+  font-size:clamp(32px,6vw,58px);
+  font-weight:800;line-height:1.1;
+  margin-bottom:18px;
+  text-shadow:0 2px 12px rgba(0,0,0,.15);
+}
+.hero-tagline{
+  font-size:clamp(16px,2.5vw,20px);
+  font-weight:400;
+  color:rgba(255,255,255,.88);
+  margin-bottom:36px;
+  max-width:520px;margin-left:auto;margin-right:auto;
+}
+.hero-cta{
+  display:inline-block;
+  background:var(--gold);
+  color:#1A1625;
+  padding:16px 36px;border-radius:999px;
+  font-size:16px;font-weight:800;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);
+  transition:background .18s,transform .18s,box-shadow .18s;
+}
+.hero-cta:hover{background:var(--gold-dark);transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.25)}
+
+/* ════════════════════════════
+   SECTION LABELS
+════════════════════════════ */
+.section-label{
+  display:inline-block;
+  font-size:11px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--brand);
+  background:var(--brand-light);
+  padding:5px 14px;border-radius:999px;
+  margin-bottom:12px;
+}
+.section-title{
+  font-size:clamp(24px,4vw,36px);font-weight:800;
+  color:var(--ink);line-height:1.2;margin-bottom:10px;
+}
+.section-sub{
+  font-size:15px;color:var(--muted);max-width:480px;
+  margin:0 auto;
+}
+
+/* ════════════════════════════
+   SERVICES SECTION
+════════════════════════════ */
+.services-section{
+  padding:72px 24px;background:#fff;
+}
+.services-header{text-align:center;margin-bottom:48px}
+.services-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:24px;
+}
+.service-card{
+  background:#fff;border-radius:20px;
+  border:1px solid var(--line);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:transform .22s ease,box-shadow .22s ease;
+  display:flex;flex-direction:column;
+}
+.service-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.service-card-stripe{
+  height:6px;
+  background:var(--brand);
+}
+.service-card-body{padding:24px;flex:1;display:flex;flex-direction:column;gap:10px}
+.service-card-name{
+  font-size:18px;font-weight:800;color:var(--ink);
+}
+.service-card-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.service-card-duration{
+  font-size:12px;font-weight:600;color:var(--muted);
+  background:#F5F0FA;padding:3px 10px;border-radius:999px;
+}
+.service-card-price{
+  font-size:26px;font-weight:800;color:var(--brand);
+  margin-top:4px;
+}
+.service-card-desc{
+  font-size:13.5px;color:var(--muted);line-height:1.55;flex:1;
+}
+.service-card-footer{padding:0 24px 24px}
+.service-book-btn{
+  display:block;width:100%;
+  background:var(--brand);color:#fff;
+  padding:13px 20px;border-radius:12px;
+  font-size:14px;font-weight:700;text-align:center;
+  transition:background .18s,transform .15s;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+.service-book-btn:hover{background:var(--brand-dark);transform:translateY(-1px)}
+.coming-soon-note{
+  text-align:center;margin-top:24px;
+  font-size:13px;color:var(--muted);
+  background:var(--cream);
+  border:1px dashed var(--line);
+  border-radius:12px;padding:14px 20px;
+  max-width:480px;margin-left:auto;margin-right:auto;
+}
+
+/* ════════════════════════════
+   ABOUT SECTION
+════════════════════════════ */
+.about-section{
+  padding:72px 24px;
+  background:linear-gradient(135deg,#F9F6FD 0%,var(--cream) 100%);
+}
+.about-inner{
+  max-width:700px;margin:0 auto;
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:24px;
+}
+.about-avatar{
+  width:100px;height:100px;border-radius:50%;
+  object-fit:cover;
+  border:4px solid var(--brand);
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+}
+.about-initial{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  color:#fff;font-size:38px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  border:4px solid rgba(255,255,255,.5);
+  box-shadow:0 8px 28px rgba(0,0,0,.15);
+}
+.about-name{font-size:22px;font-weight:800;color:var(--ink)}
+.about-bio{font-size:16px;color:var(--muted);line-height:1.65;max-width:560px}
+
+/* ════════════════════════════
+   CONTACT / SOCIAL ROW
+════════════════════════════ */
+.contact-section{
+  padding:36px 24px;background:#fff;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.contact-inner{
+  max-width:900px;margin:0 auto;
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;
+}
+.contact-item{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:999px;
+  background:var(--cream);border:1px solid var(--line);
+  font-size:13.5px;font-weight:600;color:var(--ink);
+  transition:border-color .18s,background .18s;
+  text-decoration:none;
+}
+.contact-item:hover{border-color:var(--brand);background:var(--brand-light)}
+.contact-icon{font-size:16px;flex-shrink:0}
+
+/* ════════════════════════════
+   BIG BOOK NOW CTA
+════════════════════════════ */
+.cta-section{
+  padding:80px 24px;
+  background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 100%);
+  text-align:center;color:#fff;
+  position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'🎉';
+  position:absolute;font-size:180px;
+  opacity:.05;top:-20px;right:-20px;
+  pointer-events:none;
+  user-select:none;
+}
+.cta-inner{position:relative;max-width:600px;margin:0 auto}
+.cta-headline{
+  font-size:clamp(28px,5vw,46px);font-weight:800;
+  line-height:1.15;margin-bottom:14px;
+}
+.cta-sub{
+  font-size:17px;color:rgba(255,255,255,.82);
+  margin-bottom:36px;
+}
+.cta-btn{
+  display:inline-block;
+  background:var(--gold);color:#1A1625;
+  padding:18px 44px;border-radius:999px;
+  font-size:17px;font-weight:800;
+  box-shadow:0 8px 28px rgba(0,0,0,.25);
+  transition:background .18s,transform .18s,box-shadow .18s;
+}
+.cta-btn:hover{background:var(--gold-dark);transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.3)}
+
+/* ════════════════════════════
+   FOOTER
+════════════════════════════ */
+.site-footer{
+  padding:28px 24px;
+  background:#1A1625;
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.footer-biz{font-size:14px;font-weight:700;color:rgba(255,255,255,.7)}
+.footer-powered{
+  font-size:12px;color:rgba(255,255,255,.4);
+}
+.footer-powered a{
+  color:rgba(255,255,255,.55);font-weight:600;
+  text-decoration:underline;text-underline-offset:3px;
+  transition:color .18s;
+}
+.footer-powered a:hover{color:var(--gold)}
+
+/* ════════════════════════════
+   RESPONSIVE
+════════════════════════════ */
+@media(max-width:600px){
+  .nav-biz-name{max-width:140px;font-size:13px}
+  .nav-book-btn{padding:9px 16px;font-size:13px}
+  .hero{padding:56px 20px 64px}
+  .services-section{padding:52px 16px}
+  .about-section{padding:52px 16px}
+  .cta-section{padding:60px 20px}
+  .services-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOADING GATE ═══════════ -->
+<div id="loading-gate">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading your party page…</div>
+</div>
+
+<!-- ═══════════ ERROR STATE ═══════════ -->
+<div id="error-state">
+  <div class="error-emoji">🎈</div>
+  <div class="error-title">Page Not Found</div>
+  <div class="error-sub">We couldn't find this party business page. Double-check the link and try again!</div>
+</div>
+
+<!-- ═══════════ MAIN SITE CONTENT ═══════════ -->
+<div id="site-content">
+
+  <!-- STICKY NAV -->
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div id="nav-logo-wrap"></div>
+        <span class="nav-biz-name" id="nav-biz-name">Loading…</span>
+      </div>
+      <a href="#" class="nav-book-btn" id="nav-book-link">Book Now</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-niche" id="hero-niche" style="display:none"></div>
+      <h1 class="hero-biz-name" id="hero-biz-name"></h1>
+      <p class="hero-tagline" id="hero-tagline"></p>
+      <a href="#services" class="hero-cta">View Packages ↓</a>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services-section" id="services">
+    <div class="services-header">
+      <div class="section-label">Packages</div>
+      <h2 class="section-title">Party Packages</h2>
+      <p class="section-sub" id="services-sub">Choose the perfect package for your little one's special day.</p>
+    </div>
+    <div class="services-grid" id="services-grid"></div>
+    <div class="coming-soon-note" id="coming-soon-note" style="display:none">
+      🎀 Packages coming soon! Reach out directly to learn about available options.
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-section">
+    <div class="about-inner">
+      <div id="about-avatar-wrap"></div>
+      <div class="section-label">About</div>
+      <h2 class="about-name" id="about-name"></h2>
+      <p class="about-bio" id="about-bio"></p>
+    </div>
+  </section>
+
+  <!-- CONTACT / SOCIAL -->
+  <section class="contact-section" id="contact-row" style="display:none">
+    <div class="contact-inner" id="contact-inner"></div>
+  </section>
+
+  <!-- BIG CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2 class="cta-headline">Ready to make magic? ✨</h2>
+      <p class="cta-sub">Book your party today and let us handle every sparkling detail.</p>
+      <a href="#" class="cta-btn" id="cta-book-link">Book Your Party →</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-biz" id="footer-biz-name"></div>
+    <div class="footer-powered">Powered by <a href="https://partybizhub.com" target="_blank" rel="noopener">Party Biz Hub</a></div>
+  </footer>
+
+</div><!-- /site-content -->
+
+<script>
+(function () {
+  /* ── Supabase config ── */
+  const SUPA_URL  = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+  const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+
+  /* ── Helpers ── */
+  function esc(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+
+  function darkenHex(hex, amount) {
+    // Darken a hex color by reducing each channel
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+    const num = parseInt(hex, 16);
+    let r = Math.max(0, (num >> 16) - amount);
+    let g = Math.max(0, ((num >> 8) & 0xff) - amount);
+    let b = Math.max(0, (num & 0xff) - amount);
+    return '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+
+  function showError() {
+    document.getElementById('loading-gate').classList.add('fade-out');
+    setTimeout(()=>{
+      document.getElementById('loading-gate').style.display='none';
+      document.getElementById('error-state').classList.add('visible');
+    }, 350);
+  }
+
+  function showContent() {
+    const gate = document.getElementById('loading-gate');
+    gate.classList.add('fade-out');
+    setTimeout(()=>{
+      gate.style.display='none';
+      document.getElementById('site-content').classList.add('visible');
+    }, 350);
+  }
+
+  /* ── Read UID ── */
+  const params = new URLSearchParams(window.location.search);
+  const uid = params.get('uid');
+  if (!uid) { showError(); return; }
+
+  /* ── Book URL helper ── */
+  const bookURL = 'book.html?uid=' + encodeURIComponent(uid);
+
+  /* ── Fetch from Supabase ── */
+  const supabase = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+
+  supabase
+    .from('profiles')
+    .select('profile_data, full_name')
+    .eq('id', uid)
+    .single()
+    .then(({ data, error }) => {
+      if (error || !data) { showError(); return; }
+
+      const pd   = data.profile_data || {};
+      const full = data.full_name || '';
+
+      /* ── Brand color ── */
+      const brand     = (pd.brandColor && /^#[0-9A-Fa-f]{3,6}$/.test(pd.brandColor))
+                          ? pd.brandColor : '#6A3F8A';
+      const brandDark = darkenHex(brand, 40);
+
+      document.documentElement.style.setProperty('--brand', brand);
+      document.documentElement.style.setProperty('--brand-dark', brandDark);
+
+      const bizName   = pd.businessName || full || 'Party Business';
+      const tagline   = pd.tagline || 'Creating unforgettable parties for your little ones.';
+      const ownerName = pd.ownerName || full || bizName;
+      const ownerBio  = pd.ownerBio  || (bizName + ' is dedicated to creating unforgettable kids parties.');
+      const niche     = pd.niche || '';
+      const services  = Array.isArray(pd.bookingServices) ? pd.bookingServices : [];
+
+      /* ── Page title ── */
+      document.title = esc(bizName);
+
+      /* ── Nav ── */
+      document.getElementById('nav-biz-name').textContent = bizName;
+      document.getElementById('nav-book-link').href = bookURL;
+
+      // Logo or initial circle
+      const logoWrap = document.getElementById('nav-logo-wrap');
+      if (pd.logo) {
+        const img = document.createElement('img');
+        img.src = pd.logo;
+        img.alt = esc(bizName);
+        img.className = 'nav-logo-img';
+        logoWrap.appendChild(img);
+      } else {
+        const circle = document.createElement('div');
+        circle.className = 'nav-initial';
+        circle.textContent = bizName.charAt(0).toUpperCase();
+        logoWrap.appendChild(circle);
+      }
+
+      /* ── Hero ── */
+      document.getElementById('hero-biz-name').textContent = bizName;
+      document.getElementById('hero-tagline').textContent  = tagline;
+      if (niche) {
+        const nicheEl = document.getElementById('hero-niche');
+        nicheEl.textContent = niche;
+        nicheEl.style.display = 'inline-block';
+      }
+
+      /* ── Services ── */
+      const grid = document.getElementById('services-grid');
+      if (services.length === 0) {
+        // 3 placeholder cards
+        const placeholders = [
+          { name:'Deluxe Party Package',  duration:'2 hours', price:'Starting at $250', description:'Everything you need for an amazing celebration — décor, activities, and smiles guaranteed.' },
+          { name:'Mini Party Package',    duration:'1 hour',  price:'Starting at $150', description:'A shorter, sweet celebration perfect for intimate gatherings and birthday surprises.' },
+          { name:'Premium Party Package', duration:'3 hours', price:'Starting at $450', description:'The full luxury experience — premium décor, custom themes, and premium entertainment.' },
+        ];
+        placeholders.forEach(pkg => grid.appendChild(buildCard(pkg, bookURL, true)));
+        document.getElementById('coming-soon-note').style.display = 'block';
+      } else {
+        services.forEach(svc => grid.appendChild(buildCard(svc, bookURL, false)));
+      }
+
+      /* ── About ── */
+      document.getElementById('about-name').textContent = ownerName;
+      document.getElementById('about-bio').textContent  = ownerBio;
+
+      const avatarWrap = document.getElementById('about-avatar-wrap');
+      if (pd.logo) {
+        const img = document.createElement('img');
+        img.src = pd.logo;
+        img.alt = esc(ownerName);
+        img.className = 'about-avatar';
+        avatarWrap.appendChild(img);
+      } else {
+        const circle = document.createElement('div');
+        circle.className = 'about-initial';
+        circle.textContent = ownerName.charAt(0).toUpperCase();
+        avatarWrap.appendChild(circle);
+      }
+
+      /* ── Contact / Social ── */
+      const contactItems = [];
+      if (pd.contactPhone) {
+        contactItems.push({
+          href: 'tel:' + pd.contactPhone.replace(/\D/g,''),
+          icon: '📞',
+          label: pd.contactPhone,
+        });
+      }
+      if (pd.instagram) {
+        contactItems.push({
+          href: 'https://instagram.com/' + encodeURIComponent(pd.instagram.replace(/^@/,'')),
+          icon: '📸',
+          label: '@' + pd.instagram.replace(/^@/,''),
+        });
+      }
+      if (pd.facebook) {
+        contactItems.push({
+          href: pd.facebook.startsWith('http') ? pd.facebook : 'https://facebook.com/' + encodeURIComponent(pd.facebook),
+          icon: '👍',
+          label: pd.facebook.replace(/^@/,''),
+        });
+      }
+      if (pd.tiktok) {
+        contactItems.push({
+          href: 'https://tiktok.com/@' + encodeURIComponent(pd.tiktok.replace(/^@/,'')),
+          icon: '🎵',
+          label: '@' + pd.tiktok.replace(/^@/,''),
+        });
+      }
+      if (contactItems.length > 0) {
+        const row = document.getElementById('contact-row');
+        const inner = document.getElementById('contact-inner');
+        row.style.display = 'block';
+        contactItems.forEach(item => {
+          const a = document.createElement('a');
+          a.href = item.href;
+          a.className = 'contact-item';
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.innerHTML = '<span class="contact-icon">' + item.icon + '</span>' +
+                        '<span>' + esc(item.label) + '</span>';
+          inner.appendChild(a);
+        });
+      }
+
+      /* ── CTA & Footer ── */
+      document.getElementById('cta-book-link').href = bookURL;
+      document.getElementById('footer-biz-name').textContent = bizName;
+
+      /* ── Show content ── */
+      showContent();
+    })
+    .catch(() => showError());
+
+  /* ── Build service card DOM ── */
+  function buildCard(svc, bookURL, isPlaceholder) {
+    const card = document.createElement('div');
+    card.className = 'service-card';
+
+    const price = svc.price
+      ? (typeof svc.price === 'number' ? '$' + svc.price : esc(String(svc.price)))
+      : 'Contact for Pricing';
+
+    const duration = svc.duration ? esc(String(svc.duration)) : '';
+    const name     = esc(svc.name || 'Party Package');
+    const desc     = esc(svc.description || 'A magical party experience your kids will never forget.');
+
+    card.innerHTML =
+      '<div class="service-card-stripe"></div>' +
+      '<div class="service-card-body">' +
+        '<div class="service-card-name">' + name + '</div>' +
+        '<div class="service-card-meta">' +
+          (duration ? '<span class="service-card-duration">⏱ ' + duration + '</span>' : '') +
+        '</div>' +
+        '<div class="service-card-price">' + price + '</div>' +
+        '<div class="service-card-desc">' + desc + '</div>' +
+      '</div>' +
+      '<div class="service-card-footer">' +
+        '<a href="' + (isPlaceholder ? '#' : esc(bookURL)) + '" class="service-book-btn">' +
+          (isPlaceholder ? 'Coming Soon' : 'Book This Package') +
+        '</a>' +
+      '</div>';
+
+    return card;
+  }
+
+})();
+</script>
+</body>
+</html>
