@@ -171,6 +171,13 @@ input,select,textarea{font:inherit}
 
 /* STEP 3 ACCORDION SECTIONS */
 .accordion-list{display:flex;flex-direction:column;gap:12px;margin-top:.5rem}
+.section-group-label{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--plum-900);padding:.5rem .2rem;margin-top:.4rem;display:flex;align-items:center;gap:.7rem}
+.section-group-label::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,var(--plum-900),transparent);border-radius:2px}
+.section-group-label.optional{color:var(--muted);margin-top:1.6rem}
+.section-group-label.optional::after{background:linear-gradient(90deg,var(--muted),transparent)}
+.req-badge{display:inline-block;font-family:'Inter',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;padding:.15rem .5rem;border-radius:50px;vertical-align:middle;margin-left:.4rem}
+.acc-num.req{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;border-color:var(--plum-900)}
+.acc-num.opt{background:var(--cream);color:var(--muted);border-color:var(--line);font-size:1.1rem}
 .acc-section{background:#fff;border:1.5px solid var(--line);border-radius:16px;overflow:hidden;transition:all .2s}
 .acc-section.complete{border-color:rgba(30,140,90,.35);background:linear-gradient(135deg,rgba(30,140,90,.02),#fff)}
 .acc-section.open{box-shadow:var(--shadow-sm);border-color:var(--mauve)}
@@ -408,7 +415,7 @@ input,select,textarea{font:inherit}
     <span class="step-divider">→</span>
     <button class="step-pill locked" data-step="2" onclick="goToStep(2)"><span class="num">2</span>Your brand</button>
     <span class="step-divider">→</span>
-    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Your packages</button>
+    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Your content</button>
     <span class="step-divider">→</span>
     <button class="step-pill locked" data-step="4" onclick="goToStep(4)"><span class="num">4</span>Preview &amp; download</button>
     <span class="autosave-badge saved" id="autosaveBadge" style="margin-left:auto;display:none"><span class="dot"></span>Saved</span>
@@ -560,8 +567,8 @@ input,select,textarea{font:inherit}
   <div class="panel" id="panelStep3">
     <div class="card">
       <div class="card-header">
-        <h2>Your packages & details</h2>
-        <p>This is the heart of your website — what clients book, what they read, who you are. Each section is pre-filled with smart defaults for your niche. Edit what doesn't fit. Skip what you don't need.</p>
+        <h2>Build your website content</h2>
+        <p>Fill in the <strong>4 required sections</strong> below — that's all you need to launch. The optional sections at the bottom are bonuses you can add anytime.</p>
       </div>
 
       <div class="completion-banner" id="completionBanner" style="display:none">
@@ -574,13 +581,16 @@ input,select,textarea{font:inherit}
 
       <div class="accordion-list">
 
-        <!-- Section A: Niche Details -->
+        <!-- ── REQUIRED SECTIONS ─────────────────── -->
+        <div class="section-group-label">Required — fill these in to launch</div>
+
+        <!-- Section 1: Niche Details -->
         <div class="acc-section open" data-section="niche">
           <button class="acc-head" onclick="toggleSection('niche')">
-            <div class="acc-num"><span>A</span></div>
+            <div class="acc-num req"><span>1</span></div>
             <div class="acc-title">
-              <h3>Niche details</h3>
-              <p>Your service name, tagline, and short description</p>
+              <h3>Your service <span class="req-badge">Required</span></h3>
+              <p>Service name, tagline, and short description</p>
             </div>
             <div class="acc-toggle">▼</div>
           </button>
@@ -606,13 +616,13 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
-        <!-- Section B: Packages -->
-        <div class="acc-section" data-section="packages">
+        <!-- Section 2: Packages -->
+        <div class="acc-section open" data-section="packages">
           <button class="acc-head" onclick="toggleSection('packages')">
-            <div class="acc-num"><span>B</span></div>
+            <div class="acc-num req"><span>2</span></div>
             <div class="acc-title">
-              <h3>Packages (3 tiers)</h3>
-              <p>The heart of your site — what clients can book</p>
+              <h3>Your packages <span class="req-badge">Required</span></h3>
+              <p>The 3 tiers clients can book — this is the heart of your site</p>
             </div>
             <div class="acc-toggle">▼</div>
           </button>
@@ -622,29 +632,12 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
-        <!-- Section C: Add-ons -->
-        <div class="acc-section" data-section="addons">
-          <button class="acc-head" onclick="toggleSection('addons')">
-            <div class="acc-num"><span>C</span></div>
-            <div class="acc-title">
-              <h3>Add-ons <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
-              <p>Small extras clients can pick — face painting, balloon arch, etc.</p>
-            </div>
-            <div class="acc-toggle">▼</div>
-          </button>
-          <div class="acc-body">
-            <div id="addonsList"></div>
-            <button type="button" class="btn-add-mini" onclick="addAddon()">+ Add an add-on</button>
-            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">Skip this section if you don't offer add-ons. You can always come back.</p>
-          </div>
-        </div>
-
-        <!-- Section D: About You -->
-        <div class="acc-section" data-section="about">
+        <!-- Section 3: About You -->
+        <div class="acc-section open" data-section="about">
           <button class="acc-head" onclick="toggleSection('about')">
-            <div class="acc-num"><span>D</span></div>
+            <div class="acc-num req"><span>3</span></div>
             <div class="acc-title">
-              <h3>About you</h3>
+              <h3>About you <span class="req-badge">Required</span></h3>
               <p>Owner photo, bio, and your story</p>
             </div>
             <div class="acc-toggle">▼</div>
@@ -676,66 +669,12 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
-        <!-- Section E: Reviews -->
-        <div class="acc-section" data-section="reviews">
-          <button class="acc-head" onclick="toggleSection('reviews')">
-            <div class="acc-num"><span>E</span></div>
-            <div class="acc-title">
-              <h3>Reviews <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but recommended)</span></h3>
-              <p>What past clients say. Up to 3 testimonials.</p>
-            </div>
-            <div class="acc-toggle">▼</div>
-          </button>
-          <div class="acc-body">
-            <div id="reviewsList"></div>
-            <button type="button" class="btn-add-mini" onclick="addReview()" id="addReviewBtn">+ Add a review</button>
-            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">💛 Skip if you don't have testimonials yet — your site will hide this section.</p>
-          </div>
-        </div>
-
-        <!-- Section F: Founding Families -->
-        <div class="acc-section" data-section="founding">
-          <button class="acc-head" onclick="toggleSection('founding')">
-            <div class="acc-num"><span>F</span></div>
-            <div class="acc-title">
-              <h3>Founding Families banner <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
-              <p>Add urgency with a launch discount banner</p>
-            </div>
-            <div class="acc-toggle">▼</div>
-          </button>
-          <div class="acc-body">
-            <div class="toggle-row" id="foundingToggle" onclick="toggleFounding()">
-              <div class="toggle-text">
-                <strong>Show Founding Families banner on my site</strong>
-                <small>A featured banner that says "First X clients get Y% off" — proven to drive bookings during launch.</small>
-              </div>
-              <div class="toggle-switch"></div>
-            </div>
-            <div id="foundingFields" style="display:none">
-              <div class="grid-2">
-                <div class="field">
-                  <label>Discount percentage</label>
-                  <input type="number" id="foundingDiscount" value="25" min="5" max="80" oninput="onSectionInput('founding')"/>
-                </div>
-                <div class="field">
-                  <label>Spots remaining</label>
-                  <input type="number" id="foundingSpots" value="8" min="1" max="50" oninput="onSectionInput('founding')"/>
-                </div>
-              </div>
-              <div class="field">
-                <label>Banner headline (optional)</label>
-                <input type="text" id="foundingHeadline" placeholder="e.g. First 10 families get 25% off" oninput="onSectionInput('founding')"/>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section G: Booking -->
-        <div class="acc-section" data-section="booking">
+        <!-- Section 4: Booking -->
+        <div class="acc-section open" data-section="booking">
           <button class="acc-head" onclick="toggleSection('booking')">
-            <div class="acc-num"><span>G</span></div>
+            <div class="acc-num req"><span>4</span></div>
             <div class="acc-title">
-              <h3>Booking inquiries</h3>
+              <h3>Booking contact <span class="req-badge">Required</span></h3>
               <p>Where booking forms get sent + your service area</p>
             </div>
             <div class="acc-toggle">▼</div>
@@ -769,13 +708,87 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
-        <!-- Section H: Photos & Gallery -->
+        <!-- ── OPTIONAL SECTIONS ─────────────────── -->
+        <div class="section-group-label optional">Optional extras — add these when you're ready</div>
+
+        <!-- Section: Add-ons -->
+        <div class="acc-section" data-section="addons">
+          <button class="acc-head" onclick="toggleSection('addons')">
+            <div class="acc-num opt"><span>+</span></div>
+            <div class="acc-title">
+              <h3>Add-ons <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
+              <p>Small extras clients can pick — face painting, balloon arch, etc.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div id="addonsList"></div>
+            <button type="button" class="btn-add-mini" onclick="addAddon()">+ Add an add-on</button>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">Skip this section if you don't offer add-ons. You can always come back.</p>
+          </div>
+        </div>
+
+        <!-- Section: Reviews -->
+        <div class="acc-section" data-section="reviews">
+          <button class="acc-head" onclick="toggleSection('reviews')">
+            <div class="acc-num opt"><span>+</span></div>
+            <div class="acc-title">
+              <h3>Reviews <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but recommended)</span></h3>
+              <p>What past clients say. Up to 3 testimonials.</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div id="reviewsList"></div>
+            <button type="button" class="btn-add-mini" onclick="addReview()" id="addReviewBtn">+ Add a review</button>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:.7rem">💛 Skip if you don't have testimonials yet — your site will hide this section.</p>
+          </div>
+        </div>
+
+        <!-- Section: Founding Families -->
+        <div class="acc-section" data-section="founding">
+          <button class="acc-head" onclick="toggleSection('founding')">
+            <div class="acc-num opt"><span>+</span></div>
+            <div class="acc-title">
+              <h3>Founding Families banner <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional)</span></h3>
+              <p>Add urgency with a launch discount banner</p>
+            </div>
+            <div class="acc-toggle">▼</div>
+          </button>
+          <div class="acc-body">
+            <div class="toggle-row" id="foundingToggle" onclick="toggleFounding()">
+              <div class="toggle-text">
+                <strong>Show Founding Families banner on my site</strong>
+                <small>A featured banner that says "First X clients get Y% off" — proven to drive bookings during launch.</small>
+              </div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div id="foundingFields" style="display:none">
+              <div class="grid-2">
+                <div class="field">
+                  <label>Discount percentage</label>
+                  <input type="number" id="foundingDiscount" value="25" min="5" max="80" oninput="onSectionInput('founding')"/>
+                </div>
+                <div class="field">
+                  <label>Spots remaining</label>
+                  <input type="number" id="foundingSpots" value="8" min="1" max="50" oninput="onSectionInput('founding')"/>
+                </div>
+              </div>
+              <div class="field">
+                <label>Banner headline (optional)</label>
+                <input type="text" id="foundingHeadline" placeholder="e.g. First 10 families get 25% off" oninput="onSectionInput('founding')"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Photos & Gallery -->
         <div class="acc-section" data-section="gallery">
           <button class="acc-head" onclick="toggleSection('gallery')">
-            <div class="acc-num"><span>H</span></div>
+            <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
               <h3>Photos &amp; gallery <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but powerful)</span></h3>
-              <p>Hero image + up to 6 gallery photos. Real photos book parties.</p>
+              <p>Hero image + up to 12 gallery photos. Real photos book parties.</p>
             </div>
             <div class="acc-toggle">▼</div>
           </button>
@@ -797,7 +810,7 @@ input,select,textarea{font:inherit}
               </div>
             </div>
 
-            <!-- 6 gallery slots -->
+            <!-- Gallery slots -->
             <div style="margin-top:1.4rem">
               <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Gallery photos (up to 12) <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.85em">— use ◀ ▶ to reorder</span></div>
               <div class="gallery-grid" id="galleryGrid"></div>
@@ -805,10 +818,10 @@ input,select,textarea{font:inherit}
           </div>
         </div>
 
-        <!-- Section I: FAQ -->
+        <!-- Section: FAQ -->
         <div class="acc-section" data-section="faq">
           <button class="acc-head" onclick="toggleSection('faq')">
-            <div class="acc-num"><span>I</span></div>
+            <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
               <h3>FAQ <span style="color:var(--muted);font-weight:400;font-size:.84em">(optional but converts)</span></h3>
               <p>Answer common questions before clients have to ask. Reduces back-and-forth.</p>
@@ -1989,7 +2002,7 @@ function finishStep3(){
   const required=['niche','packages','about','booking'];
   const missing=required.filter(s=>!evaluateSection(s));
   if(missing.length){
-    const labels={niche:'Niche details',packages:'Packages',about:'About you',booking:'Booking inquiries'};
+    const labels={niche:'Your service',packages:'Your packages',about:'About you',booking:'Booking contact'};
     showToast(`Still missing: ${missing.map(m=>labels[m]).join(', ')}`);
     // Open the first missing section
     document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
