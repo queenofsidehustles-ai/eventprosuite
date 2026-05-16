@@ -86,6 +86,16 @@ img{max-width:100%;display:block}
 
   /* ── Transitions ── */
   --transition:.14s ease;
+
+  /* ── v1 compat aliases (old pages use these names) ── */
+  --plum-900:var(--text-primary);
+  --plum-800:var(--brand);
+  --plum-700:var(--brand-mid);
+  --muted:var(--text-muted);
+  --ink:var(--text-primary);
+  --cream:var(--bg-hover);
+  --mauve:var(--brand-light);
+  --pink:#C47DAA;
 }
 
 /* ── Base ── */
