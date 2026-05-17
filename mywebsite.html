@@ -6,6 +6,7 @@
 <title>My Website | Party Biz Hub</title>
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>if(sessionStorage.getItem("pbh_auth")==="1")document.documentElement.dataset.auth="ok";</script>
 <link rel="stylesheet" href="styles.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1698,6 +1699,7 @@ function toggleUserMenu(e){
 }
 
 async function handleLogout(){
+  sessionStorage.removeItem('pbh_auth');
   await sb.auth.signOut();
   window.location.href='login.html';
 }

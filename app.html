@@ -6,6 +6,7 @@
 <title>Party Biz Hub | Quote Builder</title>
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>if(sessionStorage.getItem("pbh_auth")==="1")document.documentElement.dataset.auth="ok";</script>
 <link rel="stylesheet" href="styles.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -604,6 +605,7 @@ async function checkAuth() {
 }
 
 async function handleLogout() {
+  sessionStorage.removeItem('pbh_auth');
   await sb.auth.signOut();
   window.location.href = 'login.html';
 }

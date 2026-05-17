@@ -74,8 +74,13 @@
   };
 
   window.initNavSignout = function (handler) {
+    // Mark session active so next page skips the spinner
+    sessionStorage.setItem('pbh_auth', '1');
     const btn = document.getElementById('sidebarSignout');
-    if (btn) btn.addEventListener('click', handler);
+    if (btn) btn.addEventListener('click', () => {
+      sessionStorage.removeItem('pbh_auth');
+      handler();
+    });
   };
 
   if (document.readyState === 'loading') {
