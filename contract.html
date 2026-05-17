@@ -183,11 +183,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       <h2 class="step-title">Contract type</h2>
       <p class="step-sub">Pick the type that matches this booking. Most party bookings use "Event Service Agreement."</p>
       <div class="field"><label>Contract type</label>
-        <select id="contractType">
-          <option value="service_agreement">Event Service Agreement — generic booking contract</option>
-          <option value="deposit_agreement">Deposit & Cancellation Agreement — when you take deposits</option>
-          <option value="liability_waiver">Liability Waiver / Hold Harmless — physical activities, kids parties</option>
+        <select id="contractType" onchange="updateContractTypeHint()">
+          <option value="service_agreement">Event Service Agreement</option>
+          <option value="deposit_agreement">Deposit & Cancellation Agreement</option>
+          <option value="liability_waiver">Liability Waiver / Hold Harmless</option>
         </select>
+        <span id="contractTypeHint" style="font-size:.75rem;color:var(--muted);margin-top:4px">Standard booking contract for most party services</span>
       </div>
       <div class="field"><label>Contract reference number (optional)</label><input id="contractNumber" placeholder="e.g. CONT-2026-0042 (auto-generated if blank)"/></div>
       <div class="nav-row"><span></span><div class="nav-row-right"><button class="btn btn-primary" onclick="goStep(2)">Next: Parties →</button></div></div>
@@ -403,6 +404,17 @@ function $(id){return document.getElementById(id)}
 
 let toastTimer;
 function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
+
+const CONTRACT_HINTS={
+  service_agreement:'Standard booking contract for most party services',
+  deposit_agreement:'Use this when you require an upfront deposit to hold the date',
+  liability_waiver:'Use for physical activities, bounce houses, outdoor events with safety risk'
+};
+function updateContractTypeHint(){
+  const v=document.getElementById('contractType').value;
+  const h=document.getElementById('contractTypeHint');
+  if(h)h.textContent=CONTRACT_HINTS[v]||'';
+}
 
 async function init(){
   const{data:{session}}=await sb.auth.getSession();

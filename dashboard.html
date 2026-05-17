@@ -302,7 +302,7 @@ async function boot() {
 
     // Sidebar user
     setNavUser(display);
-    initNavSignout(async () => { await sb.auth.signOut(); window.location.href = 'login.html'; });
+    initNavSignout(async () => { sessionStorage.removeItem('pbh_auth'); await sb.auth.signOut(); window.location.href = 'login.html'; });
 
     if (!bizName) $('setupBanner').style.display = 'flex';
 
