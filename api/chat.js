@@ -8,7 +8,7 @@ STRICT RULES:
 - Give specific, usable answers — not generic platitudes
 - When relevant, mention that Party Biz Hub tools (Quote Builder, Contract, Profit Calculator) can help automate the task`;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -17,37 +17,44 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'API key not configured on server.' });
+  if (!apiKey) return res.status(500).json({ error: 'OPENROUTER_API_KEY not set on server.' });
 
   const { messages } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) {
     return res.status(400).json({ error: 'messages array required' });
   }
 
-  // Safety: only pass last 10 messages to keep cost low
   const recent = messages.slice(-10);
 
-  const upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + apiKey,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://partybizhub.com',
-      'X-Title': 'Party Biz Hub'
-    },
-    body: JSON.stringify({
-      model: 'anthropic/claude-3-haiku',
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...recent],
-      max_tokens: 600,
-      temperature: 0.72
-    })
-  });
-
-  if (!upstream.ok) {
-    const err = await upstream.text();
-    return res.status(502).json({ error: 'Upstream error', detail: err });
+  let upstream;
+  try {
+    upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://eventprosuite.vercel.app',
+        'X-Title': 'Party Biz Hub'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-haiku-20240307',
+        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...recent],
+        max_tokens: 600,
+        temperature: 0.72
+      })
+    });
+  } catch (fetchErr) {
+    return res.status(502).json({ error: 'Could not reach OpenRouter: ' + fetchErr.message });
   }
 
-  const data = await upstream.json();
-  return res.json(data);
-}
+  const text = await upstream.text();
+  if (!upstream.ok) {
+    return res.status(502).json({ error: 'OpenRouter error ' + upstream.status + ': ' + text });
+  }
+
+  try {
+    return res.json(JSON.parse(text));
+  } catch {
+    return res.status(502).json({ error: 'Bad JSON from OpenRouter', raw: text });
+  }
+};

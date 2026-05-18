@@ -415,7 +415,8 @@ async function sendMessage(){
 
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
-      appendMsg('bot','Sorry, something went wrong. Please try again in a moment. ('+(err.error||res.status)+')');
+      const detail=err.error||('HTTP '+res.status);
+      appendMsg('bot','Something went wrong: '+detail+'\n\nIf this keeps happening, check that your OpenRouter API key is correct in Vercel → Environment Variables.');
     } else {
       const data=await res.json();
       const reply=data?.choices?.[0]?.message?.content||'Sorry, I didn\'t get a response. Please try again.';
