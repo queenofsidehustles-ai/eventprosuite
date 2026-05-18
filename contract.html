@@ -90,7 +90,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
 .field.full{grid-column:1/-1}
 .field label{font-size:.72rem;font-weight:700;color:var(--slate-700);letter-spacing:.06em;text-transform:uppercase}
-.field input,.field select,.field textarea{padding:.72rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:inherit;font-size:.9rem;transition:all .12s;background:#fff;color:var(--ink)}
+.field input,.field select,.field textarea{padding:.72rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:inherit;font-size:.9rem;transition:all .12s;background:#fff;color:var(--ink);height:auto;min-height:44px}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--mauve);outline:none;box-shadow:0 0 0 3px rgba(166,123,181,.14)}
 .field textarea{resize:vertical;min-height:90px;font-family:inherit}
 .clause-card{background:var(--cream);border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;transition:border-color .15s}
@@ -98,7 +98,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .clause-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--plum-900);font-weight:700;margin-bottom:.3rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.5rem}
 .clause-title .icon{font-size:1.2rem}
 .clause-desc{font-size:.8rem;color:var(--muted);margin-bottom:.8rem;line-height:1.55}
-.clause-card select,.clause-card textarea{width:100%;padding:.72rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:inherit;font-size:.9rem;background:#fff}
+.clause-card select,.clause-card textarea{width:100%;padding:.72rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:inherit;font-size:.9rem;background:#fff;height:auto;min-height:44px;white-space:normal}
+.clause-card select option{white-space:normal}
 .clause-card select:focus,.clause-card textarea:focus{border-color:var(--mauve);outline:none;box-shadow:0 0 0 3px rgba(166,123,181,.14)}
 .clause-preview{background:rgba(74,43,99,.05);border-left:3px solid var(--plum-900);padding:.75rem 1rem;border-radius:8px;font-size:.82rem;color:var(--slate-700);line-height:1.65;margin-top:.6rem}
 .clause-preview strong{color:var(--plum-900);font-weight:700;letter-spacing:.04em;font-size:.7rem;text-transform:uppercase;display:block;margin-bottom:.25rem}

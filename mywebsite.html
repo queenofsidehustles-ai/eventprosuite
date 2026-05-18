@@ -1188,12 +1188,12 @@ async function init(){
     if(p){
       isKppsMember=p.has_kpps_access===true;
       const display=(p.profile_data&&p.profile_data.businessName)||p.full_name||currentUser.email.split('@')[0];
-      $('userChipText').textContent=display;
-      $('userAvatar').textContent=display.charAt(0).toUpperCase();
+      const uN=$('userChipText');if(uN)uN.textContent=display;
+      const uA=$('userAvatar');if(uA)uA.textContent=display.charAt(0).toUpperCase();
       setNavUser(display);
     }else{
-      $('userChipText').textContent=currentUser.email.split('@')[0];
-      $('userAvatar').textContent=currentUser.email.charAt(0).toUpperCase();
+      const uN=$('userChipText');if(uN)uN.textContent=currentUser.email.split('@')[0];
+      const uA=$('userAvatar');if(uA)uA.textContent=currentUser.email.charAt(0).toUpperCase();
       setNavUser(currentUser.email.split('@')[0]);
     }
   }catch(e){console.error('Profile load:',e)}
@@ -1257,10 +1257,9 @@ async function init(){
     applyOwnerPhotoPreview();
   }
 
-  // Close user menu on outside click
   document.addEventListener('click',e=>{
     if(!e.target.closest('#userChip')&&!e.target.closest('#userMenu')){
-      $('userMenu').classList.remove('open');
+      const m=$('userMenu');if(m)m.classList.remove('open');
     }
   });
 }
@@ -1695,7 +1694,7 @@ async function saveNow(){
 // ─── USER MENU ───────────────────────────────────────────────────
 function toggleUserMenu(e){
   if(e)e.stopPropagation();
-  $('userMenu').classList.toggle('open');
+  const m=$('userMenu');if(m)m.classList.toggle('open');
 }
 
 async function handleLogout(){

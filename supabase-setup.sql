@@ -163,6 +163,8 @@ create policy "profit_records: owner can do all" on profit_records
 create table if not exists website_builds (
   id                uuid default gen_random_uuid() primary key,
   user_id           uuid references profiles(id) on delete cascade,
+  business_name     text,
+  niche_type        text,
   brand_data        jsonb default '{}'::jsonb,
   niche_data        jsonb default '{}'::jsonb,
   packages_data     jsonb default '{}'::jsonb,
@@ -177,6 +179,10 @@ create table if not exists website_builds (
   created_at        timestamptz default now(),
   updated_at        timestamptz default now()
 );
+
+-- Add columns that may be missing from an earlier table creation
+alter table website_builds add column if not exists business_name text;
+alter table website_builds add column if not exists niche_type    text;
 
 alter table website_builds enable row level security;
 

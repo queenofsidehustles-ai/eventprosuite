@@ -448,6 +448,7 @@ select,textarea{
   font:inherit;font-size:13px;outline:none;
   transition:border-color var(--transition),box-shadow var(--transition)
 }
+select{height:auto;min-height:36px;padding-top:6px;padding-bottom:6px}
 textarea{height:auto;min-height:80px;padding:10px 12px;resize:vertical}
 input[type=color]{padding:3px;height:36px;cursor:pointer;border-radius:var(--radius);border:1px solid var(--border)}
 input[type=file]{height:auto;padding:8px 12px;background:var(--bg-hover);cursor:pointer}
