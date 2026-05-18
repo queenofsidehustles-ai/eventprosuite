@@ -482,7 +482,7 @@ input,select,textarea{font:inherit}
       <div class="tpl-pick-grid" id="templateGrid">
 
         <!-- LUXE -->
-        <button type="button" class="tpl-tile selected" data-template="luxe" onclick="selectTemplate('luxe')">
+        <button type="button" class="tpl-tile" data-template="luxe" onclick="selectTemplate('luxe')">
           <div class="tpl-preview">
             <div class="tpl-luxe-preview">
               <div class="tpl-luxe-nav"><div class="tpl-luxe-dot"></div><div class="tpl-luxe-dot" style="opacity:.4"></div></div>
@@ -522,7 +522,7 @@ input,select,textarea{font:inherit}
         </button>
 
         <!-- STUDIO -->
-        <button type="button" class="tpl-tile" data-template="studio" onclick="selectTemplate('studio')">
+        <button type="button" class="tpl-tile selected" data-template="studio" onclick="selectTemplate('studio')">
           <div class="tpl-preview">
             <div class="tpl-studio-preview">
               <div class="tpl-studio-left">
@@ -1548,7 +1548,7 @@ function renderNicheGrid(){
 }
 
 // ─── TEMPLATE PICKER ─────────────────────────────────────────────
-let selectedTemplate='luxe';
+let selectedTemplate='studio';
 function selectTemplate(tpl,save=true){
   selectedTemplate=tpl;
   document.querySelectorAll('.tpl-tile').forEach(t=>{
