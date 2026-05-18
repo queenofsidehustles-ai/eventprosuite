@@ -1872,10 +1872,12 @@ async function saveNow(){
   };
 
   try{
-    // Ensure profiles row exists first (required by FK constraint on website_builds)
-    try{
-      await sb.from('profiles').upsert({id:currentUser.id,email:currentUser.email,updated_at:new Date().toISOString()},{onConflict:'id'});
-    }catch(pe){console.warn('Profile upsert (non-fatal):',pe)}
+    // Ensure profiles row exists first (Supabase v2 returns {error}, does not throw)
+    const{error:pe}=await sb.from('profiles').upsert(
+      {id:currentUser.id,email:currentUser.email,updated_at:new Date().toISOString()},
+      {onConflict:'id'}
+    );
+    if(pe)console.warn('Profile upsert failed:',pe.message||pe.code);
 
     let result;
     if(currentBuild&&currentBuild.id){
@@ -1888,8 +1890,11 @@ async function saveNow(){
     $('autosaveBadge').classList.add('saved');
     $('autosaveBadge').innerHTML='<span class="dot"></span>Saved';
   }catch(e){
-    console.error('Save error:',e);
-    $('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Save failed';
+    const msg=e.message||e.code||'';
+    console.error('Save error:',msg,e);
+    const fk=msg.includes('foreign key')||msg.includes('violates')||msg.includes('profiles');
+    $('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>'+(fk?'Save failed — run SQL fix':'Save failed');
+    $('autosaveBadge').title=msg;
   }
 }
 
@@ -2567,7 +2572,7 @@ Generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',d
 `;
 }
 
-// Pack and download the ZIP
+// Pack and download the ZIP — uses site.html with inline data so preview & download match
 async function downloadSite(){
   if(typeof JSZip==='undefined'){
     showToast('ZIP library still loading — try again in 2 seconds');
@@ -2579,19 +2584,78 @@ async function downloadSite(){
   btn.innerHTML='⏳ Generating ZIP...';
 
   try{
-    const template=await fetchTemplate();
+    // Save latest data so Supabase is up to date too
+    await saveNow();
+
+    // Fetch site.html source (same file that drives the live preview)
+    const siteRes=await fetch('site.html',{cache:'no-store'});
+    if(!siteRes.ok)throw new Error('Could not load site.html — check your repo has it uploaded.');
+    let siteHTML=await siteRes.text();
+
+    // Build the inline data payload matching exactly what site.html reads from Supabase
+    const inlineData={
+      profile:{
+        profile_data:{
+          brandColor:$('customPrimary')?$('customPrimary').value:'',
+          city:$('city')?$('city').value:'',
+          contactPhone:$('phone')?$('phone').value:'',
+          contactEmail:$('email')?$('email').value:''
+        },
+        full_name:$('ownerName')?$('ownerName').value:''
+      },
+      build:{
+        brand_data:{
+          template:selectedTemplate,
+          businessName:$('businessName')?$('businessName').value:'',
+          tagline:$('tagline')?$('tagline').value:'',
+          phone:$('phone')?$('phone').value:'',
+          email:$('email')?$('email').value:'',
+          city:$('city')?$('city').value:'',
+          customPrimary:$('customPrimary')?$('customPrimary').value:'#6A3F8A',
+          customAccent:$('customAccent')?$('customAccent').value:'#C9A227',
+          logoDataURL:logoDataURL||null,
+          socialInstagram:$('socialInstagram')?$('socialInstagram').value:'',
+          socialTiktok:$('socialTiktok')?$('socialTiktok').value:'',
+          socialFacebook:$('socialFacebook')?$('socialFacebook').value:'',
+          socialYoutube:$('socialYoutube')?$('socialYoutube').value:'',
+          socialCustom:$('socialCustom')?$('socialCustom').value:''
+        },
+        niche_data:{
+          icon:$('nicheIcon')?$('nicheIcon').value:'',
+          name:$('nicheName')?$('nicheName').value:'',
+          tagline:$('nicheTagline')?$('nicheTagline').value:'',
+          description:$('nicheDescription')?$('nicheDescription').value:''
+        },
+        about_data:{
+          ownerName:$('ownerName')?$('ownerName').value:'',
+          yearStarted:$('aboutYearStarted')?$('aboutYearStarted').value:'',
+          bio:$('aboutBio')?$('aboutBio').value:'',
+          photoDataURL:ownerPhotoDataURL||null
+        },
+        gallery_data:{
+          heroPhotoDataURL:heroPhotoDataURL||null,
+          photos:(galleryPhotos||[]).filter(p=>p)
+        },
+        packages_data:packagesData||[],
+        reviews_data:reviewsData||[],
+        faq_data:{items:faqData||[]},
+        niche_type:selectedNiche||''
+      }
+    };
+
+    // Inject inline data as very first script in <head>
+    const inlineScript='<script>window.__INLINE_DATA__='+JSON.stringify(inlineData)+';<\/script>';
+    siteHTML=siteHTML.replace('<meta charset="UTF-8"/>','<meta charset="UTF-8"/>\n'+inlineScript);
+
     const cfg=buildSiteConfig();
-    const merged=mergeIntoTemplate(template,cfg);
     const readme=buildReadme(cfg);
+    const slug=(cfg.business.name||'your-site').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'your-site';
 
     const zip=new JSZip();
-    zip.file('index.html',merged);
+    zip.file('index.html',siteHTML);
     zip.file('README.md',readme);
 
     const blob=await zip.generateAsync({type:'blob'});
-    const slug=(cfg.business.name||'your-site').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'your-site';
-
-    // Trigger download
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download=slug+'.zip';
@@ -2600,15 +2664,15 @@ async function downloadSite(){
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
 
-    // Update last_published_at in Supabase
+    // Update last_published_at in Supabase (non-fatal)
     if(currentBuild&&currentBuild.id){
       const ts=new Date().toISOString();
-      try{
-        await sb.from('website_builds').update({last_published_at:ts}).eq('id',currentBuild.id);
+      const{error:ue}=await sb.from('website_builds').update({last_published_at:ts}).eq('id',currentBuild.id);
+      if(!ue){
         currentBuild.last_published_at=ts;
-        $('publishedBadge').style.display='inline-flex';
-        $('publishedAt').textContent=new Date(ts).toLocaleString();
-      }catch(e){console.error('Update published_at:',e)}
+        if($('publishedBadge'))$('publishedBadge').style.display='inline-flex';
+        if($('publishedAt'))$('publishedAt').textContent=new Date(ts).toLocaleString();
+      }
     }
 
     showToast('🎉 Downloaded! Check your Downloads folder');

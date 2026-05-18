@@ -72,15 +72,19 @@ button{font:inherit;cursor:pointer;border:none;background:none}
 
   const params=new URLSearchParams(window.location.search);
   const uid=params.get('uid');
-  if(!uid){showError();return}
+  const _inline=window.__INLINE_DATA__||null;
+  if(!uid&&!_inline){showError();return}
 
-  const bookURL='book.html?uid='+encodeURIComponent(uid);
+  const bookURL=uid?'book.html?uid='+encodeURIComponent(uid):'#book';
   const supabase=window.supabase.createClient(SUPA_URL,SUPA_ANON);
 
-  Promise.all([
-    supabase.from('profiles').select('profile_data,full_name').eq('id',uid).single(),
-    supabase.from('website_builds').select('*').eq('user_id',uid).order('updated_at',{ascending:false}).limit(1).maybeSingle()
-  ]).then(([pRes,bRes])=>{
+  (_inline
+    ?Promise.resolve([{data:_inline.profile,error:null},{data:_inline.build,error:null}])
+    :Promise.all([
+        supabase.from('profiles').select('profile_data,full_name').eq('id',uid).single(),
+        supabase.from('website_builds').select('*').eq('user_id',uid).order('updated_at',{ascending:false}).limit(1).maybeSingle()
+      ])
+  ).then(([pRes,bRes])=>{
     if(pRes.error||!pRes.data){showError();return}
     const pd   = pRes.data.profile_data||{};
     const full = pRes.data.full_name||'';
