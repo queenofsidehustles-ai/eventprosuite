@@ -398,6 +398,30 @@ input,select,textarea{font:inherit}
 .tpl-studio-body2{width:65%;height:8px;border-radius:2px;background:#CBD5E1}
 .tpl-studio-cta{width:80px;height:22px;border-radius:4px;background:rgba(106,63,138,.8);margin-top:4px}
 .tpl-studio-right{width:90px;background:rgba(106,63,138,.06);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:rgba(106,63,138,.08)}
+
+/* Garden + Bloom mini-preview styles */
+.tpl-garden-preview{background:#FAF7F2;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.tpl-garden-nav{height:20px;background:rgba(250,247,242,.96);border-bottom:1px solid #E8DDD0;display:flex;align-items:center;padding:0 10px;justify-content:space-between}
+.tpl-garden-navbiz{width:50px;height:8px;border-radius:3px;background:rgba(42,31,20,.55)}
+.tpl-garden-navbtn{width:30px;height:12px;border-radius:999px;background:rgba(106,63,138,.6)}
+.tpl-garden-hero{flex:1;position:relative;background:linear-gradient(135deg,rgba(42,31,20,.78),rgba(42,31,20,.45)),linear-gradient(135deg,#7a5c3a,#4a3020);display:flex;flex-direction:column;justify-content:flex-end;padding:12px}
+.tpl-garden-leaf{position:absolute;top:8px;right:10px;font-size:30px;opacity:.2;color:#C9A467}
+.tpl-garden-hl{width:80%;height:14px;border-radius:2px;background:rgba(255,255,255,.85);margin-bottom:6px;font-style:italic}
+.tpl-garden-sub{width:60%;height:8px;border-radius:2px;background:rgba(255,255,255,.45);margin-bottom:8px}
+.tpl-garden-btn{width:70px;height:16px;border-radius:999px;background:#C9A467}
+
+.tpl-bloom-preview{background:#fff;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.tpl-bloom-nav{height:18px;background:#fff;border-bottom:1.5px solid #EDE5F5;display:flex;align-items:center;padding:0 10px;justify-content:space-between}
+.tpl-bloom-navbiz{width:45px;height:7px;border-radius:3px;background:rgba(26,16,32,.6)}
+.tpl-bloom-navbtn{width:28px;height:12px;border-radius:4px;background:var(--brand)}
+.tpl-bloom-hero{padding:14px 12px;background:linear-gradient(150deg,var(--brand) 0%,var(--plum-900) 100%);display:flex;flex-direction:column;align-items:center;gap:5px}
+.tpl-bloom-herotext{width:100px;height:12px;border-radius:3px;background:rgba(255,255,255,.8)}
+.tpl-bloom-herosub{width:75px;height:7px;border-radius:2px;background:rgba(255,255,255,.5)}
+.tpl-bloom-herobtn{width:65px;height:14px;border-radius:4px;background:#fff}
+.tpl-bloom-steps{display:flex;gap:4px;padding:8px 10px;background:#FBF7FF}
+.tpl-bloom-step{flex:1;height:30px;border-radius:6px;background:#EDE5F5}
+.tpl-bloom-cards{display:flex;gap:4px;padding:6px 10px 8px;flex:1}
+.tpl-bloom-card{flex:1;border-radius:6px;background:#EDE5F5;border-top:3px solid var(--brand)}
 </style>
 </head>
 <body>
@@ -540,6 +564,47 @@ input,select,textarea{font:inherit}
             <div class="tpl-meta-name">Studio</div>
             <div class="tpl-meta-desc">Clean, minimal, professional. Great for established and corporate-style businesses.</div>
             <div class="tpl-meta-tags"><span class="tpl-tag">Clean</span><span class="tpl-tag">Minimal</span><span class="tpl-tag">Pro</span></div>
+          </div>
+        </button>
+
+        <!-- GARDEN -->
+        <button type="button" class="tpl-tile" data-template="garden" onclick="selectTemplate('garden')">
+          <div class="tpl-preview">
+            <div class="tpl-garden-preview">
+              <div class="tpl-garden-nav"><div class="tpl-garden-navbiz"></div><div class="tpl-garden-navbtn"></div></div>
+              <div class="tpl-garden-hero">
+                <div class="tpl-garden-leaf">🌿</div>
+                <div class="tpl-garden-hl"></div>
+                <div class="tpl-garden-sub"></div>
+                <div class="tpl-garden-btn"></div>
+              </div>
+            </div>
+          </div>
+          <div class="tpl-meta">
+            <div class="tpl-meta-name">Garden</div>
+            <div class="tpl-meta-desc">Warm cream & botanical. Elegant italic headings, earthy luxury vibe.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Earthy</span><span class="tpl-tag">Elegant</span><span class="tpl-tag">Botanical</span></div>
+          </div>
+        </button>
+
+        <!-- BLOOM -->
+        <button type="button" class="tpl-tile" data-template="bloom" onclick="selectTemplate('bloom')">
+          <div class="tpl-preview">
+            <div class="tpl-bloom-preview">
+              <div class="tpl-bloom-nav"><div class="tpl-bloom-navbiz"></div><div class="tpl-bloom-navbtn"></div></div>
+              <div class="tpl-bloom-hero">
+                <div class="tpl-bloom-herotext"></div>
+                <div class="tpl-bloom-herosub"></div>
+                <div class="tpl-bloom-herobtn"></div>
+              </div>
+              <div class="tpl-bloom-steps"><div class="tpl-bloom-step"></div><div class="tpl-bloom-step"></div><div class="tpl-bloom-step"></div></div>
+              <div class="tpl-bloom-cards"><div class="tpl-bloom-card"></div><div class="tpl-bloom-card"></div><div class="tpl-bloom-card"></div></div>
+            </div>
+          </div>
+          <div class="tpl-meta">
+            <div class="tpl-meta-name">Bloom</div>
+            <div class="tpl-meta-desc">White & lavender gradient. "How It Works" steps, stats section, family-friendly warmth.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Warm</span><span class="tpl-tag">Inviting</span><span class="tpl-tag">Steps</span></div>
           </div>
         </button>
 
@@ -993,6 +1058,7 @@ input,select,textarea{font:inherit}
             <button class="preview-mode-btn" data-mode="tablet" onclick="setPreviewMode('tablet')">📱 Tablet</button>
             <button class="preview-mode-btn" data-mode="mobile" onclick="setPreviewMode('mobile')">📱 Mobile</button>
             <button class="preview-mode-btn" onclick="regeneratePreview()" title="Reload preview">🔄</button>
+            <button class="preview-mode-btn" onclick="openLiveSite()" title="Open in new tab" style="font-weight:700">↗ Open</button>
           </div>
         </div>
         <div class="preview-frame-wrap" id="previewFrameWrap">
@@ -1806,6 +1872,11 @@ async function saveNow(){
   };
 
   try{
+    // Ensure profiles row exists first (required by FK constraint on website_builds)
+    try{
+      await sb.from('profiles').upsert({id:currentUser.id,email:currentUser.email,updated_at:new Date().toISOString()},{onConflict:'id'});
+    }catch(pe){console.warn('Profile upsert (non-fatal):',pe)}
+
     let result;
     if(currentBuild&&currentBuild.id){
       result=await sb.from('website_builds').update(payload).eq('id',currentBuild.id).select().single();
@@ -2390,46 +2461,34 @@ function shadeColor(hex,percent){
   return '#'+[r,g,b].map(c=>c.toString(16).padStart(2,'0')).join('');
 }
 
-// Generate the preview iframe content
+// Generate the preview iframe — loads the live site.html with real saved data
 async function regeneratePreview(){
+  if(!currentUser){showToast('Please sign in first');return}
+
   $('previewStatus').style.display='block';
-  $('previewStatus').innerHTML=`
-    <div class="preview-spinner"></div>
-    <strong>Generating preview...</strong>
-    <p style="margin-top:6px;font-size:.82rem">Building your site with your data + brand colors.</p>
-  `;
+  $('previewStatus').innerHTML=`<div class="preview-spinner"></div><strong>Saving & loading preview…</strong><p style="margin-top:6px;font-size:.82rem">Saving your latest changes, then loading your live site.</p>`;
   $('previewFrame').style.display='none';
 
-  try{
-    const template=await fetchTemplate();
-    const cfg=buildSiteConfig();
-    const merged=mergeIntoTemplate(template,cfg);
+  // Save first so site.html picks up the latest template + data
+  await saveNow();
 
-    // Revoke old blob URL
-    if(previewBlobURL)URL.revokeObjectURL(previewBlobURL);
+  // Load the live site in the iframe
+  const previewSrc='site.html?uid='+encodeURIComponent(currentUser.id)+'&_v='+Date.now();
+  $('previewFrame').src=previewSrc;
+  $('previewFrame').onload=()=>{
+    $('previewStatus').style.display='none';
+    $('previewFrame').style.display='block';
+  };
 
-    // Create new blob
-    const blob=new Blob([merged],{type:'text/html'});
-    previewBlobURL=URL.createObjectURL(blob);
+  const slug=($('businessName')?.value||'your-business').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'your-business';
+  $('previewUrl').textContent=slug+'.com';
+  previewBlobURL=previewSrc; // re-use variable so "open in new tab" link still works
+}
 
-    $('previewFrame').src=previewBlobURL;
-    $('previewFrame').onload=()=>{
-      $('previewStatus').style.display='none';
-      $('previewFrame').style.display='block';
-    };
-
-    // Update browser URL bar mock
-    const slug=(cfg.business.name||'your-business').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-    $('previewUrl').textContent=`${slug}.com`;
-  }catch(e){
-    console.error('Preview error:',e);
-    $('previewStatus').innerHTML=`
-      <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
-      <strong>Couldn't generate preview</strong>
-      <p style="margin-top:6px;font-size:.82rem;color:var(--danger)">${escapeHtml(e.message)}</p>
-      <button class="btn btn-outline" style="margin-top:1rem;padding:.55rem 1rem;font-size:.84rem" onclick="regeneratePreview()">Try again</button>
-    `;
-  }
+// Open live site in new tab
+function openLiveSite(){
+  if(!currentUser){showToast('Please sign in first');return}
+  window.open('site.html?uid='+encodeURIComponent(currentUser.id),'_blank');
 }
 
 // Preview device-mode buttons

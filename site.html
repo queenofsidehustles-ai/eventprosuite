@@ -114,14 +114,23 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     const email          =first(pd.contactEmail,brand_data.email);
     const nicheLabel     =first(niche_data.name,wb&&wb.niche_type);
 
-    document.title=bizName;
+    const city=first(pd.city,brand_data.city);
+
+    /* ── SEO meta injection (helps with social sharing + search) ── */
+    document.title=bizName+(city?' · '+city:'')+' | Party Entertainment';
+    const metaDesc=tagline||bizName+' — magical kids party entertainment';
+    [['description',metaDesc],['og:title',bizName],['og:description',metaDesc],['og:type','website'],['og:url',window.location.href],['twitter:card','summary_large_image'],['twitter:title',bizName],['twitter:description',metaDesc]].forEach(([n,v])=>{const m=document.createElement('meta');m.setAttribute(n.startsWith('og:')||n.startsWith('twitter:')?'property':'name',n);m.content=v;document.head.appendChild(m)});
+    if(heroPhoto||logo){const m=document.createElement('meta');m.setAttribute('property','og:image');m.content=heroPhoto||logo;document.head.appendChild(m)}
+    const ldEl=document.createElement('script');ldEl.type='application/ld+json';ldEl.textContent=JSON.stringify({'@context':'https://schema.org','@type':'LocalBusiness','name':bizName,'description':metaDesc,'telephone':phone||undefined,'email':email||undefined,'image':heroPhoto||logo||undefined,'address':city?{'@type':'PostalAddress','addressLocality':city}:undefined,'url':window.location.href});document.head.appendChild(ldEl);
 
     const template=first(brand_data.template,'studio');
-    const data={bizName,tagline,logo,ownerName,ownerBio,ownerPhoto,heroPhoto,brand,brandDark,brandLight,bookURL,nicheLabel,packages_data,reviews_data,faq_data,gallery_data,about_data,phone,email,socialInstagram,socialFacebook,socialTiktok,socialYoutube,socialCustom};
+    const data={bizName,tagline,logo,ownerName,ownerBio,ownerPhoto,heroPhoto,brand,brandDark,brandLight,bookURL,nicheLabel,packages_data,reviews_data,faq_data,gallery_data,about_data,phone,email,socialInstagram,socialFacebook,socialTiktok,socialYoutube,socialCustom,city};
 
     const root=document.getElementById('site-root');
     if(template==='luxe')buildLuxe(root,data);
     else if(template==='pop')buildPop(root,data);
+    else if(template==='garden')buildGarden(root,data);
+    else if(template==='bloom')buildBloom(root,data);
     else buildStudio(root,data);
 
     showContent();
@@ -902,6 +911,331 @@ ${faqHTML}
 <footer class="st-footer"><div class="st-footer-biz">${esc(d.bizName)}</div><div class="st-footer-power">Powered by <a href="https://partybizhub.com" target="_blank" rel="noopener">Party Biz Hub</a></div></footer>`;
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     TEMPLATE: GARDEN — warm cream, botanical, Playfair italic
+  ══════════════════════════════════════════════════════════════ */
+  function buildGarden(root,d){
+    const g=d.brand;const gd=d.brandDark;const gl=d.brandLight;
+    const css=`
+<style id="tpl-css">
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{--brand:${g};--brand-dk:${gd};--brand-lt:${gl};--gold:#C9A467;--gold-lt:#F5E9D0;--cream:#FAF7F2;--parchment:#F3EDE0;--text:#2A1F14;--muted:#8A7265;--line:#E8DDD0;--white:#ffffff;--radius:18px;--shadow:0 4px 24px rgba(42,31,20,.08);--shadow-lg:0 16px 56px rgba(42,31,20,.14)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+a{text-decoration:none}button{font:inherit;cursor:pointer;border:none;background:none}img{max-width:100%;display:block}
+
+/* NAV */
+.gd-nav{position:sticky;top:0;z-index:100;background:rgba(250,247,242,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.gd-nav-in{max-width:1160px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.gd-brand{display:flex;align-items:center;gap:12px}
+.gd-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}
+.gd-initial{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center}
+.gd-biz{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--text);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.gd-book-btn{background:var(--brand);color:#fff;padding:10px 24px;border-radius:999px;font-size:13.5px;font-weight:700;transition:background .18s,transform .18s}
+.gd-book-btn:hover{background:var(--brand-dk);transform:translateY(-1px)}
+
+/* HERO */
+.gd-hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden}
+.gd-hero-photo{position:absolute;inset:0;background-size:cover;background-position:center}
+.gd-hero-overlay{position:absolute;inset:0;background:linear-gradient(105deg,rgba(42,31,20,.72) 0%,rgba(42,31,20,.38) 55%,rgba(42,31,20,.2) 100%)}
+.gd-hero-grad{position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,164,103,.15) 0%,rgba(138,114,101,.08) 40%,transparent 100%)}
+.gd-hero-in{position:relative;z-index:1;max-width:680px;padding:80px 28px;margin-left:8%}
+.gd-leaf1,.gd-leaf2{position:absolute;z-index:0;pointer-events:none;opacity:.12}
+.gd-leaf1{right:5%;top:15%;font-size:140px;color:var(--gold);transform:rotate(20deg)}
+.gd-leaf2{right:15%;bottom:10%;font-size:90px;color:var(--gold);transform:rotate(-30deg)}
+.gd-hero-eyebrow{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:22px;padding:5px 16px;border:1px solid rgba(201,164,103,.5);border-radius:999px}
+.gd-h1{font-family:'Playfair Display',serif;font-size:clamp(38px,7vw,76px);font-weight:700;font-style:italic;color:#fff;line-height:1.08;margin-bottom:20px;text-shadow:0 2px 20px rgba(0,0,0,.25)}
+.gd-tagline{font-size:clamp(15px,2.2vw,18px);font-weight:300;color:rgba(255,255,255,.88);margin-bottom:38px;max-width:480px;line-height:1.72}
+.gd-hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.gd-btn-gold{display:inline-flex;align-items:center;background:var(--gold);color:#2A1F14;padding:15px 34px;border-radius:999px;font-size:15px;font-weight:700;transition:background .18s,transform .18s;box-shadow:0 6px 24px rgba(201,164,103,.4)}
+.gd-btn-gold:hover{background:#B8923C;transform:translateY(-2px)}
+.gd-btn-outline{display:inline-flex;align-items:center;padding:15px 26px;border-radius:999px;font-size:14px;font-weight:600;border:1.5px solid rgba(255,255,255,.45);color:rgba(255,255,255,.88);transition:border-color .18s}
+.gd-btn-outline:hover{border-color:#fff}
+
+/* SECTIONS */
+.gd-section{padding:80px 28px}
+.gd-section-parchment{background:var(--parchment)}
+.gd-max{max-width:1160px;margin:0 auto}
+.gd-section-hd{text-align:center;margin-bottom:52px}
+.gd-label{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.gd-section-title{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,40px);font-weight:700;font-style:italic;color:var(--text);margin-bottom:10px;line-height:1.2}
+.gd-section-sub{font-size:15px;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.65}
+
+/* SERVICE CARDS */
+.gd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+.gd-card{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .22s,box-shadow .22s;border:1px solid var(--line);display:flex;flex-direction:column}
+.gd-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.gd-card-bar{height:4px;background:var(--brand)}
+.gd-card-body{padding:26px;flex:1}
+.gd-card-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text);margin-bottom:6px}
+.gd-card-price{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--brand);margin:10px 0 4px}
+.gd-card-duration{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.gd-card-desc{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:10px}
+.gd-card-cta{display:block;margin:0 26px 26px;background:var(--cream);border:1.5px solid var(--brand);color:var(--brand);padding:12px;border-radius:var(--radius);font-size:14px;font-weight:700;text-align:center;transition:background .18s,color .18s}
+.gd-card-cta:hover{background:var(--brand);color:#fff}
+
+/* GALLERY — 4-col natural grid */
+.gd-gallery-hero{border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-lg)}
+.gd-gallery-hero img{width:100%;max-height:440px;object-fit:cover}
+.gd-gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gd-gallery-item{border-radius:12px;overflow:hidden;aspect-ratio:1;transition:transform .2s}
+.gd-gallery-item:hover{transform:scale(1.03)}
+.gd-gallery-item img{width:100%;height:100%;object-fit:cover}
+@media(max-width:600px){.gd-gallery-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ABOUT */
+.gd-about-grid{display:grid;grid-template-columns:420px 1fr;gap:60px;align-items:center}
+.gd-about-img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--radius);box-shadow:var(--shadow-lg)}
+.gd-about-initial{width:100%;aspect-ratio:4/5;border-radius:var(--radius);background:var(--brand-lt);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:120px;font-style:italic;color:var(--brand);font-weight:700}
+.gd-about-copy{display:flex;flex-direction:column;gap:18px}
+.gd-about-name{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:700;font-style:italic;color:var(--text)}
+.gd-pull-quote{font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--brand);padding:16px 24px;border-left:3px solid var(--brand);background:var(--brand-lt);border-radius:0 var(--radius) var(--radius) 0;line-height:1.55}
+.gd-about-bio{font-size:16px;color:var(--muted);line-height:1.75}
+.gd-since{font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:8px}.gd-since::before{content:'🌿'}
+@media(max-width:900px){.gd-about-grid{grid-template-columns:1fr;gap:36px}}
+
+/* CONTACT */
+.gd-contact{padding:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.gd-contact-in{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.gd-contact-item{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:999px;background:var(--white);border:1.5px solid var(--line);font-size:13px;font-weight:600;color:var(--text);transition:border-color .18s}
+.gd-contact-item:hover{border-color:var(--gold)}
+
+/* REVIEWS */
+.gd-reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.gd-review{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:28px;position:relative;box-shadow:var(--shadow)}
+.gd-review::before{content:'❝';position:absolute;top:16px;left:20px;font-size:48px;color:var(--gold);opacity:.25;line-height:1;font-family:'Playfair Display',serif}
+.gd-review:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px);transition:transform .2s,box-shadow .2s}
+.gd-stars{color:var(--gold);font-size:15px;letter-spacing:2px;margin-bottom:14px;padding-left:36px}
+.gd-review-text{font-family:'Playfair Display',serif;font-size:15.5px;font-style:italic;color:var(--text);line-height:1.65;margin-bottom:16px;padding-left:36px}
+.gd-review-author{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+/* FAQ */
+.gd-faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+details.gd-faq-item{background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:border-color .18s}
+details.gd-faq-item[open]{border-color:var(--gold);box-shadow:var(--shadow)}
+summary.gd-faq-q{padding:18px 22px;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--text);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;user-select:none}
+summary.gd-faq-q::-webkit-details-marker{display:none}
+summary.gd-faq-q::after{content:'＋';font-size:18px;font-weight:400;color:var(--gold);flex-shrink:0}
+details.gd-faq-item[open] summary.gd-faq-q::after{content:'－'}
+.gd-faq-a{padding:0 22px 18px;font-size:14.5px;color:var(--muted);line-height:1.7}
+
+/* CTA */
+.gd-cta{padding:88px 28px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-dk) 100%);text-align:center;position:relative;overflow:hidden}
+.gd-cta::before{content:'🌿';position:absolute;font-size:200px;opacity:.06;top:-30px;right:-20px;pointer-events:none}
+.gd-cta-in{position:relative;max-width:580px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:20px}
+.gd-cta-h{font-family:'Playfair Display',serif;font-size:clamp(30px,5vw,52px);font-style:italic;font-weight:700;color:#fff;line-height:1.1}
+.gd-cta-sub{font-size:17px;color:rgba(255,255,255,.82)}
+
+/* FOOTER */
+.gd-footer{padding:28px;background:var(--text);text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.gd-footer-biz{font-family:'Playfair Display',serif;font-size:14px;color:rgba(255,255,255,.6)}
+.gd-footer-power{font-size:11px;color:rgba(255,255,255,.3)}
+.gd-footer-power a{color:rgba(255,255,255,.45);font-weight:600}
+.gd-footer-power a:hover{color:var(--gold)}
+</style>`;
+
+    const logoHTML=d.logo?`<img src="${esc(d.logo)}" class="gd-logo" alt="${esc(d.bizName)}"/>`:`<div class="gd-initial">${esc(d.bizName.charAt(0).toUpperCase())}</div>`;
+    let heroStyle='';let heroBgHTML='<div class="gd-hero-grad"></div>';
+    if(d.heroPhoto)heroBgHTML=`<div class="gd-hero-photo" style="background-image:url('${esc(d.heroPhoto)}')"></div><div class="gd-hero-overlay"></div>`;
+    const eyebrow=d.nicheLabel?esc(d.nicheLabel):'Party Entertainment';
+
+    /* Packages */
+    let pkgsHTML='';
+    if(d.packages_data){d.packages_data.forEach(pkg=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Inquire';const desc=pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,2).join(' · '):'';pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${esc(pkg.name||'Package')}</div><div class="gd-card-price">${price}</div>${pkg.duration?`<div class="gd-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''} ${desc?`<div class="gd-card-desc">${esc(desc)}</div>`:''}</div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`});}
+    else{[['The Signature Garden','$275','2 hours'],['Grand Garden Party','$450','3 hours'],['Petit Garden','$175','1.5 hours']].forEach(([n,p,dur])=>{pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${n}</div><div class="gd-card-price">${p}</div><div class="gd-card-duration">⏱ ${dur}</div></div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`})}
+
+    /* Gallery */
+    let galleryHTML='';const gPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
+    if(d.heroPhoto||gPhotos.length>0){galleryHTML=`<section class="gd-section gd-section-parchment"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Gallery</div><div class="gd-section-title">A peek at the magic</div></div>${d.heroPhoto?`<div class="gd-gallery-hero"><img src="${esc(d.heroPhoto)}" alt="party" loading="lazy"/></div>`:''} ${gPhotos.length>0?`<div class="gd-gallery-grid">${gPhotos.slice(0,8).map(p=>`<div class="gd-gallery-item"><img src="${esc(p.dataURL)}" alt="event" loading="lazy"/></div>`).join('')}</div>`:''}</div></section>`}
+
+    /* About */
+    const aImg=d.ownerPhoto||d.logo;const aImgHTML=aImg?`<img src="${esc(aImg)}" class="gd-about-img" alt="${esc(d.ownerName)}" loading="lazy"/>`:`<div class="gd-about-initial">${esc(d.ownerName.charAt(0).toUpperCase())}</div>`;
+    const sinceHTML=d.about_data.yearStarted?`<div class="gd-since">In business since ${esc(String(d.about_data.yearStarted))}</div>`:'';
+    const cItems=buildContactItems(d);const cHTML=cItems.length>0?`<div class="gd-contact"><div class="gd-contact-in">${cItems.map(c=>`<a href="${esc(c.href)}" class="gd-contact-item" target="_blank" rel="noopener">${c.icon} ${esc(c.label)}</a>`).join('')}</div></div>`:'';
+    let revHTML='';if(d.reviews_data&&d.reviews_data.length>0){revHTML=`<section class="gd-section"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Reviews</div><div class="gd-section-title">From the families we love</div></div><div class="gd-reviews-grid">${d.reviews_data.slice(0,3).map(r=>{const s=Math.min(5,Math.max(1,parseInt(r.rating)||5));return`<div class="gd-review"><div class="gd-stars">${'★'.repeat(s)}</div><div class="gd-review-text">"${esc(r.text||'')}"</div><div class="gd-review-author">— ${esc(r.author||'Happy Family')}</div></div>`}).join('')}</div></div></section>`}
+    let faqHTML='';if(d.faq_data&&d.faq_data.items.length>0){faqHTML=`<section class="gd-section gd-section-parchment"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">FAQ</div><div class="gd-section-title">Questions answered</div></div><div class="gd-faq">${d.faq_data.items.map(q=>`<details class="gd-faq-item"><summary class="gd-faq-q">${esc(q.q||'')}</summary><div class="gd-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div></div></section>`}
+
+    root.innerHTML=css+`
+<nav class="gd-nav"><div class="gd-nav-in"><div class="gd-brand">${logoHTML}<span class="gd-biz">${esc(d.bizName)}</span></div><a href="${esc(d.bookURL)}" class="gd-book-btn">Book Now</a></div></nav>
+<section class="gd-hero">${heroBgHTML}<div class="gd-leaf1">🍃</div><div class="gd-leaf2">🌿</div>
+  <div class="gd-hero-in"><div class="gd-hero-eyebrow">${eyebrow}</div><h1 class="gd-h1">${esc(d.bizName)}</h1><p class="gd-tagline">${esc(d.tagline)}</p>
+  <div class="gd-hero-btns"><a href="${esc(d.bookURL)}" class="gd-btn-gold">Book Your Party →</a><a href="#services" class="gd-btn-outline">View Packages</a></div></div></section>
+<section class="gd-section" id="services"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Packages</div><div class="gd-section-title">Crafted celebrations for every occasion</div><p class="gd-section-sub">Each package is thoughtfully designed to make your child's day absolutely magical.</p></div><div class="gd-cards">${pkgsHTML}</div></div></section>
+${galleryHTML}
+<section class="gd-section gd-section-parchment" id="about"><div class="gd-max"><div class="gd-about-grid"><div>${aImgHTML}</div><div class="gd-about-copy"><div class="gd-label">About</div><div class="gd-about-name">${esc(d.ownerName)}</div><div class="gd-pull-quote">"Every child deserves a party as magical as they are."</div><p class="gd-about-bio">${esc(d.ownerBio)}</p>${sinceHTML}</div></div></div></section>
+${cHTML}${revHTML}${faqHTML}
+<section class="gd-cta"><div class="gd-cta-in"><div class="gd-cta-h">Let's make it magical.</div><p class="gd-cta-sub">Your dream party is one click away.</p><a href="${esc(d.bookURL)}" class="gd-btn-gold" style="font-size:16px;padding:17px 42px">Book Your Party →</a></div></section>
+<footer class="gd-footer"><div class="gd-footer-biz">${esc(d.bizName)}</div><div class="gd-footer-power">Powered by <a href="https://partybizhub.com" target="_blank" rel="noopener">Party Biz Hub</a></div></footer>`;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     TEMPLATE: BLOOM — white, stacked sections, lavender hero, warm & inviting
+  ══════════════════════════════════════════════════════════════ */
+  function buildBloom(root,d){
+    const g=d.brand;const gd=d.brandDark;const gl=d.brandLight;
+    const css=`
+<style id="tpl-css">
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+:root{--brand:${g};--brand-dk:${gd};--brand-lt:${gl};--text:#1A1020;--muted:#6B5B73;--cream:#FBF7FF;--white:#ffffff;--line:#EDE5F5;--radius:16px;--shadow:0 4px 20px rgba(26,16,32,.07);--shadow-lg:0 16px 52px rgba(26,16,32,.14)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+a{text-decoration:none}button{font:inherit;cursor:pointer;border:none;background:none}img{max-width:100%;display:block}
+
+/* NAV */
+.bl-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bl-nav-in{max-width:1160px;margin:0 auto;padding:13px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bl-brand{display:flex;align-items:center;gap:12px}
+.bl-logo{width:40px;height:40px;border-radius:50%;object-fit:cover}
+.bl-initial{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;font-weight:900;font-size:18px;display:flex;align-items:center;justify-content:center}
+.bl-biz{font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.bl-book-btn{background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;padding:11px 24px;border-radius:var(--radius);font-size:14px;font-weight:700;transition:opacity .18s,transform .18s;box-shadow:0 6px 18px rgba(0,0,0,.15)}
+.bl-book-btn:hover{opacity:.88;transform:translateY(-1px)}
+
+/* HERO */
+.bl-hero{padding:72px 28px 80px;background:linear-gradient(150deg,var(--brand) 0%,var(--brand-dk) 60%,#2A0A40 100%);position:relative;overflow:hidden;text-align:center}
+.bl-hero-circle1{position:absolute;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,.06);top:-200px;right:-100px;pointer-events:none}
+.bl-hero-circle2{position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04);bottom:-100px;left:-50px;pointer-events:none}
+.bl-hero-photo-wrap{max-width:760px;margin:0 auto 40px;border-radius:var(--radius);overflow:hidden;box-shadow:0 24px 72px rgba(0,0,0,.35);position:relative;z-index:1}
+.bl-hero-photo-wrap img{width:100%;max-height:360px;object-fit:cover}
+.bl-hero-in{position:relative;z-index:1;max-width:700px;margin:0 auto}
+.bl-niche-tag{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 18px;border-radius:999px;margin-bottom:22px;backdrop-filter:blur(8px)}
+.bl-h1{font-size:clamp(40px,7vw,72px);font-weight:900;color:#fff;line-height:1.05;margin-bottom:18px;letter-spacing:-.025em}
+.bl-tagline{font-size:clamp(16px,2.5vw,20px);color:rgba(255,255,255,.82);margin-bottom:38px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.65}
+.bl-hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.bl-btn-white{display:inline-flex;align-items:center;background:#fff;color:var(--brand);padding:15px 34px;border-radius:var(--radius);font-size:16px;font-weight:800;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.bl-btn-white:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.28)}
+.bl-btn-outline{display:inline-flex;align-items:center;padding:15px 24px;border-radius:var(--radius);font-size:15px;font-weight:700;border:2px solid rgba(255,255,255,.4);color:#fff;transition:border-color .18s}
+.bl-btn-outline:hover{border-color:#fff}
+
+/* HOW IT WORKS */
+.bl-steps{background:var(--cream);padding:64px 28px}
+.bl-steps-grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:28px;text-align:center}
+.bl-step-num{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.bl-step-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
+.bl-step-desc{font-size:13.5px;color:var(--muted);line-height:1.6}
+@media(max-width:600px){.bl-steps-grid{grid-template-columns:1fr;gap:20px}}
+
+/* SECTIONS */
+.bl-section{padding:76px 28px}
+.bl-section-cream{background:var(--cream)}
+.bl-max{max-width:1160px;margin:0 auto}
+.bl-section-hd{text-align:center;margin-bottom:48px}
+.bl-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);margin-bottom:10px}
+.bl-section-title{font-size:clamp(24px,4vw,38px);font-weight:900;color:var(--text);letter-spacing:-.02em;margin-bottom:10px}
+.bl-section-sub{font-size:15px;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.65}
+
+/* SERVICE CARDS */
+.bl-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px}
+.bl-card{background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .22s,box-shadow .22s;display:flex;flex-direction:column}
+.bl-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.bl-card-header{padding:32px 24px 20px;background:linear-gradient(135deg,var(--brand-lt),rgba(255,255,255,.5))}
+.bl-card-icon{font-size:32px;margin-bottom:10px}
+.bl-card-name{font-size:18px;font-weight:800;color:var(--text)}
+.bl-card-price{font-size:30px;font-weight:900;color:var(--brand);margin:12px 0 0;letter-spacing:-.02em}
+.bl-card-body{padding:18px 24px;flex:1}
+.bl-card-duration{font-size:12px;font-weight:700;color:var(--muted);background:var(--cream);padding:3px 10px;border-radius:999px;display:inline-block;margin-bottom:8px}
+.bl-card-desc{font-size:13.5px;color:var(--muted);line-height:1.6}
+.bl-card-cta{display:block;margin:0 24px 24px;background:var(--brand);color:#fff;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:800;text-align:center;transition:background .18s}
+.bl-card-cta:hover{background:var(--brand-dk)}
+
+/* STATS */
+.bl-stats{background:linear-gradient(135deg,var(--brand),var(--brand-dk));padding:52px 28px}
+.bl-stats-grid{max-width:800px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+.bl-stat-num{font-size:clamp(36px,5vw,56px);font-weight:900;color:#fff;letter-spacing:-.03em;line-height:1}
+.bl-stat-label{font-size:13px;font-weight:600;color:rgba(255,255,255,.75);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:500px){.bl-stats-grid{grid-template-columns:1fr}}
+
+/* ABOUT */
+.bl-about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.bl-about-photo{width:100%;aspect-ratio:1;border-radius:var(--radius);object-fit:cover;box-shadow:var(--shadow-lg)}
+.bl-about-initial{width:100%;aspect-ratio:1;border-radius:var(--radius);background:var(--brand-lt);display:flex;align-items:center;justify-content:center;font-size:100px;font-weight:900;color:var(--brand)}
+.bl-about-name{font-size:28px;font-weight:900;color:var(--text);letter-spacing:-.02em;margin-bottom:16px}
+.bl-about-bio{font-size:16px;color:var(--muted);line-height:1.75;margin-bottom:16px}
+.bl-since{font-size:13px;font-weight:700;color:var(--brand)}
+@media(max-width:720px){.bl-about-grid{grid-template-columns:1fr}}
+
+/* CONTACT */
+.bl-contact{padding:28px;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--line)}
+.bl-contact-in{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.bl-contact-item{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius);background:var(--cream);border:1.5px solid var(--line);font-size:13px;font-weight:700;color:var(--text);transition:border-color .18s}
+.bl-contact-item:hover{border-color:var(--brand)}
+
+/* REVIEWS */
+.bl-reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+.bl-review{background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius);padding:24px;transition:transform .2s,box-shadow .2s}
+.bl-review:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.bl-stars{color:#F59E0B;font-size:18px;letter-spacing:2px;margin-bottom:12px}
+.bl-review-text{font-size:14.5px;color:var(--text);line-height:1.65;font-style:italic;margin-bottom:14px}
+.bl-review-author{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+/* FAQ */
+.bl-faq{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+details.bl-faq-item{background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:border-color .18s}
+details.bl-faq-item[open]{border-color:var(--brand)}
+summary.bl-faq-q{padding:18px 22px;font-size:15px;font-weight:800;color:var(--text);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;user-select:none}
+summary.bl-faq-q::-webkit-details-marker{display:none}
+summary.bl-faq-q::after{content:'+';font-size:20px;font-weight:400;color:var(--brand);flex-shrink:0}
+details.bl-faq-item[open] summary.bl-faq-q::after{content:'−'}
+.bl-faq-a{padding:0 22px 18px;font-size:14.5px;color:var(--muted);line-height:1.7}
+
+/* CTA */
+.bl-cta{padding:80px 28px;background:var(--cream);text-align:center}
+.bl-cta-card{max-width:600px;margin:0 auto;background:linear-gradient(135deg,var(--brand),var(--brand-dk));border-radius:24px;padding:52px 40px;box-shadow:0 24px 70px rgba(0,0,0,.22);position:relative;overflow:hidden}
+.bl-cta-card::before{content:'✨';position:absolute;font-size:160px;opacity:.06;top:-20px;right:-20px}
+.bl-cta-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:18px}
+.bl-cta-h{font-size:clamp(26px,4vw,42px);font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1.1}
+.bl-cta-sub{font-size:16px;color:rgba(255,255,255,.85)}
+.bl-cta-btn{display:inline-flex;align-items:center;background:#fff;color:var(--brand);padding:16px 38px;border-radius:var(--radius);font-size:16px;font-weight:800;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.bl-cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.26)}
+
+/* FOOTER */
+.bl-footer{padding:28px;border-top:1.5px solid var(--line);text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bl-footer-biz{font-size:14px;font-weight:700;color:var(--muted)}
+.bl-footer-power{font-size:12px;color:var(--muted)}
+.bl-footer-power a{color:var(--brand);font-weight:600}
+</style>`;
+
+    const logoHTML=d.logo?`<img src="${esc(d.logo)}" class="bl-logo" alt="${esc(d.bizName)}"/>`:`<div class="bl-initial">${esc(d.bizName.charAt(0).toUpperCase())}</div>`;
+    const nicheTagHTML=d.nicheLabel?`<div class="bl-niche-tag">${esc(d.nicheLabel)}</div>`:'';
+    const heroPhotoHTML=d.heroPhoto?`<div class="bl-hero-photo-wrap"><img src="${esc(d.heroPhoto)}" alt="${esc(d.bizName)}" loading="lazy"/></div>`:'';
+
+    const ICONS=['💎','🎀','🎂','🎠','✨','🌟'];
+    let pkgsHTML='';
+    if(d.packages_data){d.packages_data.forEach((pkg,i)=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Ask us!';const desc=pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,2).join(' · '):'';pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${ICONS[i%ICONS.length]}</div><div class="bl-card-name">${esc(pkg.name||'Package')}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body">${pkg.duration?`<div class="bl-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${desc?`<div class="bl-card-desc">${esc(desc)}</div>`:''}</div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
+    else{[['💎','Signature Experience','$275','2 hrs'],['🎀','Grand Celebration','$450','3 hrs'],['✨','Starter Package','$175','1.5 hrs']].forEach(([icon,name,price,dur])=>{pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${icon}</div><div class="bl-card-name">${name}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body"><div class="bl-card-duration">⏱ ${dur}</div></div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
+
+    /* Stats */
+    let yearsInBiz='5+';
+    if(d.about_data.yearStarted){const y=new Date().getFullYear()-parseInt(d.about_data.yearStarted)||1;yearsInBiz=y+'+'}
+    const statsHTML=`<section class="bl-stats"><div class="bl-stats-grid"><div><div class="bl-stat-num">${yearsInBiz}</div><div class="bl-stat-label">Years Experience</div></div><div><div class="bl-stat-num">100%</div><div class="bl-stat-label">Happy Clients</div></div><div><div class="bl-stat-num">5★</div><div class="bl-stat-label">Average Rating</div></div></div></section>`;
+
+    /* Gallery */
+    let galleryHTML='';const gPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
+    if(gPhotos.length>0){galleryHTML=`<section class="bl-section bl-section-cream"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Gallery</div><div class="bl-section-title">A Peek at the Party</div></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">${gPhotos.slice(0,6).map(p=>`<div style="border-radius:var(--radius);overflow:hidden;aspect-ratio:1"><img src="${esc(p.dataURL)}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/></div>`).join('')}</div></div></section>`}
+
+    /* About */
+    const aImg=d.ownerPhoto||d.logo;const aImgHTML=aImg?`<img src="${esc(aImg)}" class="bl-about-photo" alt="${esc(d.ownerName)}" loading="lazy"/>`:`<div class="bl-about-initial">${esc(d.ownerName.charAt(0).toUpperCase())}</div>`;
+    const sinceHTML=d.about_data.yearStarted?`<div class="bl-since">In business since ${esc(String(d.about_data.yearStarted))}</div>`:'';
+    const cItems=buildContactItems(d);const cHTML=cItems.length>0?`<div class="bl-contact"><div class="bl-contact-in">${cItems.map(c=>`<a href="${esc(c.href)}" class="bl-contact-item" target="_blank" rel="noopener">${c.icon} ${esc(c.label)}</a>`).join('')}</div></div>`:'';
+    let revHTML='';if(d.reviews_data&&d.reviews_data.length>0){revHTML=`<section class="bl-section"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Reviews</div><div class="bl-section-title">What Families Are Saying</div></div><div class="bl-reviews-grid">${d.reviews_data.slice(0,3).map(r=>{const s=Math.min(5,Math.max(1,parseInt(r.rating)||5));return`<div class="bl-review"><div class="bl-stars">${'★'.repeat(s)}</div><div class="bl-review-text">"${esc(r.text||'')}"</div><div class="bl-review-author">— ${esc(r.author||'Happy Family')}</div></div>`}).join('')}</div></div></section>`}
+    let faqHTML='';if(d.faq_data&&d.faq_data.items.length>0){faqHTML=`<section class="bl-section bl-section-cream"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">FAQ</div><div class="bl-section-title">Common Questions</div></div><div class="bl-faq">${d.faq_data.items.map(q=>`<details class="bl-faq-item"><summary class="bl-faq-q">${esc(q.q||'')}</summary><div class="bl-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div></div></section>`}
+
+    root.innerHTML=css+`
+<nav class="bl-nav"><div class="bl-nav-in"><div class="bl-brand">${logoHTML}<span class="bl-biz">${esc(d.bizName)}</span></div><a href="${esc(d.bookURL)}" class="bl-book-btn">Book Now</a></div></nav>
+<section class="bl-hero"><div class="bl-hero-circle1"></div><div class="bl-hero-circle2"></div>
+  <div class="bl-hero-in">${nicheTagHTML}${heroPhotoHTML}<h1 class="bl-h1">${esc(d.bizName)}</h1><p class="bl-tagline">${esc(d.tagline)}</p>
+  <div class="bl-hero-btns"><a href="${esc(d.bookURL)}" class="bl-btn-white">Book Your Party →</a><a href="#services" class="bl-btn-outline">See Packages</a></div></div></section>
+<section class="bl-steps"><div class="bl-section-hd" style="margin-bottom:36px"><div class="bl-eyebrow">How It Works</div><div class="bl-section-title">Three easy steps to magic</div></div><div class="bl-steps-grid"><div><div class="bl-step-num">1</div><div class="bl-step-title">Pick your package</div><div class="bl-step-desc">Browse our packages and choose what fits your celebration perfectly.</div></div><div><div class="bl-step-num">2</div><div class="bl-step-title">Book your date</div><div class="bl-step-desc">Fill out our quick booking form and lock in your date with a deposit.</div></div><div><div class="bl-step-num">3</div><div class="bl-step-title">We handle the rest</div><div class="bl-step-desc">Show up and enjoy — we set up, run the fun, and clean up.</div></div></div></section>
+<section class="bl-section" id="services"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Packages</div><div class="bl-section-title">Pick Your Perfect Party</div><p class="bl-section-sub">Every package includes our signature setup and hands-on entertainment.</p></div><div class="bl-cards">${pkgsHTML}</div></div></section>
+${statsHTML}${galleryHTML}
+<section class="bl-section bl-section-cream" id="about"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">About</div><div class="bl-section-title">Meet Your Party Host</div></div><div class="bl-about-grid"><div>${aImgHTML}</div><div><div class="bl-about-name">${esc(d.ownerName)}</div><p class="bl-about-bio">${esc(d.ownerBio)}</p>${sinceHTML}</div></div></div></section>
+${cHTML}${revHTML}${faqHTML}
+<section class="bl-cta"><div class="bl-cta-card"><div class="bl-cta-inner"><div class="bl-cta-h">Ready to book your party?</div><p class="bl-cta-sub">Spots fill up fast — reserve yours today!</p><a href="${esc(d.bookURL)}" class="bl-cta-btn">Book Your Party →</a></div></div></section>
+<footer class="bl-footer"><div class="bl-footer-biz">${esc(d.bizName)}</div><div class="bl-footer-power">Powered by <a href="https://partybizhub.com" target="_blank" rel="noopener">Party Biz Hub</a></div></footer>`;
+  }
+
   /* ── Shared: build contact items array ── */
   function buildContactItems(d){
     const items=[];
@@ -909,7 +1243,7 @@ ${faqHTML}
     if(d.email)items.push({href:'mailto:'+d.email,icon:'✉️',label:d.email});
     if(d.socialInstagram){const h=d.socialInstagram.replace(/^@/,'');items.push({href:'https://instagram.com/'+encodeURIComponent(h),icon:'📸',label:'@'+h})}
     if(d.socialTiktok){const h=d.socialTiktok.replace(/^@/,'');items.push({href:'https://tiktok.com/@'+encodeURIComponent(h),icon:'🎵',label:'@'+h})}
-    if(d.socialFacebook){const href=d.socialFacebook.startsWith('http')?d.socialFacebook:'https://facebook.com/'+encodeURIComponent(d.socialFacebook.replace(/^@/,''));items.push({href,icon:'👍',label:d.socialFacebook.replace(/^@/','')})}
+    if(d.socialFacebook){const href=d.socialFacebook.startsWith('http')?d.socialFacebook:'https://facebook.com/'+encodeURIComponent(d.socialFacebook.replace(/^@/,''));items.push({href,icon:'👍',label:d.socialFacebook.replace(/^@/,'')})}
     if(d.socialYoutube){const href=d.socialYoutube.startsWith('http')?d.socialYoutube:'https://youtube.com/'+encodeURIComponent(d.socialYoutube.replace(/^@/,''));items.push({href,icon:'▶️',label:d.socialYoutube})}
     if(d.socialCustom)items.push({href:d.socialCustom.startsWith('http')?d.socialCustom:'https://'+d.socialCustom,icon:'🔗',label:d.socialCustom});
     return items;
