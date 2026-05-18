@@ -532,15 +532,22 @@ const state = {
 // AUTH FLOW
 // ─────────────────────────────────────────────────────────────
 async function checkAuth() {
+  // Step 1: session check — only this redirects to login on failure
+  let session;
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session || !session.user) {
-      window.location.href = 'login.html';
-      return;
-    }
-    currentUser = session.user;
+    const { data } = await sb.auth.getSession();
+    session = data.session;
+  } catch (e) {
+    console.error('getSession error:', e);
+  }
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  currentUser = session.user;
 
-    // Load profile
+  // Step 2: profile + UI setup — non-fatal; app loads even if this fails
+  try {
     const { data: profile, error } = await sb
       .from('profiles')
       .select('*')
@@ -553,55 +560,52 @@ async function checkAuth() {
 
     currentProfile = profile || { id: currentUser.id, email: currentUser.email };
 
-    // Populate brand fields from profile_data
     if (profile && profile.profile_data) {
       const pd = profile.profile_data;
-      if (pd.businessName) $('businessName').value = pd.businessName;
-      if (pd.brandColor) $('brandColor').value = pd.brandColor;
+      if (pd.businessName && $('businessName')) $('businessName').value = pd.businessName;
+      if (pd.brandColor && $('brandColor')) $('brandColor').value = pd.brandColor;
       if (pd.logoDataURL) setLogo(pd.logoDataURL);
-      if (pd.stripe100) $('stripe100').value = pd.stripe100;
-      if (pd.stripe250) $('stripe250').value = pd.stripe250;
-      if (pd.stripe500) $('stripe500').value = pd.stripe500;
-      if (pd.stripe1000) $('stripe1000').value = pd.stripe1000;
-      if (pd.taxRate) $('taxRate').value = pd.taxRate;
-      if (pd.taxLabel) $('taxLabel').value = pd.taxLabel;
-      if (pd.taxMode) $('taxMode').value = pd.taxMode;
-      if (pd.currency) $('currency').value = pd.currency;
-      if (pd.depositProfile) $('depositProfile').value = pd.depositProfile;
+      if (pd.stripe100 && $('stripe100')) $('stripe100').value = pd.stripe100;
+      if (pd.stripe250 && $('stripe250')) $('stripe250').value = pd.stripe250;
+      if (pd.stripe500 && $('stripe500')) $('stripe500').value = pd.stripe500;
+      if (pd.stripe1000 && $('stripe1000')) $('stripe1000').value = pd.stripe1000;
+      if (pd.taxRate && $('taxRate')) $('taxRate').value = pd.taxRate;
+      if (pd.taxLabel && $('taxLabel')) $('taxLabel').value = pd.taxLabel;
+      if (pd.taxMode && $('taxMode')) $('taxMode').value = pd.taxMode;
+      if (pd.currency && $('currency')) $('currency').value = pd.currency;
+      if (pd.depositProfile && $('depositProfile')) $('depositProfile').value = pd.depositProfile;
       if (pd.packages) state.packages = pd.packages;
     }
 
-    // Show profile-incomplete banner if business name is empty
     const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
-    if (!hasBusinessName) {
+    if (!hasBusinessName && $('profileBanner')) {
       $('profileBanner').style.display = 'flex';
     }
 
-    // Set user display
     const displayName = (profile && profile.profile_data && profile.profile_data.businessName)
       || currentUser.email.split('@')[0];
-    $('userChipText').textContent = displayName;
-    $('userAvatar').textContent = displayName.charAt(0).toUpperCase();
+    if ($('userChipText')) $('userChipText').textContent = displayName;
+    if ($('userAvatar')) $('userAvatar').textContent = displayName.charAt(0).toUpperCase();
     setNavUser(displayName);
-
-    // Reveal app
-    $('authGate').style.display = 'none';
-    $('pbhLayout').style.display = 'flex';
-    $('appLayout').style.display = 'grid';
-    initNavSignout(handleLogout);
-
-    // Initialize
-    const today = new Date();
-    const ed = new Date(today); ed.setDate(today.getDate() + 14);
-    const xd = new Date(today); xd.setDate(today.getDate() + 7);
-    if (!$('eventDate').value) $('eventDate').value = ed.toISOString().slice(0, 10);
-    if (!$('expiryDate').value) $('expiryDate').value = xd.toISOString().slice(0, 10);
-
-    refreshAll();
   } catch (e) {
-    console.error('Auth error:', e);
-    window.location.href = 'login.html';
+    console.error('Profile setup error (non-fatal):', e);
+    if (!currentProfile) currentProfile = { id: currentUser.id, email: currentUser.email };
+    setNavUser(currentUser.email.split('@')[0]);
   }
+
+  // Step 3: always reveal app once session is confirmed valid
+  $('authGate').style.display = 'none';
+  $('pbhLayout').style.display = 'flex';
+  $('appLayout').style.display = 'grid';
+  initNavSignout(handleLogout);
+
+  const today = new Date();
+  const ed = new Date(today); ed.setDate(today.getDate() + 14);
+  const xd = new Date(today); xd.setDate(today.getDate() + 7);
+  if ($('eventDate') && !$('eventDate').value) $('eventDate').value = ed.toISOString().slice(0, 10);
+  if ($('expiryDate') && !$('expiryDate').value) $('expiryDate').value = xd.toISOString().slice(0, 10);
+
+  refreshAll();
 }
 
 async function handleLogout() {
@@ -644,8 +648,8 @@ async function saveBrandProfile() {
   } else {
     toast('✓ Brand profile saved');
     const name = pd.businessName || currentUser.email.split('@')[0];
-    $('userChipText').textContent = name;
-    $('userAvatar').textContent = name.charAt(0).toUpperCase();
+    if ($('userChipText')) $('userChipText').textContent = name;
+    if ($('userAvatar')) $('userAvatar').textContent = name.charAt(0).toUpperCase();
   }
 }
 
@@ -1162,16 +1166,16 @@ async function downloadPdf() {
 // ─────────────────────────────────────────────────────────────
 function toggleUserMenu(e) {
   if (e) e.stopPropagation();
-  $('userMenu').classList.toggle('open');
+  if ($('userMenu')) $('userMenu').classList.toggle('open');
 }
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#userChip') && !e.target.closest('#userMenu')) {
-    $('userMenu').classList.remove('open');
+    if ($('userMenu')) $('userMenu').classList.remove('open');
   }
 });
 
 async function openQuotesModal() {
-  $('userMenu').classList.remove('open');
+  if ($('userMenu')) $('userMenu').classList.remove('open');
   $('quotesModal').classList.add('open');
   $('savedQuotesBody').innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Loading...</div>';
   const quotes = await loadSavedQuotes();
