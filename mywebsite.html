@@ -411,17 +411,28 @@ input,select,textarea{font:inherit}
 .tpl-garden-btn{width:70px;height:16px;border-radius:999px;background:#C9A467}
 
 .tpl-bloom-preview{background:#fff;height:100%;display:flex;flex-direction:column;overflow:hidden}
-.tpl-bloom-nav{height:18px;background:#fff;border-bottom:1.5px solid #EDE5F5;display:flex;align-items:center;padding:0 10px;justify-content:space-between}
+.tpl-bloom-nav{height:18px;background:#fff;border-bottom:1.5px solid #EDE5F5;display:flex;align-items:center;padding:0 10px;justify-content:space-between;flex-shrink:0}
 .tpl-bloom-navbiz{width:45px;height:7px;border-radius:3px;background:rgba(26,16,32,.6)}
 .tpl-bloom-navbtn{width:28px;height:12px;border-radius:4px;background:var(--brand)}
-.tpl-bloom-hero{padding:14px 12px;background:linear-gradient(150deg,var(--brand) 0%,var(--plum-900) 100%);display:flex;flex-direction:column;align-items:center;gap:5px}
-.tpl-bloom-herotext{width:100px;height:12px;border-radius:3px;background:rgba(255,255,255,.8)}
-.tpl-bloom-herosub{width:75px;height:7px;border-radius:2px;background:rgba(255,255,255,.5)}
-.tpl-bloom-herobtn{width:65px;height:14px;border-radius:4px;background:#fff}
-.tpl-bloom-steps{display:flex;gap:4px;padding:8px 10px;background:#FBF7FF}
-.tpl-bloom-step{flex:1;height:30px;border-radius:6px;background:#EDE5F5}
-.tpl-bloom-cards{display:flex;gap:4px;padding:6px 10px 8px;flex:1}
+.tpl-bloom-hero{padding:12px 10px 10px;background:linear-gradient(150deg,var(--brand) 0%,var(--plum-900) 100%);display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;overflow:hidden;flex-shrink:0}
+.tpl-bloom-circle{position:absolute;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.07);top:-20px;right:-10px;pointer-events:none}
+.tpl-bloom-herotext{width:100px;height:12px;border-radius:3px;background:rgba(255,255,255,.85);position:relative;z-index:1}
+.tpl-bloom-herosub{width:75px;height:7px;border-radius:2px;background:rgba(255,255,255,.5);position:relative;z-index:1}
+.tpl-bloom-herobtn{width:65px;height:18px;border-radius:6px;background:#fff;position:relative;z-index:1}
+/* Stats band — visually distinct from Studio */
+.tpl-bloom-stats{display:flex;gap:0;background:linear-gradient(135deg,var(--brand),var(--plum-900));flex-shrink:0}
+.tpl-bloom-stat{flex:1;height:22px;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,.15)}
+.tpl-bloom-stat:last-child{border-right:none}
+/* Steps row */
+.tpl-bloom-steps{display:flex;gap:4px;padding:6px 8px 6px;background:#FBF7FF;flex:1;align-items:center}
+.tpl-bloom-step{flex:1;height:28px;border-radius:6px;background:#EDE5F5;display:flex;align-items:center;justify-content:center}
+.tpl-bloom-stepnum{width:14px;height:14px;border-radius:50%;background:var(--brand);color:#fff;font-size:8px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .tpl-bloom-card{flex:1;border-radius:6px;background:#EDE5F5;border-top:3px solid var(--brand)}
+
+/* Preview button row inside each tile */
+.tpl-preview-row{padding:10px 18px 16px;border-top:1px solid var(--line);display:flex}
+.tpl-preview-link{flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line-strong);background:transparent;color:var(--brand);font-size:.8rem;font-weight:700;text-align:center;cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.02em}
+.tpl-preview-link:hover{background:var(--cream);border-color:var(--brand);color:var(--plum-900);transform:translateY(-1px);box-shadow:0 4px 12px rgba(90,52,118,.12)}
 </style>
 </head>
 <body>
@@ -506,7 +517,7 @@ input,select,textarea{font:inherit}
       <div class="tpl-pick-grid" id="templateGrid">
 
         <!-- LUXE -->
-        <button type="button" class="tpl-tile" data-template="luxe" onclick="selectTemplate('luxe')">
+        <div class="tpl-tile" role="button" tabindex="0" data-template="luxe" onclick="selectTemplate('luxe')">
           <div class="tpl-preview">
             <div class="tpl-luxe-preview">
               <div class="tpl-luxe-nav"><div class="tpl-luxe-dot"></div><div class="tpl-luxe-dot" style="opacity:.4"></div></div>
@@ -522,10 +533,13 @@ input,select,textarea{font:inherit}
             <div class="tpl-meta-desc">Dark, editorial, gold accents. For luxury and high-end party brands.</div>
             <div class="tpl-meta-tags"><span class="tpl-tag">Dark</span><span class="tpl-tag">Editorial</span><span class="tpl-tag">Gold</span></div>
           </div>
-        </button>
+          <div class="tpl-preview-row">
+            <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('luxe')">👁 Preview this style →</button>
+          </div>
+        </div>
 
         <!-- POP -->
-        <button type="button" class="tpl-tile" data-template="pop" onclick="selectTemplate('pop')">
+        <div class="tpl-tile" role="button" tabindex="0" data-template="pop" onclick="selectTemplate('pop')">
           <div class="tpl-preview">
             <div class="tpl-pop-preview">
               <div class="tpl-pop-blob"></div>
@@ -543,10 +557,13 @@ input,select,textarea{font:inherit}
             <div class="tpl-meta-desc">Bright, playful, bubbly. Perfect for fun kids party businesses.</div>
             <div class="tpl-meta-tags"><span class="tpl-tag">Bright</span><span class="tpl-tag">Playful</span><span class="tpl-tag">Fun</span></div>
           </div>
-        </button>
+          <div class="tpl-preview-row">
+            <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('pop')">👁 Preview this style →</button>
+          </div>
+        </div>
 
         <!-- STUDIO -->
-        <button type="button" class="tpl-tile selected" data-template="studio" onclick="selectTemplate('studio')">
+        <div class="tpl-tile selected" role="button" tabindex="0" data-template="studio" onclick="selectTemplate('studio')">
           <div class="tpl-preview">
             <div class="tpl-studio-preview">
               <div class="tpl-studio-left">
@@ -562,13 +579,16 @@ input,select,textarea{font:inherit}
           </div>
           <div class="tpl-meta">
             <div class="tpl-meta-name">Studio</div>
-            <div class="tpl-meta-desc">Clean, minimal, professional. Great for established and corporate-style businesses.</div>
-            <div class="tpl-meta-tags"><span class="tpl-tag">Clean</span><span class="tpl-tag">Minimal</span><span class="tpl-tag">Pro</span></div>
+            <div class="tpl-meta-desc">Clean split-screen hero. Left side: headline + CTA. Right side: your photo. Sharp and professional.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Split Hero</span><span class="tpl-tag">Minimal</span><span class="tpl-tag">Pro</span></div>
           </div>
-        </button>
+          <div class="tpl-preview-row">
+            <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('studio')">👁 Preview this style →</button>
+          </div>
+        </div>
 
         <!-- GARDEN -->
-        <button type="button" class="tpl-tile" data-template="garden" onclick="selectTemplate('garden')">
+        <div class="tpl-tile" role="button" tabindex="0" data-template="garden" onclick="selectTemplate('garden')">
           <div class="tpl-preview">
             <div class="tpl-garden-preview">
               <div class="tpl-garden-nav"><div class="tpl-garden-navbiz"></div><div class="tpl-garden-navbtn"></div></div>
@@ -585,28 +605,35 @@ input,select,textarea{font:inherit}
             <div class="tpl-meta-desc">Warm cream & botanical. Elegant italic headings, earthy luxury vibe.</div>
             <div class="tpl-meta-tags"><span class="tpl-tag">Earthy</span><span class="tpl-tag">Elegant</span><span class="tpl-tag">Botanical</span></div>
           </div>
-        </button>
+          <div class="tpl-preview-row">
+            <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('garden')">👁 Preview this style →</button>
+          </div>
+        </div>
 
         <!-- BLOOM -->
-        <button type="button" class="tpl-tile" data-template="bloom" onclick="selectTemplate('bloom')">
+        <div class="tpl-tile" role="button" tabindex="0" data-template="bloom" onclick="selectTemplate('bloom')">
           <div class="tpl-preview">
             <div class="tpl-bloom-preview">
               <div class="tpl-bloom-nav"><div class="tpl-bloom-navbiz"></div><div class="tpl-bloom-navbtn"></div></div>
               <div class="tpl-bloom-hero">
+                <div class="tpl-bloom-circle"></div>
                 <div class="tpl-bloom-herotext"></div>
                 <div class="tpl-bloom-herosub"></div>
                 <div class="tpl-bloom-herobtn"></div>
               </div>
-              <div class="tpl-bloom-steps"><div class="tpl-bloom-step"></div><div class="tpl-bloom-step"></div><div class="tpl-bloom-step"></div></div>
-              <div class="tpl-bloom-cards"><div class="tpl-bloom-card"></div><div class="tpl-bloom-card"></div><div class="tpl-bloom-card"></div></div>
+              <div class="tpl-bloom-stats"><div class="tpl-bloom-stat"></div><div class="tpl-bloom-stat"></div><div class="tpl-bloom-stat"></div></div>
+              <div class="tpl-bloom-steps"><div class="tpl-bloom-step"><div class="tpl-bloom-stepnum">1</div></div><div class="tpl-bloom-step"><div class="tpl-bloom-stepnum">2</div></div><div class="tpl-bloom-step"><div class="tpl-bloom-stepnum">3</div></div></div>
             </div>
           </div>
           <div class="tpl-meta">
             <div class="tpl-meta-name">Bloom</div>
-            <div class="tpl-meta-desc">White & lavender gradient. "How It Works" steps, stats section, family-friendly warmth.</div>
-            <div class="tpl-meta-tags"><span class="tpl-tag">Warm</span><span class="tpl-tag">Inviting</span><span class="tpl-tag">Steps</span></div>
+            <div class="tpl-meta-desc">Bold gradient hero, "How It Works" steps, stats band. Full-color, high energy.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Bold</span><span class="tpl-tag">Colorful</span><span class="tpl-tag">Steps</span></div>
           </div>
-        </button>
+          <div class="tpl-preview-row">
+            <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('bloom')">👁 Preview this style →</button>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -1621,6 +1648,61 @@ function selectTemplate(tpl,save=true){
     t.classList.toggle('selected',t.dataset.template===tpl);
   });
   if(save)debouncedSave();
+}
+
+// Open a full live preview of any template in a new tab using current form data
+function previewTemplate(tpl){
+  const inlineData={
+    profile:{
+      profile_data:{
+        brandColor:$('customPrimary')?$('customPrimary').value:'#6A3F8A',
+        city:$('city')?$('city').value:'',
+        contactPhone:$('phone')?$('phone').value:'',
+        contactEmail:$('email')?$('email').value:''
+      },
+      full_name:($('ownerName')?$('ownerName').value:'')||'Party Business'
+    },
+    build:{
+      brand_data:{
+        template:tpl,
+        businessName:($('businessName')?$('businessName').value:'')||'My Party Business',
+        tagline:($('tagline')?$('tagline').value:'')||'Creating magical moments for your little ones',
+        phone:$('phone')?$('phone').value:'',
+        email:$('email')?$('email').value:'',
+        city:$('city')?$('city').value:'',
+        customPrimary:$('customPrimary')?$('customPrimary').value:'#6A3F8A',
+        customAccent:$('customAccent')?$('customAccent').value:'#C9A227',
+        logoDataURL:logoDataURL||null,
+        socialInstagram:$('socialInstagram')?$('socialInstagram').value:'',
+        socialTiktok:$('socialTiktok')?$('socialTiktok').value:'',
+        socialFacebook:$('socialFacebook')?$('socialFacebook').value:'',
+        socialYoutube:$('socialYoutube')?$('socialYoutube').value:'',
+        socialCustom:$('socialCustom')?$('socialCustom').value:''
+      },
+      niche_data:{
+        icon:$('nicheIcon')?$('nicheIcon').value:'',
+        name:$('nicheName')?$('nicheName').value:'',
+        tagline:$('nicheTagline')?$('nicheTagline').value:'',
+        description:$('nicheDescription')?$('nicheDescription').value:''
+      },
+      about_data:{
+        ownerName:$('ownerName')?$('ownerName').value:'',
+        yearStarted:$('aboutYearStarted')?$('aboutYearStarted').value:'',
+        bio:$('aboutBio')?$('aboutBio').value:'',
+        photoDataURL:ownerPhotoDataURL||null
+      },
+      gallery_data:{
+        heroPhotoDataURL:heroPhotoDataURL||null,
+        photos:(galleryPhotos||[]).filter(p=>p)
+      },
+      packages_data:packagesData||[],
+      reviews_data:reviewsData||[],
+      faq_data:{items:faqData||[]},
+      niche_type:selectedNiche||''
+    }
+  };
+  try{localStorage.setItem('pbh_preview_data',JSON.stringify(inlineData));}catch(e){console.warn('localStorage unavailable for preview:',e)}
+  window.open('site.html?preview=1','_blank');
 }
 
 let selectedNiche=null;

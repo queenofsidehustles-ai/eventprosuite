@@ -72,7 +72,9 @@ button{font:inherit;cursor:pointer;border:none;background:none}
 
   const params=new URLSearchParams(window.location.search);
   const uid=params.get('uid');
-  const _inline=window.__INLINE_DATA__||null;
+  // Inline data sources: (1) window.__INLINE_DATA__ injected at download time, (2) localStorage bridge from template picker Preview button
+  let _inline=window.__INLINE_DATA__||null;
+  if(!_inline){try{const _ls=localStorage.getItem('pbh_preview_data');if(_ls){localStorage.removeItem('pbh_preview_data');_inline=JSON.parse(_ls);}}catch(_e){}}
   if(!uid&&!_inline){showError();return}
 
   const bookURL=uid?'book.html?uid='+encodeURIComponent(uid):'#book';
