@@ -349,6 +349,7 @@
 
       <div class="form-grid">
         <div class="field"><label>Client name</label><input id="clientName" placeholder="e.g. Sarah Johnson"/></div>
+        <div class="field"><label>Client email <span style="font-weight:400;color:var(--text-muted)">(for sending quote)</span></label><input id="clientEmail" type="email" placeholder="sarah@example.com"/></div>
         <div class="field"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
         <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
         <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
@@ -685,6 +686,7 @@ async function saveQuote() {
       subtotal, tax, grand,
       businessName: $('businessName').value,
       clientName: $('clientName').value,
+      clientEmail: $('clientEmail').value.trim(),
       eventType: $('eventType').value,
       eventDate: $('eventDate').value,
       expiryDate: $('expiryDate').value,
@@ -697,17 +699,54 @@ async function saveQuote() {
   if (error) { console.error(error); toast('Save failed'); return; }
   _lastSavedQuoteId = data.id;
   const shareBtn = $('shareQuoteBtn');
-  if (shareBtn) shareBtn.style.display = 'inline-flex';
-  toast('✓ Quote saved — click "Send to Client" to share it');
+  if (shareBtn) {
+    const hasEmail = !!$('clientEmail').value.trim();
+    shareBtn.textContent = hasEmail ? '📧 Email to Client' : '📤 Send to Client';
+    shareBtn.style.display = 'inline-flex';
+  }
+  toast('✓ Quote saved — click ' + ($('clientEmail').value.trim() ? '"Email to Client"' : '"Send to Client"') + ' to share');
 }
 
 function shareQuote() {
   if (!_lastSavedQuoteId) { toast('Save the quote first'); return; }
-  const link = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/') + 'view-quote.html?id=' + _lastSavedQuoteId;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(link).then(() => toast('✓ Client link copied — paste into a text or email!'));
+  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+  const link = base + 'view-quote.html?id=' + _lastSavedQuoteId;
+
+  const clientEmail = $('clientEmail').value.trim();
+  const clientName  = $('clientName').value.trim() || 'there';
+  const bizName     = $('businessName').value.trim() || 'your party host';
+  const eventType   = $('eventType').value.trim();
+  const eventDate   = $('eventDate').value;
+  const { grand }   = totals();
+  const expiryDate  = $('expiryDate').value;
+
+  const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+  const grandFmt = '$' + parseFloat(grand||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const subject = encodeURIComponent('Your party quote from ' + bizName + (eventType?' — '+eventType:''));
+  const body = encodeURIComponent(
+    'Hi ' + clientName + ',\n\n' +
+    'Your personalized party quote from ' + bizName + ' is ready!\n\n' +
+    (eventType ? 'Event: ' + eventType + '\n' : '') +
+    (eventDate ? 'Date: ' + fmtDate(eventDate) + '\n' : '') +
+    'Total: ' + grandFmt + '\n\n' +
+    'View your full quote here:\n' + link + '\n\n' +
+    (expiryDate ? 'This quote is valid until ' + fmtDate(expiryDate) + '.\n\n' : '') +
+    'Click the link above to review everything and book your date!\n\n' +
+    'Looking forward to making it magical,\n' +
+    bizName
+  );
+
+  if (clientEmail) {
+    // Open their email client with everything pre-filled
+    window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body;
   } else {
-    prompt('Copy this link and send to your client:', link);
+    // No email on file — copy link to clipboard instead
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(() => toast('✓ Link copied — paste into a text or email!'));
+    } else {
+      prompt('Copy this link and send to your client:', link);
+    }
   }
 }
 
@@ -1221,6 +1260,7 @@ function loadQuote(data) {
   state.quoteItems = data.items || [];
   if (data.businessName) $('businessName').value = data.businessName;
   if (data.clientName) $('clientName').value = data.clientName;
+  if (data.clientEmail) $('clientEmail').value = data.clientEmail;
   if (data.eventType) $('eventType').value = data.eventType;
   if (data.eventDate) $('eventDate').value = data.eventDate;
   if (data.expiryDate) $('expiryDate').value = data.expiryDate;
