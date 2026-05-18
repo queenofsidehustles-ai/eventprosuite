@@ -238,6 +238,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
     <button class="tmpl-btn" onclick="loadTemplate('slumber')">🏕️ Slumber Party</button>
     <button class="tmpl-btn" onclick="loadTemplate('softplay')">🧸 Soft Play</button>
     <button class="tmpl-btn" onclick="loadTemplate('spa')">💅 Spa Party</button>
+    <button class="tmpl-btn" onclick="loadTemplate('bare')">🎀 Basic Party Setup</button>
+    <button class="tmpl-btn" onclick="loadTemplate('facepainting')">🎨 Face Painting</button>
+    <button class="tmpl-btn" onclick="loadTemplate('cakesmash')">🎂 Cake Smash</button>
     <button class="tmpl-btn" onclick="loadTemplate('generic')">📋 Generic Event</button>
   </div>
 
@@ -340,6 +343,27 @@ const TEMPLATES={
     shopping:[{n:'New face masks',q:10,bought:false},{n:'Cucumbers',q:2,bought:false},{n:'Sparkling juice',q:6,bought:false}],
     supplies:[{n:'Kids robes',q:10,packed:false},{n:'Slippers',q:10,packed:false},{n:'Nail polish set',q:1,packed:false},{n:'Headbands',q:10,packed:false},{n:'Bluetooth speaker',q:1,packed:false}]
   },
+  bare:{
+    pre:[{t:'Confirm guest count and color theme',done:false},{t:'Order balloons, plates, cups, napkins',done:false},{t:'Print or buy banner',done:false},{t:'Confirm cake pickup or delivery',done:false},{t:'Send client reminder 48hr before',done:false}],
+    day:[{t:'Arrive 1hr before guests',done:false},{t:'Hang backdrop or banner',done:false},{t:'Set table with plates, cups, and decorations',done:false},{t:'Blow up balloons and arrange',done:false},{t:'Set out desserts/treats',done:false},{t:'Take setup photos before guests arrive',done:false}],
+    post:[{t:'Collect balance payment',done:false},{t:'Take down decorations and pack up',done:false},{t:'Send thank-you message',done:false},{t:'Request Google or Instagram review',done:false},{t:'Post photos to social media',done:false}],
+    shopping:[{n:'Balloons (theme colors)',q:30,bought:false},{n:'Paper plates + napkins',q:1,bought:false},{n:'Cups',q:24,bought:false},{n:'Banner or sign',q:1,bought:false},{n:'Table cover',q:2,bought:false},{n:'Candles',q:1,bought:false}],
+    supplies:[{n:'Balloon pump',q:1,packed:false},{n:'Tape + command strips',q:1,packed:false},{n:'Scissors',q:1,packed:false},{n:'Balloon arch frame (if used)',q:1,packed:false}]
+  },
+  facepainting:{
+    pre:[{t:'Confirm # of kids and time slot',done:false},{t:'Restock face paints (check expiry)',done:false},{t:'Wash all brushes and sponges',done:false},{t:'Prep design portfolio or reference sheet',done:false},{t:'Send client arrival + setup instructions',done:false}],
+    day:[{t:'Arrive 45min before start',done:false},{t:'Set up chair, mirror, and supply station',done:false},{t:'Place design reference sheet for kids to choose from',done:false},{t:'Face paint each child (10–15 min each)',done:false},{t:'Take photos of finished designs',done:false}],
+    post:[{t:'Clean all brushes and sponges',done:false},{t:'Restock low supplies',done:false},{t:'Send review request to client',done:false},{t:'Post photos to Instagram',done:false}],
+    shopping:[{n:'Face paint set (FDA approved)',q:1,bought:false},{n:'Glitter gel',q:1,bought:false},{n:'Foam sponges',q:20,bought:false}],
+    supplies:[{n:'Brushes (fine tip)',q:5,packed:false},{n:'Water cup + paper towels',q:1,packed:false},{n:'Chair (for artist)',q:1,packed:false},{n:'Mirror',q:1,packed:false},{n:'Design reference card',q:1,packed:false}]
+  },
+  cakesmash:{
+    pre:[{t:'Confirm theme, colors, and # of children',done:false},{t:'Order or bake smash cake',done:false},{t:'Set up backdrop and props list',done:false},{t:'Charge camera and extra batteries',done:false},{t:'Confirm cleanup plan with client',done:false}],
+    day:[{t:'Arrive 1hr early to set up scene',done:false},{t:'Lay down floor cover/drop cloth',done:false},{t:'Style backdrop, balloons, and props',done:false},{t:'Set up cake and candle',done:false},{t:'Photograph setup before child arrives',done:false},{t:'Guide parents through smash session',done:false},{t:'Capture reaction shots + cleanup moment',done:false}],
+    post:[{t:'Clean up smash area',done:false},{t:'Deliver or send gallery to client',done:false},{t:'Send review request',done:false},{t:'Post best shots to social',done:false}],
+    shopping:[{n:'Smash cake (6" round)',q:1,bought:false},{n:'Candle (number 1)',q:1,bought:false},{n:'Balloon bunch',q:1,bought:false},{n:'Floor drop cloth',q:1,bought:false}],
+    supplies:[{n:'Backdrop + stand',q:1,packed:false},{n:'Camera + lens',q:1,packed:false},{n:'Ring light',q:1,packed:false},{n:'Props (banner, letters, etc.)',q:1,packed:false},{n:'Wipes + cleaning spray',q:1,packed:false}]
+  },
   generic:{
     pre:[{t:'Confirm booking details with client',done:false},{t:'Send deposit invoice',done:false},{t:'Order any needed supplies',done:false},{t:'Confirm final details 48hr out',done:false}],
     day:[{t:'Pack van',done:false},{t:'Arrive early for setup',done:false},{t:'Complete setup',done:false},{t:'Take photos',done:false},{t:'Walk client through',done:false}],
@@ -364,13 +388,13 @@ async function init(){
       applyBrand(p.profile_data.brandColor,'#C9A227');
     }
     const displayName=(p && p.profile_data && p.profile_data.businessName)||p?.full_name||(session.user.email||'user').split('@')[0];
-    document.getElementById('userName').textContent=displayName;
-    document.getElementById('userAvatar').textContent=(displayName[0]||'?').toUpperCase();
+    const uN=document.getElementById('userName');if(uN)uN.textContent=displayName;
+    const uA=document.getElementById('userAvatar');if(uA)uA.textContent=(displayName[0]||'?').toUpperCase();
     setNavUser(displayName);
   }catch(e){
     const email=session.user.email||'user';
-    document.getElementById('userName').textContent=email.split('@')[0];
-    document.getElementById('userAvatar').textContent=(email[0]||'?').toUpperCase();
+    const uN=document.getElementById('userName');if(uN)uN.textContent=email.split('@')[0];
+    const uA=document.getElementById('userAvatar');if(uA)uA.textContent=(email[0]||'?').toUpperCase();
     setNavUser(email.split('@')[0]);
   }
 
@@ -390,7 +414,7 @@ async function init(){
 
 function toggleUserMenu(e){
   if(e)e.stopPropagation();
-  document.getElementById('userMenu').classList.toggle('open');
+  const m=document.getElementById('userMenu');if(m)m.classList.toggle('open');
 }
 
 function toggleSuite(e){ if(e)e.stopPropagation(); }

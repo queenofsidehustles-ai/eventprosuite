@@ -245,7 +245,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
           <option value="standard">Non-refundable within 14 days of event (default)</option>
           <option value="strict">Non-refundable at any time after booking</option>
           <option value="lenient">Refundable up to 30 days before event</option>
-          <option value="transferable">Non-refundable but transferable to a new date</option>
+          <option value="transferable">Non-refundable, date transfer allowed</option>
           <option value="custom">Custom — I'll write my own</option>
         </select>
         <textarea id="clauseDepositCustom" placeholder="Write your custom deposit policy..." style="display:none;margin-top:.7rem"></textarea>
@@ -256,8 +256,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div class="clause-title"><span class="icon">📅</span>Cancellation policy</div>
         <div class="clause-desc">What client owes if they cancel, and your right to cancel.</div>
         <select id="clauseCancellation" onchange="updateClausePreview('Cancellation')">
-          <option value="tiered">Tiered refund: 50% if 14+ days out, 25% if 7-13 days, $0 within 7 days (default)</option>
-          <option value="strict">No refunds — full payment forfeited regardless of notice</option>
+          <option value="tiered">Tiered: 50% (14+ days) / 25% (7-13 days) / $0 (under 7) (default)</option>
+          <option value="strict">No refunds — full payment forfeited</option>
           <option value="reschedule">Free reschedule within 60 days (no refund)</option>
           <option value="custom">Custom — I'll write my own</option>
         </select>
@@ -269,10 +269,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div class="clause-title"><span class="icon">💳</span>Payment schedule</div>
         <div class="clause-desc">When payments are due.</div>
         <select id="clausePayment" onchange="updateClausePreview('Payment')">
-          <option value="50-50">50% deposit at booking · 50% balance on event day (default)</option>
-          <option value="25-75-balance">25% at booking · 50% 14 days before · 25% on event day</option>
+          <option value="50-50">50% deposit + 50% balance on event day (default)</option>
+          <option value="25-75-balance">25% deposit + 50% (14 days out) + 25% day-of</option>
           <option value="full-upfront">100% upfront at booking</option>
-          <option value="30-day">50% at booking · 50% due 30 days before event</option>
+          <option value="30-day">50% deposit + 50% due 30 days before event</option>
           <option value="custom">Custom — I'll write my own</option>
         </select>
         <textarea id="clausePaymentCustom" placeholder="Write your custom payment schedule..." style="display:none;margin-top:.7rem"></textarea>
@@ -283,9 +283,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div class="clause-title"><span class="icon">🛡️</span>Liability & damage</div>
         <div class="clause-desc">Who's responsible if something breaks or someone is injured.</div>
         <select id="clauseLiability" onchange="updateClausePreview('Liability')">
-          <option value="standard">Standard — vendor liable only for negligence; client responsible for venue damage (default)</option>
-          <option value="strict">Client fully responsible for all injuries and damages at event</option>
-          <option value="mutual">Mutual release — each party responsible for their own actions</option>
+          <option value="standard">Standard — vendor liable for negligence only (default)</option>
+          <option value="strict">Client fully responsible for all injuries and damages</option>
+          <option value="mutual">Mutual release — each party responsible for own actions</option>
         </select>
         <div class="clause-preview" id="previewLiability"></div>
       </div>
@@ -294,9 +294,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div class="clause-title"><span class="icon">🌤️</span>Weather / force majeure</div>
         <div class="clause-desc">What happens for weather, illness, natural disaster, or other events beyond control.</div>
         <select id="clauseWeather" onchange="updateClausePreview('Weather')">
-          <option value="reschedule">Free reschedule within 90 days if force majeure prevents event (default)</option>
+          <option value="reschedule">Free reschedule within 90 days — force majeure (default)</option>
           <option value="credit">Credit toward future event only (no refund)</option>
-          <option value="partial-refund">50% refund if event is cancelled due to force majeure</option>
+          <option value="partial-refund">50% refund if cancelled due to force majeure</option>
         </select>
         <div class="clause-preview" id="previewWeather"></div>
       </div>

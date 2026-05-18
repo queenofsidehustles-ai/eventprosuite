@@ -321,11 +321,10 @@ async function init(){
     }
     // Populate user chip with business name if available, else email
     const displayName=(p && p.profile_data && p.profile_data.businessName)||p?.full_name||(session.user.email||'user').split('@')[0];
-    document.getElementById('userName').textContent=displayName;
-    document.getElementById('userAvatar').textContent=(displayName[0]||'?').toUpperCase();
+    const uN=document.getElementById('userName');if(uN)uN.textContent=displayName;
+    const uA=document.getElementById('userAvatar');if(uA)uA.textContent=(displayName[0]||'?').toUpperCase();
     setNavUser(displayName);
 
-    // Load user's brand color + currency from business profile
     if(p && p.profile_data){
       const d=p.profile_data;
       if(d.brandColor)applyBrand(d.brandColor,'#C9A227');
@@ -333,8 +332,8 @@ async function init(){
     }
   }catch(e){
     const email=session.user.email||'user';
-    document.getElementById('userName').textContent=email.split('@')[0];
-    document.getElementById('userAvatar').textContent=(email[0]||'?').toUpperCase();
+    const uN=document.getElementById('userName');if(uN)uN.textContent=email.split('@')[0];
+    const uA=document.getElementById('userAvatar');if(uA)uA.textContent=(email[0]||'?').toUpperCase();
     setNavUser(email.split('@')[0]);
   }
 
@@ -359,10 +358,9 @@ async function init(){
 
 function toggleUserMenu(e){
   if(e)e.stopPropagation();
-  document.getElementById('userMenu').classList.toggle('open');
+  const m=document.getElementById('userMenu');if(m)m.classList.toggle('open');
 }
 
-// Legacy: keeps any old references from breaking (no-op)
 function toggleSuite(e){ if(e)e.stopPropagation(); }
 
 function applyBrand(primary,accent){

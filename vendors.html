@@ -281,13 +281,13 @@ async function init(){
       applyBrand(p.profile_data.brandColor,'#C9A227');
     }
     const displayName=(p && p.profile_data && p.profile_data.businessName)||p?.full_name||(session.user.email||'user').split('@')[0];
-    document.getElementById('userName').textContent=displayName;
-    document.getElementById('userAvatar').textContent=(displayName[0]||'?').toUpperCase();
+    const uN=document.getElementById('userName');if(uN)uN.textContent=displayName;
+    const uA=document.getElementById('userAvatar');if(uA)uA.textContent=(displayName[0]||'?').toUpperCase();
     setNavUser(displayName);
   }catch(e){
     const email=session.user.email||'user';
-    document.getElementById('userName').textContent=email.split('@')[0];
-    document.getElementById('userAvatar').textContent=(email[0]||'?').toUpperCase();
+    const uN=document.getElementById('userName');if(uN)uN.textContent=email.split('@')[0];
+    const uA=document.getElementById('userAvatar');if(uA)uA.textContent=(email[0]||'?').toUpperCase();
     setNavUser(email.split('@')[0]);
   }
 
@@ -307,7 +307,7 @@ async function init(){
 
 function toggleUserMenu(e){
   if(e)e.stopPropagation();
-  document.getElementById('userMenu').classList.toggle('open');
+  const m=document.getElementById('userMenu');if(m)m.classList.toggle('open');
 }
 
 function toggleSuite(e){ if(e)e.stopPropagation(); }

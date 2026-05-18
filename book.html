@@ -694,18 +694,24 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   try {
-    const { data, error } = await supabase
+    const queryPromise = supabase
       .from('profiles')
       .select('id, profile_data')
       .eq('id', ownerUID)
       .single();
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 12000)
+    );
+
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
     if (error) {
       console.error('Profile load error:', error);
       showError(
         error.code === 'PGRST116'
-          ? 'No business found for this booking link. Please contact the business directly.'
-          : 'Could not load this booking page. Please try again or contact the business.'
+          ? 'This booking page isn\'t set up yet. If you\'re the business owner, go to your Business Profile and save it first.'
+          : 'Could not load this booking page. Please try again or contact the business directly.'
       );
       return;
     }
@@ -720,7 +726,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     showMain();
   } catch (e) {
     console.error(e);
-    showError('A network error occurred. Please check your connection and try again.');
+    if (e.message === 'timeout') {
+      showError('The booking page is taking too long to load. Please refresh and try again.');
+    } else {
+      showError('A network error occurred. Please check your connection and try again.');
+    }
   }
 });
 
