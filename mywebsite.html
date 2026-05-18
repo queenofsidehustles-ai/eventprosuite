@@ -354,6 +354,50 @@ input,select,textarea{font:inherit}
 .upgrade-cta{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;text-decoration:none;font-weight:800;padding:1rem 2rem;border-radius:14px;font-size:1rem;box-shadow:0 14px 32px rgba(201,162,39,.4);transition:transform .18s}
 .upgrade-cta:hover{transform:translateY(-2px)}
 .upgrade-note{margin-top:1rem;font-size:.78rem;color:rgba(255,255,255,.6)}
+
+/* TEMPLATE PICKER */
+.tpl-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:.5rem}
+.tpl-tile{position:relative;border:2px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:all .22s;background:#fff}
+.tpl-tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--mauve)}
+.tpl-tile.selected{border-color:var(--gold);box-shadow:0 14px 40px rgba(201,162,39,.28)}
+.tpl-tile.selected::after{content:"✓";position:absolute;top:10px;right:12px;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;z-index:2;box-shadow:0 4px 12px rgba(201,162,39,.4)}
+.tpl-preview{height:160px;overflow:hidden;position:relative;border-bottom:1px solid var(--line)}
+.tpl-meta{padding:16px 18px 18px}
+.tpl-meta-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--plum-900);margin-bottom:4px}
+.tpl-meta-desc{font-size:.8rem;color:var(--muted);line-height:1.55}
+.tpl-meta-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tpl-tag{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;color:var(--plum-900);background:var(--cream);border:1px solid var(--line)}
+
+/* Template mini-previews */
+.tpl-luxe-preview{background:#0D0820;height:100%;display:flex;flex-direction:column;padding:14px}
+.tpl-luxe-nav{height:20px;background:rgba(255,255,255,.08);border-radius:4px;margin-bottom:10px;display:flex;align-items:center;padding:0 8px;gap:6px}
+.tpl-luxe-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,174,82,.5)}
+.tpl-luxe-hero{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;background:radial-gradient(ellipse 80% 80% at 30% 60%,rgba(212,174,82,.1),transparent)}
+.tpl-luxe-line{height:4px;background:rgba(212,174,82,.7);border-radius:2px;margin-bottom:5px}
+.tpl-luxe-line:first-child{width:75%}
+.tpl-luxe-line:last-child{width:45%;background:rgba(212,174,82,.3)}
+.tpl-luxe-badge{width:60px;height:14px;border-radius:999px;background:rgba(212,174,82,.8);margin-bottom:10px}
+
+.tpl-pop-preview{background:#fff;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.tpl-pop-blob{position:absolute;width:120px;height:120px;border-radius:60% 40% 50% 50%;background:rgba(106,63,138,.12);top:-30px;right:-20px}
+.tpl-pop-nav{height:20px;background:#f8f8f8;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 10px;justify-content:space-between;position:relative;z-index:1}
+.tpl-pop-navdot{width:24px;height:10px;border-radius:999px;background:var(--gold)}
+.tpl-pop-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;position:relative;z-index:1}
+.tpl-pop-title{width:130px;height:28px;border-radius:14px;background:rgba(106,63,138,.15)}
+.tpl-pop-sub{width:90px;height:10px;border-radius:5px;background:rgba(0,0,0,.07)}
+.tpl-pop-btn{width:80px;height:22px;border-radius:999px;background:var(--brand)}
+.tpl-pop-cards{display:flex;gap:6px;padding:0 12px 10px;position:relative;z-index:1}
+.tpl-pop-card{flex:1;height:36px;border-radius:10px;background:rgba(106,63,138,.08);border:1.5px solid rgba(106,63,138,.15)}
+
+.tpl-studio-preview{background:#F8FAFC;height:100%;display:flex;overflow:hidden}
+.tpl-studio-left{flex:1;background:#fff;padding:14px;display:flex;flex-direction:column;justify-content:center;gap:6px;border-right:1px solid #E2E8F0}
+.tpl-studio-tag{width:60px;height:8px;border-radius:2px;background:rgba(106,63,138,.4)}
+.tpl-studio-h{width:90%;height:14px;border-radius:2px;background:#0F172A}
+.tpl-studio-h2{width:70%;height:14px;border-radius:2px;background:#0F172A;margin-top:-2px}
+.tpl-studio-body{width:80%;height:8px;border-radius:2px;background:#CBD5E1}
+.tpl-studio-body2{width:65%;height:8px;border-radius:2px;background:#CBD5E1}
+.tpl-studio-cta{width:80px;height:22px;border-radius:4px;background:rgba(106,63,138,.8);margin-top:4px}
+.tpl-studio-right{width:90px;background:rgba(106,63,138,.06);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:rgba(106,63,138,.08)}
 </style>
 </head>
 <body>
@@ -426,8 +470,83 @@ input,select,textarea{font:inherit}
 <!-- MAIN -->
 <main class="wrap" id="mainContent" style="display:none">
 
-  <!-- STEP 1 — NICHE PICKER -->
+  <!-- STEP 1 — TEMPLATE + NICHE PICKER -->
   <div class="panel active" id="panelStep1">
+
+    <!-- TEMPLATE PICKER -->
+    <div class="card" style="margin-bottom:1.2rem">
+      <div class="card-header">
+        <h2>Choose your design style</h2>
+        <p>Pick the look that fits your brand vibe. Each template has a completely different layout and feel — you can always preview before you decide.</p>
+      </div>
+      <div class="tpl-pick-grid" id="templateGrid">
+
+        <!-- LUXE -->
+        <button type="button" class="tpl-tile selected" data-template="luxe" onclick="selectTemplate('luxe')">
+          <div class="tpl-preview">
+            <div class="tpl-luxe-preview">
+              <div class="tpl-luxe-nav"><div class="tpl-luxe-dot"></div><div class="tpl-luxe-dot" style="opacity:.4"></div></div>
+              <div class="tpl-luxe-hero">
+                <div class="tpl-luxe-badge"></div>
+                <div class="tpl-luxe-line"></div>
+                <div class="tpl-luxe-line"></div>
+              </div>
+            </div>
+          </div>
+          <div class="tpl-meta">
+            <div class="tpl-meta-name">Luxe</div>
+            <div class="tpl-meta-desc">Dark, editorial, gold accents. For luxury and high-end party brands.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Dark</span><span class="tpl-tag">Editorial</span><span class="tpl-tag">Gold</span></div>
+          </div>
+        </button>
+
+        <!-- POP -->
+        <button type="button" class="tpl-tile" data-template="pop" onclick="selectTemplate('pop')">
+          <div class="tpl-preview">
+            <div class="tpl-pop-preview">
+              <div class="tpl-pop-blob"></div>
+              <div class="tpl-pop-nav"><div style="display:flex;gap:3px"><span style="width:7px;height:7px;border-radius:50%;background:#ff5f57;display:inline-block"></span><span style="width:7px;height:7px;border-radius:50%;background:#febc2e;display:inline-block"></span></div><div class="tpl-pop-navdot"></div></div>
+              <div class="tpl-pop-content">
+                <div class="tpl-pop-title"></div>
+                <div class="tpl-pop-sub"></div>
+                <div class="tpl-pop-btn"></div>
+              </div>
+              <div class="tpl-pop-cards"><div class="tpl-pop-card"></div><div class="tpl-pop-card"></div><div class="tpl-pop-card"></div></div>
+            </div>
+          </div>
+          <div class="tpl-meta">
+            <div class="tpl-meta-name">Pop</div>
+            <div class="tpl-meta-desc">Bright, playful, bubbly. Perfect for fun kids party businesses.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Bright</span><span class="tpl-tag">Playful</span><span class="tpl-tag">Fun</span></div>
+          </div>
+        </button>
+
+        <!-- STUDIO -->
+        <button type="button" class="tpl-tile" data-template="studio" onclick="selectTemplate('studio')">
+          <div class="tpl-preview">
+            <div class="tpl-studio-preview">
+              <div class="tpl-studio-left">
+                <div class="tpl-studio-tag"></div>
+                <div class="tpl-studio-h"></div>
+                <div class="tpl-studio-h2"></div>
+                <div class="tpl-studio-body"></div>
+                <div class="tpl-studio-body2"></div>
+                <div class="tpl-studio-cta"></div>
+              </div>
+              <div class="tpl-studio-right">P</div>
+            </div>
+          </div>
+          <div class="tpl-meta">
+            <div class="tpl-meta-name">Studio</div>
+            <div class="tpl-meta-desc">Clean, minimal, professional. Great for established and corporate-style businesses.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Clean</span><span class="tpl-tag">Minimal</span><span class="tpl-tag">Pro</span></div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- NICHE PICKER -->
     <div class="card">
       <div class="card-header">
         <h2>Pick your niche</h2>
@@ -1285,6 +1404,7 @@ async function loadExistingBuild(){
     // Restore brand
     if(data.brand_data){
       const b=data.brand_data;
+      if(b.template){selectTemplate(b.template,false);}
       if(b.businessName)$('businessName').value=b.businessName;
       if(b.tagline)$('tagline').value=b.tagline;
       if(b.phone)$('phone').value=b.phone;
@@ -1425,6 +1545,16 @@ function renderNicheGrid(){
       <div class="niche-tile-desc">${n.desc}</div>
     </button>
   `).join('');
+}
+
+// ─── TEMPLATE PICKER ─────────────────────────────────────────────
+let selectedTemplate='luxe';
+function selectTemplate(tpl,save=true){
+  selectedTemplate=tpl;
+  document.querySelectorAll('.tpl-tile').forEach(t=>{
+    t.classList.toggle('selected',t.dataset.template===tpl);
+  });
+  if(save)debouncedSave();
 }
 
 let selectedNiche=null;
@@ -1624,6 +1754,7 @@ async function saveNow(){
     business_name:$('businessName').value||null,
     niche_type:selectedNiche,
     brand_data:{
+      template:selectedTemplate,
       businessName:$('businessName').value,
       tagline:$('tagline').value,
       phone:$('phone').value,
