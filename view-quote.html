@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Your Party Quote</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#F8F5FF;color:#1A1020;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none}
+img{max-width:100%;display:block}
+
+/* Loading / error */
+#loadingState{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 24px}
+.spinner{width:44px;height:44px;border:3px solid rgba(106,63,138,.15);border-top-color:#6A3F8A;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#errorState{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:40px 24px}
+#errorState.show{display:flex}
+#quoteRoot{display:none}
+#quoteRoot.show{display:block}
+
+/* Header */
+.qv-header{background:linear-gradient(135deg,#4A2B63,#6A417E 60%,#A67BB5);padding:2.4rem 1.5rem;color:#fff;text-align:center}
+.qv-logo{width:56px;height:56px;border-radius:12px;margin:0 auto 14px;object-fit:cover}
+.qv-logo-initial{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.25);color:#fff;font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.qv-biz{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.qv-for{font-size:.85rem;color:rgba(255,255,255,.75);margin-bottom:2px}
+.qv-client{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.95)}
+
+/* Body */
+.qv-body{max-width:680px;margin:0 auto;padding:2rem 1.25rem 4rem}
+
+/* Info band */
+.qv-info{background:#fff;border-radius:16px;border:1px solid #EDE5F5;padding:1.2rem 1.4rem;margin-bottom:1.4rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem 1.2rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
+.qv-info-item{}
+.qv-info-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9B89A8;margin-bottom:2px}
+.qv-info-val{font-size:.92rem;font-weight:600;color:#1A1020}
+
+/* Line items */
+.qv-section{background:#fff;border-radius:16px;border:1px solid #EDE5F5;overflow:hidden;margin-bottom:1.4rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
+.qv-section-head{padding:.9rem 1.4rem;border-bottom:1px solid #EDE5F5;font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9B89A8;background:#FBFAFF}
+.qv-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:.85rem 1.4rem;border-bottom:1px solid #F5F0FB;align-items:start}
+.qv-row:last-child{border-bottom:none}
+.qv-row-name{font-size:.92rem;font-weight:600;color:#1A1020}
+.qv-row-desc{font-size:.8rem;color:#9B89A8;margin-top:2px}
+.qv-row-price{font-size:.92rem;font-weight:700;color:#1A1020;text-align:right;white-space:nowrap}
+
+/* Totals */
+.qv-totals{background:#fff;border-radius:16px;border:1px solid #EDE5F5;overflow:hidden;margin-bottom:1.4rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
+.qv-total-row{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.4rem;border-bottom:1px solid #F5F0FB;font-size:.9rem}
+.qv-total-row:last-child{border-bottom:none}
+.qv-total-row.subtotal{color:#6B5B73}
+.qv-total-row.tax{color:#6B5B73}
+.qv-total-row.grand{font-size:1.1rem;font-weight:800;color:#1A1020;padding:1rem 1.4rem;background:#FBFAFF}
+.qv-total-row.deposit{font-weight:700;color:#6A417E;background:#F5F0FF}
+.qv-total-label{font-weight:600}
+
+/* Expiry + notes */
+.qv-notice{background:#FFF8E6;border:1px solid #F5D97A;border-radius:12px;padding:.9rem 1.1rem;font-size:.84rem;color:#7A5A00;margin-bottom:1.4rem;display:flex;gap:10px;align-items:flex-start}
+.qv-notice-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.qv-notes{background:#fff;border-radius:16px;border:1px solid #EDE5F5;padding:1.2rem 1.4rem;margin-bottom:1.4rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
+.qv-notes-label{font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9B89A8;margin-bottom:.5rem}
+.qv-notes-text{font-size:.9rem;color:#3A2A4A;line-height:1.7;white-space:pre-wrap}
+
+/* CTA */
+.qv-cta{background:linear-gradient(135deg,#4A2B63,#6A417E);border-radius:20px;padding:2rem 1.5rem;text-align:center;color:#fff;margin-bottom:1.4rem}
+.qv-cta h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
+.qv-cta p{font-size:.88rem;color:rgba(255,255,255,.82);margin-bottom:1.2rem;line-height:1.6}
+.qv-cta-btn{display:inline-block;background:#fff;color:#4A2B63;font-size:1rem;font-weight:800;padding:14px 36px;border-radius:999px;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.qv-cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.28)}
+.qv-footer{text-align:center;font-size:.78rem;color:#B0A0BC;padding-bottom:2rem}
+</style>
+</head>
+<body>
+
+<div id="loadingState">
+  <div class="spinner"></div>
+  <div style="font-size:.9rem;color:#9B89A8;font-weight:600">Loading your quote…</div>
+</div>
+
+<div id="errorState">
+  <div style="font-size:52px">🎈</div>
+  <div style="font-size:1.2rem;font-weight:800;color:#1A1020">Quote not found</div>
+  <div style="font-size:.9rem;color:#9B89A8;max-width:300px">This link may have expired or the quote was deleted. Ask your party host for an updated link.</div>
+</div>
+
+<div id="quoteRoot"></div>
+
+<script>
+(function(){
+  const SUPA_URL  = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+  const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+  const sb = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+
+  function esc(s){return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  function fmt(n){return '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function fmtDate(d){if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})}
+
+  function showError(){
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('errorState').classList.add('show');
+  }
+  function showQuote(){
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('quoteRoot').classList.add('show');
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if(!id){showError();return}
+
+  Promise.all([
+    sb.from('saved_quotes').select('*').eq('id',id).single(),
+  ]).then(([qRes])=>{
+    if(qRes.error||!qRes.data){showError();return}
+    const q = qRes.data;
+    const qd = q.quote_data || {};
+
+    // Fetch business profile for branding
+    sb.from('profiles').select('profile_data,full_name').eq('id',q.user_id).single().then(({data:p})=>{
+      const pd = (p&&p.profile_data)||{};
+      const bizName = pd.businessName || (p&&p.full_name) || 'Party Business';
+      const logo = pd.logo || null;
+      const initial = bizName.charAt(0).toUpperCase();
+      const brandColor = pd.brandColor || '#6A417E';
+      const bookURL = 'book.html?uid='+encodeURIComponent(q.user_id);
+
+      // Expiry notice
+      const expiryDate = qd.expiryDate;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const expiry = expiryDate ? new Date(expiryDate+'T00:00:00') : null;
+      const expired = expiry && expiry < today;
+      const daysLeft = expiry ? Math.ceil((expiry-today)/(1000*60*60*24)) : null;
+
+      // Line items
+      const items = qd.items || [];
+      const subtotal = qd.subtotal || 0;
+      const tax = qd.tax || 0;
+      const grand = qd.grand || q.total_amount || 0;
+      const depositTier = qd.selectedDepositTier || 50;
+      const depositAmt = grand * depositTier / 100;
+
+      // Info grid fields
+      const infoItems = [
+        {label:'Prepared for', val:q.client_name||'—'},
+        {label:'Event type', val:q.event_type||'—'},
+        {label:'Event date', val:q.event_date?fmtDate(q.event_date):'—'},
+        {label:'Prepared by', val:bizName},
+        expiryDate?{label:'Quote valid until', val:fmtDate(expiryDate)+(expired?' (EXPIRED)':daysLeft&&daysLeft<=7?' ('+daysLeft+' days left!)':'')}:null
+      ].filter(Boolean);
+
+      document.title = 'Quote for ' + (q.client_name||'You') + ' — ' + bizName;
+
+      const root = document.getElementById('quoteRoot');
+      root.innerHTML = `
+<div class="qv-header" style="background:linear-gradient(135deg,${brandColor}CC,${brandColor})">
+  ${logo
+    ? `<img class="qv-logo" src="${esc(logo)}" alt="${esc(bizName)}"/>`
+    : `<div class="qv-logo-initial">${esc(initial)}</div>`}
+  <div class="qv-biz">${esc(bizName)}</div>
+  <div class="qv-for">Quote prepared for</div>
+  <div class="qv-client">${esc(q.client_name||'You')}</div>
+</div>
+
+<div class="qv-body">
+
+  ${expired?`<div class="qv-notice"><div class="qv-notice-icon">⚠️</div><div>This quote has <strong>expired</strong>. Please contact ${esc(bizName)} for an updated quote.</div></div>`:''}
+  ${!expired&&daysLeft!==null&&daysLeft<=7?`<div class="qv-notice"><div class="qv-notice-icon">⏰</div><div>This quote expires in <strong>${daysLeft} day${daysLeft!==1?'s':''}</strong>. Book now to lock in your price!</div></div>`:''}
+
+  <div class="qv-info">
+    ${infoItems.map(i=>`<div class="qv-info-item"><div class="qv-info-label">${esc(i.label)}</div><div class="qv-info-val">${esc(i.val)}</div></div>`).join('')}
+  </div>
+
+  ${items.length?`
+  <div class="qv-section">
+    <div class="qv-section-head">What's included</div>
+    ${items.map(it=>`
+    <div class="qv-row">
+      <div>
+        <div class="qv-row-name">${esc(it.name||it.label||'Item')}</div>
+        ${it.description||it.desc?`<div class="qv-row-desc">${esc(it.description||it.desc)}</div>`:''}
+      </div>
+      <div class="qv-row-price">${fmt(it.price||it.amount||0)}</div>
+    </div>`).join('')}
+  </div>`:''}
+
+  <div class="qv-totals">
+    ${subtotal!==grand?`<div class="qv-total-row subtotal"><span class="qv-total-label">Subtotal</span><span>${fmt(subtotal)}</span></div>`:''}
+    ${tax>0?`<div class="qv-total-row tax"><span class="qv-total-label">Tax</span><span>${fmt(tax)}</span></div>`:''}
+    <div class="qv-total-row grand"><span class="qv-total-label">Total</span><span>${fmt(grand)}</span></div>
+    <div class="qv-total-row deposit" style="color:${brandColor}"><span class="qv-total-label">Deposit to hold your date (${depositTier}%)</span><span>${fmt(depositAmt)}</span></div>
+  </div>
+
+  ${qd.eventNotes?`
+  <div class="qv-notes">
+    <div class="qv-notes-label">Notes</div>
+    <div class="qv-notes-text">${esc(qd.eventNotes)}</div>
+  </div>`:''}
+
+  ${!expired?`
+  <div class="qv-cta">
+    <h2>Ready to book? 🎉</h2>
+    <p>This quote is reserved just for you. Click below to submit your booking request and we'll confirm your date.</p>
+    <a href="${esc(bookURL)}" class="qv-cta-btn">Book My Party →</a>
+  </div>`:`
+  <div class="qv-cta">
+    <h2>Questions about this quote?</h2>
+    <p>Reach out to ${esc(bizName)} for an updated quote and availability.</p>
+  </div>`}
+
+  <div class="qv-footer">Powered by Party Biz Hub · Quote #${esc(id.slice(0,8).toUpperCase())}</div>
+
+</div>`;
+      showQuote();
+    }).catch(showError);
+  }).catch(showError);
+})();
+</script>
+</body>
+</html>

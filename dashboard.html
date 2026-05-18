@@ -116,11 +116,12 @@
   position:fixed;bottom:1.8rem;left:50%;
   transform:translateX(-50%) translateY(14px);
   background:var(--text-primary);color:#fff;
-  padding:.8rem 1.4rem;border-radius:999px;font-weight:600;
+  padding:.8rem 1.6rem;border-radius:999px;font-weight:600;
   opacity:0;pointer-events:none;transition:all .26s;z-index:9000;
-  box-shadow:var(--shadow-lg);font-size:.84rem;white-space:nowrap
+  box-shadow:var(--shadow-lg);font-size:.84rem;max-width:90vw;text-align:center
 }
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast a{color:#fff;font-weight:800;text-decoration:underline;margin-left:10px;white-space:nowrap}
 
 .fin-section{margin-bottom:28px}
 .fin-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -276,8 +277,9 @@ const SUPABASE_URL     = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let allQuotes = [];
-let activeId  = null;
+let allQuotes   = [];
+let activeId    = null;
+let currentUser = null;
 const $ = id => document.getElementById(id);
 
 /* ── AUTH ── */
@@ -285,6 +287,7 @@ async function boot() {
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = 'login.html'; return; }
+    currentUser = session.user;
 
     const { data: profile } = await sb
       .from('profiles').select('*').eq('id', session.user.id).single();
@@ -468,15 +471,75 @@ function openModal(id) {
   $('modalOverlay').classList.add('open');
 }
 
-function applyStatus(status) {
+async function applyStatus(status) {
   if (!activeId) return;
   const st = getStatuses();
+  const prev = st[activeId];
   st[activeId] = status;
   saveStatuses(st);
   closeModal();
   renderStats();
   renderBookings();
-  showToast('✓ Status updated');
+
+  // Auto-create a profit record the first time a booking becomes confirmed
+  if (status === 'confirmed' && prev !== 'confirmed') {
+    await maybeCreateProfitRecord(activeId);
+  } else {
+    showToast('✓ Status updated');
+  }
+}
+
+// Auto-record revenue when a booking is confirmed.
+// Creates a profit_records row with revenue filled in and expenses at $0.
+// The owner can open Profit Calc later to add their cost breakdown.
+async function maybeCreateProfitRecord(itemId) {
+  if (!currentUser) { showToast('✓ Confirmed'); return; }
+
+  // Avoid duplicate records if the status flips back and forth
+  let profitMap = {};
+  try { profitMap = JSON.parse(localStorage.getItem('pbh_profit_map') || '{}'); } catch {}
+  if (profitMap[itemId]) {
+    showActionToast('✓ Confirmed — profit record already exists', 'View in Profit Calc →', 'profit.html');
+    return;
+  }
+
+  const item = allQuotes.find(q => q.id === itemId);
+  if (!item) { showToast('✓ Confirmed'); return; }
+
+  // Parse price — handles "$450", "450.00", or plain number
+  const revenue = parseFloat(String(item.total_amount || '0').replace(/[^0-9.]/g, '')) || 0;
+  const clientName = item.client_name || 'Client';
+  const serviceName = item.event_type || item._raw?.service_name || '';
+  const rawDate = item.event_date || new Date().toISOString().split('T')[0];
+  const d = new Date(rawDate + 'T00:00:00');
+  const recMonth = d.getMonth() + 1;
+  const recYear = d.getFullYear();
+
+  const payload = {
+    user_id: currentUser.id,
+    record_type: 'event',
+    record_date: rawDate,
+    record_month: recMonth,
+    record_year: recYear,
+    revenue: revenue,
+    total_expenses: 0,
+    expenses_json: [],
+    income_json: [{ label: (serviceName ? serviceName + ' — ' : '') + clientName, amount: revenue, source: 'booking', booking_id: itemId }]
+  };
+
+  const { data, error } = await sb.from('profit_records').insert(payload).select('id').single();
+  if (error) {
+    console.error('Profit record auto-create:', error);
+    showActionToast('✓ Confirmed — add expenses when ready', 'Profit Calc →', 'profit.html');
+    return;
+  }
+
+  // Remember this so we don't duplicate it
+  profitMap[itemId] = data.id;
+  localStorage.setItem('pbh_profit_map', JSON.stringify(profitMap));
+
+  const revenueLabel = revenue > 0 ? ' · $' + revenue.toLocaleString() + ' logged' : ' · add revenue in Profit Calc';
+  showActionToast('✓ Confirmed' + revenueLabel, 'Add expenses →', 'profit.html');
 }
 
 function closeModal() {
@@ -502,6 +565,13 @@ function showToast(msg) {
   el.classList.add('show');
   clearTimeout(_tt);
   _tt = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function showActionToast(msg, linkText, linkHref) {
+  const el = $('toast');
+  el.innerHTML = msg + (linkText ? ` <a href="${linkHref}">${linkText}</a>` : '');
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), 6000);
 }
 
 boot();

@@ -440,6 +440,7 @@
           <button type="button" class="tiny-btn" id="printBtn">🖨 Print</button>
           <button type="button" class="tiny-btn" id="copyBtn">📋 Copy text</button>
           <button type="button" class="tiny-btn btn-primary" style="color:#fff;border:none" id="saveQuoteBtn">💾 Save Quote</button>
+          <button type="button" class="tiny-btn" id="shareQuoteBtn" style="display:none">📤 Send to Client</button>
         </div>
       </div>
       <div class="preview-body" id="fullPreview"></div>
@@ -667,6 +668,8 @@ async function savePackages() {
   toast('✓ Offers saved');
 }
 
+let _lastSavedQuoteId = null;
+
 async function saveQuote() {
   if (!currentUser) return;
   const { items, subtotal, tax, grand } = totals();
@@ -690,9 +693,22 @@ async function saveQuote() {
     },
     created_at: new Date().toISOString()
   };
-  const { error } = await sb.from('saved_quotes').insert(payload);
+  const { data, error } = await sb.from('saved_quotes').insert(payload).select('id').single();
   if (error) { console.error(error); toast('Save failed'); return; }
-  toast('✓ Quote saved');
+  _lastSavedQuoteId = data.id;
+  const shareBtn = $('shareQuoteBtn');
+  if (shareBtn) shareBtn.style.display = 'inline-flex';
+  toast('✓ Quote saved — click "Send to Client" to share it');
+}
+
+function shareQuote() {
+  if (!_lastSavedQuoteId) { toast('Save the quote first'); return; }
+  const link = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/') + 'view-quote.html?id=' + _lastSavedQuoteId;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(() => toast('✓ Client link copied — paste into a text or email!'));
+  } else {
+    prompt('Copy this link and send to your client:', link);
+  }
 }
 
 async function loadSavedQuotes() {
@@ -1048,6 +1064,7 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'printBtn') { window.print(); return; }
   if (t.id === 'copyBtn') { copyQuoteText(); return; }
   if (t.id === 'saveQuoteBtn') { await saveQuote(); return; }
+  if (t.id === 'shareQuoteBtn') { shareQuote(); return; }
   if (t.id === 'downloadPdfBtn') { downloadPdf(); return; }
 
   const dep = t.closest('[data-deposit]'); if (dep) { state.selectedDepositTier = Number(dep.dataset.deposit); renderLive(); renderPreview(); return; }
