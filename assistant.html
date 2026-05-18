@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Party Assistant | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4A2B63;--plum-800:#5A3476;--brand:#6A417E;--brand-deep:#8E67A6;
+  --mauve:#A67BB5;--pink:#E6A2BE;--pink-soft:#F4D2DF;--pink-deep:#D17AA0;
+  --gold:#C9A227;--gold-bright:#D4AE52;--gold-soft:#F6E5A6;
+  --cream:#FCF8F4;--off:#FFFDFC;
+  --border:#EAE3ED;--border-strong:#DDD1E5;
+  --ink:#1F1A24;--slate-700:#4A4354;--slate-600:#6C6473;--muted:#6C6473;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --tool-accent:var(--gold);--tool-accent-soft:rgba(201,162,39,.14);
+  --user-primary:var(--plum-900);--user-accent:var(--gold);--user-primary-soft:rgba(74,43,99,.08);
+  --shadow-sm:0 1px 2px rgba(31,20,50,.04);
+  --shadow:0 4px 16px rgba(59,35,81,.06);
+  --shadow-lg:0 20px 50px -12px rgba(59,35,81,.18),0 8px 16px -4px rgba(59,35,81,.08);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── PAGE HEADER ── */
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--gold-bright));padding:2rem 1.5rem 2.4rem;color:#fff;position:relative;overflow:hidden}
+.page-header::after{content:"";position:absolute;top:-40%;right:-8%;width:440px;height:440px;background:radial-gradient(circle,rgba(201,162,39,.28) 0%,transparent 70%);pointer-events:none}
+.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.page-eyebrow{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:.7rem;padding:.3rem .75rem;background:rgba(201,162,39,.2);border:1px solid rgba(201,162,39,.4);border-radius:50px}
+.page-title{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,4vw,2.5rem);font-weight:700;margin-bottom:.5rem;line-height:1.12;letter-spacing:-.02em}
+.page-title .script{font-family:'Dancing Script',cursive;color:var(--gold-soft);font-size:1.05em}
+.page-sub{font-size:.9rem;color:rgba(255,255,255,.8);max-width:560px;line-height:1.65}
+
+.wrap{max-width:820px;margin:0 auto;padding:1.6rem 1.25rem 2rem}
+
+/* ── RATE LIMIT BAR ── */
+.limit-bar{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:.65rem 1rem;margin-bottom:1.2rem;box-shadow:var(--shadow-sm)}
+.limit-label{font-size:.76rem;color:var(--muted);font-weight:600;flex:1}
+.limit-pips{display:flex;gap:3px}
+.limit-pip{width:12px;height:8px;border-radius:3px;background:var(--border)}
+.limit-pip.used{background:var(--mauve)}
+.limit-pip.warn{background:var(--gold)}
+.limit-pip.out{background:var(--danger)}
+.limit-count{font-size:.76rem;font-weight:700;color:var(--plum-900);white-space:nowrap}
+
+/* ── CHAT CONTAINER ── */
+.chat-wrap{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;height:calc(100vh - 280px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:1.2rem;display:flex;flex-direction:column;gap:.85rem;scroll-behavior:smooth}
+.chat-messages::-webkit-scrollbar{width:5px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
+
+/* Bubbles */
+.msg{display:flex;align-items:flex-end;gap:.6rem;max-width:85%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.bot{align-self:flex-start}
+.msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.msg.bot .msg-avatar{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff}
+.msg.user .msg-avatar{background:linear-gradient(135deg,var(--gold),#A78420);color:#3A2A1A;font-weight:800;font-size:.78rem}
+.msg-bubble{padding:.75rem 1rem;border-radius:18px;font-size:.88rem;line-height:1.65}
+.msg.bot .msg-bubble{background:var(--cream);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--ink)}
+.msg.user .msg-bubble{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;border-bottom-right-radius:4px}
+
+/* Typing indicator */
+.typing-indicator{display:flex;gap:4px;padding:.75rem 1rem;align-items:center}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--mauve);animation:typing .8s infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.6}30%{transform:translateY(-5px);opacity:1}}
+
+/* Input row */
+.chat-input-row{border-top:1px solid var(--border);padding:.85rem 1rem;display:flex;gap:.6rem;align-items:flex-end;background:#fff}
+.chat-textarea{flex:1;border:1.5px solid var(--border);border-radius:14px;padding:.65rem .9rem;font-family:inherit;font-size:.88rem;resize:none;max-height:120px;min-height:44px;line-height:1.5;transition:border-color .15s;overflow-y:auto}
+.chat-textarea:focus{outline:none;border-color:var(--mauve);box-shadow:0 0 0 3px rgba(166,123,181,.14)}
+.chat-send{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;transition:all .18s;box-shadow:var(--shadow-sm)}
+.chat-send:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.chat-send:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* Quick prompts */
+.quick-prompts{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:.45rem}
+.quick-prompt-label{width:100%;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.1rem}
+.qp{background:#fff;border:1.5px solid var(--border);border-radius:999px;padding:.4rem .85rem;font-size:.78rem;font-weight:600;color:var(--plum-900);cursor:pointer;transition:all .18s;font-family:inherit}
+.qp:hover{border-color:var(--mauve);background:rgba(166,123,181,.08);color:var(--plum-900)}
+
+/* Empty state */
+.chat-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;gap:.6rem;color:var(--muted)}
+.chat-empty-icon{font-size:3rem;margin-bottom:.4rem}
+.chat-empty h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--plum-900);font-weight:700;letter-spacing:-.01em}
+.chat-empty p{font-size:.84rem;max-width:320px;line-height:1.6}
+
+/* Limit reached */
+.limit-reached{background:rgba(194,59,94,.06);border:1px solid rgba(194,59,94,.2);border-radius:14px;padding:1rem 1.2rem;text-align:center;font-size:.85rem;color:var(--danger);font-weight:600;margin-top:.8rem}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.85rem 1.4rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading your workspace…</div></div>
+
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.png" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">✦ AI Assistant</div>
+    <h1 class="page-title">Your <span class="script">Party</span> Business Coach</h1>
+    <p class="page-sub">Ask me anything about pricing, packages, client communication, marketing your party business, or handling tricky situations. I'm here to help you grow.</p>
+  </div>
+</div>
+
+<main class="wrap">
+
+<div class="limit-bar">
+  <div class="limit-label">Daily messages used</div>
+  <div class="limit-pips" id="limitPips"></div>
+  <div class="limit-count" id="limitCount">0 / 20</div>
+</div>
+
+<div class="quick-prompts" id="quickPrompts">
+  <div class="quick-prompt-label">Quick questions →</div>
+  <button class="qp" onclick="useQuick('How should I price a 2-hour birthday party package?')">💰 How do I price my packages?</button>
+  <button class="qp" onclick="useQuick('What should I include in a party entertainer contract?')">📝 What goes in my contract?</button>
+  <button class="qp" onclick="useQuick('A client wants a refund 3 days before the event. How should I handle it?')">😬 Client wants a refund</button>
+  <button class="qp" onclick="useQuick('What are the best ways to market a kids party entertainment business on social media?')">📣 How to market on social media</button>
+  <button class="qp" onclick="useQuick('How do I get more repeat customers and referrals for my party business?')">🔁 Get more repeat clients</button>
+  <button class="qp" onclick="useQuick('What deposit amount should I charge to hold a party date?')">🔒 What deposit should I charge?</button>
+  <button class="qp" onclick="useQuick('How do I upsell add-ons at booking without feeling pushy?')">⬆️ How to upsell add-ons</button>
+  <button class="qp" onclick="useQuick('How do I respond when a parent says my prices are too high?')">💬 They say I\'m too expensive</button>
+</div>
+
+<div class="chat-wrap">
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-empty" id="chatEmpty">
+      <div class="chat-empty-icon">🎈</div>
+      <h3>Hey! I'm your Party Business Coach</h3>
+      <p>Ask me anything about running your kids party business — pricing, clients, marketing, you name it.</p>
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-textarea" id="chatInput" rows="1" placeholder="Ask anything about your party business…" onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+    <button class="chat-send" id="sendBtn" onclick="sendMessage()" aria-label="Send">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="limitReachedMsg" style="display:none" class="limit-reached">
+  You've used all 20 messages for today. Your limit resets at midnight. Come back tomorrow! 🌙
+</div>
+
+</main>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="nav.js"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const DAILY_LIMIT=20;
+// Endpoint — works on Vercel (api/chat.js) and falls back to local dev
+const CHAT_ENDPOINT='/api/chat';
+
+let currentUser=null;
+let messages=[]; // conversation history {role,content}
+let userInitial='?';
+let isTyping=false;
+
+/* ── RATE LIMIT ── */
+function todayKey(){return'pbh_chat_'+new Date().toISOString().slice(0,10)}
+function usedToday(){return parseInt(localStorage.getItem(todayKey())||'0')}
+function incrementUsed(){const k=todayKey();localStorage.setItem(k,String(usedToday()+1))}
+function canSend(){return usedToday()<DAILY_LIMIT}
+
+function renderLimit(){
+  const used=usedToday();
+  const pips=document.getElementById('limitPips');
+  const count=document.getElementById('limitCount');
+  count.textContent=used+' / '+DAILY_LIMIT;
+  const html=[];
+  for(let i=0;i<DAILY_LIMIT;i++){
+    let cls='limit-pip';
+    if(i<used){
+      cls+=(used>=DAILY_LIMIT)?' out':(used>=DAILY_LIMIT-5)?' warn':' used';
+    }
+    html.push('<div class="'+cls+'"></div>');
+  }
+  pips.innerHTML=html.join('');
+  const limitMsg=document.getElementById('limitReachedMsg');
+  const sendBtn=document.getElementById('sendBtn');
+  const input=document.getElementById('chatInput');
+  if(!canSend()){
+    limitMsg.style.display='block';
+    sendBtn.disabled=true;
+    input.disabled=true;
+    input.placeholder='Daily limit reached. Come back tomorrow!';
+    document.getElementById('quickPrompts').style.display='none';
+  }
+}
+
+/* ── AUTH & INIT ── */
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+
+  try{
+    const{data:p}=await sb.from('profiles').select('has_paid,profile_data,full_name').eq('id',session.user.id).single();
+    if(p&&p.has_paid===false){await sb.auth.signOut();window.location.href='login.html';return}
+    if(p&&p.profile_data&&p.profile_data.brandColor)applyBrand(p.profile_data.brandColor);
+    const name=(p&&p.profile_data&&p.profile_data.businessName)||p?.full_name||(session.user.email||'').split('@')[0];
+    userInitial=(name[0]||'?').toUpperCase();
+    setNavUser(name);
+  }catch(e){
+    const name=(session.user.email||'').split('@')[0];
+    userInitial=(name[0]||'?').toUpperCase();
+    setNavUser(name);
+  }
+
+  document.getElementById('authGate').style.display='none';
+  document.getElementById('pbhLayout').style.display='flex';
+  initNavSignout(()=>{sb.auth.signOut().then(()=>{window.location.href='login.html'})});
+  renderLimit();
+}
+
+function applyBrand(color){
+  const r=document.documentElement;
+  r.style.setProperty('--user-primary',color);
+  r.style.setProperty('--plum-900',color);
+  r.style.setProperty('--brand',color);
+}
+
+/* ── CHAT UI ── */
+function autoGrow(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+
+function handleKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}
+}
+
+function useQuick(text){
+  if(!canSend())return;
+  const input=document.getElementById('chatInput');
+  input.value=text;
+  autoGrow(input);
+  sendMessage();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatBotText(text){
+  // Convert markdown-style bold, line breaks, and bullet points to HTML
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>')
+    .replace(/^• /gm,'&bull; ');
+}
+
+function appendMsg(role,text){
+  const container=document.getElementById('chatMessages');
+  const empty=document.getElementById('chatEmpty');
+  if(empty)empty.remove();
+
+  const isUser=role==='user';
+  const div=document.createElement('div');
+  div.className='msg '+(isUser?'user':'bot');
+  div.innerHTML=`
+    <div class="msg-avatar">${isUser?escapeHtml(userInitial):'🎈'}</div>
+    <div class="msg-bubble">${isUser?escapeHtml(text):formatBotText(text)}</div>
+  `;
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+  return div;
+}
+
+function showTyping(){
+  const container=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='msg bot';
+  div.id='typingIndicator';
+  div.innerHTML=`
+    <div class="msg-avatar">🎈</div>
+    <div class="msg-bubble" style="padding:.5rem .9rem">
+      <div class="typing-indicator">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+}
+
+function removeTyping(){
+  const t=document.getElementById('typingIndicator');
+  if(t)t.remove();
+}
+
+async function sendMessage(){
+  if(isTyping||!canSend())return;
+  const input=document.getElementById('chatInput');
+  const text=(input.value||'').trim();
+  if(!text)return;
+
+  input.value='';
+  input.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  isTyping=true;
+
+  messages.push({role:'user',content:text});
+  appendMsg('user',text);
+  showTyping();
+  incrementUsed();
+  renderLimit();
+
+  try{
+    const res=await fetch(CHAT_ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages})
+    });
+
+    removeTyping();
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      appendMsg('bot','Sorry, something went wrong. Please try again in a moment. ('+(err.error||res.status)+')');
+    } else {
+      const data=await res.json();
+      const reply=data?.choices?.[0]?.message?.content||'Sorry, I didn\'t get a response. Please try again.';
+      messages.push({role:'assistant',content:reply});
+      appendMsg('bot',reply);
+    }
+  }catch(err){
+    removeTyping();
+    appendMsg('bot','Connection error — please check your internet and try again.');
+  }
+
+  isTyping=false;
+  if(canSend())document.getElementById('sendBtn').disabled=false;
+  document.getElementById('chatInput').focus();
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+init();
+</script>
+</body>
+</html>
