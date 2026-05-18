@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       'X-Title': 'Party Biz Hub'
     },
     body: JSON.stringify({
-      model: 'anthropic/claude-haiku-4-5-20251001',
+      model: 'anthropic/claude-3-haiku',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...recent],
       max_tokens: 600,
       temperature: 0.72
