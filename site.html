@@ -123,11 +123,26 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     const city=first(pd.city,brand_data.city);
 
     /* ── SEO meta injection (helps with social sharing + search) ── */
-    document.title=bizName+(city?' · '+city:'')+' | Party Entertainment';
-    const metaDesc=tagline||bizName+' — magical kids party entertainment';
-    [['description',metaDesc],['og:title',bizName],['og:description',metaDesc],['og:type','website'],['og:url',window.location.href],['twitter:card','summary_large_image'],['twitter:title',bizName],['twitter:description',metaDesc]].forEach(([n,v])=>{const m=document.createElement('meta');m.setAttribute(n.startsWith('og:')||n.startsWith('twitter:')?'property':'name',n);m.content=v;document.head.appendChild(m)});
+    // ── SEO: title, meta, OG, structured data ──
+    const cityLabel = city||'';
+    document.title = bizName + (cityLabel?' · '+cityLabel:'') + ' | Kids Party Entertainment';
+    const metaDesc = (tagline||bizName+' — magical kids party entertainment')
+      + (cityLabel?' Serving '+cityLabel+' and surrounding areas.':'');
+    // Standard meta
+    [['description',metaDesc],['robots','index, follow'],['keywords',
+      [bizName, nicheLabel, 'kids party', cityLabel, 'birthday party entertainment',
+       'party host', cityLabel&&cityLabel+' kids party', cityLabel&&cityLabel+' party entertainment']
+      .filter(Boolean).join(', ')
+    ]].forEach(([n,v])=>{const m=document.createElement('meta');m.name=n;m.content=v;document.head.appendChild(m)});
+    // Open Graph + Twitter
+    [['og:title',bizName+' — Kids Party Entertainment'+(cityLabel?' in '+cityLabel:'')],['og:description',metaDesc],['og:type','website'],['og:url',window.location.href],['twitter:card','summary_large_image'],['twitter:title',bizName],['twitter:description',metaDesc]].forEach(([n,v])=>{const m=document.createElement('meta');m.setAttribute('property',n);m.content=v;document.head.appendChild(m)});
     if(heroPhoto||logo){const m=document.createElement('meta');m.setAttribute('property','og:image');m.content=heroPhoto||logo;document.head.appendChild(m)}
-    const ldEl=document.createElement('script');ldEl.type='application/ld+json';ldEl.textContent=JSON.stringify({'@context':'https://schema.org','@type':'LocalBusiness','name':bizName,'description':metaDesc,'telephone':phone||undefined,'email':email||undefined,'image':heroPhoto||logo||undefined,'address':city?{'@type':'PostalAddress','addressLocality':city}:undefined,'url':window.location.href});document.head.appendChild(ldEl);
+    // Canonical URL
+    const cEl=document.createElement('link');cEl.rel='canonical';cEl.href=window.location.href.split('?')[0]+(uid?'?uid='+uid:'');document.head.appendChild(cEl);
+    // JSON-LD — LocalBusiness + service offers
+    const pkgOffers=(packages_data||[]).map(p=>({'@type':'Offer','name':p.name||'Package','price':String(p.price||'').replace(/[^0-9.]/g,''),'priceCurrency':'USD','description':p.included||undefined}));
+    const ldData={'@context':'https://schema.org','@type':'LocalBusiness','name':bizName,'description':metaDesc,'telephone':phone||undefined,'email':email||undefined,'image':heroPhoto||logo||undefined,'url':window.location.href,'address':cityLabel?{'@type':'PostalAddress','addressLocality':cityLabel,'addressCountry':'US'}:undefined,'areaServed':cityLabel?[{'@type':'City','name':cityLabel}]:undefined,'priceRange':pkgOffers.length?'$'+Math.min(...pkgOffers.map(o=>parseFloat(o.price)||999))+'–$'+Math.max(...pkgOffers.map(o=>parseFloat(o.price)||0)):'$$','hasOfferCatalog':pkgOffers.length?{'@type':'OfferCatalog','name':bizName+' Party Packages','itemListElement':pkgOffers}:undefined};
+    const ldEl=document.createElement('script');ldEl.type='application/ld+json';ldEl.textContent=JSON.stringify(ldData);document.head.appendChild(ldEl);
 
     const template=first(brand_data.template,'studio');
     const data={bizName,tagline,logo,ownerName,ownerBio,ownerPhoto,heroPhoto,brand,brandDark,brandLight,bookURL,nicheLabel,packages_data,reviews_data,faq_data,gallery_data,about_data,phone,email,socialInstagram,socialFacebook,socialTiktok,socialYoutube,socialCustom,city};
@@ -138,6 +153,13 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     else if(template==='garden')buildGarden(root,data);
     else if(template==='bloom')buildBloom(root,data);
     else buildStudio(root,data);
+
+    // Inject shared contact form before the footer of every template
+    const footer=root.querySelector('footer');
+    const contactWrap=document.createElement('div');
+    contactWrap.innerHTML=buildContactSection(data,uid);
+    if(footer)footer.parentNode.insertBefore(contactWrap,footer);
+    else root.appendChild(contactWrap);
 
     showContent();
   }).catch(()=>showError());
@@ -1240,6 +1262,70 @@ ${statsHTML}${galleryHTML}
 ${cHTML}${revHTML}${faqHTML}
 <section class="bl-cta"><div class="bl-cta-card"><div class="bl-cta-inner"><div class="bl-cta-h">Ready to book your party?</div><p class="bl-cta-sub">Spots fill up fast — reserve yours today!</p><a href="${esc(d.bookURL)}" class="bl-cta-btn">Book Your Party →</a></div></div></section>
 <footer class="bl-footer"><div class="bl-footer-biz">${esc(d.bizName)}</div><div class="bl-footer-power">Powered by <a href="https://partybizhub.com" target="_blank" rel="noopener">Party Biz Hub</a></div></footer>`;
+  }
+
+  /* ── Shared: quick-contact form section (injected into every template before footer) ── */
+  function buildContactSection(d,ownerId){
+    const g=d.brand||'#6A3F8A';
+    const gLight=hexToRgba(g,.08);
+    const cityLine=d.city?' We proudly serve <strong>'+esc(d.city)+'</strong> and the surrounding area.':'';
+    return `
+<section id="pbh-ask" style="padding:72px 28px;background:#f8f5fc">
+<style>
+#pbh-ask input,#pbh-ask textarea{width:100%;padding:13px 16px;border:1.5px solid #ede5f5;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;transition:border-color .18s;outline:none;box-sizing:border-box}
+#pbh-ask input:focus,#pbh-ask textarea:focus{border-color:${g}}
+#pbh-ask textarea{resize:vertical;min-height:110px}
+#pbh-ask-btn{background:${g};color:#fff;padding:14px 40px;border-radius:10px;font-size:16px;font-weight:700;border:none;cursor:pointer;transition:opacity .18s;font-family:inherit}
+#pbh-ask-btn:hover{opacity:.88}
+#pbh-ask-btn:disabled{opacity:.6;cursor:not-allowed}
+</style>
+<div style="max-width:580px;margin:0 auto">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:${g};margin-bottom:10px;padding:4px 16px;background:${gLight};border-radius:999px">Send a Message</div>
+    <h2 style="font-size:clamp(22px,4vw,32px);font-weight:900;color:#1a1020;margin-bottom:10px;letter-spacing:-.02em;font-family:inherit">Have a question?</h2>
+    <p style="font-size:15px;color:#6b5b73;line-height:1.65;max-width:420px;margin:0 auto">Not ready to book yet? Ask us anything — we reply within 24 hours. ${cityLine}</p>
+  </div>
+  <form id="pbh-ask-form" style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <input id="pbh-c-name" type="text" placeholder="Your name" required autocomplete="name"/>
+      <input id="pbh-c-email" type="email" placeholder="Your email" required autocomplete="email"/>
+    </div>
+    <textarea id="pbh-c-msg" placeholder="What's your question?" required></textarea>
+    <div style="text-align:center;margin-top:4px">
+      <button type="submit" id="pbh-ask-btn">Send Message →</button>
+    </div>
+    <div id="pbh-c-result" style="display:none;padding:14px 16px;border-radius:10px;font-size:14px;font-weight:600;text-align:center"></div>
+  </form>
+</div>
+</section>
+<script>
+(function(){
+  var form=document.getElementById('pbh-ask-form');
+  if(!form)return;
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();
+    var btn=document.getElementById('pbh-ask-btn');
+    var res=document.getElementById('pbh-c-result');
+    btn.textContent='Sending…';btn.disabled=true;
+    var sc=window.supabase.createClient('${SUPA_URL}','${SUPA_ANON}');
+    var r=await sc.from('bookings').insert({
+      owner_id:'${ownerId}',
+      client_name:document.getElementById('pbh-c-name').value,
+      client_email:document.getElementById('pbh-c-email').value,
+      notes:document.getElementById('pbh-c-msg').value,
+      service_name:'General Inquiry',
+      status:'new'
+    });
+    if(r.error){
+      res.style.cssText='display:block;padding:14px 16px;border-radius:10px;font-size:14px;font-weight:600;text-align:center;background:#fef2f2;color:#b91c1c';
+      res.textContent='Something went wrong — please try again or reach out directly.';
+      btn.textContent='Send Message →';btn.disabled=false;
+    }else{
+      form.innerHTML='<div style="text-align:center;padding:20px;font-size:1rem;font-weight:700;color:#166534">✓ Message sent! We\\'ll get back to you within 24 hours. 🎉</div>';
+    }
+  });
+})();
+<\/script>`;
   }
 
   /* ── Shared: build contact items array ── */

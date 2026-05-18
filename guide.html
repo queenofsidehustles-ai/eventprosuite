@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How to Use Party Biz Hub | Quick Start Guide</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#FFFCF8;color:#1A1020;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.topbar{background:linear-gradient(135deg,#4A2B63,#6A417E);padding:14px 28px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.topbar img{height:36px}
+.topbar-title{color:#fff;font-weight:700;font-size:15px}
+.topbar-back{margin-left:auto;color:rgba(255,255,255,.8);font-size:13px;font-weight:600;border:1.5px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:999px;transition:all .15s}
+.topbar-back:hover{background:rgba(255,255,255,.12);color:#fff}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,#4A2B63,#6A417E 55%,#A67BB5);padding:3.5rem 1.5rem 4rem;text-align:center;color:#fff;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 80% 20%,rgba(201,162,39,.2),transparent);pointer-events:none}
+.hero-emoji{font-size:64px;margin-bottom:1rem;line-height:1}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,2.8rem);font-weight:800;margin-bottom:.8rem;letter-spacing:-.02em;position:relative;z-index:1}
+.hero p{font-size:1.05rem;color:rgba(255,255,255,.85);max-width:520px;margin:0 auto;position:relative;z-index:1;line-height:1.7}
+
+/* Section nav */
+.toc{max-width:900px;margin:0 auto;padding:2rem 1.5rem 0}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.toc-chip{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:16px;border:1.5px solid #EDE5F5;background:#fff;cursor:pointer;transition:all .18s;text-align:center;text-decoration:none}
+.toc-chip:hover{border-color:#6A417E;transform:translateY(-2px);box-shadow:0 6px 20px rgba(74,43,99,.1)}
+.toc-chip-icon{font-size:28px;line-height:1}
+.toc-chip-label{font-size:.78rem;font-weight:700;color:#4A2B63}
+
+/* Content area */
+.content{max-width:900px;margin:0 auto;padding:0 1.5rem 5rem}
+
+/* Feature sections */
+.feature{background:#fff;border-radius:24px;border:1px solid #EDE5F5;overflow:hidden;margin:2rem 0;box-shadow:0 2px 20px rgba(26,16,32,.05)}
+.feature-head{padding:1.6rem 2rem;background:linear-gradient(135deg,#4A2B63,#6A417E);color:#fff;display:flex;align-items:center;gap:16px}
+.feature-icon{font-size:36px;line-height:1;flex-shrink:0}
+.feature-head h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.feature-head p{font-size:.88rem;color:rgba(255,255,255,.82);line-height:1.5}
+.feature-body{padding:1.6rem 2rem}
+
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:14px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step-num{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6A417E,#A67BB5);color:#fff;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-content{}
+.step-title{font-weight:700;color:#1A1020;margin-bottom:4px;font-size:.95rem}
+.step-desc{font-size:.88rem;color:#6B5B73;line-height:1.6}
+
+/* Tips */
+.tip-box{background:linear-gradient(135deg,#FFF9EC,#FFF5E0);border:1.5px solid #F5D97A;border-radius:14px;padding:1rem 1.2rem;margin-top:1rem;display:flex;gap:10px;align-items:flex-start}
+.tip-icon{font-size:1.2rem;flex-shrink:0}
+.tip-text{font-size:.87rem;color:#7A5A00;line-height:1.6}
+.tip-text strong{color:#5a3f00}
+
+/* Pro tip */
+.pro-box{background:#F5F0FF;border:1.5px solid #C9B8F5;border-radius:14px;padding:1rem 1.2rem;margin-top:1rem;display:flex;gap:10px;align-items:flex-start}
+.pro-text{font-size:.87rem;color:#4A2B63;line-height:1.6}
+
+/* Flow diagram */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:1rem 0;padding:1rem 1.2rem;background:#F8F5FF;border-radius:12px;border:1px solid #EDE5F5}
+.flow-step{background:#fff;border:1.5px solid #C9B8F5;border-radius:10px;padding:6px 12px;font-size:.8rem;font-weight:700;color:#4A2B63;white-space:nowrap}
+.flow-arrow{font-size:.9rem;color:#C9B8F5;font-weight:700}
+
+/* Highlight */
+.hl{display:inline-block;background:#F0EAFF;color:#4A2B63;font-weight:700;padding:1px 6px;border-radius:5px;font-size:.92em}
+
+@media(max-width:640px){
+  .feature-head{flex-direction:column;gap:10px;text-align:center}
+  .feature-body{padding:1.2rem 1.2rem}
+  .toc-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="partybizhub-logo.png" alt="Party Biz Hub"/>
+  <span class="topbar-title">Party Biz Hub Guide</span>
+  <a href="dashboard.html" class="topbar-back">← Back to Dashboard</a>
+</div>
+
+<div class="hero">
+  <div class="hero-emoji">📖</div>
+  <h1>How to Use Party Biz Hub</h1>
+  <p>Everything you need to run your party business — explained simply. No tech experience needed. If you can send a text, you can use this.</p>
+</div>
+
+<!-- Quick jump nav -->
+<div class="toc">
+  <div class="toc-grid">
+    <a href="#profile" class="toc-chip"><span class="toc-chip-icon">👤</span><span class="toc-chip-label">My Profile</span></a>
+    <a href="#website" class="toc-chip"><span class="toc-chip-icon">🌐</span><span class="toc-chip-label">My Website</span></a>
+    <a href="#bookings" class="toc-chip"><span class="toc-chip-icon">📅</span><span class="toc-chip-label">Bookings</span></a>
+    <a href="#quotes" class="toc-chip"><span class="toc-chip-icon">💰</span><span class="toc-chip-label">Quote Builder</span></a>
+    <a href="#contracts" class="toc-chip"><span class="toc-chip-icon">📋</span><span class="toc-chip-label">Contracts</span></a>
+    <a href="#profit" class="toc-chip"><span class="toc-chip-icon">📊</span><span class="toc-chip-label">Profit Calc</span></a>
+    <a href="#vendors" class="toc-chip"><span class="toc-chip-icon">🤝</span><span class="toc-chip-label">Vendors</span></a>
+    <a href="#flow" class="toc-chip"><span class="toc-chip-icon">🔁</span><span class="toc-chip-label">The Full Flow</span></a>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- PROFILE -->
+  <div class="feature" id="profile">
+    <div class="feature-head">
+      <span class="feature-icon">👤</span>
+      <div>
+        <h2>Step 1: Set Up Your Profile</h2>
+        <p>Tell the system who you are. This powers everything else.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Click "Business Profile" in the left menu</div><div class="step-desc">This is where you enter your business name, phone, email, city, and logo.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Fill in every field you can</div><div class="step-desc">Your business name, your city, your contact info. The more you fill in, the better your website and bookings will look.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Upload your logo (optional)</div><div class="step-desc">Even a simple logo makes everything look more professional. It shows up on your website and quotes.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Click Save</div><div class="step-desc">Done. Your profile is set.</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>Do this first.</strong> Your city goes on your website and in Google search results. Without it, people searching "kids party in Orlando" won't find you.</span></div>
+    </div>
+  </div>
+
+  <!-- WEBSITE -->
+  <div class="feature" id="website">
+    <div class="feature-head">
+      <span class="feature-icon">🌐</span>
+      <div>
+        <h2>Step 2: Build Your Website</h2>
+        <p>A real website for your business — done in about 15 minutes.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Click "My Website" in the left menu</div><div class="step-desc">You'll see a 4-step wizard. It walks you through everything.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Step 1 — Pick your style</div><div class="step-desc">You have 5 design styles to choose from: Luxe (dark & gold), Pop (bright & fun), Studio (clean & professional), Garden (warm & earthy), and Bloom (bold & colorful). Click <span class="hl">👁 Preview this style →</span> to see what each one looks like before you choose.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Also in Step 1 — Pick your niche</div><div class="step-desc">Choose what type of party entertainment you offer (Balloon Twisting, Face Painting, Princess Characters, etc.). This fills in some starter content for you.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Step 2 — Your brand</div><div class="step-desc">Enter your business name, tagline, phone, email, and city. Pick your colors. Upload your logo. This is what your clients will see.</div></div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Step 3 — Your content</div><div class="step-desc">Add your packages (names, prices, what's included), your reviews, your story (About section), and photos. The more you fill in, the better the site looks.</div></div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-title">Step 4 — Preview & download</div><div class="step-desc">Click <span class="hl">🔄 Preview</span> to see your live website. When it looks good, click <span class="hl">⬇ Download My Site</span> to get a ZIP file you can upload to Netlify for free.</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>Publish for free in 60 seconds:</strong> Go to <strong>netlify.com/drop</strong>, drag the ZIP file onto the page, and your website is live. That's it.</span></div>
+      <div class="pro-box"><span class="tip-icon">⭐</span><span class="pro-text"><strong>SEO tip:</strong> Make sure your city is filled in under Your Brand. This helps Google show your website when someone searches "kids party in [your city]."</span></div>
+    </div>
+  </div>
+
+  <!-- BOOKINGS -->
+  <div class="feature" id="bookings">
+    <div class="feature-head">
+      <span class="feature-icon">📅</span>
+      <div>
+        <h2>Step 3: Bookings Come In Automatically</h2>
+        <p>When someone fills out your booking form, it lands here instantly.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Every new booking shows up on your Dashboard</div><div class="step-desc">You don't have to do anything. When a client fills out the form on your website, it appears here automatically with their name, event date, and all the details they gave you.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Click any booking to update its status</div><div class="step-desc">You'll see 5 options: <span class="hl">Inquiry</span> → <span class="hl">Quote Sent</span> → <span class="hl">Deposit Paid</span> → <span class="hl">Confirmed</span> → <span class="hl">Complete</span></div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Mark it Confirmed when they pay</div><div class="step-desc">When you mark a booking as Confirmed, the system automatically creates a profit record with the revenue. You'll see a message: "Add expenses →" — click that when you're ready to track your costs.</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>Also shows up here:</strong> Quotes you send to clients AND messages from the "Have a question?" form on your website. Everything in one place.</span></div>
+    </div>
+  </div>
+
+  <!-- QUOTES -->
+  <div class="feature" id="quotes">
+    <div class="feature-head">
+      <span class="feature-icon">💰</span>
+      <div>
+        <h2>Step 4: Send Quotes to Clients</h2>
+        <p>Build a professional price quote in minutes and email it directly to your client.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Click "Quote Builder" in the left menu</div><div class="step-desc">This is your pricing tool. You pick items from your catalog, and it calculates everything.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Fill in the client's name, email, and event details</div><div class="step-desc">The client's email is important — you'll need it to send the quote directly from here.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Add your services from the catalog</div><div class="step-desc">Click any item on the left to add it to the quote. The total updates automatically.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Click "💾 Save Quote"</div><div class="step-desc">This saves the quote to your dashboard and makes it shareable.</div></div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Click "📧 Email to Client"</div><div class="step-desc">Your email app opens with a pre-written message — the client's name, event details, total price, and a link to their quote page. Just hit Send.</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>What the client sees:</strong> A beautiful page showing everything — their event, every line item, the total, and a "Book My Party" button. Very professional.</span></div>
+    </div>
+  </div>
+
+  <!-- CONTRACTS -->
+  <div class="feature" id="contracts">
+    <div class="feature-head">
+      <span class="feature-icon">📋</span>
+      <div>
+        <h2>Step 5: Send Contracts for Signature</h2>
+        <p>Protect yourself legally. Clients sign on their phone — no printing needed.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Click "Contract" in the left menu</div><div class="step-desc">You'll see a 6-step wizard that builds the contract for you.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Fill in the event details and client info</div><div class="step-desc">Business info, client name, email, phone, event date, and service.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Pick your contract clauses</div><div class="step-desc">Check which rules apply: deposit policy, cancellation terms, weather clause, photo permission, etc.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Sign it yourself first</div><div class="step-desc">Draw, type, or upload your signature on the page.</div></div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Copy the client link and send it</div><div class="step-desc">A secure link is generated. Text or email it to your client. They open it on any device and sign with their finger. Done — contract locked.</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>Always use a contract.</strong> It protects you if a client cancels last minute, if something goes wrong, or if there's a dispute about what was agreed.</span></div>
+    </div>
+  </div>
+
+  <!-- PROFIT -->
+  <div class="feature" id="profit">
+    <div class="feature-head">
+      <span class="feature-icon">📊</span>
+      <div>
+        <h2>Step 6: Track Your Money</h2>
+        <p>Know exactly what you're making (and keeping) after every event.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Profit records are created automatically</div><div class="step-desc">When you confirm a booking on the dashboard, the revenue is logged for you. You don't have to do anything.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Click "Profit Calc" to add your expenses</div><div class="step-desc">The revenue is already there. You just need to add what you spent: supplies, travel, labor, etc. The system calculates your profit and margin automatically.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Check your monthly report</div><div class="step-desc">See total income, total expenses, and profit for the whole month. This is the number you give your accountant at tax time.</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>Keep it simple:</strong> After every event, spend 3 minutes adding your receipts. At year end, you'll have everything organized and ready for taxes.</span></div>
+    </div>
+  </div>
+
+  <!-- VENDORS -->
+  <div class="feature" id="vendors">
+    <div class="feature-head">
+      <span class="feature-icon">🤝</span>
+      <div>
+        <h2>Step 7: Build Your Vendor Network</h2>
+        <p>Keep your favorite suppliers and helpers organized in one place.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Click "Vendors" in the left menu</div><div class="step-desc">This is your personal vendor address book.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Add every person or company you work with</div><div class="step-desc">Balloon suppliers, balloon artists you subcontract, photo booth rentals, cake vendors, venue contacts — anyone involved in your events.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Add their category, phone, email, and notes</div><div class="step-desc">Notes are great for things like "brings own table" or "needs 45 min setup" or "minimum booking $200."</div></div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">💡</span><span class="tip-text"><strong>Why this matters:</strong> When you're planning an event, you need to reach the right vendor fast. Having them all in one place saves you from scrolling through texts and contacts.</span></div>
+    </div>
+  </div>
+
+  <!-- FULL FLOW -->
+  <div class="feature" id="flow">
+    <div class="feature-head">
+      <span class="feature-icon">🔁</span>
+      <div>
+        <h2>The Full Business Flow</h2>
+        <p>This is how a typical booking works from start to finish.</p>
+      </div>
+    </div>
+    <div class="feature-body">
+      <p style="font-size:.92rem;color:#6B5B73;margin-bottom:1rem">Follow these steps every time you get a new client:</p>
+      <div class="flow">
+        <span class="flow-step">1 Client visits your website</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">2 They fill out the booking form</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">3 It shows up on your Dashboard</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">4 You send a Quote</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">5 You send a Contract</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">6 Mark as Confirmed (revenue logged)</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">7 Do the event</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">8 Mark as Complete</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">9 Add expenses in Profit Calc</span>
+      </div>
+      <p style="font-size:.9rem;color:#6B5B73;margin-top:1rem">That's it. That's your whole business system.</p>
+      <div class="pro-box" style="margin-top:1rem"><span class="tip-icon">⭐</span><span class="pro-text"><strong>Time estimate:</strong> Once you're set up, handling a new booking from first contact to confirmed takes about 10–15 minutes. Most of it is automated.</span></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center;padding:2rem 0;color:#B0A0BC;font-size:.82rem">
+    Party Biz Hub · Built by Coach Monica · <a href="dashboard.html" style="color:#6A417E;font-weight:600">Back to Dashboard →</a>
+  </div>
+
+</div>
+</body>
+</html>
