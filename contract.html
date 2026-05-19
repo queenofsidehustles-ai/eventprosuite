@@ -48,12 +48,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .user-menu-item.danger:hover{background:rgba(194,59,94,.08)}
 .user-menu-divider{height:1px;background:var(--border);margin:4px 0}
 @media(max-width:960px){.topnav-inner{grid-template-columns:auto 1fr auto}.topnav-tabs{overflow-x:auto;max-width:100%;gap:2px}.topnav-tab{padding:8px 12px;font-size:12px}.user-chip-text{display:none}.topnav-left img{height:36px}}
-.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:.65rem 1.5rem .8rem;color:#fff;position:relative;overflow:hidden}
-.page-header::after{display:none}
-.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
-.page-eyebrow{display:none}
-.page-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;margin-bottom:.12rem;line-height:1.15;letter-spacing:-.01em}
-.page-title .script{font-family:'Dancing Script',cursive;font-size:1.18em;color:rgba(255,255,255,.97);font-weight:700;letter-spacing:.01em}
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:1.1rem 1.5rem 1.6rem;color:#fff;position:relative;overflow:hidden}
+.page-header::after{content:"";position:absolute;bottom:-20px;left:0;right:0;height:40px;background:#fff;border-radius:50% 50% 0 0 / 100% 100% 0 0;opacity:.08}
+.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1;text-align:center}
+.page-eyebrow{display:block;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:rgba(255,255,255,.6);margin-bottom:.35rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em}
+.page-title .script{font-family:'Dancing Script',cursive;font-size:1.35em;color:#fff;font-weight:700;letter-spacing:.01em;display:inline-block}
 .page-sub{font-size:.92rem;color:rgba(255,255,255,.8);max-width:580px;line-height:1.65}
 .wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
 .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.7rem}

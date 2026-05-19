@@ -100,12 +100,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .suite-logout{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);padding:.42rem .8rem;border-radius:8px;font-size:.75rem;cursor:pointer;font-family:inherit}
 .suite-logout:hover{color:#fff;border-color:rgba(255,255,255,.35)}
 
-.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:.65rem 1.5rem .8rem;color:#fff;position:relative;overflow:hidden}
-.page-header::after{display:none}
-.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
-.page-eyebrow{display:none}
-.page-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;margin-bottom:.12rem;line-height:1.15;letter-spacing:-.01em}
-.page-title .script{font-family:'Dancing Script',cursive;font-size:1.18em;color:rgba(255,255,255,.97);font-weight:700;letter-spacing:.01em}
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:1.1rem 1.5rem 1.6rem;color:#fff;position:relative;overflow:hidden}
+.page-header::after{content:"";position:absolute;bottom:-20px;left:0;right:0;height:40px;background:#fff;border-radius:50% 50% 0 0 / 100% 100% 0 0;opacity:.08}
+.page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1;text-align:center}
+.page-eyebrow{display:block;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:rgba(255,255,255,.6);margin-bottom:.35rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em}
+.page-title .script{font-family:'Dancing Script',cursive;font-size:1.35em;color:#fff;font-weight:700;letter-spacing:.01em;display:inline-block}
 .page-sub{font-size:.92rem;color:rgba(255,255,255,.8);max-width:580px;line-height:1.65}
 
 .wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
@@ -234,14 +234,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
   <div class="tmpl-picker" id="tmplPicker">
     <div class="tmpl-title">💡 Quick-start with a template:</div>
-    <button class="tmpl-btn" onclick="loadTemplate('balloon')">🎈 Balloon Setup</button>
-    <button class="tmpl-btn" onclick="loadTemplate('slumber')">🏕️ Slumber Party</button>
+    <button class="tmpl-btn" onclick="loadTemplate('bear')">🐻 Stuff-A-Bear</button>
+    <button class="tmpl-btn" onclick="loadTemplate('spa')">💅 Mobile Spa</button>
+    <button class="tmpl-btn" onclick="loadTemplate('slumber')">🌙 Slumber Party</button>
+    <button class="tmpl-btn" onclick="loadTemplate('teepee')">⛺ Teepee Setup</button>
+    <button class="tmpl-btn" onclick="loadTemplate('slime')">🧪 Slime / Science</button>
+    <button class="tmpl-btn" onclick="loadTemplate('paint')">🎨 Paint & Sip</button>
+    <button class="tmpl-btn" onclick="loadTemplate('craft')">✂️ DIY Craft</button>
+    <button class="tmpl-btn" onclick="loadTemplate('candy')">🍬 Candy Station</button>
+    <button class="tmpl-btn" onclick="loadTemplate('foodcart')">🍕 Food Cart</button>
+    <button class="tmpl-btn" onclick="loadTemplate('facepaint')">🎭 Face Paint & Balloons</button>
+    <button class="tmpl-btn" onclick="loadTemplate('photo')">📸 Photo Booth</button>
+    <button class="tmpl-btn" onclick="loadTemplate('movie')">🎬 Outdoor Movie</button>
     <button class="tmpl-btn" onclick="loadTemplate('softplay')">🧸 Soft Play</button>
-    <button class="tmpl-btn" onclick="loadTemplate('spa')">💅 Spa Party</button>
-    <button class="tmpl-btn" onclick="loadTemplate('bare')">🎀 Basic Party Setup</button>
-    <button class="tmpl-btn" onclick="loadTemplate('facepainting')">🎨 Face Painting</button>
-    <button class="tmpl-btn" onclick="loadTemplate('cakesmash')">🎂 Cake Smash</button>
-    <button class="tmpl-btn" onclick="loadTemplate('generic')">📋 Generic Event</button>
+    <button class="tmpl-btn" onclick="loadTemplate('bounce')">🎪 Bounce House</button>
+    <button class="tmpl-btn" onclick="loadTemplate('coordinator')">📋 Event Coordinator</button>
   </div>
 
   <div class="section">
@@ -316,26 +323,12 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,events=[],currentEvent=null,dirty=false;
 
 const TEMPLATES={
-  balloon:{
-    pre:[{t:'Confirm client colors + theme',done:false},{t:'Order balloons (2 weeks out)',done:false},{t:'Inflate garland (day before)',done:false},{t:'Pack tools + ladder',done:false},{t:'Send client reminder 48hr before',done:false}],
-    day:[{t:'Arrive 2hr before setup time',done:false},{t:'Install balloon garland',done:false},{t:'Add backdrop',done:false},{t:'Take portfolio photos',done:false},{t:'Walk client through final setup',done:false}],
+  bear:{
+    pre:[{t:'Confirm # of kids + bear styles wanted',done:false},{t:'Order bear kits (1 per child)',done:false},{t:'Prep stuffing station + name tags',done:false},{t:'Print bear birth certificates',done:false},{t:'Send client reminder 48hr before',done:false}],
+    day:[{t:'Arrive 1hr early to set up stuffing station',done:false},{t:'Lay out bear kits in order',done:false},{t:'Set up accessories display',done:false},{t:'Guide each child through stuffing + naming ceremony',done:false},{t:'Take group photo with bears',done:false}],
     post:[{t:'Collect balance payment',done:false},{t:'Send thank-you message',done:false},{t:'Request Google/Instagram review',done:false},{t:'Post photos to social',done:false}],
-    shopping:[{n:'Balloons (theme colors)',q:200,bought:false},{n:'Command hooks',q:20,bought:false},{n:'Helium tank refill',q:1,bought:false}],
-    supplies:[{n:'Balloon pump',q:1,packed:false},{n:'Fishing line',q:1,packed:false},{n:'Tape',q:2,packed:false},{n:'Ladder',q:1,packed:false}]
-  },
-  slumber:{
-    pre:[{t:'Confirm # of tents + theme',done:false},{t:'Wash linens (2 days before)',done:false},{t:'Charge lantern batteries',done:false},{t:'Prep breakfast trays',done:false},{t:'Pack personalized pajamas',done:false}],
-    day:[{t:'Load van with tents',done:false},{t:'Arrive 2hr before guests',done:false},{t:'Set up tents in matching pattern',done:false},{t:'Style breakfast trays',done:false},{t:'Test movie projector',done:false}],
-    post:[{t:'Return next morning to pack up',done:false},{t:'Launder all linens',done:false},{t:'Request review',done:false},{t:'Post flatlay to Instagram',done:false}],
-    shopping:[{n:'Themed pillowcases',q:6,bought:false},{n:'Breakfast pastries',q:1,bought:false},{n:'Fresh flowers for styling',q:1,bought:false}],
-    supplies:[{n:'Tents',q:6,packed:false},{n:'Mattresses',q:6,packed:false},{n:'Fitted sheets',q:6,packed:false},{n:'Pillows',q:6,packed:false},{n:'Lanterns',q:6,packed:false},{n:'Breakfast trays',q:6,packed:false},{n:'Projector',q:1,packed:false}]
-  },
-  softplay:{
-    pre:[{t:'Sanitize all equipment (day before)',done:false},{t:'Check mats for damage',done:false},{t:'Pump up ball pit balls',done:false},{t:'Confirm # of toddlers expected',done:false}],
-    day:[{t:'Load van',done:false},{t:'Arrive 90min before start',done:false},{t:'Lay down gated perimeter',done:false},{t:'Set up slide + play pieces',done:false},{t:'Fill ball pit',done:false},{t:'Safety walk-through with client',done:false}],
-    post:[{t:'Sanitize all equipment post-event',done:false},{t:'Check for damage/missing pieces',done:false},{t:'Send review request',done:false}],
-    shopping:[{n:'Sanitizing wipes',q:3,bought:false},{n:'Replacement ball pit balls',q:50,bought:false}],
-    supplies:[{n:'Gated perimeter',q:1,packed:false},{n:'Soft slide',q:1,packed:false},{n:'Ball pit',q:1,packed:false},{n:'Ball pit balls',q:300,packed:false},{n:'Play cars',q:4,packed:false},{n:'Mats',q:4,packed:false}]
+    shopping:[{n:'Bear kits (unstuffed)',q:10,bought:false},{n:'Bear outfits/accessories',q:10,bought:false},{n:'Stuffing',q:1,bought:false},{n:'Birth certificate paper',q:1,bought:false}],
+    supplies:[{n:'Stuffing machine or bags',q:1,packed:false},{n:'Name tag stickers',q:20,packed:false},{n:'Scissors',q:1,packed:false},{n:'Table cover',q:1,packed:false}]
   },
   spa:{
     pre:[{t:'Confirm # of kids attending',done:false},{t:'Prep nail polish station',done:false},{t:'Wash robes + slippers',done:false},{t:'Mix DIY face mask ingredients',done:false},{t:'Charge Bluetooth speaker',done:false}],
@@ -344,32 +337,96 @@ const TEMPLATES={
     shopping:[{n:'New face masks',q:10,bought:false},{n:'Cucumbers',q:2,bought:false},{n:'Sparkling juice',q:6,bought:false}],
     supplies:[{n:'Kids robes',q:10,packed:false},{n:'Slippers',q:10,packed:false},{n:'Nail polish set',q:1,packed:false},{n:'Headbands',q:10,packed:false},{n:'Bluetooth speaker',q:1,packed:false}]
   },
-  bare:{
-    pre:[{t:'Confirm guest count and color theme',done:false},{t:'Order balloons, plates, cups, napkins',done:false},{t:'Print or buy banner',done:false},{t:'Confirm cake pickup or delivery',done:false},{t:'Send client reminder 48hr before',done:false}],
-    day:[{t:'Arrive 1hr before guests',done:false},{t:'Hang backdrop or banner',done:false},{t:'Set table with plates, cups, and decorations',done:false},{t:'Blow up balloons and arrange',done:false},{t:'Set out desserts/treats',done:false},{t:'Take setup photos before guests arrive',done:false}],
-    post:[{t:'Collect balance payment',done:false},{t:'Take down decorations and pack up',done:false},{t:'Send thank-you message',done:false},{t:'Request Google or Instagram review',done:false},{t:'Post photos to social media',done:false}],
-    shopping:[{n:'Balloons (theme colors)',q:30,bought:false},{n:'Paper plates + napkins',q:1,bought:false},{n:'Cups',q:24,bought:false},{n:'Banner or sign',q:1,bought:false},{n:'Table cover',q:2,bought:false},{n:'Candles',q:1,bought:false}],
-    supplies:[{n:'Balloon pump',q:1,packed:false},{n:'Tape + command strips',q:1,packed:false},{n:'Scissors',q:1,packed:false},{n:'Balloon arch frame (if used)',q:1,packed:false}]
+  slumber:{
+    pre:[{t:'Confirm # of tents + theme',done:false},{t:'Wash linens (2 days before)',done:false},{t:'Charge lantern batteries',done:false},{t:'Prep breakfast trays',done:false},{t:'Pack personalized pajamas',done:false}],
+    day:[{t:'Load van with tents',done:false},{t:'Arrive 2hr before guests',done:false},{t:'Set up tents in matching pattern',done:false},{t:'Style breakfast trays',done:false},{t:'Test movie projector',done:false}],
+    post:[{t:'Return next morning to pack up',done:false},{t:'Launder all linens',done:false},{t:'Request review',done:false},{t:'Post flatlay to Instagram',done:false}],
+    shopping:[{n:'Themed pillowcases',q:6,bought:false},{n:'Breakfast pastries',q:1,bought:false},{n:'Fresh flowers for styling',q:1,bought:false}],
+    supplies:[{n:'Tents',q:6,packed:false},{n:'Mattresses',q:6,packed:false},{n:'Fitted sheets',q:6,packed:false},{n:'Pillows',q:6,packed:false},{n:'Lanterns',q:6,packed:false},{n:'Breakfast trays',q:6,packed:false},{n:'Projector',q:1,packed:false}]
   },
-  facepainting:{
-    pre:[{t:'Confirm # of kids and time slot',done:false},{t:'Restock face paints (check expiry)',done:false},{t:'Wash all brushes and sponges',done:false},{t:'Prep design portfolio or reference sheet',done:false},{t:'Send client arrival + setup instructions',done:false}],
-    day:[{t:'Arrive 45min before start',done:false},{t:'Set up chair, mirror, and supply station',done:false},{t:'Place design reference sheet for kids to choose from',done:false},{t:'Face paint each child (10–15 min each)',done:false},{t:'Take photos of finished designs',done:false}],
+  teepee:{
+    pre:[{t:'Confirm # of teepees + color scheme',done:false},{t:'Wash all linens and fairy lights',done:false},{t:'Inventory teepee poles + fabric',done:false},{t:'Prep personalized pennant flags',done:false},{t:'Send setup arrival time to client',done:false}],
+    day:[{t:'Load van (poles, fabric, bedding, lights)',done:false},{t:'Arrive 2hr before guests',done:false},{t:'Assemble teepee frames',done:false},{t:'Dress beds + add tray/lantern styling',done:false},{t:'String fairy lights + test',done:false},{t:'Take styled flatlay photos',done:false}],
+    post:[{t:'Return next morning to disassemble',done:false},{t:'Inventory all pieces',done:false},{t:'Wash linens',done:false},{t:'Send review request',done:false}],
+    shopping:[{n:'Pennant flags (personalized)',q:6,bought:false},{n:'Fresh florals for trays',q:1,bought:false},{n:'Breakfast items',q:1,bought:false}],
+    supplies:[{n:'Teepee poles',q:18,packed:false},{n:'Teepee fabric covers',q:6,packed:false},{n:'Twin mattresses',q:6,packed:false},{n:'Linens (fitted + flat)',q:12,packed:false},{n:'Pillows',q:6,packed:false},{n:'Fairy lights',q:6,packed:false},{n:'Breakfast trays',q:6,packed:false}]
+  },
+  slime:{
+    pre:[{t:'Test slime recipe (day before)',done:false},{t:'Mix activator + glue per kid',done:false},{t:'Prep color station + add-ins',done:false},{t:'Label bags/containers per child',done:false},{t:'Confirm # of kids + allergies',done:false}],
+    day:[{t:'Cover tables with disposable covers',done:false},{t:'Set up slime stations',done:false},{t:'Lay out add-ins (glitter, foam beads, etc.)',done:false},{t:'Walk kids through recipe',done:false},{t:'Package slime in take-home containers',done:false}],
+    post:[{t:'Dispose of unused materials',done:false},{t:'Wipe all surfaces thoroughly',done:false},{t:'Post gooey content to social',done:false},{t:'Send review request',done:false}],
+    shopping:[{n:'Elmer\'s glue (8oz per 2 kids)',q:10,bought:false},{n:'Borax or activator solution',q:2,bought:false},{n:'Foam balls + glitter',q:1,bought:false},{n:'Food coloring',q:1,bought:false},{n:'Zip-lock bags + containers',q:20,bought:false}],
+    supplies:[{n:'Mixing bowls',q:12,packed:false},{n:'Wooden stir sticks',q:24,packed:false},{n:'Table covers (disposable)',q:3,packed:false},{n:'Gloves',q:24,packed:false},{n:'Paper towels',q:2,packed:false}]
+  },
+  paint:{
+    pre:[{t:'Prepare reference painting for demo',done:false},{t:'Pre-sketch canvas outlines (optional)',done:false},{t:'Set up easels or table canvases',done:false},{t:'Prepare mocktail/juice station',done:false},{t:'Confirm # of kids + age range',done:false}],
+    day:[{t:'Arrive 1hr early to lay out stations',done:false},{t:'Set up paint palettes',done:false},{t:'Set up mocktail station',done:false},{t:'Lead painting step-by-step',done:false},{t:'Take mid-paint and finished photos',done:false}],
+    post:[{t:'Let canvases dry before packing',done:false},{t:'Help kids bring canvases home',done:false},{t:'Post gallery to social',done:false},{t:'Send review request',done:false}],
+    shopping:[{n:'Canvases (8x10)',q:12,bought:false},{n:'Acrylic paints (washable)',q:1,bought:false},{n:'Plastic cups + juice',q:12,bought:false},{n:'Aprons (kids size)',q:12,bought:false}],
+    supplies:[{n:'Easels or canvas holders',q:12,packed:false},{n:'Brushes (3 sizes)',q:36,packed:false},{n:'Paint palettes',q:12,packed:false},{n:'Water cups',q:12,packed:false},{n:'Table covers',q:2,packed:false}]
+  },
+  craft:{
+    pre:[{t:'Choose craft project + test it yourself',done:false},{t:'Pre-cut materials to save time',done:false},{t:'Bag supplies per child',done:false},{t:'Label stations with names',done:false},{t:'Confirm # of kids attending',done:false}],
+    day:[{t:'Set up craft stations',done:false},{t:'Lay out supplies in order of steps',done:false},{t:'Demonstrate the project',done:false},{t:'Help kids assemble their crafts',done:false},{t:'Package take-home items',done:false}],
+    post:[{t:'Pack all remaining supplies',done:false},{t:'Post craft photos to social',done:false},{t:'Send review request',done:false}],
+    shopping:[{n:'Craft kit supplies (per project)',q:1,bought:false},{n:'Take-home bags',q:12,bought:false},{n:'Extra glue sticks',q:24,bought:false}],
+    supplies:[{n:'Hot glue gun + sticks',q:2,packed:false},{n:'Scissors (kids safe)',q:12,packed:false},{n:'Table covers',q:2,packed:false},{n:'Markers + stickers',q:1,packed:false}]
+  },
+  candy:{
+    pre:[{t:'Confirm candy selection with client',done:false},{t:'Order bulk candy + containers',done:false},{t:'Source jars, scoops, and labels',done:false},{t:'Build display frame or cart',done:false},{t:'Send setup time to client',done:false}],
+    day:[{t:'Arrive 90min early to set up',done:false},{t:'Fill candy jars + label each',done:false},{t:'Style station with florals or props',done:false},{t:'Set out bags + tongs for guests',done:false},{t:'Take styled photo before guests arrive',done:false}],
+    post:[{t:'Pack and return all rentals',done:false},{t:'Note which candies were most popular',done:false},{t:'Post styled photos to social',done:false},{t:'Send review request',done:false}],
+    shopping:[{n:'Assorted bulk candy',q:5,bought:false},{n:'Small treat bags',q:50,bought:false},{n:'Fresh florals for styling',q:1,bought:false},{n:'Labels for jars',q:1,bought:false}],
+    supplies:[{n:'Candy jars (various sizes)',q:10,packed:false},{n:'Scoops + tongs',q:6,packed:false},{n:'Display stand or cart',q:1,packed:false},{n:'Table cover',q:1,packed:false}]
+  },
+  foodcart:{
+    pre:[{t:'Confirm menu + dietary restrictions',done:false},{t:'Source ingredients (2 days out)',done:false},{t:'Check all equipment (cart, warmers, etc.)',done:false},{t:'Print or design menu board',done:false},{t:'Confirm power/generator availability',done:false}],
+    day:[{t:'Load cart + all supplies',done:false},{t:'Arrive 90min early for setup',done:false},{t:'Set up cart + menu board',done:false},{t:'Start warming food at right time',done:false},{t:'Serve guests + manage queue',done:false}],
+    post:[{t:'Break down and clean cart',done:false},{t:'Dispose of food waste safely',done:false},{t:'Collect final payment',done:false},{t:'Post photos of cart + food to social',done:false}],
+    shopping:[{n:'Food ingredients (per menu)',q:1,bought:false},{n:'Serving containers + napkins',q:1,bought:false},{n:'Condiments',q:1,bought:false}],
+    supplies:[{n:'Food cart',q:1,packed:false},{n:'Food warmer / chafing dishes',q:2,packed:false},{n:'Serving utensils',q:1,packed:false},{n:'Gloves',q:2,packed:false},{n:'Menu board',q:1,packed:false}]
+  },
+  facepaint:{
+    pre:[{t:'Confirm # of kids and time slot',done:false},{t:'Restock face paints (check expiry)',done:false},{t:'Wash all brushes and sponges',done:false},{t:'Prep design portfolio or reference sheet',done:false},{t:'Prep balloon colors + pump',done:false}],
+    day:[{t:'Arrive 45min before start',done:false},{t:'Set up face paint station + balloon station',done:false},{t:'Place design reference sheet for kids',done:false},{t:'Face paint each child (10–15 min each)',done:false},{t:'Twist balloon animals between paint sessions',done:false}],
     post:[{t:'Clean all brushes and sponges',done:false},{t:'Restock low supplies',done:false},{t:'Send review request to client',done:false},{t:'Post photos to Instagram',done:false}],
-    shopping:[{n:'Face paint set (FDA approved)',q:1,bought:false},{n:'Glitter gel',q:1,bought:false},{n:'Foam sponges',q:20,bought:false}],
-    supplies:[{n:'Brushes (fine tip)',q:5,packed:false},{n:'Water cup + paper towels',q:1,packed:false},{n:'Chair (for artist)',q:1,packed:false},{n:'Mirror',q:1,packed:false},{n:'Design reference card',q:1,packed:false}]
+    shopping:[{n:'Face paint set (FDA approved)',q:1,bought:false},{n:'Glitter gel',q:1,bought:false},{n:'Foam sponges',q:20,bought:false},{n:'Balloon assortment',q:200,bought:false}],
+    supplies:[{n:'Brushes (fine tip)',q:5,packed:false},{n:'Water cup + paper towels',q:1,packed:false},{n:'Chair (for artist)',q:1,packed:false},{n:'Mirror',q:1,packed:false},{n:'Balloon pump',q:1,packed:false}]
   },
-  cakesmash:{
-    pre:[{t:'Confirm theme, colors, and # of children',done:false},{t:'Order or bake smash cake',done:false},{t:'Set up backdrop and props list',done:false},{t:'Charge camera and extra batteries',done:false},{t:'Confirm cleanup plan with client',done:false}],
-    day:[{t:'Arrive 1hr early to set up scene',done:false},{t:'Lay down floor cover/drop cloth',done:false},{t:'Style backdrop, balloons, and props',done:false},{t:'Set up cake and candle',done:false},{t:'Photograph setup before child arrives',done:false},{t:'Guide parents through smash session',done:false},{t:'Capture reaction shots + cleanup moment',done:false}],
-    post:[{t:'Clean up smash area',done:false},{t:'Deliver or send gallery to client',done:false},{t:'Send review request',done:false},{t:'Post best shots to social',done:false}],
-    shopping:[{n:'Smash cake (6" round)',q:1,bought:false},{n:'Candle (number 1)',q:1,bought:false},{n:'Balloon bunch',q:1,bought:false},{n:'Floor drop cloth',q:1,bought:false}],
-    supplies:[{n:'Backdrop + stand',q:1,packed:false},{n:'Camera + lens',q:1,packed:false},{n:'Ring light',q:1,packed:false},{n:'Props (banner, letters, etc.)',q:1,packed:false},{n:'Wipes + cleaning spray',q:1,packed:false}]
+  photo:{
+    pre:[{t:'Confirm backdrop + prop theme',done:false},{t:'Charge camera/printer + extra batteries',done:false},{t:'Load photo paper + ink',done:false},{t:'Prep personalized print layout',done:false},{t:'Test printer + wifi connection',done:false}],
+    day:[{t:'Arrive 90min early to set up',done:false},{t:'Assemble backdrop + stand',done:false},{t:'Lay out prop box',done:false},{t:'Run test print',done:false},{t:'Greet guests + manage photo queue',done:false},{t:'Hand out prints in branded sleeves',done:false}],
+    post:[{t:'Break down backdrop and props',done:false},{t:'Upload digital gallery to client',done:false},{t:'Send review request',done:false},{t:'Post booth content to social',done:false}],
+    shopping:[{n:'Photo paper (4x6)',q:100,bought:false},{n:'Ink cartridges',q:2,bought:false},{n:'Branded print sleeves',q:50,bought:false}],
+    supplies:[{n:'Camera + lens',q:1,packed:false},{n:'Backdrop + stand',q:1,packed:false},{n:'Ring light',q:1,packed:false},{n:'Instant printer',q:1,packed:false},{n:'Prop box',q:1,packed:false},{n:'Extension cord',q:1,packed:false}]
   },
-  generic:{
-    pre:[{t:'Confirm booking details with client',done:false},{t:'Send deposit invoice',done:false},{t:'Order any needed supplies',done:false},{t:'Confirm final details 48hr out',done:false}],
-    day:[{t:'Pack van',done:false},{t:'Arrive early for setup',done:false},{t:'Complete setup',done:false},{t:'Take photos',done:false},{t:'Walk client through',done:false}],
-    post:[{t:'Collect balance',done:false},{t:'Send thank-you',done:false},{t:'Request review',done:false}],
-    shopping:[],supplies:[]
+  movie:{
+    pre:[{t:'Confirm movie title + guest count',done:false},{t:'Test projector + speakers',done:false},{t:'Confirm outdoor space is level',done:false},{t:'Prep popcorn station supplies',done:false},{t:'Check weather forecast',done:false}],
+    day:[{t:'Arrive 2hr before dark for setup',done:false},{t:'Inflate seating (if using air cushions)',done:false},{t:'Set up screen + projector',done:false},{t:'Test audio + picture quality',done:false},{t:'Set up popcorn + snack station',done:false},{t:'Distribute blankets',done:false}],
+    post:[{t:'Pack down all equipment',done:false},{t:'Deflate and fold seating',done:false},{t:'Collect payment',done:false},{t:'Post movie night photos to social',done:false}],
+    shopping:[{n:'Popcorn bags or buckets',q:20,bought:false},{n:'Popcorn kernels + oil',q:1,bought:false},{n:'Snack mix',q:1,bought:false},{n:'Extension cord (heavy duty)',q:1,bought:false}],
+    supplies:[{n:'Projector',q:1,packed:false},{n:'Projection screen',q:1,packed:false},{n:'Speakers (Bluetooth or wired)',q:1,packed:false},{n:'Air cushions or blankets',q:15,packed:false},{n:'Popcorn maker',q:1,packed:false},{n:'Generator or power source',q:1,packed:false}]
+  },
+  softplay:{
+    pre:[{t:'Sanitize all equipment (day before)',done:false},{t:'Check mats for damage',done:false},{t:'Pump up ball pit balls',done:false},{t:'Confirm # of toddlers expected',done:false}],
+    day:[{t:'Load van',done:false},{t:'Arrive 90min before start',done:false},{t:'Lay down gated perimeter',done:false},{t:'Set up slide + play pieces',done:false},{t:'Fill ball pit',done:false},{t:'Safety walk-through with client',done:false}],
+    post:[{t:'Sanitize all equipment post-event',done:false},{t:'Check for damage/missing pieces',done:false},{t:'Send review request',done:false}],
+    shopping:[{n:'Sanitizing wipes',q:3,bought:false},{n:'Replacement ball pit balls',q:50,bought:false}],
+    supplies:[{n:'Gated perimeter',q:1,packed:false},{n:'Soft slide',q:1,packed:false},{n:'Ball pit',q:1,packed:false},{n:'Ball pit balls',q:300,packed:false},{n:'Play cars',q:4,packed:false},{n:'Mats',q:4,packed:false}]
+  },
+  bounce:{
+    pre:[{t:'Confirm bounce house model + space dimensions',done:false},{t:'Check blower motor + extension cord',done:false},{t:'Inspect inflatable for tears or damage',done:false},{t:'Confirm power outlet access at venue',done:false},{t:'Send weight/age rules to client',done:false}],
+    day:[{t:'Load truck with inflatable + blower',done:false},{t:'Arrive 2hr before guests',done:false},{t:'Lay out tarp as base',done:false},{t:'Inflate and stake or sandbag',done:false},{t:'Safety inspection before kids enter',done:false},{t:'Monitor throughout event',done:false}],
+    post:[{t:'Deflate + clean inflatable',done:false},{t:'Check for damage before storage',done:false},{t:'Collect balance payment',done:false},{t:'Post event content to social',done:false}],
+    shopping:[{n:'Sandbags or stakes',q:4,bought:false},{n:'Tarp (base protection)',q:1,bought:false}],
+    supplies:[{n:'Bounce house/inflatable',q:1,packed:false},{n:'Blower motor',q:1,packed:false},{n:'Heavy-duty extension cord (50ft)',q:1,packed:false},{n:'Patch kit',q:1,packed:false},{n:'Tarp',q:1,packed:false}]
+  },
+  coordinator:{
+    pre:[{t:'Send vendor confirmation emails',done:false},{t:'Create timeline (15-min increments)',done:false},{t:'Confirm headcount with client',done:false},{t:'Finalize floor plan',done:false},{t:'Confirm all vendor arrival times',done:false},{t:'Prep emergency kit',done:false}],
+    day:[{t:'Arrive 2hr before first vendor',done:false},{t:'Check in each vendor as they arrive',done:false},{t:'Direct setup per floor plan',done:false},{t:'Greet and seat guests',done:false},{t:'Execute timeline',done:false},{t:'Coordinate cake cutting + toasts',done:false},{t:'Oversee vendor breakdown',done:false}],
+    post:[{t:'Confirm all vendors have left',done:false},{t:'Return venue to original state',done:false},{t:'Send recap email to client',done:false},{t:'Collect any held items from venue',done:false},{t:'Request Google + social review',done:false}],
+    shopping:[{n:'Emergency kit (safety pins, stain stick, tape)',q:1,bought:false},{n:'Printed timeline copies',q:5,bought:false}],
+    supplies:[{n:'Clipboard + printed timeline',q:1,packed:false},{n:'Walkie-talkies or headsets',q:2,packed:false},{n:'First aid kit',q:1,packed:false},{n:'Steamer (for linens)',q:1,packed:false},{n:'Extension cords',q:2,packed:false}]
   }
 };
 
