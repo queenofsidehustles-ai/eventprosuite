@@ -16,21 +16,21 @@ img{max-width:100%;display:block}
    DESIGN TOKENS
    ══════════════════════════════════════════════ */
 :root{
-  /* ── Brand — rich violet (professional SaaS) ── */
-  --brand:#7C3AED;
-  --brand-deep:#5B21B6;
-  --brand-mid:#8B5CF6;
-  --brand-light:#A78BFA;
-  --brand-tint:rgba(124,58,237,.08);
+  /* ── Brand — deep violet (serious SaaS) ── */
+  --brand:#6D28D9;
+  --brand-deep:#4C1D95;
+  --brand-mid:#7C3AED;
+  --brand-light:#8B5CF6;
+  --brand-tint:rgba(109,40,217,.08);
 
   /* ── Sidebar ── */
   --sidebar-bg:#FFFFFF;
-  --sidebar-bg-hover:rgba(124,58,237,.06);
-  --sidebar-bg-active:rgba(124,58,237,.10);
+  --sidebar-bg-hover:rgba(109,40,217,.06);
+  --sidebar-bg-active:rgba(109,40,217,.10);
   --sidebar-border:#EDE9FE;
   --sidebar-text:#78718A;
   --sidebar-text-hover:#1A1625;
-  --sidebar-text-active:#7C3AED;
+  --sidebar-text-active:#6D28D9;
   --sidebar-logo-bg:#FAF8FE;
   --sidebar-footer-bg:#F5F3FF;
 
@@ -49,7 +49,7 @@ img{max-width:100%;display:block}
   /* ── Borders ── */
   --border:#E5E0EE;
   --border-strong:#CEC6DE;
-  --border-focus:#7C3AED;
+  --border-focus:#6D28D9;
 
   /* ── Accent gold — use sparingly for key CTAs ── */
   --gold:#C9A227;

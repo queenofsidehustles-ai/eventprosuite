@@ -7,14 +7,14 @@
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
-<link rel="stylesheet" href="styles.css?v=4"/>
+<link rel="stylesheet" href="styles.css?v=5"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --plum-900:#5B21B6;--plum-800:#7C3AED;--brand:#7C3AED;--brand-deep:#8B5CF6;
-  --mauve:#A78BFA;--pink:#E6A2BE;--pink-soft:#F4D2DF;
+  --plum-900:#4C1D95;--plum-800:#6D28D9;--brand:#6D28D9;--brand-deep:#7C3AED;
+  --mauve:#8B5CF6;--pink:#E6A2BE;--pink-soft:#F4D2DF;
   --gold:#C9A227;--gold-bright:#D4AE52;--gold-soft:#F6E5A6;
   --cream:#FCF8F4;--ink:#1F1A24;--muted:#6C6473;
   --line:#EAE3ED;--line-strong:#DDD1E5;
@@ -1655,7 +1655,7 @@ function previewTemplate(tpl){
   const inlineData={
     profile:{
       profile_data:{
-        brandColor:$('customPrimary')?$('customPrimary').value:'#7C3AED',
+        brandColor:$('customPrimary')?$('customPrimary').value:'#6D28D9',
         city:$('city')?$('city').value:'',
         contactPhone:$('phone')?$('phone').value:'',
         contactEmail:$('email')?$('email').value:''
@@ -1670,7 +1670,7 @@ function previewTemplate(tpl){
         phone:$('phone')?$('phone').value:'',
         email:$('email')?$('email').value:'',
         city:$('city')?$('city').value:'',
-        customPrimary:$('customPrimary')?$('customPrimary').value:'#7C3AED',
+        customPrimary:$('customPrimary')?$('customPrimary').value:'#6D28D9',
         customAccent:$('customAccent')?$('customAccent').value:'#C9A227',
         logoDataURL:logoDataURL||null,
         socialInstagram:$('socialInstagram')?$('socialInstagram').value:'',
@@ -2693,7 +2693,7 @@ async function downloadSite(){
           phone:$('phone')?$('phone').value:'',
           email:$('email')?$('email').value:'',
           city:$('city')?$('city').value:'',
-          customPrimary:$('customPrimary')?$('customPrimary').value:'#7C3AED',
+          customPrimary:$('customPrimary')?$('customPrimary').value:'#6D28D9',
           customAccent:$('customAccent')?$('customAccent').value:'#C9A227',
           logoDataURL:logoDataURL||null,
           socialInstagram:$('socialInstagram')?$('socialInstagram').value:'',
@@ -2965,7 +2965,7 @@ init();
   </div><!-- /pbh-content -->
 </div><!-- /pbh-layout -->
 
-<script src="nav.js?v=4"></script>
-<script src="help-widget.js?v=4"></script>
+<script src="nav.js?v=5"></script>
+<script src="help-widget.js?v=5"></script>
 </body>
 </html>

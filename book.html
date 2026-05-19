@@ -24,10 +24,10 @@ img{max-width:100%;display:block}
 
 /* ── Brand Token (overridden by JS) ── */
 :root{
-  --brand:#7C3AED;
+  --brand:#6D28D9;
   --brand-rgb:106,65,126;
-  --brand-light:rgba(124,58,237,.12);
-  --brand-tint:rgba(124,58,237,.07);
+  --brand-light:rgba(109,40,217,.12);
+  --brand-tint:rgba(109,40,217,.07);
 }
 
 /* ── Page Layout ── */
@@ -738,7 +738,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 // Branding
 // ──────────────────────────────────────────────
 function applyBranding() {
-  const brandColor = profileData.brandColor || '#7C3AED';
+  const brandColor = profileData.brandColor || '#6D28D9';
   document.documentElement.style.setProperty('--brand', brandColor);
 
   // Compute a lighter version for tints
@@ -770,7 +770,7 @@ function applyBranding() {
 
 function hexToRgba(hex, alpha) {
   const rgb = hexToRgbParts(hex);
-  if (!rgb) return `rgba(124,58,237,${alpha})`;
+  if (!rgb) return `rgba(109,40,217,${alpha})`;
   return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
 }
 
