@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
-<link rel="stylesheet" href="styles.css"/>
+<link rel="stylesheet" href="styles.css?v=4"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -58,7 +58,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 .hook-wrap{position:relative;margin-bottom:1rem}
 .hook-textarea{width:100%;min-height:110px;border:1.5px solid var(--border);border-radius:12px;padding:.8rem 1rem;font-family:inherit;font-size:.9rem;resize:vertical;transition:border-color .15s;line-height:1.6}
 .hook-textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
-.hook-mic{position:absolute;top:.6rem;right:.6rem;width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#A78420);color:#3A2A1A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.hook-mic{position:absolute;top:.6rem;right:.6rem;width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
 .hook-mic.listening{background:linear-gradient(135deg,var(--danger),#9B1E3F);color:#fff;animation:mic-pulse .8s infinite}
 @keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(194,59,94,.5)}50%{box-shadow:0 0 0 7px rgba(194,59,94,0)}}
 
@@ -315,8 +315,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 
 <div class="toast" id="toast"></div>
 
-<script src="nav.js"></script>
-<script src="help-widget.js"></script>
+<script src="nav.js?v=4"></script>
+<script src="help-widget.js?v=4"></script>
 <script>
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
