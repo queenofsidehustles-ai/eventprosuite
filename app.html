@@ -13,15 +13,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
-    --plum-900:#6D28D9;--plum-800:#7C3AED;--brand:#9333EA;--brand-deep:#A855F7;
-    --mauve:#C084FC;--pink:#E6A2BE;--pink-soft:#F4D2DF;
+    --plum-900:#5B21B6;--plum-800:#7C3AED;--brand:#7C3AED;--brand-deep:#8B5CF6;
+    --mauve:#A78BFA;--pink:#E6A2BE;--pink-soft:#F4D2DF;
     --gold:#C9A227;--gold-soft:#F6E5A6;
     --cream:#FCF8F4;--ink:#1F1A24;--muted:#6C6473;
     --line:#EAE3ED;--line-strong:#DDD1E5;
     --shadow-sm:0 8px 24px rgba(109,40,217,.06);
     --shadow-md:0 16px 40px rgba(90,52,118,.10);
     --shadow-lg:0 24px 70px rgba(61,39,85,.15);
-    --user-primary:#9333EA;--user-accent:#C9A227;
+    --user-primary:#7C3AED;--user-accent:#C9A227;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -209,7 +209,7 @@
   .preview-actions{display:flex;gap:8px;flex-wrap:wrap}
   .preview-body{padding:20px}
   .invoice-shell{border:1px solid var(--line);border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 14px 40px rgba(31,26,36,.06)}
-  .invoice-top{padding:24px 26px 20px;background:linear-gradient(135deg,var(--user-primary) 0%,var(--user-primary-light,#A855F7) 100%);color:#fff;display:grid;grid-template-columns:1.25fr .85fr;gap:18px;align-items:start}
+  .invoice-top{padding:24px 26px 20px;background:linear-gradient(135deg,var(--user-primary) 0%,var(--user-primary-light,#8B5CF6) 100%);color:#fff;display:grid;grid-template-columns:1.25fr .85fr;gap:18px;align-items:start}
   .invoice-brand{display:flex;gap:14px;align-items:flex-start}
   .invoice-logo{width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(255,255,255,.18);flex-shrink:0}
   .invoice-logo img{width:100%;height:100%;object-fit:contain;padding:4px;background:#fff;border-radius:10px}
@@ -361,7 +361,7 @@
     <div style="display:none" aria-hidden="true">
       <input id="businessName"/>
       <input id="logoUpload" type="file"/>
-      <input id="brandColor" type="color" value="#9333EA"/>
+      <input id="brandColor" type="color" value="#7C3AED"/>
       <select id="currency"><option value="$">USD ($)</option><option value="CA$">CAD (CA$)</option><option value="£">GBP (£)</option><option value="€">EUR (€)</option><option value="A$">AUD (A$)</option><option value="R">ZAR (R)</option><option value="₦">NGN (₦)</option><option value="₵">GHS (₵)</option></select>
       <select id="taxMode"><option value="none">No tax</option><option value="added">Add tax</option><option value="included">Tax included</option></select>
       <input id="taxRate" type="number" value="8"/>
@@ -888,7 +888,7 @@ function totals() {
   return { items, subtotal, tax, grand, t };
 }
 function applyBrand() {
-  const c = $('brandColor').value || '#9333EA';
+  const c = $('brandColor').value || '#7C3AED';
   document.documentElement.style.setProperty('--user-primary', c);
   document.documentElement.style.setProperty('--user-primary-light', lightenHex(c, 22));
 }

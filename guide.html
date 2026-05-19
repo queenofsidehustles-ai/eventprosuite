@@ -10,14 +10,14 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;background:#FFFCF8;color:#1A1020;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
-.topbar{background:linear-gradient(135deg,#6D28D9,#9333EA);padding:14px 28px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.topbar{background:linear-gradient(135deg,#5B21B6,#7C3AED);padding:14px 28px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
 .topbar img{height:36px}
 .topbar-title{color:#fff;font-weight:700;font-size:15px}
 .topbar-back{margin-left:auto;color:rgba(255,255,255,.8);font-size:13px;font-weight:600;border:1.5px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:999px;transition:all .15s}
 .topbar-back:hover{background:rgba(255,255,255,.12);color:#fff}
 
 /* Hero */
-.hero{background:linear-gradient(135deg,#6D28D9,#9333EA 55%,#C084FC);padding:3.5rem 1.5rem 4rem;text-align:center;color:#fff;position:relative;overflow:hidden}
+.hero{background:linear-gradient(135deg,#5B21B6,#7C3AED 55%,#A78BFA);padding:3.5rem 1.5rem 4rem;text-align:center;color:#fff;position:relative;overflow:hidden}
 .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 80% 20%,rgba(201,162,39,.2),transparent);pointer-events:none}
 .hero-emoji{font-size:64px;margin-bottom:1rem;line-height:1}
 .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,2.8rem);font-weight:800;margin-bottom:.8rem;letter-spacing:-.02em;position:relative;z-index:1}
@@ -27,16 +27,16 @@ a{text-decoration:none;color:inherit}
 .toc{max-width:900px;margin:0 auto;padding:2rem 1.5rem 0}
 .toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .toc-chip{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:16px;border:1.5px solid #EDE5F5;background:#fff;cursor:pointer;transition:all .18s;text-align:center;text-decoration:none}
-.toc-chip:hover{border-color:#9333EA;transform:translateY(-2px);box-shadow:0 6px 20px rgba(109,40,217,.1)}
+.toc-chip:hover{border-color:#7C3AED;transform:translateY(-2px);box-shadow:0 6px 20px rgba(109,40,217,.1)}
 .toc-chip-icon{font-size:28px;line-height:1}
-.toc-chip-label{font-size:.78rem;font-weight:700;color:#6D28D9}
+.toc-chip-label{font-size:.78rem;font-weight:700;color:#5B21B6}
 
 /* Content area */
 .content{max-width:900px;margin:0 auto;padding:0 1.5rem 5rem}
 
 /* Feature sections */
 .feature{background:#fff;border-radius:24px;border:1px solid #EDE5F5;overflow:hidden;margin:2rem 0;box-shadow:0 2px 20px rgba(26,16,32,.05)}
-.feature-head{padding:1.6rem 2rem;background:linear-gradient(135deg,#6D28D9,#9333EA);color:#fff;display:flex;align-items:center;gap:16px}
+.feature-head{padding:1.6rem 2rem;background:linear-gradient(135deg,#5B21B6,#7C3AED);color:#fff;display:flex;align-items:center;gap:16px}
 .feature-icon{font-size:36px;line-height:1;flex-shrink:0}
 .feature-head h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:4px}
 .feature-head p{font-size:.88rem;color:rgba(255,255,255,.82);line-height:1.5}
@@ -45,7 +45,7 @@ a{text-decoration:none;color:inherit}
 /* Steps */
 .steps{display:flex;flex-direction:column;gap:14px}
 .step{display:flex;gap:16px;align-items:flex-start}
-.step-num{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#9333EA,#C084FC);color:#fff;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-num{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#A78BFA);color:#fff;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .step-content{}
 .step-title{font-weight:700;color:#1A1020;margin-bottom:4px;font-size:.95rem}
 .step-desc{font-size:.88rem;color:#6B5B73;line-height:1.6}
@@ -58,15 +58,15 @@ a{text-decoration:none;color:inherit}
 
 /* Pro tip */
 .pro-box{background:#F5F0FF;border:1.5px solid #C9B8F5;border-radius:14px;padding:1rem 1.2rem;margin-top:1rem;display:flex;gap:10px;align-items:flex-start}
-.pro-text{font-size:.87rem;color:#6D28D9;line-height:1.6}
+.pro-text{font-size:.87rem;color:#5B21B6;line-height:1.6}
 
 /* Flow diagram */
 .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:1rem 0;padding:1rem 1.2rem;background:#F8F5FF;border-radius:12px;border:1px solid #EDE5F5}
-.flow-step{background:#fff;border:1.5px solid #C9B8F5;border-radius:10px;padding:6px 12px;font-size:.8rem;font-weight:700;color:#6D28D9;white-space:nowrap}
+.flow-step{background:#fff;border:1.5px solid #C9B8F5;border-radius:10px;padding:6px 12px;font-size:.8rem;font-weight:700;color:#5B21B6;white-space:nowrap}
 .flow-arrow{font-size:.9rem;color:#C9B8F5;font-weight:700}
 
 /* Highlight */
-.hl{display:inline-block;background:#F0EAFF;color:#6D28D9;font-weight:700;padding:1px 6px;border-radius:5px;font-size:.92em}
+.hl{display:inline-block;background:#F0EAFF;color:#5B21B6;font-weight:700;padding:1px 6px;border-radius:5px;font-size:.92em}
 
 @media(max-width:640px){
   .feature-head{flex-direction:column;gap:10px;text-align:center}
@@ -284,7 +284,7 @@ a{text-decoration:none;color:inherit}
 
   <!-- FOOTER -->
   <div style="text-align:center;padding:2rem 0;color:#B0A0BC;font-size:.82rem">
-    Party Biz Hub · Built by Coach Monica · <a href="dashboard.html" style="color:#9333EA;font-weight:600">Back to Dashboard →</a>
+    Party Biz Hub · Built by Coach Monica · <a href="dashboard.html" style="color:#7C3AED;font-weight:600">Back to Dashboard →</a>
   </div>
 
 </div>

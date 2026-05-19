@@ -1,6 +1,6 @@
 /*
- * Party Biz Hub — Design System v2
- * Bubbly, vibrant violet. Fun for the kids party niche. Still professional.
+ * Party Biz Hub — Design System v3
+ * Rich violet. Serious SaaS with warmth for the kids party niche.
  */
 
 /* ── RESET ── */
@@ -16,21 +16,21 @@ img{max-width:100%;display:block}
    DESIGN TOKENS
    ══════════════════════════════════════════════ */
 :root{
-  /* ── Brand — vibrant candy violet ── */
-  --brand:#9333EA;
-  --brand-deep:#6D28D9;
-  --brand-mid:#A855F7;
-  --brand-light:#C084FC;
-  --brand-tint:rgba(147,51,234,.08);
+  /* ── Brand — rich violet (professional SaaS) ── */
+  --brand:#7C3AED;
+  --brand-deep:#5B21B6;
+  --brand-mid:#8B5CF6;
+  --brand-light:#A78BFA;
+  --brand-tint:rgba(124,58,237,.08);
 
   /* ── Sidebar ── */
   --sidebar-bg:#FFFFFF;
-  --sidebar-bg-hover:rgba(147,51,234,.06);
-  --sidebar-bg-active:rgba(147,51,234,.10);
+  --sidebar-bg-hover:rgba(124,58,237,.06);
+  --sidebar-bg-active:rgba(124,58,237,.10);
   --sidebar-border:#EDE9FE;
   --sidebar-text:#78718A;
   --sidebar-text-hover:#1A1625;
-  --sidebar-text-active:#9333EA;
+  --sidebar-text-active:#7C3AED;
   --sidebar-logo-bg:#FAF8FE;
   --sidebar-footer-bg:#F5F3FF;
 
@@ -49,7 +49,7 @@ img{max-width:100%;display:block}
   /* ── Borders ── */
   --border:#E5E0EE;
   --border-strong:#CEC6DE;
-  --border-focus:#9333EA;
+  --border-focus:#7C3AED;
 
   /* ── Accent gold — use sparingly for key CTAs ── */
   --gold:#C9A227;
