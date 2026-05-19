@@ -89,6 +89,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 .spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── MEDIA UPLOAD ── */
+.media-upload-zone{border:2px dashed var(--border-strong);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;transition:all .18s;margin-top:.6rem;background:#FDFBFF}
+.media-upload-zone:hover{border-color:var(--brand);background:rgba(109,40,217,.04)}
+.media-upload-zone input[type=file]{display:none}
+.media-upload-label{font-size:.78rem;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:center;gap:.4rem}
+.media-upload-label span{color:var(--plum-900)}
+.media-preview-wrap{margin-top:.5rem;position:relative;display:inline-block;max-width:100%}
+.media-preview-img{max-height:140px;max-width:100%;border-radius:10px;object-fit:cover;display:block}
+.media-preview-video{max-height:140px;max-width:100%;border-radius:10px;display:block}
+.media-clear{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#C23B5E;color:#fff;border:none;cursor:pointer;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.media-uploading{font-size:.72rem;color:var(--brand);font-weight:700;margin-top:.3rem}
+.q-thumb{width:100%;max-height:120px;object-fit:cover;border-radius:10px;margin-bottom:.6rem;display:block}
+.q-thumb-video{width:100%;max-height:120px;object-fit:cover;border-radius:10px;margin-bottom:.6rem;display:block}
+
 /* ── QUEUE ── */
 .queue-filters{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
 .q-filter{padding:.38rem .85rem;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
@@ -261,6 +275,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
           <div class="output-box" id="hashtagsOut" style="font-size:.8rem;color:var(--brand)"></div>
         </div>
 
+        <!-- Media Upload -->
+        <div class="media-upload-zone" id="mediaUploadZone" onclick="document.getElementById('mediaFileInput').click()">
+          <input type="file" id="mediaFileInput" accept="image/*,video/*" onchange="handleMediaUpload(this)">
+          <div class="media-upload-label" id="mediaUploadLabel">
+            <span>📸</span> Add a photo or video <span style="font-weight:400;color:var(--muted)">(optional)</span>
+          </div>
+          <div id="mediaPreviewWrap" class="media-preview-wrap" style="display:none">
+            <img id="mediaPreviewImg" class="media-preview-img" style="display:none" alt="preview"/>
+            <video id="mediaPreviewVid" class="media-preview-video" style="display:none" muted playsinline></video>
+            <button class="media-clear" onclick="event.stopPropagation();clearMediaUpload()" title="Remove">×</button>
+          </div>
+          <div id="mediaUploading" class="media-uploading" style="display:none">Uploading…</div>
+        </div>
+
         <div style="display:flex;gap:.5rem;margin-top:.4rem">
           <button class="btn-save" id="saveBtn" onclick="saveToQueue()">💾 Save to Queue</button>
           <button class="btn-save" style="flex:0 0 auto;width:auto;padding:.75rem 1rem" onclick="generateContent()" title="Regenerate">🔄</button>
@@ -350,6 +378,7 @@ let lastGenerated=null;
 let recognition=null;
 let queueItems=[];
 let queueFilter='all';
+let pendingMediaUrl=null;
 
 /* ── AUTH ── */
 async function init(){
@@ -458,15 +487,61 @@ function copyField(fieldId,btnId){
 }
 
 /* ── SAVE TO QUEUE ── */
+/* ── MEDIA UPLOAD ── */
+async function handleMediaUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  const isVideo=/^video\//i.test(file.type);
+  // Show local preview immediately
+  const url=URL.createObjectURL(file);
+  document.getElementById('mediaUploadLabel').style.display='none';
+  document.getElementById('mediaPreviewWrap').style.display='inline-block';
+  if(isVideo){
+    const v=document.getElementById('mediaPreviewVid');
+    v.src=url;v.style.display='block';
+    document.getElementById('mediaPreviewImg').style.display='none';
+  }else{
+    const img=document.getElementById('mediaPreviewImg');
+    img.src=url;img.style.display='block';
+    document.getElementById('mediaPreviewVid').style.display='none';
+  }
+  // Upload to Supabase Storage
+  document.getElementById('mediaUploading').style.display='block';
+  const ext=file.name.split('.').pop()||'bin';
+  const path=`${currentUser.id}/${Date.now()}.${ext}`;
+  const{error}=await sb.storage.from('media').upload(path,file,{cacheControl:'3600',upsert:false});
+  document.getElementById('mediaUploading').style.display='none';
+  if(error){
+    showToast('Upload failed: '+(error.message||'unknown error'));
+    clearMediaUpload();return;
+  }
+  const{data}=sb.storage.from('media').getPublicUrl(path);
+  pendingMediaUrl=data.publicUrl;
+  showToast('Photo/video uploaded! ✅');
+}
+
+function clearMediaUpload(){
+  pendingMediaUrl=null;
+  document.getElementById('mediaFileInput').value='';
+  document.getElementById('mediaPreviewImg').src='';
+  document.getElementById('mediaPreviewImg').style.display='none';
+  document.getElementById('mediaPreviewVid').src='';
+  document.getElementById('mediaPreviewVid').style.display='none';
+  document.getElementById('mediaPreviewWrap').style.display='none';
+  document.getElementById('mediaUploadLabel').style.display='flex';
+  document.getElementById('mediaUploading').style.display='none';
+}
+
 async function saveToQueue(){
   if(!lastGenerated)return;
   document.getElementById('saveBtn').disabled=true;
   document.getElementById('saveBtn').textContent='Saving…';
-  const item={user_id:currentUser.id,hook:lastGenerated.hook,post_type:lastGenerated.post_type,platform:lastGenerated.platform,reel_hook:lastGenerated.reel_hook,caption:lastGenerated.caption,story_caption:lastGenerated.story_caption,hashtags:lastGenerated.hashtags,status:'draft'};
+  const item={user_id:currentUser.id,hook:lastGenerated.hook,post_type:lastGenerated.post_type,platform:lastGenerated.platform,reel_hook:lastGenerated.reel_hook,caption:lastGenerated.caption,story_caption:lastGenerated.story_caption,hashtags:lastGenerated.hashtags,status:'draft',media_url:pendingMediaUrl||null};
   const{error}=await sb.from('content_items').insert(item);
   if(error){showToast('Save failed: '+error.message);document.getElementById('saveBtn').disabled=false;document.getElementById('saveBtn').innerHTML='💾 Save to Queue';return}
   showToast('Saved to your queue! ✅');
   document.getElementById('saveBtn').innerHTML='✅ Saved';
+  clearMediaUpload();
   await loadQueue();
 }
 
@@ -499,10 +574,14 @@ function renderQueue(){
     const statusLabel=item.status==='draft'?'📝 Draft':item.status==='ready'?'✅ Ready':item.status==='scheduled'?'📅 Scheduled':'🚀 Posted';
     const schedVal=item.scheduled_at?item.scheduled_at.slice(0,16):'';
     const schedDisplay=item.scheduled_at?`<div class="sched-display">📅 ${new Date(item.scheduled_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}</div>`:'';
+    const isVideo=item.media_url&&/\.(mp4|mov|avi|webm)$/i.test(item.media_url);
+    const thumb=item.media_url?(isVideo?`<video class="q-thumb-video" src="${esc(item.media_url)}" muted playsinline></video>`:`<img class="q-thumb" src="${esc(item.media_url)}" alt="media"/>`): '';
     return`<div class="q-card">
+      ${thumb}
       <div class="q-card-top">
         <span class="q-badge type">${esc(item.post_type||'Post')}</span>
         <span class="q-badge platform">${esc(item.platform||'Instagram')}</span>
+        ${item.media_url?'<span class="q-badge" style="background:rgba(30,140,90,.1);color:#0D6E3E">📎 Media</span>':''}
       </div>
       <div class="q-hook">${esc(item.reel_hook||item.hook||'')}</div>
       <div class="q-caption-preview">${esc(item.caption||'')}</div>
@@ -661,7 +740,8 @@ async function executePostNow(){
       body:JSON.stringify({
         zernioKey:userZernioKey,
         caption:item.caption||item.reel_hook||'',
-        hashtags:item.hashtags||''
+        hashtags:item.hashtags||'',
+        mediaUrl:item.media_url||null
       })
     });
     const data=await res.json();
