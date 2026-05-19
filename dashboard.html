@@ -6,7 +6,7 @@
 <title>Home | Party Biz Hub</title>
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<script>(function(){try{if(sessionStorage.getItem("pbh_auth")==="1"){document.documentElement.dataset.auth="ok";return;}var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
 <link rel="stylesheet" href="styles.css?v=6"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -27,14 +27,14 @@
 .setup-banner{
   display:flex;align-items:center;gap:14px;
   padding:16px 20px;
-  background:linear-gradient(135deg,var(--gold-tint),var(--brand-tint));
-  border:1px solid rgba(201,162,39,.28);border-radius:var(--radius-xl);
+  background:linear-gradient(135deg,rgba(109,40,217,.1),rgba(124,58,237,.06));
+  border:1px solid rgba(109,40,217,.2);border-radius:var(--radius-xl);
   margin-bottom:24px;flex-wrap:wrap
 }
 .setup-banner-icon{
   width:40px;height:40px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--gold),#e0b850);
-  color:#3A2A1A;display:flex;align-items:center;justify-content:center;font-size:18px
+  background:linear-gradient(135deg,#4C1D95,#7C3AED);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px
 }
 .setup-banner-body{flex:1;min-width:180px}
 .setup-banner-body strong{display:block;color:var(--text-primary);font-weight:700;font-size:.95rem;margin-bottom:3px}

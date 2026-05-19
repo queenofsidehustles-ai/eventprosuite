@@ -6,7 +6,7 @@
 <title>Event Checklist | Party Biz Hub</title>
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<script>(function(){try{if(sessionStorage.getItem("pbh_auth")==="1"){document.documentElement.dataset.auth="ok";return;}var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
 <link rel="stylesheet" href="styles.css?v=6"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -104,9 +104,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .page-header::after{content:"";position:absolute;bottom:-20px;left:0;right:0;height:40px;background:#fff;border-radius:50% 50% 0 0 / 100% 100% 0 0;opacity:.08}
 .page-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1;text-align:center}
 .page-eyebrow{display:block;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:rgba(255,255,255,.6);margin-bottom:.35rem}
-.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em}
-.page-title .script{font-family:'Dancing Script',cursive;font-size:1.35em;color:#fff;font-weight:700;letter-spacing:.01em;display:inline-block}
-.page-sub{font-size:.92rem;color:rgba(255,255,255,.8);max-width:580px;line-height:1.65}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em;color:#fff}
+.page-title .script{font-family:'Dancing Script',cursive;font-size:1.35em;color:#5EEAD4;font-weight:700;letter-spacing:.01em;display:inline-block;text-shadow:0 1px 8px rgba(0,0,0,.18)}
+.page-sub{font-size:.8rem;color:rgba(255,255,255,.88);line-height:1.6;max-width:520px;margin:.25rem auto 0;text-align:center}
 
 .wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
 
