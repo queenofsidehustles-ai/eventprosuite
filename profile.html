@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
-<link rel="stylesheet" href="styles.css?v=5"/>
+<link rel="stylesheet" href="styles.css?v=6"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -366,6 +366,38 @@ input,select,textarea{font:inherit}
     </div>
   </section>
 
+  <!-- SOCIAL MEDIA CONNECTIONS -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">📱 Social Media Connections</h2>
+      <p class="section-sub">Connect Instagram, Facebook, TikTok, and YouTube so you can post directly from Content Studio with one click.</p>
+    </div>
+
+    <div style="background:linear-gradient(135deg,rgba(76,29,149,.06),rgba(109,40,217,.03));border:1px solid rgba(109,40,217,.2);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem">
+      <div style="font-weight:700;color:var(--plum-900);margin-bottom:.6rem;font-size:.9rem">How to connect your accounts (free, takes 5 minutes)</div>
+      <ol style="font-size:.84rem;color:var(--text-muted);line-height:1.9;padding-left:1.2rem;margin:0">
+        <li>Go to <strong><a href="https://getlate.dev" target="_blank" style="color:var(--brand)">getlate.dev</a></strong> and create a free account</li>
+        <li>Click <strong>Connect Accounts</strong> and add Instagram, Facebook, TikTok, and/or YouTube</li>
+        <li>Go to <strong>Settings → API Key</strong> and copy your key</li>
+        <li>Paste it below and click <strong>Verify & Save</strong></li>
+      </ol>
+    </div>
+
+    <div class="field">
+      <label>Your Zernio / GetLate API Key</label>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <input type="password" id="zernioKey" placeholder="sk-gl-..." style="flex:1;min-width:220px;font-family:monospace;font-size:.82rem"/>
+        <button class="btn btn-outline" onclick="verifyZernio()" id="zernioVerifyBtn" style="white-space:nowrap;flex-shrink:0">Verify &amp; Save</button>
+      </div>
+      <div class="field-help">Your key is stored securely in your profile and only used to post your content.</div>
+    </div>
+
+    <div id="socialAccountsWrap" style="display:none;margin-top:.8rem">
+      <div style="font-size:.76rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem">Connected Platforms</div>
+      <div id="socialAccountsList" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+    </div>
+  </section>
+
   <!-- SAVE BAR -->
   <div class="save-bar">
     <div class="save-bar-text">
@@ -416,6 +448,7 @@ async function init(){
     if(pd.contactPhone)$('contactPhone').value=pd.contactPhone;
     if(pd.bookingServices)bookingServices=[...pd.bookingServices];
     if(pd.depositUpfront){depositUpfrontEnabled=true;applyToggleUI(true)}
+    if(pd.zernioKey){$('zernioKey').value=pd.zernioKey;loadSocialAccounts(pd.zernioKey)}
 
     const display=pd.businessName||(p&&p.full_name)||currentUser.email.split('@')[0];
     setNavUser(display);
@@ -497,6 +530,47 @@ function copyEmbed(){
   navigator.clipboard.writeText($('embedCode').value).then(()=>showToast('✓ Embed code copied!'));
 }
 
+/* ── Social Media (Zernio) ── */
+const PLATFORM_ICONS = { instagram:'📸', facebook:'👥', tiktok:'🎵', youtube:'▶️', twitter:'🐦', linkedin:'💼', pinterest:'📌' };
+
+async function verifyZernio(){
+  const key=$('zernioKey').value.trim();
+  if(!key){showToast('Paste your API key first');return}
+  const btn=$('zernioVerifyBtn');
+  btn.disabled=true;btn.textContent='Checking…';
+  try{
+    const res=await fetch('/api/social-accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zernioKey:key})});
+    const data=await res.json();
+    if(!res.ok){showToast('❌ '+data.error);btn.disabled=false;btn.textContent='Verify & Save';return}
+    showToast('✅ Connected! '+data.accounts.length+' platform'+(data.accounts.length===1?'':'s')+' found. Hit Save Profile.');
+    renderSocialAccounts(data.accounts);
+    btn.textContent='✅ Verified';
+    setTimeout(()=>{btn.disabled=false;btn.textContent='Verify & Save'},3000);
+  }catch(e){showToast('Connection error. Try again.');btn.disabled=false;btn.textContent='Verify & Save'}
+}
+
+async function loadSocialAccounts(key){
+  if(!key)return;
+  try{
+    const res=await fetch('/api/social-accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zernioKey:key})});
+    const data=await res.json();
+    if(res.ok)renderSocialAccounts(data.accounts||[]);
+  }catch(_){}
+}
+
+function renderSocialAccounts(accounts){
+  const wrap=$('socialAccountsWrap');
+  const list=$('socialAccountsList');
+  if(!accounts.length){wrap.style.display='none';return}
+  wrap.style.display='block';
+  list.innerHTML=accounts.map(a=>{
+    const icon=PLATFORM_ICONS[a.platform]||'🔗';
+    const name=(a.platform||'').charAt(0).toUpperCase()+(a.platform||'').slice(1);
+    const user=a.username||a.name||'';
+    return`<div style="display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .8rem;border-radius:999px;background:rgba(109,40,217,.08);border:1.5px solid rgba(109,40,217,.2);font-size:.78rem;font-weight:600;color:var(--plum-900)">${icon} ${name}${user?' · <span style="font-weight:400;opacity:.8">'+user+'</span>':''}</div>`;
+  }).join('');
+}
+
 function applyLogoPreview(){
   const p=$('logoPreview');
   if(logoDataURL){
@@ -555,7 +629,8 @@ async function saveProfile(){
       logoDataURL:logoDataURL,
       depositUpfront:depositUpfrontEnabled,
       contactPhone:$('contactPhone').value,
-      bookingServices:bookingServices
+      bookingServices:bookingServices,
+      zernioKey:$('zernioKey').value.trim()
     };
 
     const{error}=await sb.from('profiles').upsert({
@@ -595,7 +670,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 init();
 </script>
-<script src="nav.js?v=5"></script>
-<script src="help-widget.js?v=5"></script>
+<script src="nav.js?v=6"></script>
+<script src="help-widget.js?v=6"></script>
 </body>
 </html>

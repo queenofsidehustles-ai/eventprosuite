@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="partybizhub-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
-<link rel="stylesheet" href="styles.css?v=5"/>
+<link rel="stylesheet" href="styles.css?v=6"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -114,6 +114,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 .q-sched-confirm{padding:.3rem .75rem;border-radius:8px;background:var(--plum-900);color:#fff;border:none;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit}
 .q-sched-clear{padding:.3rem .65rem;border-radius:8px;background:#fff;border:1.5px solid rgba(194,59,94,.3);color:var(--danger);font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit}
 .sched-display{font-size:.68rem;color:#1D4ED8;font-weight:600;margin-top:.35rem;display:flex;align-items:center;gap:.3rem}
+.q-post-now{font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:none;background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#fff;cursor:pointer;font-family:inherit;transition:all .15s}
+.q-post-now:hover{opacity:.88}
+.q-post-now:disabled{opacity:.4;cursor:not-allowed}
+/* Post confirm overlay */
+.post-overlay{position:fixed;inset:0;background:rgba(15,10,25,.55);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.post-modal{background:#fff;border-radius:20px;padding:1.8rem;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(76,29,149,.25)}
+.post-modal h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#4C1D95;margin-bottom:.4rem}
+.post-modal p{font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem}
+.post-modal-actions{display:flex;gap:.6rem;justify-content:flex-end}
+.post-modal-actions button{padding:.65rem 1.2rem;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:all .15s}
+.post-cancel{background:#fff;border:1.5px solid var(--border)!important;color:var(--muted)}
+.post-confirm{background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#fff;box-shadow:0 4px 14px rgba(76,29,149,.3)}
 .q-copy{font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
 .q-copy:hover{border-color:var(--brand);color:var(--brand)}
 .q-delete{margin-left:auto;font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:1.5px solid rgba(194,59,94,.2);background:#fff;color:var(--danger);cursor:pointer;font-family:inherit;transition:all .15s}
@@ -311,16 +323,27 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
   </div>
 </div>
 
+<div class="post-overlay" id="postOverlay" style="display:none" onclick="if(event.target===this)closePostOverlay()">
+  <div class="post-modal">
+    <h3>Post to Social Media</h3>
+    <p>This will publish to <strong>all your connected platforms</strong> (Instagram, Facebook, TikTok, YouTube) right now. Make sure your caption looks good before posting!</p>
+    <div class="post-modal-actions">
+      <button class="post-cancel" onclick="closePostOverlay()">Cancel</button>
+      <button class="post-confirm" id="postConfirmBtn" onclick="executePostNow()">📤 Post Now</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="nav.js?v=5"></script>
-<script src="help-widget.js?v=5"></script>
+<script src="nav.js?v=6"></script>
+<script src="help-widget.js?v=6"></script>
 <script>
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let currentUser=null, userBiz='', userCity='';
+let currentUser=null, userBiz='', userCity='', userZernioKey='';
 let currentTab='create';
 let selectedType='After Party Recap', selectedPlatform='Instagram';
 let lastGenerated=null;
@@ -339,6 +362,7 @@ async function init(){
     if(p&&p.profile_data&&p.profile_data.brandColor)applyBrand(p.profile_data.brandColor);
     userBiz=(p&&p.profile_data&&p.profile_data.businessName)||p?.full_name||(session.user.email||'').split('@')[0];
     userCity=(p&&p.profile_data&&(p.profile_data.city||p.profile_data.location))||'';
+    userZernioKey=(p&&p.profile_data&&p.profile_data.zernioKey)||'';
     setNavUser(userBiz);
   }catch(e){setNavUser((session.user.email||'').split('@')[0])}
   document.getElementById('authGate').style.display='none';
@@ -484,6 +508,7 @@ function renderQueue(){
       <div class="q-caption-preview">${esc(item.caption||'')}</div>
       <div class="q-card-actions">
         <button class="q-status ${item.status||'draft'}" onclick="cycleStatus('${item.id}','${item.status||'draft'}')" title="Click to cycle status">${statusLabel}</button>
+        <button class="q-post-now" onclick="confirmPostNow('${item.id}')" title="Post to all connected social platforms">📤 Post Now</button>
         <button class="q-copy" onclick="toggleSchedule('${item.id}')">📅 Schedule</button>
         <button class="q-copy" onclick="copyCaption('${item.id}')">Copy</button>
         <button class="q-copy" onclick="copyAll('${item.id}')">Copy All</button>
@@ -603,6 +628,54 @@ function expandBatchIdea(encoded){
   switchTab('create');
   document.getElementById('hookInput').focus();
   showToast('Hook loaded — hit Generate! ✨');
+}
+
+/* ── POST NOW ── */
+let pendingPostId=null;
+
+function confirmPostNow(id){
+  if(!userZernioKey){
+    showToast('Add your social media API key in Business Profile → Social Media Connections first.');
+    setTimeout(()=>{window.location.href='profile.html'},2200);
+    return;
+  }
+  pendingPostId=id;
+  document.getElementById('postOverlay').style.display='flex';
+}
+
+function closePostOverlay(){
+  document.getElementById('postOverlay').style.display='none';
+  pendingPostId=null;
+}
+
+async function executePostNow(){
+  if(!pendingPostId)return;
+  const item=queueItems.find(i=>i.id===pendingPostId);
+  if(!item){closePostOverlay();return}
+  const btn=document.getElementById('postConfirmBtn');
+  btn.disabled=true;btn.textContent='Posting…';
+  try{
+    const res=await fetch('/api/publish',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        zernioKey:userZernioKey,
+        caption:item.caption||item.reel_hook||'',
+        hashtags:item.hashtags||''
+      })
+    });
+    const data=await res.json();
+    closePostOverlay();
+    if(!res.ok){showToast('❌ '+data.error);return}
+    const platforms=(data.platforms||[]).join(', ');
+    await sb.from('content_items').update({status:'posted'}).eq('id',item.id);
+    await loadQueue();
+    showToast('🚀 Posted to '+(platforms||'your accounts')+'!');
+  }catch(e){
+    closePostOverlay();
+    showToast('Connection error. Try again.');
+  }
+  btn.disabled=false;btn.textContent='Post Now';
 }
 
 /* ── UTILS ── */
