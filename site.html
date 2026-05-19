@@ -17,7 +17,7 @@ button{font:inherit;cursor:pointer;border:none;background:none}
 /* Loading gate */
 #loading-gate{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:9999;transition:opacity .35s ease}
 #loading-gate.fade-out{opacity:0;pointer-events:none}
-.spinner{width:52px;height:52px;border:4px solid rgba(106,63,138,.15);border-top-color:#6A3F8A;border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:52px;height:52px;border:4px solid rgba(106,63,138,.15);border-top-color:#9333EA;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;font-weight:600;color:#888;letter-spacing:.04em}
 
@@ -99,8 +99,8 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     const reviews_data =(wb&&Array.isArray(wb.reviews_data)&&wb.reviews_data.length>0)?wb.reviews_data:null;
     const faq_data     =(wb&&wb.faq_data&&Array.isArray(wb.faq_data.items)&&wb.faq_data.items.length>0)?wb.faq_data:null;
 
-    const rawBrand  = first(brand_data.customPrimary,pd.brandColor,'#6A3F8A');
-    const brand     = /^#[0-9A-Fa-f]{3,6}$/.test(rawBrand)?rawBrand:'#6A3F8A';
+    const rawBrand  = first(brand_data.customPrimary,pd.brandColor,'#9333EA');
+    const brand     = /^#[0-9A-Fa-f]{3,6}$/.test(rawBrand)?rawBrand:'#9333EA';
     const brandDark = darkenHex(brand,40);
     const brandLight= hexToRgba(brand,0.12);
 
@@ -1266,7 +1266,7 @@ ${cHTML}${revHTML}${faqHTML}
 
   /* ── Shared: quick-contact form section (injected into every template before footer) ── */
   function buildContactSection(d,ownerId){
-    const g=d.brand||'#6A3F8A';
+    const g=d.brand||'#9333EA';
     const gLight=hexToRgba(g,.08);
     const cityLine=d.city?' We proudly serve <strong>'+esc(d.city)+'</strong> and the surrounding area.':'';
     return `

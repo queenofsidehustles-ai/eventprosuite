@@ -1,7 +1,6 @@
 /*
  * Party Biz Hub — Design System v2
- * Professional SaaS. Warm plum brand. Not playful, not cold.
- * Deep plum sidebar + light content = premium without heavy dark.
+ * Bubbly, vibrant violet. Fun for the kids party niche. Still professional.
  */
 
 /* ── RESET ── */
@@ -17,23 +16,23 @@ img{max-width:100%;display:block}
    DESIGN TOKENS
    ══════════════════════════════════════════════ */
 :root{
-  /* ── Brand ── */
-  --brand:#6A417E;
-  --brand-deep:#4A2B63;
-  --brand-mid:#7D5293;
-  --brand-light:#9B79B0;
-  --brand-tint:rgba(106,65,126,.08);
+  /* ── Brand — vibrant candy violet ── */
+  --brand:#9333EA;
+  --brand-deep:#6D28D9;
+  --brand-mid:#A855F7;
+  --brand-light:#C084FC;
+  --brand-tint:rgba(147,51,234,.08);
 
-  /* ── Sidebar — white with brand purple accents ── */
+  /* ── Sidebar ── */
   --sidebar-bg:#FFFFFF;
-  --sidebar-bg-hover:rgba(106,65,126,.06);
-  --sidebar-bg-active:rgba(106,65,126,.10);
-  --sidebar-border:#E5E0EE;
+  --sidebar-bg-hover:rgba(147,51,234,.06);
+  --sidebar-bg-active:rgba(147,51,234,.10);
+  --sidebar-border:#EDE9FE;
   --sidebar-text:#78718A;
   --sidebar-text-hover:#1A1625;
-  --sidebar-text-active:#6A417E;
+  --sidebar-text-active:#9333EA;
   --sidebar-logo-bg:#FAF8FE;
-  --sidebar-footer-bg:#F4F2F8;
+  --sidebar-footer-bg:#F5F3FF;
 
   /* ── Page & Cards ── */
   --bg-page:#F4F2F8;       /* barely-there lavender — not cream, not gray */
@@ -50,7 +49,7 @@ img{max-width:100%;display:block}
   /* ── Borders ── */
   --border:#E5E0EE;
   --border-strong:#CEC6DE;
-  --border-focus:#6A417E;
+  --border-focus:#9333EA;
 
   /* ── Accent gold — use sparingly for key CTAs ── */
   --gold:#C9A227;

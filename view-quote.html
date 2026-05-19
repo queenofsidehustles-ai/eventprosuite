@@ -16,7 +16,7 @@ img{max-width:100%;display:block}
 
 /* Loading / error */
 #loadingState{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 24px}
-.spinner{width:44px;height:44px;border:3px solid rgba(106,63,138,.15);border-top-color:#6A3F8A;border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:44px;height:44px;border:3px solid rgba(106,63,138,.15);border-top-color:#9333EA;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #errorState{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:40px 24px}
 #errorState.show{display:flex}
@@ -24,7 +24,7 @@ img{max-width:100%;display:block}
 #quoteRoot.show{display:block}
 
 /* Header */
-.qv-header{background:linear-gradient(135deg,#4A2B63,#6A417E 60%,#A67BB5);padding:2.4rem 1.5rem;color:#fff;text-align:center}
+.qv-header{background:linear-gradient(135deg,#6D28D9,#9333EA 60%,#C084FC);padding:2.4rem 1.5rem;color:#fff;text-align:center}
 .qv-logo{width:56px;height:56px;border-radius:12px;margin:0 auto 14px;object-fit:cover}
 .qv-logo-initial{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.25);color:#fff;font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
 .qv-biz{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:4px}
@@ -56,7 +56,7 @@ img{max-width:100%;display:block}
 .qv-total-row.subtotal{color:#6B5B73}
 .qv-total-row.tax{color:#6B5B73}
 .qv-total-row.grand{font-size:1.1rem;font-weight:800;color:#1A1020;padding:1rem 1.4rem;background:#FBFAFF}
-.qv-total-row.deposit{font-weight:700;color:#6A417E;background:#F5F0FF}
+.qv-total-row.deposit{font-weight:700;color:#9333EA;background:#F5F0FF}
 .qv-total-label{font-weight:600}
 
 /* Expiry + notes */
@@ -67,10 +67,10 @@ img{max-width:100%;display:block}
 .qv-notes-text{font-size:.9rem;color:#3A2A4A;line-height:1.7;white-space:pre-wrap}
 
 /* CTA */
-.qv-cta{background:linear-gradient(135deg,#4A2B63,#6A417E);border-radius:20px;padding:2rem 1.5rem;text-align:center;color:#fff;margin-bottom:1.4rem}
+.qv-cta{background:linear-gradient(135deg,#6D28D9,#9333EA);border-radius:20px;padding:2rem 1.5rem;text-align:center;color:#fff;margin-bottom:1.4rem}
 .qv-cta h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
 .qv-cta p{font-size:.88rem;color:rgba(255,255,255,.82);margin-bottom:1.2rem;line-height:1.6}
-.qv-cta-btn{display:inline-block;background:#fff;color:#4A2B63;font-size:1rem;font-weight:800;padding:14px 36px;border-radius:999px;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.qv-cta-btn{display:inline-block;background:#fff;color:#6D28D9;font-size:1rem;font-weight:800;padding:14px 36px;border-radius:999px;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 24px rgba(0,0,0,.2)}
 .qv-cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.28)}
 .qv-footer{text-align:center;font-size:.78rem;color:#B0A0BC;padding-bottom:2rem}
 </style>
@@ -126,7 +126,7 @@ img{max-width:100%;display:block}
       const bizName = pd.businessName || (p&&p.full_name) || 'Party Business';
       const logo = pd.logo || null;
       const initial = bizName.charAt(0).toUpperCase();
-      const brandColor = pd.brandColor || '#6A417E';
+      const brandColor = pd.brandColor || '#9333EA';
       const bookURL = 'book.html?uid='+encodeURIComponent(q.user_id);
 
       // Expiry notice

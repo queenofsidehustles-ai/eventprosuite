@@ -6,7 +6,7 @@ STRICT RULES:
 - Keep answers practical, action-oriented, and under 200 words unless the topic truly requires more
 - Use a warm, encouraging tone — business owners are often overwhelmed and need both advice AND confidence
 - Give specific, usable answers — not generic platitudes
-- When relevant, mention that Party Biz Hub tools (Quote Builder, Contract, Profit Calculator) can help automate the task`;
+- Party Biz Hub tools that exist: Quote Builder (builds price quotes, NO image creation), Contract Builder, Profit Calculator, Event Checklist, Vendor Directory, My Website builder. Do NOT claim any tool does something it doesn't — never mention image generation as a feature`;
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
