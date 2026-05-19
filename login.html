@@ -213,7 +213,7 @@ sb.auth.getSession().then(async ({ data: { session } }) => {
     .eq('id', session.user.id)
     .single();
   const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
-  window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html';
+  window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
 });
 
 function switchTab(tab) {
@@ -278,7 +278,7 @@ async function handleLogin() {
 
   // Smart routing: incomplete profile → profile.html, complete → app.html
   const hasBusinessName = profile.profile_data && profile.profile_data.businessName;
-  window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html';
+  window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
 }
 
 async function handleSignup() {

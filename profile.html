@@ -160,6 +160,22 @@ input,select,textarea{font:inherit}
 <!-- MAIN -->
 <main class="wrap">
 
+  <!-- FIRST-LOGIN WELCOME BANNER -->
+  <div id="setupWelcomeBanner" style="display:none;background:linear-gradient(135deg,rgba(109,40,217,.08),rgba(230,162,190,.12));border:1.5px solid rgba(109,40,217,.2);border-radius:18px;padding:1.5rem 1.6rem;margin-bottom:1.4rem">
+    <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+      <div style="font-size:2.2rem;line-height:1">🎉</div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#4C1D95;margin-bottom:.4rem">Welcome to Party Biz Hub!</div>
+        <p style="font-size:.86rem;color:#6C6473;line-height:1.6;margin-bottom:.8rem">Let's take 2 minutes to set up your business. Your name, logo, and contact info will appear on every quote, contract, and your booking page. Fill in what you have — you can always update it later.</p>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <div style="background:#fff;border:1px solid rgba(109,40,217,.2);border-radius:8px;padding:.4rem .8rem;font-size:.75rem;font-weight:700;color:#4C1D95">1 · Your brand name &amp; logo</div>
+          <div style="background:#fff;border:1px solid rgba(109,40,217,.2);border-radius:8px;padding:.4rem .8rem;font-size:.75rem;font-weight:700;color:#4C1D95">2 · Currency &amp; deposit</div>
+          <div style="background:#fff;border:1px solid rgba(109,40,217,.2);border-radius:8px;padding:.4rem .8rem;font-size:.75rem;font-weight:700;color:#4C1D95">3 · Hit Save when done</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- BRAND -->
   <section class="card">
     <div class="card-header">
@@ -469,6 +485,20 @@ async function init(){
   $('authGate').style.display='none';
   $('pbhLayout').style.display='flex';
 
+  // First-login setup mode
+  const isSetup=new URLSearchParams(window.location.search).get('setup')==='1';
+  if(isSetup){
+    $('setupWelcomeBanner').style.display='block';
+    const eyebrow=document.querySelector('.page-eyebrow');
+    const title=document.querySelector('.page-title');
+    const sub=document.querySelector('.page-sub');
+    if(eyebrow)eyebrow.textContent='✦ Welcome to Party Biz Hub';
+    if(title)title.innerHTML='Let\'s set up your <span class="script">business</span> profile';
+    if(sub)sub.textContent='This takes about 2 minutes. Fill in your business name, logo, and contact details — everything else you can update later.';
+    const saveBtn=$('saveBtn');
+    if(saveBtn)saveBtn.innerHTML='🚀 Save &amp; Go to Dashboard';
+  }
+
   $('businessName').addEventListener('input',updateLogoTextPreview);
   $('logoUpload').addEventListener('change',handleLogoUpload);
 }
@@ -642,9 +672,15 @@ async function saveProfile(){
 
     if(error)throw error;
 
-    showToast('✓ Business profile saved');
     const name=pd.businessName||currentUser.email.split('@')[0];
     setNavUser(name);
+    const isSetup=new URLSearchParams(window.location.search).get('setup')==='1';
+    if(isSetup&&pd.businessName){
+      showToast('✓ Profile saved! Taking you to your dashboard…');
+      setTimeout(()=>{window.location.href='dashboard.html';},1600);
+      return;
+    }
+    showToast('✓ Business profile saved');
   }catch(e){
     console.error(e);
     showToast('Save failed — try again');

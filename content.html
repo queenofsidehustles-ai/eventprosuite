@@ -461,7 +461,7 @@ async function generateContent(){
       body:JSON.stringify({hook,post_type:selectedType,platform:selectedPlatform,business_name:userBiz,city:userCity,mode:'single'})
     });
     const data=await res.json();
-    if(!res.ok||data.error){showToast('Generation failed. Try again.');resetGenerateBtn();return}
+    if(!res.ok||data.error){showToast('Generation failed: '+(data.error||res.status));resetGenerateBtn();return}
     lastGenerated={hook,post_type:selectedType,platform:selectedPlatform,reel_hook:data.reel_hook,caption:data.caption,story_caption:data.story_caption,hashtags:data.hashtags};
     document.getElementById('reelHookOut').textContent=data.reel_hook||'';
     document.getElementById('captionOut').textContent=data.caption||'';
