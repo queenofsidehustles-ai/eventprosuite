@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Content Studio | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>(function(){try{var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#6D28D9;--plum-800:#7C3AED;--brand:#9333EA;--brand-deep:#A855F7;
+  --mauve:#C084FC;--pink:#E6A2BE;--pink-soft:#F4D2DF;--pink-deep:#D17AA0;
+  --gold:#C9A227;--cream:#FCF8F4;
+  --border:#EAE3ED;--border-strong:#DDD1E5;
+  --ink:#1F1A24;--muted:#6C6473;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --user-primary:var(--plum-900);
+  --shadow-sm:0 1px 2px rgba(109,40,217,.04);
+  --shadow:0 4px 16px rgba(109,40,217,.08);
+  --shadow-lg:0 20px 50px -12px rgba(109,40,217,.18),0 8px 16px -4px rgba(109,40,217,.08);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:2rem 1.5rem 2.4rem;color:#fff;position:relative;overflow:hidden}
+.page-header::after{content:"";position:absolute;top:-40%;right:-8%;width:440px;height:440px;background:radial-gradient(circle,rgba(230,162,190,.2) 0%,transparent 70%);pointer-events:none}
+.page-header-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.page-eyebrow{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.9);margin-bottom:.7rem;padding:.3rem .75rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:50px}
+.page-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.4rem);font-weight:700;margin-bottom:.4rem;line-height:1.12;letter-spacing:-.02em}
+.page-title .script{font-family:'Dancing Script',cursive;color:var(--pink-soft);font-size:1.05em}
+.page-sub{font-size:.88rem;color:rgba(255,255,255,.82);max-width:560px;line-height:1.65}
+
+.wrap{max-width:1200px;margin:0 auto;padding:1.6rem 1.25rem 3rem}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:.4rem;background:#fff;border:1px solid var(--border);border-radius:14px;padding:.35rem;margin-bottom:1.5rem;box-shadow:var(--shadow-sm);width:fit-content}
+.tab-btn{padding:.55rem 1.2rem;border-radius:10px;font-size:.84rem;font-weight:700;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:.4rem}
+.tab-btn.active{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;box-shadow:0 4px 12px rgba(109,40,217,.3)}
+.tab-btn:hover:not(.active){color:var(--plum-900);background:rgba(147,51,234,.07)}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.4rem}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;box-shadow:var(--shadow-sm)}
+.stat-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem}
+.stat-value{font-size:1.6rem;font-weight:800;color:var(--plum-900);line-height:1}
+
+/* ── CREATE PANEL ── */
+.create-grid{display:grid;grid-template-columns:1fr 400px;gap:1.2rem;align-items:start}
+@media(max-width:900px){.create-grid{grid-template-columns:1fr}}
+
+.card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:1.4rem;box-shadow:var(--shadow-sm)}
+.card-title{font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+
+/* Hook input */
+.hook-wrap{position:relative;margin-bottom:1rem}
+.hook-textarea{width:100%;min-height:110px;border:1.5px solid var(--border);border-radius:12px;padding:.8rem 1rem;font-family:inherit;font-size:.9rem;resize:vertical;transition:border-color .15s;line-height:1.6}
+.hook-textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(147,51,234,.12)}
+.hook-mic{position:absolute;top:.6rem;right:.6rem;width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#A78420);color:#3A2A1A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.hook-mic.listening{background:linear-gradient(135deg,var(--danger),#9B1E3F);color:#fff;animation:mic-pulse .8s infinite}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(194,59,94,.5)}50%{box-shadow:0 0 0 7px rgba(194,59,94,0)}}
+
+/* Pill selectors */
+.pill-group{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.pill-label{width:100%;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.pill{padding:.38rem .85rem;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:600;color:var(--ink);cursor:pointer;font-family:inherit;transition:all .18s}
+.pill:hover{border-color:var(--brand);color:var(--brand)}
+.pill.selected{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(109,40,217,.25)}
+
+/* Generate button */
+.btn-generate{width:100%;padding:1rem;border-radius:14px;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;font-size:1rem;font-weight:800;border:none;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 6px 20px rgba(109,40,217,.3);display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(109,40,217,.4)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Output card */
+.output-section{margin-bottom:1rem}
+.output-label{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;display:flex;align-items:center;justify-content:space-between}
+.output-box{background:#F9F7FF;border:1px solid rgba(147,51,234,.15);border-radius:12px;padding:.85rem 1rem;font-size:.87rem;line-height:1.7;color:var(--ink);white-space:pre-wrap;word-break:break-word;min-height:48px}
+.copy-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:6px;background:rgba(147,51,234,.08);border:1px solid rgba(147,51,234,.2);color:var(--plum-900);font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.copy-btn:hover{background:var(--plum-900);color:#fff}
+.copy-btn.copied{background:var(--success);color:#fff;border-color:var(--success)}
+
+/* Save to queue */
+.btn-save{width:100%;padding:.75rem;border-radius:12px;background:#fff;border:2px solid var(--plum-900);color:var(--plum-900);font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.6rem}
+.btn-save:hover{background:var(--plum-900);color:#fff}
+.btn-save:disabled{opacity:.4;cursor:not-allowed}
+
+/* Spinner */
+.spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── QUEUE ── */
+.queue-filters{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.q-filter{padding:.38rem .85rem;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.q-filter.active{background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;border-color:transparent}
+.queue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
+.q-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.2rem;box-shadow:var(--shadow-sm);transition:all .2s}
+.q-card:hover{border-color:var(--brand);box-shadow:var(--shadow)}
+.q-card-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap}
+.q-badge{padding:.18rem .6rem;border-radius:999px;font-size:.65rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.q-badge.type{background:rgba(147,51,234,.1);color:var(--plum-900)}
+.q-badge.platform{background:rgba(201,162,39,.1);color:#7A5A00}
+.q-hook{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:.4rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.q-caption-preview{font-size:.78rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.7rem}
+.q-card-actions{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.q-status{padding:.25rem .7rem;border-radius:999px;font-size:.68rem;font-weight:800;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.q-status.draft{background:rgba(108,100,115,.1);color:var(--muted)}
+.q-status.ready{background:rgba(30,140,90,.12);color:var(--success)}
+.q-status.posted{background:rgba(147,51,234,.1);color:var(--plum-900)}
+.q-copy{font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.q-copy:hover{border-color:var(--brand);color:var(--brand)}
+.q-delete{margin-left:auto;font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:1.5px solid rgba(194,59,94,.2);background:#fff;color:var(--danger);cursor:pointer;font-family:inherit;transition:all .15s}
+.q-delete:hover{background:var(--danger);color:#fff}
+.q-date{font-size:.68rem;color:var(--muted);margin-top:.4rem}
+
+/* ── BATCH ── */
+.batch-intro{background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(147,51,234,.04));border:1px solid rgba(147,51,234,.2);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem}
+.batch-intro h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--plum-900);margin-bottom:.3rem}
+.batch-intro p{font-size:.84rem;color:var(--muted);line-height:1.6}
+.batch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem}
+.batch-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem;box-shadow:var(--shadow-sm)}
+.batch-day{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);margin-bottom:.3rem}
+.batch-type{font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem}
+.batch-hook{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.4}
+.batch-summary{font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:.7rem}
+.btn-expand{width:100%;padding:.5rem;border-radius:9px;background:rgba(147,51,234,.08);border:1.5px solid rgba(147,51,234,.2);color:var(--plum-900);font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-expand:hover{background:var(--plum-900);color:#fff;border-color:transparent}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-state-icon{font-size:3rem;margin-bottom:.8rem}
+.empty-state h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900);margin-bottom:.4rem;font-weight:700}
+.empty-state p{font-size:.84rem;line-height:1.6}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.85rem 1.4rem;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading your workspace…</div></div>
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.png" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">✦ Content Studio</div>
+    <h1 class="page-title">Your <span class="script">Social Media</span> Engine</h1>
+    <p class="page-sub">Type or speak your hook — AI writes the caption, story, reel opener, and hashtags. Save to your queue. Post when you're ready.</p>
+  </div>
+</div>
+
+<main class="wrap">
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabCreate" onclick="switchTab('create')">✍️ Create</button>
+  <button class="tab-btn" id="tabQueue" onclick="switchTab('queue')">📋 My Queue <span id="queueCount" style="display:none;background:rgba(255,255,255,.25);padding:1px 7px;border-radius:99px;font-size:.7rem;margin-left:2px"></span></button>
+  <button class="tab-btn" id="tabBatch" onclick="switchTab('batch')">⚡ Batch Week</button>
+</div>
+
+<!-- ══ CREATE TAB ══ -->
+<div id="panelCreate">
+  <div class="create-grid">
+
+    <!-- LEFT: Input -->
+    <div>
+      <div class="card" style="margin-bottom:1.2rem">
+        <div class="card-title">1 · Your Hook or Idea</div>
+        <div class="hook-wrap">
+          <textarea class="hook-textarea" id="hookInput" placeholder="What happened or what do you want to share? The more detail the better.&#10;&#10;e.g. 'Just wrapped a princess party for 30 kids — the balloon arch took 3 hours and the birthday girl literally cried happy tears when she saw it 🎀'"></textarea>
+          <button class="hook-mic" id="hookMic" onclick="toggleMic()" title="Speak your hook">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+        <div class="pill-group">
+          <div class="pill-label">Post type</div>
+          <button class="pill selected" data-group="type" data-val="After Party Recap" onclick="selectPill(this,'type')">🎉 After Party Recap</button>
+          <button class="pill" data-group="type" data-val="Package Promo" onclick="selectPill(this,'type')">🎁 Package Promo</button>
+          <button class="pill" data-group="type" data-val="Testimonial" onclick="selectPill(this,'type')">⭐ Testimonial</button>
+          <button class="pill" data-group="type" data-val="Behind the Scenes" onclick="selectPill(this,'type')">🎬 Behind the Scenes</button>
+          <button class="pill" data-group="type" data-val="Holiday/Seasonal" onclick="selectPill(this,'type')">🎄 Holiday/Seasonal</button>
+          <button class="pill" data-group="type" data-val="Tips & Advice" onclick="selectPill(this,'type')">💡 Tips & Advice</button>
+          <button class="pill" data-group="type" data-val="Engagement" onclick="selectPill(this,'type')">💬 Engagement</button>
+        </div>
+        <div class="pill-group">
+          <div class="pill-label">Platform</div>
+          <button class="pill selected" data-group="platform" data-val="Instagram" onclick="selectPill(this,'platform')">📸 Instagram</button>
+          <button class="pill" data-group="platform" data-val="TikTok" onclick="selectPill(this,'platform')">🎵 TikTok</button>
+          <button class="pill" data-group="platform" data-val="Facebook" onclick="selectPill(this,'platform')">👥 Facebook</button>
+        </div>
+        <button class="btn-generate" id="generateBtn" onclick="generateContent()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Generate My Content
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Output -->
+    <div id="outputPanel">
+      <div class="card" id="outputCard" style="display:none">
+        <div class="card-title">Your Generated Content</div>
+
+        <div class="output-section">
+          <div class="output-label">
+            🎯 Reel / Story Hook
+            <button class="copy-btn" onclick="copyField('reelHookOut','copyReelHook')" id="copyReelHook">Copy</button>
+          </div>
+          <div class="output-box" id="reelHookOut"></div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-label">
+            📝 Full Caption
+            <button class="copy-btn" onclick="copyField('captionOut','copyCap')" id="copyCap">Copy</button>
+          </div>
+          <div class="output-box" id="captionOut"></div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-label">
+            📱 Story Version
+            <button class="copy-btn" onclick="copyField('storyOut','copyStory')" id="copyStory">Copy</button>
+          </div>
+          <div class="output-box" id="storyOut"></div>
+        </div>
+
+        <div class="output-section">
+          <div class="output-label">
+            #️⃣ Hashtags
+            <button class="copy-btn" onclick="copyField('hashtagsOut','copyHash')" id="copyHash">Copy</button>
+          </div>
+          <div class="output-box" id="hashtagsOut" style="font-size:.8rem;color:var(--brand)"></div>
+        </div>
+
+        <div style="display:flex;gap:.5rem;margin-top:.4rem">
+          <button class="btn-save" id="saveBtn" onclick="saveToQueue()">💾 Save to Queue</button>
+          <button class="btn-save" style="flex:0 0 auto;width:auto;padding:.75rem 1rem" onclick="generateContent()" title="Regenerate">🔄</button>
+        </div>
+      </div>
+
+      <div id="outputPlaceholder" class="card" style="text-align:center;padding:2.5rem 1.5rem;color:var(--muted)">
+        <div style="font-size:2.8rem;margin-bottom:.8rem">✨</div>
+        <div style="font-weight:700;color:var(--plum-900);margin-bottom:.4rem">Ready to create</div>
+        <div style="font-size:.84rem;line-height:1.6">Write your hook, choose your post type and platform, then hit Generate.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ QUEUE TAB ══ -->
+<div id="panelQueue" style="display:none">
+
+  <div class="stats-row" id="queueStats">
+    <div class="stat-card"><div class="stat-label">Total Saved</div><div class="stat-value" id="statTotal">0</div></div>
+    <div class="stat-card"><div class="stat-label">Draft</div><div class="stat-value" id="statDraft">0</div></div>
+    <div class="stat-card"><div class="stat-label">Ready to Post</div><div class="stat-value" id="statReady">0</div></div>
+    <div class="stat-card"><div class="stat-label">Posted</div><div class="stat-value" id="statPosted">0</div></div>
+  </div>
+
+  <div class="queue-filters">
+    <button class="q-filter active" data-filter="all" onclick="filterQueue(this)">All</button>
+    <button class="q-filter" data-filter="draft" onclick="filterQueue(this)">Draft</button>
+    <button class="q-filter" data-filter="ready" onclick="filterQueue(this)">Ready</button>
+    <button class="q-filter" data-filter="posted" onclick="filterQueue(this)">Posted</button>
+  </div>
+
+  <div class="queue-grid" id="queueGrid"></div>
+</div>
+
+<!-- ══ BATCH TAB ══ -->
+<div id="panelBatch" style="display:none">
+  <div class="batch-intro">
+    <h3>Generate a Full Week of Content</h3>
+    <p>One click gives you 7 post ideas — Monday through Sunday — with hooks, captions strategy, and platform suggestions. Pick what you like, expand into full posts, and save to your queue.</p>
+  </div>
+  <div style="display:flex;gap:.8rem;align-items:flex-end;margin-bottom:1.4rem;flex-wrap:wrap">
+    <div style="flex:1;min-width:200px">
+      <div style="font-size:.76rem;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem">Focus this week (optional)</div>
+      <input type="text" id="batchFocus" placeholder="e.g. holiday parties, summer bookings, princess packages…" style="width:100%;padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:.88rem"/>
+    </div>
+    <button class="btn-generate" id="batchBtn" onclick="generateBatch()" style="width:auto;padding:.75rem 1.6rem;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Generate My Week
+    </button>
+  </div>
+  <div class="batch-grid" id="batchGrid"></div>
+</div>
+
+</main>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="nav.js"></script>
+<script src="help-widget.js"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let currentUser=null, userBiz='', userCity='';
+let currentTab='create';
+let selectedType='After Party Recap', selectedPlatform='Instagram';
+let lastGenerated=null;
+let recognition=null;
+let queueItems=[];
+let queueFilter='all';
+
+/* ── AUTH ── */
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+  try{
+    const{data:p}=await sb.from('profiles').select('has_paid,profile_data,full_name').eq('id',session.user.id).single();
+    if(p&&p.has_paid===false){await sb.auth.signOut();window.location.href='login.html';return}
+    if(p&&p.profile_data&&p.profile_data.brandColor)applyBrand(p.profile_data.brandColor);
+    userBiz=(p&&p.profile_data&&p.profile_data.businessName)||p?.full_name||(session.user.email||'').split('@')[0];
+    userCity=(p&&p.profile_data&&(p.profile_data.city||p.profile_data.location))||'';
+    setNavUser(userBiz);
+  }catch(e){setNavUser((session.user.email||'').split('@')[0])}
+  document.getElementById('authGate').style.display='none';
+  document.getElementById('pbhLayout').style.display='flex';
+  initNavSignout(()=>{sb.auth.signOut().then(()=>{window.location.href='login.html'})});
+  await loadQueue();
+}
+
+function applyBrand(color){
+  document.documentElement.style.setProperty('--plum-900',color);
+  document.documentElement.style.setProperty('--brand',color);
+}
+
+/* ── TABS ── */
+function switchTab(tab){
+  currentTab=tab;
+  ['create','queue','batch'].forEach(t=>{
+    document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?'block':'none';
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).className='tab-btn'+(t===tab?' active':'');
+  });
+  if(tab==='queue')renderQueue();
+}
+
+/* ── PILLS ── */
+function selectPill(el,group){
+  document.querySelectorAll(`.pill[data-group="${group}"]`).forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  if(group==='type')selectedType=el.dataset.val;
+  if(group==='platform')selectedPlatform=el.dataset.val;
+}
+
+/* ── MIC ── */
+function toggleMic(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){showToast('Voice input needs Chrome browser.');return}
+  if(recognition){recognition.stop();recognition=null;document.getElementById('hookMic').classList.remove('listening');return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;
+  recognition.onstart=()=>document.getElementById('hookMic').classList.add('listening');
+  recognition.onresult=(e)=>{
+    document.getElementById('hookInput').value=e.results[0][0].transcript;
+    recognition=null;document.getElementById('hookMic').classList.remove('listening');
+  };
+  recognition.onerror=()=>{recognition=null;document.getElementById('hookMic').classList.remove('listening');showToast('Could not hear you. Try again.')};
+  recognition.onend=()=>{if(recognition)recognition=null;document.getElementById('hookMic').classList.remove('listening')};
+  recognition.start();
+}
+
+/* ── GENERATE ── */
+async function generateContent(){
+  const hook=document.getElementById('hookInput').value.trim();
+  if(!hook){showToast('Add your hook or idea first!');return}
+  const btn=document.getElementById('generateBtn');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> Writing your content…';
+  document.getElementById('outputCard').style.display='none';
+  document.getElementById('outputPlaceholder').style.display='block';
+  document.getElementById('outputPlaceholder').innerHTML='<div class="spinner" style="margin:0 auto 1rem;border-color:rgba(147,51,234,.2);border-top-color:var(--brand)"></div><div style="font-weight:700;color:var(--plum-900)">Writing your caption…</div><div style="font-size:.8rem;color:var(--muted);margin-top:.3rem">This takes about 5 seconds</div>';
+
+  try{
+    const res=await fetch('/api/caption',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({hook,post_type:selectedType,platform:selectedPlatform,business_name:userBiz,city:userCity,mode:'single'})
+    });
+    const data=await res.json();
+    if(!res.ok||data.error){showToast('Generation failed. Try again.');resetGenerateBtn();return}
+    lastGenerated={hook,post_type:selectedType,platform:selectedPlatform,reel_hook:data.reel_hook,caption:data.caption,story_caption:data.story_caption,hashtags:data.hashtags};
+    document.getElementById('reelHookOut').textContent=data.reel_hook||'';
+    document.getElementById('captionOut').textContent=data.caption||'';
+    document.getElementById('storyOut').textContent=data.story_caption||'';
+    document.getElementById('hashtagsOut').textContent=data.hashtags||'';
+    document.getElementById('outputPlaceholder').style.display='none';
+    document.getElementById('outputCard').style.display='block';
+    document.getElementById('saveBtn').disabled=false;
+  }catch(e){showToast('Connection error. Try again.')}
+  resetGenerateBtn();
+}
+
+function resetGenerateBtn(){
+  const btn=document.getElementById('generateBtn');
+  btn.disabled=false;
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate My Content';
+}
+
+/* ── COPY ── */
+function copyField(fieldId,btnId){
+  const text=document.getElementById(fieldId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById(btnId);
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  });
+}
+
+/* ── SAVE TO QUEUE ── */
+async function saveToQueue(){
+  if(!lastGenerated)return;
+  document.getElementById('saveBtn').disabled=true;
+  document.getElementById('saveBtn').textContent='Saving…';
+  const item={user_id:currentUser.id,hook:lastGenerated.hook,post_type:lastGenerated.post_type,platform:lastGenerated.platform,reel_hook:lastGenerated.reel_hook,caption:lastGenerated.caption,story_caption:lastGenerated.story_caption,hashtags:lastGenerated.hashtags,status:'draft'};
+  const{error}=await sb.from('content_items').insert(item);
+  if(error){showToast('Save failed: '+error.message);document.getElementById('saveBtn').disabled=false;document.getElementById('saveBtn').innerHTML='💾 Save to Queue';return}
+  showToast('Saved to your queue! ✅');
+  document.getElementById('saveBtn').innerHTML='✅ Saved';
+  await loadQueue();
+}
+
+/* ── QUEUE ── */
+async function loadQueue(){
+  if(!currentUser)return;
+  const{data}=await sb.from('content_items').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  queueItems=data||[];
+  // Update tab badge
+  const count=queueItems.filter(i=>i.status!=='posted').length;
+  const badge=document.getElementById('queueCount');
+  if(count>0){badge.textContent=count;badge.style.display='inline'}else{badge.style.display='none'}
+  if(currentTab==='queue')renderQueue();
+}
+
+function renderQueue(){
+  const filtered=queueFilter==='all'?queueItems:queueItems.filter(i=>i.status===queueFilter);
+  // Stats
+  document.getElementById('statTotal').textContent=queueItems.length;
+  document.getElementById('statDraft').textContent=queueItems.filter(i=>i.status==='draft').length;
+  document.getElementById('statReady').textContent=queueItems.filter(i=>i.status==='ready').length;
+  document.getElementById('statPosted').textContent=queueItems.filter(i=>i.status==='posted').length;
+  const grid=document.getElementById('queueGrid');
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📋</div><h3>${queueItems.length?'No posts match this filter':'Your queue is empty'}</h3><p>${queueItems.length?'Try a different filter.':'Create your first post in the Create tab — it\'ll appear here once saved.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(item=>`
+    <div class="q-card">
+      <div class="q-card-top">
+        <span class="q-badge type">${esc(item.post_type||'Post')}</span>
+        <span class="q-badge platform">${esc(item.platform||'Instagram')}</span>
+      </div>
+      <div class="q-hook">${esc(item.reel_hook||item.hook||'')}</div>
+      <div class="q-caption-preview">${esc(item.caption||'')}</div>
+      <div class="q-card-actions">
+        <button class="q-status ${item.status||'draft'}" onclick="cycleStatus('${item.id}','${item.status}')" title="Click to change status">
+          ${item.status==='draft'?'📝 Draft':item.status==='ready'?'✅ Ready':'🚀 Posted'}
+        </button>
+        <button class="q-copy" onclick="copyCaption('${item.id}')">Copy Caption</button>
+        <button class="q-copy" onclick="copyAll('${item.id}')">Copy All</button>
+        <button class="q-delete" onclick="deleteItem('${item.id}')">Delete</button>
+      </div>
+      <div class="q-date">${new Date(item.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+    </div>
+  `).join('');
+}
+
+function filterQueue(btn){
+  document.querySelectorAll('.q-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  queueFilter=btn.dataset.filter;
+  renderQueue();
+}
+
+async function cycleStatus(id,current){
+  const next=current==='draft'?'ready':current==='ready'?'posted':'draft';
+  const{error}=await sb.from('content_items').update({status:next}).eq('id',id);
+  if(error){showToast('Update failed');return}
+  await loadQueue();
+  showToast(next==='ready'?'Marked as Ready ✅':next==='posted'?'Marked as Posted 🚀':'Back to Draft 📝');
+}
+
+function copyCaption(id){
+  const item=queueItems.find(i=>i.id===id);
+  if(!item)return;
+  navigator.clipboard.writeText(item.caption||'').then(()=>showToast('Caption copied! 📋'));
+}
+
+function copyAll(id){
+  const item=queueItems.find(i=>i.id===id);
+  if(!item)return;
+  const full=[item.reel_hook?`🎯 HOOK:\n${item.reel_hook}`:'',item.caption?`\n📝 CAPTION:\n${item.caption}`:'',item.story_caption?`\n📱 STORY:\n${item.story_caption}`:'',item.hashtags?`\n\n${item.hashtags}`:''].filter(Boolean).join('\n');
+  navigator.clipboard.writeText(full).then(()=>showToast('Everything copied! 📋'));
+}
+
+async function deleteItem(id){
+  if(!confirm('Delete this content?'))return;
+  await sb.from('content_items').delete().eq('id',id);
+  await loadQueue();
+}
+
+/* ── BATCH ── */
+async function generateBatch(){
+  const focus=document.getElementById('batchFocus').value.trim();
+  const btn=document.getElementById('batchBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Generating week…';
+  document.getElementById('batchGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted)"><div class="spinner" style="margin:0 auto 1rem;border-color:rgba(147,51,234,.2);border-top-color:var(--brand)"></div>Writing 7 post ideas… about 10 seconds</div>';
+  try{
+    const hook=focus||`variety of party business content for ${userBiz||'my party business'}`;
+    const res=await fetch('/api/caption',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({hook,business_name:userBiz,city:userCity,mode:'batch'})
+    });
+    const data=await res.json();
+    if(!res.ok||data.error){showToast('Generation failed. Try again.');document.getElementById('batchGrid').innerHTML='';btn.disabled=false;btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate My Week';return}
+    renderBatch(data.ideas||[]);
+  }catch(e){showToast('Connection error.');document.getElementById('batchGrid').innerHTML=''}
+  btn.disabled=false;btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate My Week';
+}
+
+function renderBatch(ideas){
+  if(!ideas.length){document.getElementById('batchGrid').innerHTML='<div class="empty-state"><div class="empty-state-icon">⚡</div><h3>No ideas generated</h3><p>Try again.</p></div>';return}
+  document.getElementById('batchGrid').innerHTML=ideas.map((idea,i)=>`
+    <div class="batch-card">
+      <div class="batch-day">${esc(idea.day||'Day '+(i+1))}</div>
+      <div class="batch-type">${esc(idea.platform||'Instagram')} · ${esc(idea.post_type||'Post')}</div>
+      <div class="batch-hook">${esc(idea.hook||'')}</div>
+      <div class="batch-summary">${esc(idea.summary||'')}</div>
+      <button class="btn-expand" onclick="expandBatchIdea('${encodeURIComponent(JSON.stringify(idea))}')">✍️ Expand into full post →</button>
+    </div>
+  `).join('');
+}
+
+function expandBatchIdea(encoded){
+  const idea=JSON.parse(decodeURIComponent(encoded));
+  document.getElementById('hookInput').value=idea.hook+(idea.summary?'\n\n'+idea.summary:'');
+  // Select matching pills
+  document.querySelectorAll('.pill[data-group="type"]').forEach(p=>{
+    p.classList.toggle('selected',p.dataset.val===idea.post_type);
+    if(p.dataset.val===idea.post_type)selectedType=idea.post_type;
+  });
+  document.querySelectorAll('.pill[data-group="platform"]').forEach(p=>{
+    p.classList.toggle('selected',p.dataset.val===idea.platform);
+    if(p.dataset.val===idea.platform)selectedPlatform=idea.platform;
+  });
+  switchTab('create');
+  document.getElementById('hookInput').focus();
+  showToast('Hook loaded — hit Generate! ✨');
+}
+
+/* ── UTILS ── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+init();
+</script>
+</body>
+</html>

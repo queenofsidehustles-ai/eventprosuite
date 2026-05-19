@@ -12,6 +12,7 @@
     { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors' },
     { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website' },
     { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'Party Assistant' },
+    { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio' },
   ];
 
   const filename = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
