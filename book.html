@@ -640,6 +640,8 @@ textarea.form-input{resize:vertical;min-height:90px}
       <div class="contact-phone-note hidden" id="confirmPhoneNote">
         Questions? Call <a href="#" id="confirmPhoneLink"></a>
       </div>
+
+      <div id="contractNotice" class="hidden" style="background:#F5F0FB;border:1.5px solid #C4B5FD;border-radius:12px;padding:14px 18px;font-size:.83rem;color:#4C1D95;line-height:1.6;margin-top:14px;font-weight:600;text-align:center;"></div>
     </div>
     <!-- /confirm -->
 
@@ -996,7 +998,36 @@ async function submitBooking() {
     }
 
     bookingId = data.id || null;
-    showConfirmation(clientEmail, bookingId);
+
+    // Auto-generate and email contract
+    let contractSent = false;
+    try {
+      const contractRes = await fetch('/api/auto-contract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ownerUID,
+          clientName: payload.client_name,
+          clientEmail: payload.client_email,
+          clientPhone: payload.client_phone,
+          eventDate: payload.event_date,
+          eventTime: payload.event_time,
+          eventAddress: payload.event_address,
+          serviceName: payload.service_name,
+          servicePrice: payload.service_price,
+          numKids: payload.num_kids,
+          duration: payload.duration,
+          bizName: profileData.bizName || profileData.businessName || '',
+          bizEmail: profileData.contactEmail || profileData.bizEmail || '',
+          bizPhone: profileData.contactPhone || profileData.bizPhone || '',
+          depositUpfront: profileData.depositUpfront === true,
+        }),
+      });
+      const contractData = await contractRes.json();
+      contractSent = contractData.email_sent || false;
+    } catch (_) { /* non-fatal — booking still succeeded */ }
+
+    showConfirmation(clientEmail, bookingId, contractSent);
 
   } catch (e) {
     console.error(e);
@@ -1009,7 +1040,7 @@ async function submitBooking() {
 // ──────────────────────────────────────────────
 // Confirmation Screen
 // ──────────────────────────────────────────────
-function showConfirmation(clientEmail, id) {
+function showConfirmation(clientEmail, id, contractSent) {
   // Hide wizard steps + progress
   document.getElementById('progressBar').classList.add('hidden');
 
@@ -1064,6 +1095,15 @@ function showConfirmation(clientEmail, id) {
     phoneNote.classList.remove('hidden');
     phoneLink.href = `tel:${profileData.contactPhone.replace(/\D/g, '')}`;
     phoneLink.textContent = profileData.contactPhone;
+  }
+
+  // Contract notice
+  const contractNote = document.getElementById('contractNotice');
+  if (contractNote) {
+    contractNote.classList.remove('hidden');
+    contractNote.textContent = contractSent
+      ? `📄 A contract has been sent to ${clientEmail} — please check your inbox to sign!`
+      : `📄 Your contract is being prepared. The business will send it to you shortly.`;
   }
 }
 
