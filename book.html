@@ -691,33 +691,29 @@ window.addEventListener('DOMContentLoaded', async () => {
   ownerUID = params.get('uid');
 
   if (!ownerUID) {
-    showError();
+    showError('No booking link ID found. Please ask the business for their correct booking link.');
     return;
   }
 
-  const clientTimeout = setTimeout(() => {
-    showError('This booking page is taking too long to load. Please refresh and try again.');
-  }, 12000);
+  // Show the form immediately with defaults — never block on profile load
+  applyBranding();
+  renderServices();
+  showMain();
 
+  // Then load real profile data in the background and update the page
   try {
-    const res = await fetch(`/api/get-profile?uid=${encodeURIComponent(ownerUID)}`);
-    clearTimeout(clientTimeout);
-    let data;
-    try { data = await res.json(); } catch(_){ data = {}; }
-
-    if (!res.ok) {
-      showError(data.error || `Could not load this booking page (error ${res.status}). Please try again.`);
-      return;
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(`/api/get-profile?uid=${encodeURIComponent(ownerUID)}`, { signal: controller.signal });
+    if (res.ok) {
+      const data = await res.json();
+      profileData = data.profile_data || {};
+      applyBranding();
+      renderServices();
     }
-
-    profileData = data.profile_data || {};
-    applyBranding();
-    renderServices();
-    showMain();
   } catch (e) {
-    clearTimeout(clientTimeout);
-    console.error(e);
-    showError('A network error occurred loading this booking page. Please refresh and try again.');
+    // Silently continue — form already visible with defaults
+    console.warn('Profile load failed, using defaults:', e.message);
   }
 });
 
