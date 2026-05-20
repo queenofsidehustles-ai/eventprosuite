@@ -712,8 +712,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       console.error('Profile load error:', error);
       showError(
         error.code === 'PGRST116'
-          ? 'This booking page isn\'t set up yet. If you\'re the business owner, go to your Business Profile and save it first.'
-          : 'Could not load this booking page. Please try again or contact the business directly.'
+          ? 'This booking page isn\'t set up yet. The business owner needs to save their Business Profile first.'
+          : `Could not load booking page (${error.code||error.message}). Please try again.`
       );
       return;
     }

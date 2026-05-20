@@ -85,7 +85,7 @@ Return ONLY valid JSON — no markdown, no explanation:
         'X-Title': 'Party Biz Hub Content'
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3-5-haiku-20241022',
+        model: 'anthropic/claude-3.5-haiku',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 900,
         temperature: 0.82
