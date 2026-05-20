@@ -659,7 +659,7 @@ textarea.form-input{resize:vertical;min-height:90px}
 // ──────────────────────────────────────────────
 const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
-const supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let supabase = null; // initialized lazily on first submit
 
 // ──────────────────────────────────────────────
 // State
@@ -962,6 +962,17 @@ async function submitBooking() {
     status: 'new',
     created_at: new Date().toISOString(),
   };
+
+  if (!supabase) {
+    try {
+      supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+    } catch (e) {
+      alert('Booking service unavailable. Please refresh and try again.');
+      btn.disabled = false;
+      btn.textContent = '🎊 Book Now';
+      return;
+    }
+  }
 
   try {
     const { data, error } = await supabase
