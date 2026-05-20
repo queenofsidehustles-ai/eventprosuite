@@ -695,12 +695,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  const clientTimeout = setTimeout(() => {
+    showError('This booking page is taking too long to load. Please refresh and try again.');
+  }, 12000);
+
   try {
     const res = await fetch(`/api/get-profile?uid=${encodeURIComponent(ownerUID)}`);
-    const data = await res.json();
+    clearTimeout(clientTimeout);
+    let data;
+    try { data = await res.json(); } catch(_){ data = {}; }
 
     if (!res.ok) {
-      showError(data.error || 'Could not load this booking page. Please try again.');
+      showError(data.error || `Could not load this booking page (error ${res.status}). Please try again.`);
       return;
     }
 
@@ -709,8 +715,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderServices();
     showMain();
   } catch (e) {
+    clearTimeout(clientTimeout);
     console.error(e);
-    showError('A network error occurred. Please refresh and try again.');
+    showError('A network error occurred loading this booking page. Please refresh and try again.');
   }
 });
 
