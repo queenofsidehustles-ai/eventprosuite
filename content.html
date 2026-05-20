@@ -319,13 +319,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
     <div class="stat-card"><div class="stat-label">Posted</div><div class="stat-value" id="statPosted">0</div></div>
   </div>
 
+  <!-- Publish All banner — only visible when ready items exist -->
+  <div id="publishAllBanner" style="display:none;background:linear-gradient(135deg,#4C1D95,#7C3AED);border-radius:14px;padding:1rem 1.4rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <div>
+      <div style="color:#fff;font-weight:700;font-size:.95rem">You have posts marked Ready ✅</div>
+      <div style="color:rgba(255,255,255,.75);font-size:.78rem;margin-top:.2rem">Hit the button to publish them all to your social accounts at once.</div>
+    </div>
+    <button onclick="publishAll()" style="background:#fff;color:#4C1D95;border:none;border-radius:10px;padding:.65rem 1.4rem;font-weight:800;font-size:.88rem;cursor:pointer;white-space:nowrap;font-family:inherit">📤 Publish All Ready</button>
+  </div>
+
   <div class="queue-filters">
     <button class="q-filter active" data-filter="all" onclick="filterQueue(this)">All</button>
     <button class="q-filter" data-filter="draft" onclick="filterQueue(this)">Draft</button>
     <button class="q-filter" data-filter="scheduled" onclick="filterQueue(this)">📅 Scheduled</button>
-    <button class="q-filter" data-filter="ready" onclick="filterQueue(this)">Ready</button>
+    <button class="q-filter" data-filter="ready" onclick="filterQueue(this)">✅ Ready</button>
     <button class="q-filter" data-filter="posted" onclick="filterQueue(this)">Posted</button>
-    <button class="q-post-now" onclick="publishAll()" style="margin-left:auto;padding:.4rem 1rem;font-size:.78rem">📤 Publish All Ready</button>
   </div>
 
   <div class="queue-grid" id="queueGrid"></div>
@@ -567,8 +575,12 @@ function renderQueue(){
   document.getElementById('statTotal').textContent=queueItems.length;
   document.getElementById('statDraft').textContent=queueItems.filter(i=>i.status==='draft').length;
   document.getElementById('statScheduled').textContent=queueItems.filter(i=>i.status==='scheduled').length;
-  document.getElementById('statReady').textContent=queueItems.filter(i=>i.status==='ready').length;
+  const readyCount=queueItems.filter(i=>i.status==='ready').length;
+  document.getElementById('statReady').textContent=readyCount;
   document.getElementById('statPosted').textContent=queueItems.filter(i=>i.status==='posted').length;
+  // Show Publish All banner only when there are ready items
+  const banner=document.getElementById('publishAllBanner');
+  if(banner)banner.style.display=readyCount>0?'flex':'none';
   const grid=document.getElementById('queueGrid');
   if(!filtered.length){
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📋</div><h3>${queueItems.length?'No posts match this filter':'Your queue is empty'}</h3><p>${queueItems.length?'Try a different filter.':'Create your first post in the Create tab — it\'ll appear here once saved.'}</p></div>`;
@@ -590,11 +602,10 @@ function renderQueue(){
       <div class="q-hook">${esc(item.reel_hook||item.hook||'')}</div>
       <div class="q-caption-preview">${esc(item.caption||'')}</div>
       <div class="q-card-actions">
-        <button class="q-status ${item.status||'draft'}" onclick="cycleStatus('${item.id}','${item.status||'draft'}')" title="Click to cycle status">${statusLabel}</button>
-        <button class="q-post-now" onclick="confirmPostNow('${item.id}')" title="Post to all connected social platforms">📤 Post Now</button>
+        <button class="q-status ${item.status||'draft'}" onclick="cycleStatus('${item.id}','${item.status||'draft'}')" title="Click to change status: Draft → Ready → Posted">${statusLabel}</button>
+        <button class="q-post-now" onclick="confirmPostNow('${item.id}')" title="Post now to your social accounts">📤 Post Now</button>
         <button class="q-copy" onclick="toggleSchedule('${item.id}')">📅 Schedule</button>
-        <button class="q-copy" onclick="copyCaption('${item.id}')">Copy</button>
-        <button class="q-copy" onclick="copyAll('${item.id}')">Copy All</button>
+        <button class="q-copy" onclick="copyCaption('${item.id}')">Copy Caption</button>
         <button class="q-delete" onclick="deleteItem('${item.id}')">Delete</button>
       </div>
       <div class="q-schedule-row" id="sched_${item.id}" style="display:none">
