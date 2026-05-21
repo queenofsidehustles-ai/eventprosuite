@@ -132,6 +132,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .btn-email:disabled{opacity:.6;cursor:default;transform:none}
 .email-fine{font-size:.75rem;color:var(--muted);text-align:center;margin-top:8px}
 
+/* ── OPTIN ── */
+.optin-wrap{padding:40px 0 0}
+.optin-wrap h2{font-size:clamp(1.4rem,4vw,1.8rem);font-weight:900;line-height:1.25;letter-spacing:-.03em;margin-bottom:10px}
+.optin-wrap h2 span{background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.optin-wrap p{color:var(--muted);font-size:.95rem;line-height:1.65;margin-bottom:24px}
+.optin-form{background:#fff;border:2px solid var(--line);border-radius:20px;padding:28px 24px}
+.optin-form .form-row{display:grid;gap:12px;margin-bottom:14px}
+.optin-privacy{font-size:.75rem;color:var(--muted);text-align:center;margin-top:10px}
+
 /* ── THANK YOU ── */
 .ty-wrap{text-align:center;padding:60px 0}
 .ty-emoji{font-size:72px;margin-bottom:20px;line-height:1}
@@ -202,6 +211,29 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="bullet-item"><span class="bullet-icon">📉</span><span>Exactly how much you're <strong>undercharging</strong> (most party pros are off by 35%+)</span></div>
     <div class="bullet-item"><span class="bullet-icon">📈</span><span>Your <strong>monthly revenue potential</strong> if you fix your pricing today</span></div>
     <div class="bullet-item"><span class="bullet-icon">🗺️</span><span>A personalized <strong>3-step action plan</strong> sent straight to your inbox</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 0.5 — EMAIL OPTIN (before quiz starts)
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-optin">
+<div class="container">
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  <div class="optin-wrap">
+    <div class="q-tag">Almost ready!</div>
+    <h2>Where should we send<br/><span>your results?</span></h2>
+    <p>Your score and personalized pricing breakdown will be emailed to you the moment you finish — so you have it to reference anytime.</p>
+    <div class="optin-form">
+      <div id="optinError" class="error-msg"></div>
+      <div class="form-row">
+        <input class="form-input" type="text"  id="optinName"  placeholder="Your first name" autocomplete="given-name"/>
+        <input class="form-input" type="email" id="optinEmail" placeholder="Your best email address" autocomplete="email"/>
+      </div>
+      <button class="btn-email" id="optinBtn" onclick="submitOptin()">Start the Quiz →</button>
+      <p class="optin-privacy">🔒 No spam. Unsubscribe any time. We respect your inbox.</p>
+    </div>
   </div>
 </div>
 </div>
@@ -299,15 +331,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </div>
 
     <div class="email-capture">
-      <h3>📬 Get your full results + 3-step action plan</h3>
-      <p>We'll send your complete pricing breakdown, your score details, and a personalized action plan to your inbox. Free.</p>
-      <div id="emailError" class="error-msg"></div>
-      <div class="form-row">
-        <input class="form-input" type="text" id="leadName" placeholder="Your first name" autocomplete="given-name"/>
-        <input class="form-input" type="email" id="leadEmail" placeholder="Your best email address" autocomplete="email"/>
-      </div>
-      <button class="btn-email" id="emailBtn" onclick="submitLead()">Email Me My Results →</button>
-      <p class="email-fine">No spam. Unsubscribe any time. We respect your inbox.</p>
+      <p style="font-size:.85rem;color:var(--muted);text-align:center;margin-bottom:16px" id="sentConfirm"></p>
+      <a class="btn-email" href="https://app.partybizhub.com/login.html" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
+        Try Party Biz Hub Free — Put This Into Action →
+      </a>
+      <p class="email-fine">Quotes · Contracts · Bookings · AI Content · Starting at $27/mo</p>
     </div>
   </div>
 </div>
@@ -424,6 +452,8 @@ let calcAnswers = {};
 let currentQ    = 0;
 let currentC    = 0;
 let calcPricing = {};
+let leadName    = '';
+let leadEmail   = '';
 let screenHistory = ['screen-intro'];
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
@@ -458,11 +488,30 @@ function updateProgress(part, current, total, pct) {
 
 // ── QUIZ ───────────────────────────────────────────────────────────────────
 function startQuiz() {
-  currentQ    = 0;
-  quizAnswers = [];
-  quizScore   = 0;
-  renderQuestion();
-  showScreen('screen-quiz');
+  showScreen('screen-optin');
+}
+
+function submitOptin() {
+  const nameVal  = document.getElementById('optinName').value.trim();
+  const emailVal = document.getElementById('optinEmail').value.trim();
+  const errEl    = document.getElementById('optinError');
+  const btn      = document.getElementById('optinBtn');
+  errEl.style.display = 'none';
+
+  if (!nameVal)  { errEl.textContent = 'Please enter your first name.'; errEl.style.display = 'block'; return; }
+  if (!emailVal || !emailVal.includes('@')) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
+
+  leadName  = nameVal;
+  leadEmail = emailVal;
+  btn.textContent = "Let's go! 🎉";
+
+  setTimeout(() => {
+    currentQ    = 0;
+    quizAnswers = [];
+    quizScore   = 0;
+    renderQuestion();
+    showScreen('screen-quiz');
+  }, 300);
 }
 
 function renderQuestion() {
@@ -603,33 +652,27 @@ function buildResults() {
   document.getElementById('monthly8').textContent  = '$' + monthly8.toLocaleString();
   document.getElementById('monthly12').textContent = '$' + monthly12.toLocaleString();
 
+  // Show confirmation of where results are being sent
+  const confirmEl = document.getElementById('sentConfirm');
+  if (confirmEl && leadEmail) confirmEl.textContent = `📬 Full breakdown sent to ${leadEmail}`;
+
   updateProgress('Your Results', 15, 15, 100);
+
+  // Auto-fire lead capture in background — no action needed from user
+  submitLead();
 }
 
-// ── EMAIL CAPTURE ──────────────────────────────────────────────────────────
+// ── LEAD SUBMIT (fires automatically after results build) ──────────────────
 async function submitLead() {
-  const name  = document.getElementById('leadName').value.trim();
-  const email = document.getElementById('leadEmail').value.trim();
-  const errEl = document.getElementById('emailError');
-  const btn   = document.getElementById('emailBtn');
-
-  errEl.style.display = 'none';
-
-  if (!name) { errEl.textContent = 'Please enter your first name.'; errEl.style.display = 'block'; return; }
-  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
-
-  btn.disabled     = true;
-  btn.textContent  = 'Sending your results...';
-
+  if (!leadEmail) return;
   const tier = TIERS.find(t => quizScore >= t.min && quizScore <= t.max);
-
   try {
-    const res = await fetch('/api/lead-capture', {
+    await fetch('/api/lead-capture', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name,
-        email,
+        name:             leadName,
+        email:            leadEmail,
         score:            quizScore,
         tier:             tier.label,
         recommendedPrice: calcPricing.recommended,
@@ -640,17 +683,8 @@ async function submitLead() {
         calcAnswers:      calcAnswers,
       }),
     });
-    const data = await res.json();
-    if (data.ok) {
-      showScreen('screen-ty');
-    } else {
-      throw new Error(data.error || 'Something went wrong');
-    }
-  } catch (err) {
-    errEl.textContent  = 'Something went wrong — please try again.';
-    errEl.style.display = 'block';
-    btn.disabled       = false;
-    btn.textContent    = 'Email Me My Results →';
+  } catch (_) {
+    // silent — don't interrupt the results view
   }
 }
 </script>
