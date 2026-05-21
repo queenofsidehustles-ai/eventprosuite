@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 96" width="500" height="96">
+  <defs>
+    <linearGradient id="gaw" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="gbw" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- P block -->
+  <rect x="4" y="14" width="42" height="58" rx="11" fill="url(#gbw)" opacity="0.82"/>
+  <!-- B block (center hub) -->
+  <rect x="28" y="4" width="50" height="78" rx="13" fill="url(#gaw)"/>
+  <!-- H block -->
+  <rect x="60" y="14" width="42" height="58" rx="11" fill="url(#gbw)" opacity="0.82"/>
+
+  <!-- Letters in white -->
+  <text x="21" y="51" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="26" font-weight="800" fill="rgba(255,255,255,0.92)">P</text>
+  <text x="53" y="54" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="32" font-weight="800" fill="#ffffff">B</text>
+  <text x="85" y="51" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+        font-size="26" font-weight="800" fill="rgba(255,255,255,0.92)">H</text>
+
+  <!-- WORDMARK — white on dark -->
+  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif"
+        font-weight="800" font-size="44" y="62" letter-spacing="-1">
+    <tspan x="122" fill="#ffffff">Party </tspan><tspan fill="#A78BFA">Biz </tspan><tspan fill="#ffffff">Hub</tspan>
+  </text>
+
+  <!-- TAGLINE -->
+  <text x="123" y="82"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif"
+        font-size="13" font-weight="500" fill="rgba(255,255,255,0.45)" letter-spacing="0.08em">
+    BUILD · BOOK · BE PAID
+  </text>
+</svg>
