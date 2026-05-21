@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/><title>Logo Preview</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0f0f0}
+.row{padding:48px;display:flex;align-items:center;gap:48px;flex-wrap:wrap}
+.white{background:#ffffff}
+.dark{background:#1F1A24}
+.cream{background:#FCF8F4}
+.label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:16px}
+img{display:block}
+</style>
+</head>
+<body>
+<div class="row white">
+  <div><div class="label">White background — full size</div><img src="partybizhub-logo.svg" height="96"/></div>
+  <div><div class="label">Small (nav size)</div><img src="partybizhub-logo.svg" height="42"/></div>
+  <div><div class="label">Tiny (favicon size)</div><img src="partybizhub-logo.svg" height="24"/></div>
+</div>
+<div class="row cream">
+  <div><div class="label">Cream background</div><img src="partybizhub-logo.svg" height="96"/></div>
+</div>
+<div class="row dark">
+  <div><div class="label" style="color:#666">Dark background — full size</div><img src="partybizhub-logo.svg" height="96"/></div>
+  <div><div class="label" style="color:#666">Small (nav size)</div><img src="partybizhub-logo.svg" height="42"/></div>
+</div>
+</body>
+</html>

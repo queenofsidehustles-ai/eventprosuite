@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 96" width="500" height="96">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6D28D9"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ICON: 3x3 hub grid, center square is the anchor -->
+  <!-- Grid: 3 cols x 3 rows, each cell 22px, gap 6px, total 78px -->
+  <!-- Centered vertically in 96px height: top offset = (96-78)/2 = 9 -->
+
+  <!-- Row 1 -->
+  <rect x="9"  y="9"  width="22" height="22" rx="6" fill="#8B5CF6" opacity="0.45"/>
+  <rect x="37" y="9"  width="22" height="22" rx="6" fill="url(#g2)" opacity="0.75"/>
+  <rect x="65" y="9"  width="22" height="22" rx="6" fill="#8B5CF6" opacity="0.45"/>
+
+  <!-- Row 2 -->
+  <rect x="9"  y="37" width="22" height="22" rx="6" fill="url(#g2)" opacity="0.75"/>
+  <rect x="37" y="37" width="22" height="22" rx="6" fill="url(#g1)"/>   <!-- CENTER: full, brightest -->
+  <rect x="65" y="37" width="22" height="22" rx="6" fill="url(#g2)" opacity="0.75"/>
+
+  <!-- Row 3 -->
+  <rect x="9"  y="65" width="22" height="22" rx="6" fill="#8B5CF6" opacity="0.45"/>
+  <rect x="37" y="65" width="22" height="22" rx="6" fill="url(#g2)" opacity="0.75"/>
+  <rect x="65" y="65" width="22" height="22" rx="6" fill="#8B5CF6" opacity="0.45"/>
+
+  <!-- WORDMARK -->
+  <!-- "Party" dark, "Biz" purple, "Hub" dark -->
+  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif"
+        font-weight="800" font-size="44" y="62" letter-spacing="-1">
+    <tspan x="105" fill="#1F1A24">Party </tspan><tspan fill="#6D28D9">Biz </tspan><tspan fill="#1F1A24">Hub</tspan>
+  </text>
+
+  <!-- TAGLINE -->
+  <text x="106" y="82"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif"
+        font-size="13" font-weight="500" fill="#6C6473" letter-spacing="0.08em">
+    BUILD · BOOK · BE PAID
+  </text>
+</svg>
