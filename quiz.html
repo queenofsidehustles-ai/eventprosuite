@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Is Your Party Business Ready? Free Quiz + Pricing Calculator</title>
+<meta name="description" content="Find out your Party Business Score and discover exactly what you should be charging. Free 2-minute quiz + personalized pricing breakdown."/>
+<meta property="og:title" content="Is Your Party Business Legit? Take the Free Quiz"/>
+<meta property="og:description" content="2 minutes. No PDF. Get your Party Business Score + a personalized pricing breakdown sent to your inbox."/>
+<link rel="icon" href="partybizhub-logo.svg" type="image/svg+xml"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --purple:#6D28D9;--purple-dark:#4C1D95;--purple-light:#8B5CF6;
+  --gold:#C9A227;--gold-light:#F5D87A;
+  --bg:#FFFCF8;--text:#1A1020;--muted:#6B5B73;--line:#EDE5F5;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── TOP BAR ── */
+.topbar{background:linear-gradient(135deg,var(--purple-dark),var(--purple));padding:14px 24px;display:flex;align-items:center;gap:10px}
+.topbar img{height:32px}
+.topbar-name{color:#fff;font-weight:700;font-size:14px}
+.topbar-badge{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.25)}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:#fff;border-bottom:1px solid var(--line);padding:12px 24px}
+.progress-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.progress-part{font-size:12px;font-weight:700;color:var(--purple);letter-spacing:.05em;text-transform:uppercase}
+.progress-count{font-size:12px;color:var(--muted);font-weight:600}
+.progress-bar{height:6px;background:#EDE5F5;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple-light),var(--purple));border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* ── SCREEN WRAPPER ── */
+.screen{display:none;animation:fadeUp .35s ease both}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.container{max-width:600px;margin:0 auto;padding:40px 24px}
+
+/* ── INTRO ── */
+.intro-hero{text-align:center;padding:48px 0 32px}
+.intro-emoji{font-size:64px;line-height:1;margin-bottom:20px}
+.intro-hero h1{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;line-height:1.15;letter-spacing:-.03em;margin-bottom:14px}
+.intro-hero h1 span{background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.intro-hero p{font-size:1.05rem;color:var(--muted);line-height:1.7;max-width:460px;margin:0 auto 28px}
+.intro-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:36px}
+.pill{background:#F3EEFF;color:var(--purple);font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px}
+.btn-start{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;font-size:1.1rem;font-weight:800;padding:17px 40px;border-radius:16px;border:none;cursor:pointer;box-shadow:0 8px 28px rgba(109,40,217,.35);transition:transform .15s,box-shadow .15s;letter-spacing:-.01em}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(109,40,217,.45)}
+.btn-start:active{transform:none}
+.intro-meta{font-size:12px;color:var(--muted);margin-top:14px}
+
+.intro-bullets{background:#fff;border:1.5px solid var(--line);border-radius:20px;padding:24px 28px;margin-top:32px;text-align:left}
+.intro-bullets h3{font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.bullet-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:.95rem;color:var(--text)}
+.bullet-item:last-child{margin-bottom:0}
+.bullet-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* ── QUESTION ── */
+.q-wrap{padding:48px 0 0}
+.q-tag{display:inline-block;background:#F3EEFF;color:var(--purple);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:18px}
+.q-text{font-size:clamp(1.3rem,4vw,1.6rem);font-weight:800;line-height:1.3;letter-spacing:-.025em;margin-bottom:10px}
+.q-sub{font-size:.9rem;color:var(--muted);margin-bottom:32px;line-height:1.6}
+.q-btns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.q-btn{padding:20px 16px;border-radius:18px;border:2.5px solid var(--line);background:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text)}
+.q-btn .q-btn-emoji{font-size:28px}
+.q-btn:hover{border-color:var(--purple);background:#F9F5FF;transform:translateY(-2px)}
+.q-btn.yes:hover,.q-btn.yes:focus{border-color:#22C55E;background:#F0FDF4;color:#16A34A}
+.q-btn.no:hover,.q-btn.no:focus{border-color:#EF4444;background:#FEF2F2;color:#DC2626}
+.q-btn:active{transform:none}
+
+/* ── CALC CHOICES (multi-choice cards) ── */
+.c-choices{display:grid;gap:12px;margin-top:8px}
+.c-choices.two-col{grid-template-columns:1fr 1fr}
+.c-card{padding:16px 18px;border-radius:16px;border:2.5px solid var(--line);background:#fff;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:12px;font-size:.95rem;font-weight:600;color:var(--text)}
+.c-card .c-icon{font-size:22px;flex-shrink:0}
+.c-card:hover{border-color:var(--purple);background:#F9F5FF;transform:translateY(-1px)}
+.c-card.selected{border-color:var(--purple);background:#F3EEFF;color:var(--purple)}
+
+/* ── SCORE REVEAL ── */
+.score-wrap{text-align:center;padding:40px 0 20px}
+.score-ring{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 12px 40px rgba(109,40,217,.3)}
+.score-num{font-size:2.6rem;font-weight:900;color:#fff;line-height:1}
+.score-denom{font-size:.85rem;font-weight:600;color:rgba(255,255,255,.7)}
+.score-tier{font-size:1.4rem;font-weight:800;margin-bottom:8px;letter-spacing:-.02em}
+.score-msg{font-size:.95rem;color:var(--muted);line-height:1.7;max-width:420px;margin:0 auto 24px}
+.score-gaps{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:28px}
+.score-gaps h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.gap-item{display:flex;align-items:center;gap:10px;font-size:.9rem;font-weight:600;margin-bottom:8px;color:var(--text)}
+.gap-item:last-child{margin-bottom:0}
+.gap-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gap-dot.red{background:#EF4444}
+.gap-dot.green{background:#22C55E}
+.btn-next{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;font-size:1rem;font-weight:800;padding:15px 36px;border-radius:14px;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(109,40,217,.3);transition:transform .15s,box-shadow .15s;width:100%;justify-content:center}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(109,40,217,.4)}
+
+/* ── RESULTS ── */
+.results-wrap{padding:32px 0}
+.results-header{text-align:center;margin-bottom:28px}
+.results-header h2{font-size:clamp(1.4rem,4vw,1.9rem);font-weight:900;letter-spacing:-.03em;margin-bottom:8px}
+.results-header p{color:var(--muted);font-size:.95rem}
+
+.price-card{background:linear-gradient(135deg,var(--purple-dark),var(--purple));border-radius:22px;padding:28px 24px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.price-card::before{content:"";position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%}
+.price-label{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:6px}
+.price-amount{font-size:3rem;font-weight:900;line-height:1;letter-spacing:-.04em}
+.price-unit{font-size:.9rem;color:rgba(255,255,255,.7);margin-top:4px}
+.price-note{font-size:.8rem;color:rgba(255,255,255,.55);margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.15)}
+
+.gap-card{background:#FFF8E1;border:2px solid #F5D87A;border-radius:18px;padding:22px;margin-bottom:16px;display:flex;align-items:center;gap:16px}
+.gap-card-icon{font-size:32px;flex-shrink:0}
+.gap-card-text h4{font-size:.95rem;font-weight:800;color:#92400E;margin-bottom:4px}
+.gap-card-text p{font-size:.85rem;color:#A16207;line-height:1.5}
+.gap-big{font-size:1.5rem;font-weight:900;color:#92400E}
+
+.monthly-card{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.monthly-stat{text-align:center}
+.monthly-num{font-size:1.6rem;font-weight:900;color:var(--purple);letter-spacing:-.03em}
+.monthly-lbl{font-size:.75rem;font-weight:600;color:var(--muted);margin-top:2px}
+
+/* ── EMAIL CAPTURE ── */
+.email-capture{background:#fff;border:2px solid var(--line);border-radius:22px;padding:28px 24px;margin-bottom:24px}
+.email-capture h3{font-size:1.1rem;font-weight:800;margin-bottom:6px;letter-spacing:-.02em}
+.email-capture p{font-size:.88rem;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.form-row{display:grid;gap:12px;margin-bottom:14px}
+.form-input{width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:12px;font-size:.95rem;font-family:inherit;color:var(--text);background:#FAFAFA;transition:border .15s,background .15s}
+.form-input:focus{outline:none;border-color:var(--purple);background:#fff}
+.btn-email{width:100%;padding:16px;background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;font-size:1rem;font-weight:800;border:none;border-radius:14px;cursor:pointer;box-shadow:0 6px 20px rgba(109,40,217,.3);transition:transform .15s,box-shadow .15s;letter-spacing:-.01em}
+.btn-email:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(109,40,217,.4)}
+.btn-email:disabled{opacity:.6;cursor:default;transform:none}
+.email-fine{font-size:.75rem;color:var(--muted);text-align:center;margin-top:8px}
+
+/* ── THANK YOU ── */
+.ty-wrap{text-align:center;padding:60px 0}
+.ty-emoji{font-size:72px;margin-bottom:20px;line-height:1}
+.ty-wrap h2{font-size:clamp(1.6rem,4vw,2rem);font-weight:900;margin-bottom:12px;letter-spacing:-.03em}
+.ty-wrap p{font-size:.95rem;color:var(--muted);line-height:1.7;max-width:400px;margin:0 auto 32px}
+.ty-cta{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;font-size:1rem;font-weight:800;padding:16px 36px;border-radius:14px;text-decoration:none;box-shadow:0 6px 20px rgba(109,40,217,.3);transition:transform .15s,box-shadow .15s}
+.ty-cta:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(109,40,217,.4)}
+.ty-note{font-size:.8rem;color:var(--muted);margin-top:12px}
+
+/* ── FOOTER ── */
+.quiz-footer{text-align:center;padding:24px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--line)}
+.quiz-footer a{color:var(--purple);font-weight:600;text-decoration:none}
+
+/* ── MISC ── */
+.back-btn{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:.85rem;font-weight:600;background:none;border:none;cursor:pointer;padding:0;margin-bottom:24px;transition:color .15s}
+.back-btn:hover{color:var(--purple)}
+.calc-label{display:inline-block;background:#FFF3E0;color:#C2410C;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:18px}
+.error-msg{background:#FEF2F2;border:1.5px solid #FECACA;color:#DC2626;padding:11px 14px;border-radius:10px;font-size:.85rem;font-weight:600;margin-bottom:12px;display:none}
+
+@media(max-width:480px){
+  .q-btns{grid-template-columns:1fr 1fr}
+  .c-choices.two-col{grid-template-columns:1fr}
+  .monthly-card{justify-content:center;gap:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <img src="partybizhub-logo-white.svg" alt="Party Biz Hub"/>
+  <span class="topbar-name">Party Biz Hub</span>
+  <span class="topbar-badge">Free Tool</span>
+</div>
+
+<!-- PROGRESS BAR (hidden on intro + thank you) -->
+<div class="progress-wrap" id="progressWrap" style="display:none">
+  <div class="progress-label">
+    <span class="progress-part" id="progressPart">Part 1: Business Check</span>
+    <span class="progress-count" id="progressCount">1 / 10</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 0 — INTRO
+══════════════════════════════════════════════ -->
+<div class="screen active" id="screen-intro">
+<div class="container">
+  <div class="intro-hero">
+    <div class="intro-emoji">🎉</div>
+    <h1>How Legit Is Your<br/><span>Party Business?</span></h1>
+    <p>Take our free 2-minute quiz, then get a personalized pricing breakdown — so you stop leaving money on the table at every event.</p>
+    <div class="intro-pills">
+      <span class="pill">✅ 2 minutes</span>
+      <span class="pill">🚫 No PDF</span>
+      <span class="pill">💰 Free pricing breakdown</span>
+      <span class="pill">📧 Sent to your inbox</span>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">Take the Free Quiz →</button>
+    <p class="intro-meta">Taken by 500+ party business owners</p>
+  </div>
+
+  <div class="intro-bullets">
+    <h3>In 2 minutes you'll discover</h3>
+    <div class="bullet-item"><span class="bullet-icon">🏆</span><span>Your <strong>Party Business Score</strong> out of 10 — and where you rank</span></div>
+    <div class="bullet-item"><span class="bullet-icon">💸</span><span>Your <strong>recommended price per event</strong> based on your service + experience</span></div>
+    <div class="bullet-item"><span class="bullet-icon">📉</span><span>Exactly how much you're <strong>undercharging</strong> (most party pros are off by 35%+)</span></div>
+    <div class="bullet-item"><span class="bullet-icon">📈</span><span>Your <strong>monthly revenue potential</strong> if you fix your pricing today</span></div>
+    <div class="bullet-item"><span class="bullet-icon">🗺️</span><span>A personalized <strong>3-step action plan</strong> sent straight to your inbox</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREENS 1–10 — QUIZ QUESTIONS
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-quiz">
+<div class="container">
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  <div class="q-tag">Part 1 · Business Check</div>
+  <div class="q-text" id="qText"></div>
+  <div class="q-sub" id="qSub"></div>
+  <div class="q-btns">
+    <button class="q-btn yes" onclick="answerQuiz(true)">
+      <span class="q-btn-emoji">✅</span>Yes
+    </button>
+    <button class="q-btn no" onclick="answerQuiz(false)">
+      <span class="q-btn-emoji">❌</span>No
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 11 — SCORE REVEAL
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-score">
+<div class="container">
+  <div class="score-wrap">
+    <div class="score-ring">
+      <div class="score-num" id="scoreNum">0</div>
+      <div class="score-denom">out of 10</div>
+    </div>
+    <div class="score-tier" id="scoreTier"></div>
+    <p class="score-msg" id="scoreMsg"></p>
+    <div class="score-gaps" id="scoreGaps"></div>
+    <button class="btn-next" onclick="startCalc()">Now let's find your price →</button>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 12–16 — CALCULATOR QUESTIONS
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-calc">
+<div class="container">
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  <div class="calc-label">Part 2 · Pricing Check</div>
+  <div class="q-text" id="cText"></div>
+  <div class="q-sub" id="cSub"></div>
+  <div class="c-choices" id="cChoices"></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 17 — RESULTS + EMAIL CAPTURE
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-results">
+<div class="container">
+  <div class="results-wrap">
+    <div class="results-header">
+      <h2>Your Personalized Breakdown 📊</h2>
+      <p>Based on your quiz score and your business profile</p>
+    </div>
+
+    <div class="price-card">
+      <div class="price-label">Your Recommended Price Per Event</div>
+      <div class="price-amount" id="recPrice">$0</div>
+      <div class="price-unit" id="recPriceUnit">for a 2-hour event</div>
+      <div class="price-note" id="recPriceNote"></div>
+    </div>
+
+    <div class="gap-card">
+      <div class="gap-card-icon">⚠️</div>
+      <div class="gap-card-text">
+        <h4>You might be charging <span class="gap-big" id="gapCurrentPrice">$0</span></h4>
+        <p>That's <strong id="gapDollar">$0</strong> left on the table every single event — and <strong id="gapMonthly">$0/month</strong> if you're booking just 4 events.</p>
+      </div>
+    </div>
+
+    <div class="monthly-card">
+      <div class="monthly-stat">
+        <div class="monthly-num" id="monthly4">$0</div>
+        <div class="monthly-lbl">4 events/mo potential</div>
+      </div>
+      <div class="monthly-stat">
+        <div class="monthly-num" id="monthly8">$0</div>
+        <div class="monthly-lbl">8 events/mo potential</div>
+      </div>
+      <div class="monthly-stat">
+        <div class="monthly-num" id="monthly12">$0</div>
+        <div class="monthly-lbl">12 events/mo potential</div>
+      </div>
+    </div>
+
+    <div class="email-capture">
+      <h3>📬 Get your full results + 3-step action plan</h3>
+      <p>We'll send your complete pricing breakdown, your score details, and a personalized action plan to your inbox. Free.</p>
+      <div id="emailError" class="error-msg"></div>
+      <div class="form-row">
+        <input class="form-input" type="text" id="leadName" placeholder="Your first name" autocomplete="given-name"/>
+        <input class="form-input" type="email" id="leadEmail" placeholder="Your best email address" autocomplete="email"/>
+      </div>
+      <button class="btn-email" id="emailBtn" onclick="submitLead()">Email Me My Results →</button>
+      <p class="email-fine">No spam. Unsubscribe any time. We respect your inbox.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 18 — THANK YOU
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-ty">
+<div class="container">
+  <div class="ty-wrap">
+    <div class="ty-emoji">🎉</div>
+    <h2>It's on its way!</h2>
+    <p>Check your inbox for your full Party Business breakdown + your personalized 3-step action plan.</p>
+    <a class="ty-cta" href="https://app.partybizhub.com/login.html">Try Party Biz Hub Free →</a>
+    <p class="ty-note">The system that helps you put your pricing, contracts, and bookings on autopilot.</p>
+  </div>
+</div>
+</div>
+
+<div class="quiz-footer">
+  Built with ♥ by <a href="https://partybizhub.com">Party Biz Hub</a> · <a href="https://app.partybizhub.com/login.html">Start Your Free Account</a>
+</div>
+
+<script>
+// ── QUIZ DATA ──────────────────────────────────────────────────────────────
+const QUIZ = [
+  { q: "Do you have a signed contract for every event?",     sub: "A contract protects you AND your client if anything changes last-minute.", tip: "No contract = no protection. You need one." },
+  { q: "Do you collect a deposit before the event date?",    sub: "Deposits filter out tire-kickers and protect your time on the calendar.", tip: "No deposit = ghosting risk. Require 25–50% upfront." },
+  { q: "Do you have a booking page clients can fill out online?", sub: "Online intake forms save you hours of back-and-forth texting.", tip: "A booking form is your 24/7 assistant." },
+  { q: "Do you have liability insurance for your business?", sub: "Many venues and schools require proof of insurance before you can work.", tip: "Insurance opens doors to bigger, better-paying gigs." },
+  { q: "Do you have a set price list — not 'it depends'?",   sub: "A clear price list makes you look professional and stops awkward conversations.", tip: "Vague pricing = lost bookings. Set your rates." },
+  { q: "Do you send a professional quote or invoice before each event?", sub: "Branded quotes build trust and reduce no-shows.", tip: "Quotes show you're a real business, not a hobby." },
+  { q: "Do you track your income and expenses?",             sub: "You can't grow what you don't measure.", tip: "Without tracking, you don't know if you're actually profitable." },
+  { q: "Do you follow up with clients after the event?",     sub: "A simple thank-you message can turn one booking into five referrals.", tip: "Follow-ups are free marketing. Most pros skip this." },
+  { q: "Do you have a business email address?",              sub: "yourname@gmail.com looks less professional than hello@yourbiz.com.", tip: "A business email costs $6/mo and signals you're legit." },
+  { q: "Do you have a cancellation or refund policy?",       sub: "Without a policy, every cancellation becomes a negotiation.", tip: "A clear policy protects your income and sets expectations." },
+];
+
+const TIERS = [
+  { min:0,  max:3,  label:"The Dreamer 🌱",     color:"#16A34A", msg:"You've got the passion — now it's time to build the foundation. The good news? A few key systems will double your bookings and income fast." },
+  { min:4,  max:6,  label:"The Side Hustler 💪", color:"#D97706", msg:"You've got something real going here. But you're leaving serious money on the table. Tighten up your systems and you could be fully booked in 60 days." },
+  { min:7,  max:9,  label:"The Almost-Pro ⚡",   color:"#7C3AED", msg:"You're so close! A couple of systems away from running a fully booked, professional party business. Let's close those gaps." },
+  { min:10, max:10, label:"The Party Pro 🏆",    color:"#C9A227", msg:"You've built a real business. The question now isn't whether you should charge more — it's how much more and how to scale it." },
+];
+
+// ── CALC DATA ──────────────────────────────────────────────────────────────
+const CALC_STEPS = [
+  {
+    id: 'service',
+    q: "What type of events do you specialize in?",
+    sub: "Pick the closest match to your main service.",
+    choices: [
+      { icon:'🎨', label:'Face Painter / Body Art',  value:'face',      base:185 },
+      { icon:'🎈', label:'Balloon Twisting / Décor',  value:'balloon',   base:165 },
+      { icon:'🧁', label:'Party Character / Princess',value:'character', base:210 },
+      { icon:'🎵', label:'DJ / Music / Entertainment',value:'dj',        base:240 },
+      { icon:'📸', label:'Photo Booth / Photography', value:'photo',     base:260 },
+      { icon:'🎪', label:'Event Planning / Coordinating',value:'planner',base:320 },
+    ],
+    cols: 2
+  },
+  {
+    id: 'duration',
+    q: "How long is your typical event?",
+    sub: "Think about the events you book most often.",
+    choices: [
+      { icon:'⏱️', label:'1 Hour',    value:'1h',  mult:0.62 },
+      { icon:'⏰', label:'2 Hours',   value:'2h',  mult:1.00 },
+      { icon:'🕐', label:'3 Hours',   value:'3h',  mult:1.42 },
+      { icon:'🕓', label:'4+ Hours',  value:'4h',  mult:1.80 },
+    ],
+    cols: 2
+  },
+  {
+    id: 'experience',
+    q: "How long have you been doing this?",
+    sub: "Experience is part of your value — own it.",
+    choices: [
+      { icon:'🌱', label:'Just starting out',  value:'new',  expMult:0.82 },
+      { icon:'📈', label:'1–2 years',          value:'mid',  expMult:1.00 },
+      { icon:'⭐', label:'3–5 years',          value:'exp',  expMult:1.28 },
+      { icon:'🏆', label:'5+ years',           value:'pro',  expMult:1.55 },
+    ],
+    cols: 2
+  },
+  {
+    id: 'travel',
+    q: "How far do you typically travel to events?",
+    sub: "Travel time is work time — it should be priced in.",
+    choices: [
+      { icon:'🏠', label:'Local (under 15 miles)',      value:'local',  travelAdd:0  },
+      { icon:'🚗', label:'Some travel (15–30 miles)',   value:'some',   travelAdd:35 },
+      { icon:'🛣️', label:'Lots of travel (30+ miles)',  value:'far',    travelAdd:70 },
+    ],
+    cols: 1
+  },
+  {
+    id: 'supplies',
+    q: "Do you provide your own supplies or materials?",
+    sub: "Face paint, balloons, props, costumes — if you bring it, charge for it.",
+    choices: [
+      { icon:'✅', label:'Yes — I bring my own supplies',  value:'yes', suppliesAdd:45 },
+      { icon:'🚫', label:'No — client provides everything', value:'no',  suppliesAdd:0  },
+    ],
+    cols: 2
+  },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let quizAnswers = [];
+let quizScore   = 0;
+let calcAnswers = {};
+let currentQ    = 0;
+let currentC    = 0;
+let calcPricing = {};
+let screenHistory = ['screen-intro'];
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  screenHistory.push(id);
+
+  const isIntro = id === 'screen-intro';
+  const isTy    = id === 'screen-ty';
+  document.getElementById('progressWrap').style.display = (isIntro || isTy) ? 'none' : '';
+}
+
+function goBack() {
+  screenHistory.pop(); // remove current
+  const prev = screenHistory[screenHistory.length - 1] || 'screen-intro';
+  screenHistory.pop(); // will be re-added by showScreen
+  if (prev === 'screen-quiz' && currentQ > 0) currentQ--;
+  if (prev === 'screen-calc' && currentC > 0) currentC--;
+  if (prev === 'screen-quiz') renderQuestion();
+  if (prev === 'screen-calc') renderCalcStep();
+  showScreen(prev);
+}
+
+// ── PROGRESS ───────────────────────────────────────────────────────────────
+function updateProgress(part, current, total, pct) {
+  document.getElementById('progressPart').textContent  = part;
+  document.getElementById('progressCount').textContent = `${current} / ${total}`;
+  document.getElementById('progressFill').style.width  = pct + '%';
+}
+
+// ── QUIZ ───────────────────────────────────────────────────────────────────
+function startQuiz() {
+  currentQ    = 0;
+  quizAnswers = [];
+  quizScore   = 0;
+  renderQuestion();
+  showScreen('screen-quiz');
+}
+
+function renderQuestion() {
+  const q = QUIZ[currentQ];
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qSub').textContent  = q.sub;
+  updateProgress('Part 1 · Business Check', currentQ + 1, 10, ((currentQ + 1) / 15) * 100);
+}
+
+function answerQuiz(yes) {
+  quizAnswers.push(yes);
+  if (yes) quizScore++;
+  if (currentQ < QUIZ.length - 1) {
+    currentQ++;
+    renderQuestion();
+    // Animate the question change
+    const qScreen = document.getElementById('screen-quiz');
+    qScreen.classList.remove('active');
+    void qScreen.offsetWidth;
+    qScreen.classList.add('active');
+  } else {
+    showScoreReveal();
+  }
+}
+
+// ── SCORE REVEAL ───────────────────────────────────────────────────────────
+function showScoreReveal() {
+  const tier  = TIERS.find(t => quizScore >= t.min && quizScore <= t.max);
+  const fails = QUIZ.filter((q, i) => !quizAnswers[i]);
+
+  document.getElementById('scoreNum').textContent  = quizScore;
+  document.getElementById('scoreTier').textContent = tier.label;
+  document.getElementById('scoreTier').style.color = tier.color;
+  document.getElementById('scoreMsg').textContent  = tier.msg;
+
+  const gapsEl = document.getElementById('scoreGaps');
+  if (fails.length === 0) {
+    gapsEl.innerHTML = '<h4>Your gaps</h4><div class="gap-item"><span class="gap-dot green"></span><span>Perfect score! You\'ve got all the foundations in place. 🏆</span></div>';
+  } else {
+    const topFails = fails.slice(0, 4);
+    const items = topFails.map(q =>
+      `<div class="gap-item"><span class="gap-dot red"></span><span>${q.tip}</span></div>`
+    ).join('');
+    gapsEl.innerHTML = `<h4>Your top gaps to fix</h4>${items}`;
+  }
+
+  updateProgress('Part 1 · Business Check', 10, 10, (10/15)*100);
+  showScreen('screen-score');
+}
+
+// ── CALCULATOR ─────────────────────────────────────────────────────────────
+function startCalc() {
+  currentC    = 0;
+  calcAnswers = {};
+  renderCalcStep();
+  showScreen('screen-calc');
+}
+
+function renderCalcStep() {
+  const step = CALC_STEPS[currentC];
+  document.getElementById('cText').textContent = step.q;
+  document.getElementById('cSub').textContent  = step.sub;
+
+  const wrap = document.getElementById('cChoices');
+  wrap.className = `c-choices${step.cols === 2 ? ' two-col' : ''}`;
+  wrap.innerHTML = step.choices.map((c, i) =>
+    `<div class="c-card ${calcAnswers[step.id] === i ? 'selected' : ''}" onclick="answerCalc(${i})">
+      <span class="c-icon">${c.icon}</span>
+      <span>${c.label}</span>
+    </div>`
+  ).join('');
+
+  const totalSteps = 5;
+  const overallStep = 10 + currentC + 1;
+  updateProgress('Part 2 · Pricing Check', currentC + 1, totalSteps, (overallStep / 15) * 100);
+}
+
+function answerCalc(idx) {
+  const step = CALC_STEPS[currentC];
+  calcAnswers[step.id] = idx;
+
+  // Flash selected state
+  document.querySelectorAll('.c-card').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+
+  setTimeout(() => {
+    if (currentC < CALC_STEPS.length - 1) {
+      currentC++;
+      renderCalcStep();
+      const cs = document.getElementById('screen-calc');
+      cs.classList.remove('active');
+      void cs.offsetWidth;
+      cs.classList.add('active');
+    } else {
+      buildResults();
+      showScreen('screen-results');
+    }
+  }, 280);
+}
+
+// ── RESULTS ────────────────────────────────────────────────────────────────
+function buildResults() {
+  // Pull chosen values
+  const service   = CALC_STEPS[0].choices[calcAnswers.service   ?? 0];
+  const duration  = CALC_STEPS[1].choices[calcAnswers.duration  ?? 1];
+  const exp       = CALC_STEPS[2].choices[calcAnswers.experience ?? 1];
+  const travel    = CALC_STEPS[3].choices[calcAnswers.travel    ?? 0];
+  const supplies  = CALC_STEPS[4].choices[calcAnswers.supplies  ?? 0];
+
+  // Score modifier: higher score = slightly higher confidence in pricing
+  const scoreMod = 0.95 + (quizScore / 10) * 0.15;
+
+  const recommended = Math.round(
+    (service.base * duration.mult * exp.expMult + travel.travelAdd + supplies.suppliesAdd) * scoreMod / 5
+  ) * 5; // round to nearest $5
+
+  const currentEst  = Math.round(recommended * 0.63 / 5) * 5;
+  const gap         = recommended - currentEst;
+  const monthly4    = recommended * 4;
+  const monthly8    = recommended * 8;
+  const monthly12   = recommended * 12;
+
+  calcPricing = { recommended, currentEst, gap, service: service.label };
+
+  const durationLabel = duration.label.toLowerCase();
+
+  document.getElementById('recPrice').textContent     = '$' + recommended.toLocaleString();
+  document.getElementById('recPriceUnit').textContent = `for a ${durationLabel} event · ${service.label}`;
+  document.getElementById('recPriceNote').textContent =
+    `Based on your experience level (${exp.label.toLowerCase()}), travel, and supplies. This is your floor — charge more for holidays, rush bookings, and large groups.`;
+
+  document.getElementById('gapCurrentPrice').textContent = '$' + currentEst.toLocaleString();
+  document.getElementById('gapDollar').textContent        = '$' + gap.toLocaleString();
+  document.getElementById('gapMonthly').textContent       = '$' + (gap * 4).toLocaleString() + '/month';
+
+  document.getElementById('monthly4').textContent  = '$' + monthly4.toLocaleString();
+  document.getElementById('monthly8').textContent  = '$' + monthly8.toLocaleString();
+  document.getElementById('monthly12').textContent = '$' + monthly12.toLocaleString();
+
+  updateProgress('Your Results', 15, 15, 100);
+}
+
+// ── EMAIL CAPTURE ──────────────────────────────────────────────────────────
+async function submitLead() {
+  const name  = document.getElementById('leadName').value.trim();
+  const email = document.getElementById('leadEmail').value.trim();
+  const errEl = document.getElementById('emailError');
+  const btn   = document.getElementById('emailBtn');
+
+  errEl.style.display = 'none';
+
+  if (!name) { errEl.textContent = 'Please enter your first name.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled     = true;
+  btn.textContent  = 'Sending your results...';
+
+  const tier = TIERS.find(t => quizScore >= t.min && quizScore <= t.max);
+
+  try {
+    const res = await fetch('/api/lead-capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        score:            quizScore,
+        tier:             tier.label,
+        recommendedPrice: calcPricing.recommended,
+        currentEstimate:  calcPricing.currentEst,
+        gap:              calcPricing.gap,
+        serviceType:      calcPricing.service,
+        quizAnswers:      quizAnswers,
+        calcAnswers:      calcAnswers,
+      }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showScreen('screen-ty');
+    } else {
+      throw new Error(data.error || 'Something went wrong');
+    }
+  } catch (err) {
+    errEl.textContent  = 'Something went wrong — please try again.';
+    errEl.style.display = 'block';
+    btn.disabled       = false;
+    btn.textContent    = 'Email Me My Results →';
+  }
+}
+</script>
+</body>
+</html>
