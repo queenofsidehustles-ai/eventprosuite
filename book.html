@@ -942,7 +942,10 @@ async function submitBooking() {
 
   const clientEmail = document.getElementById('clientEmail').value.trim();
 
+  const newBookingId = crypto.randomUUID();
+
   const payload = {
+    id: newBookingId,
     owner_id: ownerUID,
     client_name: document.getElementById('clientName').value.trim(),
     client_email: clientEmail,
@@ -969,23 +972,21 @@ async function submitBooking() {
         'apikey': SUPA_KEY,
         'Authorization': `Bearer ${SUPA_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify(payload)
     });
 
-    const insertRows = await insertRes.json();
-
     if (!insertRes.ok) {
-      console.error('Booking insert error:', insertRows);
+      const detail = await insertRes.text().catch(() => '');
+      console.error('Booking insert error:', insertRes.status, detail);
       alert('Something went wrong submitting your booking. Please try again or reach out to the business directly by phone.');
       btn.disabled = false;
       btn.textContent = '🎊 Book Now';
       return;
     }
 
-    const insertedRow = Array.isArray(insertRows) ? insertRows[0] : insertRows;
-    bookingId = (insertedRow && insertedRow.id) || null;
+    bookingId = newBookingId;
 
     // Auto-generate and email contract
     let contractSent = false;
