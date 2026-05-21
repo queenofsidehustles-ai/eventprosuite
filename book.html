@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Book Your Party</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase SDK loaded dynamically at submit time to avoid blocking page render -->
 <style>
 /* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -965,6 +965,15 @@ async function submitBooking() {
 
   if (!supabase) {
     try {
+      if (!window.supabase) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+          s.onload = resolve;
+          s.onerror = () => reject(new Error('SDK load failed'));
+          document.head.appendChild(s);
+        });
+      }
       supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
     } catch (e) {
       alert('Booking service unavailable. Please refresh and try again.');
