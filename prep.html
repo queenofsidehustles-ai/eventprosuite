@@ -302,6 +302,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
   <div class="btn-row">
     <button class="btn btn-navy" onclick="saveEvent()" id="saveBtn">💾 Save</button>
+    <button class="btn btn-outline" onclick="printChecklist()">🖨️ Print</button>
+    <button class="btn btn-outline" onclick="copyToNotes()">📱 Copy to Notes</button>
     <button class="btn btn-outline" onclick="duplicateEvent()">📋 Duplicate</button>
     <button class="btn btn-danger" onclick="deleteEvent()">🗑️ Delete</button>
   </div>
@@ -744,6 +746,80 @@ async function duplicateEvent(){
     currentEvent=data;showDetail();
     showToast('✓ Duplicated — update dates and save');
   }catch(e){alert('Duplicate failed: '+e.message)}
+}
+
+function printChecklist(){
+  const ev=currentEvent;
+  if(!ev){showToast('No event loaded');return}
+  const d=ev.event_data||{};
+  const title=ev.title||'Event';
+  const date=ev.event_date?new Date(ev.event_date+'T00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
+  const client=d.client||ev.client_name||'';
+  const venue=d.venue||ev.event_venue||'';
+
+  function section(name,tasks){
+    if(!tasks||!tasks.length)return'';
+    return`<div style="margin-bottom:18pt"><div style="font-weight:700;font-size:11pt;border-bottom:1pt solid #ccc;padding-bottom:3pt;margin-bottom:6pt;text-transform:uppercase;letter-spacing:.05em">${name}</div>`+
+    tasks.map(t=>`<div style="display:flex;align-items:flex-start;gap:8pt;margin-bottom:5pt"><span style="display:inline-block;width:12pt;height:12pt;border:1pt solid #555;border-radius:2pt;flex-shrink:0;margin-top:1pt"></span><span style="font-size:10.5pt;${t.done?'text-decoration:line-through;color:#888':''}">${t.t||''}</span></div>`).join('')+'</div>';
+  }
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${title} Checklist</title>
+<style>
+@media print{body{margin:0}@page{margin:18mm 18mm 18mm 18mm}}
+body{font-family:Georgia,'Times New Roman',serif;font-size:11pt;color:#222;max-width:680px;margin:0 auto;padding:24pt}
+h1{font-size:20pt;margin:0 0 4pt;letter-spacing:-.01em}
+.sub{font-size:10pt;color:#555;margin-bottom:16pt}
+.no-print{display:none}
+</style></head><body>
+<div style="border-bottom:2pt solid #4C1D95;padding-bottom:10pt;margin-bottom:16pt">
+<h1>${title}</h1>
+<div class="sub">${[date,client&&'Client: '+client,venue&&'Venue: '+venue].filter(Boolean).join('  ·  ')}</div>
+</div>
+${section('Pre-Event Tasks',d.pre)}
+${section('Day-Of Tasks',d.day)}
+${section('Post-Event',d.post)}
+${section('Shopping List',(d.shopping||[]).map(s=>({t:`${s.n} — Qty: ${s.q||1}`,done:s.bought})))}
+${section('Supplies to Pack',(d.supplies||[]).map(s=>({t:`${s.n} (×${s.q||1})`,done:s.packed})))}
+${d.notes?`<div style="margin-top:12pt;border-top:1pt solid #ccc;padding-top:10pt"><div style="font-weight:700;text-transform:uppercase;font-size:9pt;letter-spacing:.06em;margin-bottom:4pt">Notes</div><div style="font-size:10pt;line-height:1.6">${d.notes}</div></div>`:''}
+<div style="margin-top:20pt;font-size:8pt;color:#aaa;text-align:center">Party Biz Hub · eventprosuite.vercel.app</div>
+</body></html>`;
+
+  const w=window.open('','_blank','width=750,height=900');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
+
+function copyToNotes(){
+  const ev=currentEvent;
+  if(!ev){showToast('No event loaded');return}
+  const d=ev.event_data||{};
+  const title=ev.title||'Event';
+  const date=ev.event_date?new Date(ev.event_date+'T00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+  const lines=[`📋 ${title}${date?' — '+date:''}`,''];
+
+  function addSection(name,tasks){
+    if(!tasks||!tasks.length)return;
+    lines.push(`▸ ${name.toUpperCase()}`);
+    tasks.forEach(t=>lines.push(`  ${t.done?'✓':'☐'} ${t.t||t.n||''}`));
+    lines.push('');
+  }
+  addSection('Pre-Event Tasks',d.pre);
+  addSection('Day-Of Tasks',d.day);
+  addSection('Post-Event',d.post);
+  if(d.shopping&&d.shopping.length){
+    lines.push('▸ SHOPPING LIST');
+    d.shopping.forEach(s=>lines.push(`  ${s.bought?'✓':'☐'} ${s.n} (×${s.q||1})`));
+    lines.push('');
+  }
+  if(d.supplies&&d.supplies.length){
+    lines.push('▸ SUPPLIES TO PACK');
+    d.supplies.forEach(s=>lines.push(`  ${s.packed?'✓':'☐'} ${s.n} (×${s.q||1})`));
+    lines.push('');
+  }
+  if(d.notes){lines.push('▸ NOTES');lines.push(d.notes)}
+
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>showToast('Copied! Paste into your Notes app 📱')).catch(()=>showToast('Could not copy — try again'));
 }
 
 function escapeHtml(s){if(!s)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}

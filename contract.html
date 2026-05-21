@@ -319,6 +319,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
     </div>
 
     <div class="step-panel" id="step6">
+      <div id="signedBanner" style="display:none;background:rgba(30,140,90,.1);border:1px solid rgba(30,140,90,.25);border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-weight:600;color:#1E8C5A;font-size:.9rem">
+        ✅ This contract is fully signed by both parties.<br>
+        <span style="font-weight:400;font-size:.82rem;color:#3A6B55">Download the PDF below to save your signed copy.</span>
+      </div>
       <h2 class="step-title">Sign & send to client</h2>
       <p class="step-sub">Add your signature first. Then generate a secure link to send to your client — they sign on their phone or computer.</p>
       <h3 style="font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.1rem;margin:1rem 0 .6rem">Your signature</h3>
@@ -348,10 +352,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 <div class="modal" id="shareModal">
   <div class="modal-content">
     <h2>Contract ready to send 🎉</h2>
-    <p>Copy this secure link and send it to your client via email, text, or DM. When they open it, they'll see the contract and can sign on any device.</p>
+    <div id="emailStatusBanner" style="display:none;padding:.6rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;margin-bottom:.8rem"></div>
+    <p>The signing link has been emailed to your client. You can also copy it below to share via text or DM.</p>
     <div class="share-link-box" id="shareLinkBox"></div>
-    <button class="btn btn-primary" onclick="copyShareLink()" style="margin-top:.8rem">📋 Copy Link</button>
-    <button class="btn btn-outline" onclick="closeShareModal()" style="margin-top:.8rem">Close</button>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem">
+      <button class="btn btn-primary" onclick="copyShareLink()">📋 Copy Link</button>
+      <button class="btn btn-outline" id="resendEmailBtn" onclick="resendContractEmail()">📧 Resend Email</button>
+      <button class="btn btn-outline" onclick="closeShareModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -469,11 +477,15 @@ function renderContracts(){
   const statusClass=s=>s==='Sent to Client'?'Sent':s==='Vendor Signed'?'Vendor':s==='Fully Signed'?'Fully':'Draft';
   grid.innerHTML=contracts.map(c=>{
     const dt=c.event_date?new Date(c.event_date+'T00:00').toLocaleDateString():'No date set';
+    const isSigned=c.status==='Fully Signed';
+    const signedNote=isSigned?`<div style="margin-top:.7rem;font-size:.78rem;color:#1E8C5A;font-weight:600">✅ Fully signed — click to download PDF</div>`:'';
+    const resendLink=c.sign_token&&c.status==='Sent to Client'?`<div style="margin-top:.5rem"><button class="btn btn-outline" style="font-size:.72rem;padding:.3rem .65rem" onclick="event.stopPropagation();resendLink('${c.sign_token}','${(c.client_email||'').replace(/'/g,'')}')">📧 Resend Link</button></div>`:'';
     return `<div class="contract-card" onclick="openContract('${c.id}')">
       <span class="contract-status ${statusClass(c.status||'Draft')}">${c.status||'Draft'}</span>
       <div class="contract-client" style="margin-top:.5rem">${(c.client_name||'Untitled').replace(/</g,'&lt;')}</div>
       <div class="contract-meta">${dt} · ${(c.contract_type||'service_agreement').replace(/_/g,' ')}</div>
       <div class="contract-meta"><strong>$${parseFloat(c.total_price||0).toFixed(2)}</strong> total${c.deposit_amount?` · $${parseFloat(c.deposit_amount).toFixed(2)} deposit`:''}</div>
+      ${signedNote}${resendLink}
     </div>`;
   }).join('')+`<div class="contract-card new" onclick="newContract()"><div style="font-size:2.5rem;margin-bottom:.4rem">+</div><div>New Contract</div></div>`;
 }
@@ -535,7 +547,15 @@ function openContract(id){
   if(c.vendor_signature&&c.vendor_signature.type==='typed')$('sigTyped').value=c.vendor_signature.value||'';
   $('listView').style.display='none';
   $('wizardView').classList.add('active');
-  goStep(1);
+  // Go to step 6 for signed contracts so PDF download is immediately available
+  goStep(c.status==='Fully Signed'||c.status==='Vendor Signed'?6:1);
+}
+
+async function resendLink(token, clientEmail){
+  const url=`${window.location.origin}/sign-contract.html?t=${token}`;
+  $('shareLinkBox').textContent=url;
+  $('shareModal').classList.add('show');
+  if(clientEmail)sendContractEmail(url);
 }
 
 function backToList(){$('listView').style.display='block';$('wizardView').classList.remove('active');loadContracts()}
@@ -551,7 +571,11 @@ function goStep(n){
   $('step'+n).classList.add('active');
   renderProgressSteps();
   if(n===5)renderReview();
-  if(n===6)setupSignatureCanvas();
+  if(n===6){
+    setupSignatureCanvas();
+    const isSigned=currentContract&&currentContract.status==='Fully Signed';
+    $('signedBanner').style.display=isSigned?'block':'none';
+  }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -700,11 +724,61 @@ function showShareModal(token){
   const url=`${window.location.origin}/sign-contract.html?t=${token}`;
   $('shareLinkBox').textContent=url;
   $('shareModal').classList.add('show');
+  sendContractEmail(url);
 }
 function closeShareModal(){$('shareModal').classList.remove('show')}
 function copyShareLink(){
   const text=$('shareLinkBox').textContent;
   navigator.clipboard.writeText(text).then(()=>showToast('✓ Link copied'),()=>showToast('Could not copy — select manually'));
+}
+
+async function sendContractEmail(signingUrl){
+  const banner=$('emailStatusBanner');
+  banner.style.display='block';
+  banner.style.background='rgba(109,40,217,.08)';
+  banner.style.color='#4C1D95';
+  banner.textContent='📧 Sending email to client…';
+  const c=currentContract||{};
+  try{
+    const res=await fetch('/api/send-contract-email',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        clientEmail:c.client_email||$('clientEmail').value,
+        clientName:c.client_name||$('clientName').value,
+        bizName:c.biz_name||$('bizName').value,
+        bizEmail:c.biz_email||$('bizEmail').value,
+        bizPhone:c.biz_phone||$('bizPhone').value,
+        eventDate:c.event_date||$('eventDate').value,
+        eventTime:c.event_time||$('eventTime').value,
+        eventAddress:c.event_venue||$('eventVenue').value,
+        eventServices:c.event_services||$('eventServices').value,
+        totalPrice:c.total_price||$('totalPrice').value,
+        depositAmount:c.deposit_amount||$('depositAmount').value,
+        signingUrl,
+      })
+    });
+    const data=await res.json();
+    if(data.sent){
+      banner.style.background='rgba(30,140,90,.1)';banner.style.color='#1E8C5A';
+      banner.textContent='✅ Email sent to '+( c.client_email||$('clientEmail').value);
+    }else{
+      banner.style.background='rgba(194,59,94,.08)';banner.style.color='#C23B5E';
+      banner.textContent='⚠️ '+(data.note||'Email could not be sent — copy the link and send manually.');
+    }
+  }catch(e){
+    banner.style.background='rgba(194,59,94,.08)';banner.style.color='#C23B5E';
+    banner.textContent='⚠️ Email error — copy the link and send manually.';
+  }
+}
+
+async function resendContractEmail(){
+  const url=$('shareLinkBox').textContent;
+  if(!url){showToast('No link available');return}
+  const btn=$('resendEmailBtn');
+  btn.disabled=true;btn.textContent='Sending…';
+  await sendContractEmail(url);
+  btn.disabled=false;btn.textContent='📧 Resend Email';
+  showToast('Email resent!');
 }
 
 function downloadContractPDF(){

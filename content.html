@@ -218,6 +218,25 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 
 <main class="wrap">
 
+<!-- NICHE SELECTOR -->
+<div style="background:#fff;border-radius:14px;padding:.75rem 1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;box-shadow:0 2px 8px rgba(109,40,217,.06);border:1px solid #EAE3ED">
+  <span style="font-size:.75rem;font-weight:700;color:#6C6473;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Your Niche</span>
+  <select id="nicheSelect" onchange="selectedNiche=this.value" style="flex:1;min-width:180px;padding:.45rem .75rem;border:1.5px solid #EAE3ED;border-radius:10px;font-family:inherit;font-size:.85rem;font-weight:600;color:#1F1A24;background:#fff;cursor:pointer">
+    <option value="">🎉 General Kids Party Entertainment</option>
+    <option value="Princess Parties">👑 Princess Parties</option>
+    <option value="Kids Spa & Pamper Parties">💅 Kids Spa & Pamper Parties</option>
+    <option value="Balloon Art & Decor">🎈 Balloon Art & Decor</option>
+    <option value="Character Parties (Superheroes, Disney, etc.)">🦸 Character Parties</option>
+    <option value="Bounce Houses & Inflatables">🏰 Bounce Houses & Inflatables</option>
+    <option value="Face Painting">🎨 Face Painting</option>
+    <option value="Magic Shows & Entertainment">🪄 Magic Shows & Entertainment</option>
+    <option value="Games, Activities & Party Hosting">🎮 Games, Activities & Party Hosting</option>
+    <option value="Slumber & Sleepover Parties">🌙 Slumber & Sleepover Parties</option>
+    <option value="Candy & Dessert Tables">🍭 Candy & Dessert Tables</option>
+  </select>
+  <span style="font-size:.75rem;color:#6C6473">AI will keep all content focused on your niche</span>
+</div>
+
 <!-- TABS -->
 <div class="tab-bar">
   <button class="tab-btn active" id="tabCreate" onclick="switchTab('create')">✍️ Create</button>
@@ -297,7 +316,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
             #️⃣ Hashtags
             <button class="copy-btn" onclick="copyField('hashtagsOut','copyHash')" id="copyHash">Copy</button>
           </div>
-          <div class="output-box" id="hashtagsOut" style="font-size:.8rem;color:var(--brand)"></div>
+          <div class="output-box" id="hashtagsOut" style="font-size:.8rem;color:#4A4354"></div>
         </div>
 
         <div style="display:flex;gap:.5rem;margin-top:.4rem">
@@ -433,7 +452,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser=null, userBiz='', userCity='', userZernioKey='';
 let currentTab='create';
-let selectedType='After Party Recap', selectedPlatform='Instagram';
+let selectedType='After Party Recap', selectedPlatform='Instagram', selectedNiche='';
 let lastGenerated=null;
 let recognition=null;
 let queueItems=[];
@@ -472,6 +491,7 @@ function switchTab(tab){
     document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?'block':'none';
     document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).className='tab-btn'+(t===tab?' active':'');
   });
+  window.scrollTo({top:0,behavior:'smooth'});
   if(tab==='queue')renderQueue();
   if(tab==='calendar')renderCalendar();
 }
@@ -594,7 +614,7 @@ async function generateContent(){
     const res=await fetch('/api/caption',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({hook,post_type:selectedType,platform:selectedPlatform,business_name:userBiz,city:userCity,mode:'single'})
+      body:JSON.stringify({hook,post_type:selectedType,platform:selectedPlatform,business_name:userBiz,city:userCity,niche:selectedNiche,mode:'single'})
     });
     const data=await res.json();
     if(!res.ok||data.error){showToast('Generation failed: '+(data.error||res.status));resetGenerateBtn();return}
@@ -813,7 +833,7 @@ async function generateBatch(){
     const hook=focus||`variety of party business content for ${userBiz||'my party business'}`;
     const res=await fetch('/api/caption',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({hook,business_name:userBiz,city:userCity,mode:'batch'})
+      body:JSON.stringify({hook,business_name:userBiz,city:userCity,niche:selectedNiche,mode:'batch'})
     });
     const data=await res.json();
     if(!res.ok||data.error){showToast('Generation failed. Try again.');document.getElementById('batchGrid').innerHTML='';btn.disabled=false;btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate My Week';return}

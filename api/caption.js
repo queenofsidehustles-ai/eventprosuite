@@ -8,16 +8,20 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured.' });
 
-  const { hook, post_type, platform, business_name, city, mode } = req.body || {};
+  const { hook, post_type, platform, business_name, city, niche, mode } = req.body || {};
 
   const biz = business_name || 'my party business';
   const loc = city ? ` in ${city}` : '';
+  const nicheLabel = niche || 'kids party entertainment';
+  const nicheContext = niche ? `\nSPECIFIC NICHE: ${niche} — ALL content must be focused specifically on this. Do not drift into other party types.` : '';
 
   let prompt;
 
   if (mode === 'batch') {
-    prompt = `You are a social media strategist for kids party entertainment businesses.
-Generate 7 varied social media post ideas for a full week for "${biz}"${loc}.
+    prompt = `You are a social media strategist specializing in ${nicheLabel} businesses.
+Generate 7 varied social media post ideas for a full week for "${biz}"${loc}.${nicheContext}
+
+IMPORTANT: Every single post idea must be specifically about ${nicheLabel}. Do not use generic party content — make it hyper-relevant to this niche.
 
 Mix post types: party recaps, tips, promotional, behind the scenes, testimonials, seasonal, engagement.
 
@@ -52,7 +56,7 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
     };
     const typeGuide = postTypeGuide[post_type] || '';
 
-    prompt = `You are an expert social media writer for kids party entertainment businesses. Write content for "${biz}"${loc}.
+    prompt = `You are an expert social media writer specializing in ${nicheLabel} businesses. Write content for "${biz}"${loc}.${nicheContext}
 
 POST TYPE: ${post_type}
 PLATFORM: ${platform}
@@ -61,7 +65,8 @@ CONTEXT/HOOK: ${hook}
 STYLE GUIDE:
 - ${guide}
 - ${typeGuide}
-- Party niche: balloons, characters, princess parties, bounce houses, entertainer, kids entertainment
+- Business niche: ${nicheLabel} — every word must feel specific to this niche, not generic
+- Use niche-specific language, imagery, and details that resonate with this audience
 - Tone: warm, exciting, professional but fun — never corporate
 - Always write as the business owner's authentic voice
 
