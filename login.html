@@ -133,6 +133,13 @@
 
   <div class="message" id="authMessage"></div>
 
+  <!-- KPPS INVITE BANNER (shown when ?invite=KPPS) -->
+  <div id="inviteBanner" style="display:none;background:linear-gradient(135deg,#1a0e2a,#3b1f6b);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:18px;border:1.5px solid rgba(212,168,64,.5);text-align:center">
+    <div style="font-size:1.4rem;margin-bottom:4px">🎉</div>
+    <div style="font-weight:800;font-size:.95rem;margin-bottom:3px">KPPS Member Invite</div>
+    <div style="font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.55">Create your account below and you'll get full Website Builder access — included with your KPPS membership.</div>
+  </div>
+
   <!-- MAIN AUTH -->
   <div id="mainAuth">
     <div class="auth-tabs">
@@ -204,9 +211,28 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = window.supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Detect invite code in URL
+const urlParams = new URLSearchParams(window.location.search);
+const inviteCode = (urlParams.get('invite') || '').toUpperCase();
+const isKppsInvite = inviteCode === 'KPPS';
+if (isKppsInvite) {
+  localStorage.setItem('pbh_invite', 'KPPS');
+  document.getElementById('inviteBanner').style.display = 'block';
+  switchTab('signup');
+} else if (localStorage.getItem('pbh_invite') === 'KPPS') {
+  // Still show banner if invite was saved from a previous visit
+  document.getElementById('inviteBanner').style.display = 'block';
+  switchTab('signup');
+}
+
 // Auto-redirect if already logged in
 sb.auth.getSession().then(async ({ data: { session } }) => {
   if (!session) return;
+  // If KPPS invite link, grant access before redirecting
+  if (localStorage.getItem('pbh_invite') === 'KPPS') {
+    await sb.from('profiles').upsert({ id: session.user.id, has_kpps_access: true, has_paid: true }, { onConflict: 'id' });
+    localStorage.removeItem('pbh_invite');
+  }
   const { data: profile } = await sb
     .from('profiles')
     .select('profile_data')
@@ -304,6 +330,17 @@ async function handleSignup() {
     setLoading('signupBtn', false, 'Create My Account');
     showMessage(error.message, 'error');
     return;
+  }
+
+  // If KPPS invite, grant has_kpps_access on the new profile
+  if (localStorage.getItem('pbh_invite') === 'KPPS' && data.user) {
+    await sb.from('profiles').upsert({
+      id: data.user.id,
+      has_kpps_access: true,
+      has_paid: true,
+      full_name: name,
+    }, { onConflict: 'id' });
+    localStorage.removeItem('pbh_invite');
   }
 
   setLoading('signupBtn', false, 'Create My Account');

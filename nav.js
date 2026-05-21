@@ -10,9 +10,10 @@
     { id: 'profit',    href: 'profit.html',    icon: '💰', label: 'Profit Calc' },
     { id: 'prep',      href: 'prep.html',      icon: '📋', label: 'Event Checklist' },
     { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors' },
-    { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website' },
+    { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website', gated: true },
     { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI' },
     { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio' },
+    { id: 'guide',     href: 'guide.html',     icon: '🚀', label: 'Quick Start Guide' },
   ];
 
   const filename = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
@@ -20,9 +21,11 @@
   function build() {
     const items = PAGES.map(p => {
       const active = filename === p.id ? ' active' : '';
+      const lock = (p.gated && !window.pbhProAccess) ? '<span class="snav-lock" title="KPPS feature">🔒</span>' : '';
       return `<a href="${p.href}" class="snav-item${active}">
         <span class="snav-icon">${p.icon}</span>
         <span class="snav-label">${p.label}</span>
+        ${lock}
       </a>`;
     }).join('');
 
@@ -73,6 +76,12 @@
     const a = document.getElementById('sidebarAvatar');
     if (n) n.textContent = name || '—';
     if (a) a.textContent = (initial || (name && name.charAt(0)) || '?').toUpperCase();
+  };
+
+  window.setNavPlan = function (plan) {
+    window.pbhProAccess = (plan === 'pro' || plan === 'kpps');
+    const lockEl = document.querySelector('.snav-lock');
+    if (lockEl) lockEl.style.display = window.pbhProAccess ? 'none' : '';
   };
 
   window.initNavSignout = function (handler) {
