@@ -31,7 +31,7 @@
 
     return `<div class="sidebar-inner">
       <div class="sidebar-brand">
-        <a href="dashboard.html"><img src="partybizhub-logo.png" alt="Party Biz Hub"/></a>
+        <a href="dashboard.html"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
         <button class="sidebar-close" id="sidebarClose" aria-label="Close">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
