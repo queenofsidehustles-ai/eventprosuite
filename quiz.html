@@ -78,6 +78,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .c-card .c-icon{font-size:22px;flex-shrink:0}
 .c-card:hover{border-color:var(--purple);background:#F9F5FF;transform:translateY(-1px)}
 .c-card.selected{border-color:var(--purple);background:#F3EEFF;color:var(--purple)}
+.c-choices.scrollable{max-height:420px;overflow-y:auto;border:1.5px solid var(--line);border-radius:16px;padding:6px;background:#fff}
+.c-choices.scrollable .c-card{border-radius:12px;margin-bottom:2px}
+.c-choices.scrollable .c-card:last-child{margin-bottom:0}
 
 /* ── SCORE REVEAL ── */
 .score-wrap{text-align:center;padding:40px 0 20px}
@@ -386,17 +389,27 @@ const TIERS = [
 const CALC_STEPS = [
   {
     id: 'service',
-    q: "What type of events do you specialize in?",
-    sub: "Pick the closest match to your main service.",
+    q: "What type of parties do you specialize in?",
+    sub: "Pick the closest match — scroll to see all options.",
     choices: [
-      { icon:'🎨', label:'Face Painter / Body Art',  value:'face',      base:185 },
-      { icon:'🎈', label:'Balloon Twisting / Décor',  value:'balloon',   base:165 },
-      { icon:'🧁', label:'Party Character / Princess',value:'character', base:210 },
-      { icon:'🎵', label:'DJ / Music / Entertainment',value:'dj',        base:240 },
-      { icon:'📸', label:'Photo Booth / Photography', value:'photo',     base:260 },
-      { icon:'🎪', label:'Event Planning / Coordinating',value:'planner',base:320 },
+      { icon:'🐻', label:'Stuff-A-Bear Parties',        value:'bear',        base:220 },
+      { icon:'💅', label:'Mobile Spa Parties',           value:'spa',         base:200 },
+      { icon:'🌙', label:'Slumber Parties',              value:'slumber',     base:250 },
+      { icon:'⛺', label:'Teepee Setups',                value:'teepee',      base:240 },
+      { icon:'🧪', label:'Slime / Science Parties',      value:'slime',       base:185 },
+      { icon:'🎨', label:'Paint & Sip / Art Parties',   value:'paint',       base:175 },
+      { icon:'✂️', label:'DIY Craft Parties',            value:'craft',       base:165 },
+      { icon:'🍬', label:'Candy / Dessert Stations',    value:'candy',       base:195 },
+      { icon:'🍕', label:'Food Cart Rentals',            value:'foodcart',    base:210 },
+      { icon:'🎭', label:'Face Paint & Balloons',        value:'facepaint',   base:180 },
+      { icon:'📸', label:'Photo Booth Rentals',          value:'photo',       base:255 },
+      { icon:'🎬', label:'Outdoor Movie Nights',         value:'movie',       base:230 },
+      { icon:'🧸', label:'Soft Play / Toddler Rentals', value:'softplay',    base:245 },
+      { icon:'🎪', label:'Bounce House Rentals',         value:'bounce',      base:235 },
+      { icon:'📋', label:'Event Coordinator',            value:'coordinator', base:310 },
+      { icon:'✨', label:'Something Else (Custom)',       value:'custom',      base:175 },
     ],
-    cols: 2
+    cols: 1
   },
   {
     id: 'duration',
@@ -576,7 +589,8 @@ function renderCalcStep() {
   document.getElementById('cSub').textContent  = step.sub;
 
   const wrap = document.getElementById('cChoices');
-  wrap.className = `c-choices${step.cols === 2 ? ' two-col' : ''}`;
+  const isScrollable = step.choices.length > 6;
+  wrap.className = `c-choices${step.cols === 2 ? ' two-col' : ''}${isScrollable ? ' scrollable' : ''}`;
   wrap.innerHTML = step.choices.map((c, i) =>
     `<div class="c-card ${calcAnswers[step.id] === i ? 'selected' : ''}" onclick="answerCalc(${i})">
       <span class="c-icon">${c.icon}</span>
