@@ -400,24 +400,6 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
     </button>
   </div>
   <div class="batch-grid" id="batchGrid"></div>
-</div>
-
-</main>
-
-  </div>
-</div>
-
-<div class="post-overlay" id="postOverlay" style="display:none" onclick="if(event.target===this)closePostOverlay()">
-  <div class="post-modal">
-    <h3>Post to Social Media</h3>
-    <p>This will publish to <strong>all your connected platforms</strong> (Instagram, Facebook, TikTok, YouTube) right now. Make sure your caption looks good before posting!</p>
-    <div class="post-modal-actions">
-      <button class="post-cancel" onclick="closePostOverlay()">Cancel</button>
-      <button class="post-confirm" id="postConfirmBtn" onclick="executePostNow()">📤 Post Now</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══ CALENDAR TAB ══ -->
 <div id="panelCalendar" style="display:none">
   <div class="cal-wrap">
@@ -437,6 +419,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
       <span class="cal-legend-dot" style="background:#222"></span>TikTok
       <span class="cal-legend-dot" style="background:#FF0000"></span>YouTube
       <span class="cal-legend-dot" style="background:#6D28D9"></span>Other
+    </div>
+  </div>
+</div>
+
+</main>
+
+  </div>
+</div>
+
+<div class="post-overlay" id="postOverlay" style="display:none" onclick="if(event.target===this)closePostOverlay()">
+  <div class="post-modal">
+    <h3>Post to Social Media</h3>
+    <p>This will publish to <strong>all your connected platforms</strong> (Instagram, Facebook, TikTok, YouTube) right now. Make sure your caption looks good before posting!</p>
+    <div class="post-modal-actions">
+      <button class="post-cancel" onclick="closePostOverlay()">Cancel</button>
+      <button class="post-confirm" id="postConfirmBtn" onclick="executePostNow()">📤 Post Now</button>
     </div>
   </div>
 </div>

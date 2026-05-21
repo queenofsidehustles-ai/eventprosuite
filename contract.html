@@ -824,11 +824,14 @@ function downloadContractPDF(){
   addHeading('SIGNATURES');
   const sig=getSignature();
   if(sig){
-    if(sig.type==='typed'){doc.setFont('helvetica','italic');doc.setFontSize(16);doc.text(sig.value,margin,y+18);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Vendor signature (typed)',margin,y+36);doc.text(new Date().toLocaleDateString(),margin,y+48)}
+    if(sig.type==='typed'){doc.setFont('helvetica','italic');doc.setFontSize(16);doc.text(sig.value,margin,y+18);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Vendor signature (typed)',margin,y+36);doc.text(sig.date?new Date(sig.date).toLocaleDateString():new Date().toLocaleDateString(),margin,y+48)}
     else if(sig.type==='drawn'){try{doc.addImage(sig.value,'PNG',margin,y,180,50)}catch(e){}doc.text('Vendor signature',margin,y+60)}
   }else{doc.text('_______________________________',margin,y+30);doc.text('Vendor signature',margin,y+44)}
-  doc.text('_______________________________',margin+280,y+30);
-  doc.text('Client signature',margin+280,y+44);
+  const cs=currentContract&&currentContract.client_signature;
+  if(cs){
+    if(cs.type==='typed'){doc.setFont('helvetica','italic');doc.setFontSize(16);doc.text(cs.value,margin+280,y+18);doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Client signature (typed)',margin+280,y+36);doc.text(cs.date?new Date(cs.date).toLocaleDateString():new Date().toLocaleDateString(),margin+280,y+48)}
+    else if(cs.type==='drawn'){try{doc.addImage(cs.value,'PNG',margin+280,y,180,50)}catch(e){}doc.text('Client signature',margin+280,y+60)}
+  }else{doc.text('_______________________________',margin+280,y+30);doc.text('Client signature',margin+280,y+44)}
   const safe=($('clientName').value||'contract').replace(/[^a-z0-9]/gi,'_');
   doc.save(`Contract_${safe}_${new Date().toISOString().slice(0,10)}.pdf`);
   showToast('✓ PDF downloaded');

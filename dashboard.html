@@ -267,7 +267,7 @@
     <div class="modal-title" id="modalClient">Update Booking</div>
     <div class="modal-sub" id="modalMeta"> </div>
     <button class="status-opt" onclick="applyStatus('inquiry')"><span class="sdot inquiry"></span>Inquiry — just asking around</button>
-    <button class="status-opt" onclick="applyStatus('quote-sent')"><span class="sdot quote-sent"></span>Quote Sent — waiting on client</button>
+    <button class="status-opt" onclick="goToQuoteBuilder()"><span class="sdot quote-sent"></span>Send a Quote → open Quote Builder</button>
     <button class="status-opt" onclick="applyStatus('deposit-paid')"><span class="sdot deposit-paid"></span>Deposit Paid — it's happening!</button>
     <button class="status-opt" onclick="applyStatus('confirmed')"><span class="sdot confirmed"></span>Confirmed — fully booked &amp; paid</button>
     <button class="status-opt" onclick="applyStatus('complete')"><span class="sdot complete"></span>Complete — event is done</button>
@@ -548,6 +548,20 @@ async function maybeCreateProfitRecord(itemId) {
 
   const revenueLabel = revenue > 0 ? ' · $' + revenue.toLocaleString() + ' logged' : ' · add revenue in Profit Calc';
   showActionToast('✓ Confirmed' + revenueLabel, 'Add expenses →', 'profit.html');
+}
+
+function goToQuoteBuilder() {
+  const q = allQuotes.find(x => String(x.id) === String(activeId));
+  closeModal();
+  if (q) {
+    const params = new URLSearchParams();
+    if (q.client_name) params.set('client', q.client_name);
+    if (q.event_type) params.set('event', q.event_type);
+    if (q.event_date) params.set('date', q.event_date);
+    window.location.href = 'app.html?' + params.toString();
+  } else {
+    window.location.href = 'app.html';
+  }
 }
 
 function closeModal() {
