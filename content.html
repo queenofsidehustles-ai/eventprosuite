@@ -166,6 +166,30 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.85rem 1.4rem;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ── Calendar ── */
+.cal-wrap{padding:1rem 0 2rem}
+.cal-nav{display:flex;align-items:center;justify-content:center;gap:1.2rem;margin-bottom:1.2rem}
+.cal-nav-btn{background:none;border:1.5px solid var(--border);border-radius:8px;width:36px;height:36px;font-size:1.3rem;cursor:pointer;color:var(--plum-900);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-nav-btn:hover{background:var(--plum-900);color:#fff;border-color:var(--plum-900)}
+.cal-month-label{font-size:1.1rem;font-weight:800;color:var(--plum-900);min-width:160px;text-align:center;letter-spacing:-.01em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-left:1px solid var(--border);border-top:1px solid var(--border)}
+.cal-dow{padding:.5rem 0;text-align:center;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:#FAFAFA;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-left:1px solid var(--border)}
+.cal-cell{min-height:90px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:.4rem .35rem;background:#fff;transition:background .12s}
+.cal-cell:hover{background:#FAF7FF}
+.cal-cell.other-month{background:#FAFAFA}
+.cal-cell.today .cal-day-num{background:var(--plum-900);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-day-num{font-size:.78rem;font-weight:700;color:var(--slate-700);margin-bottom:.3rem;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-chip{border-radius:4px;padding:2px 5px;font-size:.65rem;font-weight:700;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:opacity .12s;display:block;max-width:100%}
+.cal-chip:hover{opacity:.82}
+.cal-chip.more{background:rgba(109,40,217,.12);color:var(--plum-900);font-weight:800}
+.cal-legend{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-top:1rem;font-size:.75rem;color:var(--slate-600);font-weight:600;justify-content:center}
+.cal-legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px}
+/* Cal popup */
+.cal-popup{position:fixed;z-index:200;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(26,16,32,.14);padding:1.1rem 1.2rem;max-width:280px;width:90vw}
+.cal-popup-close{float:right;background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted);margin-top:-2px}
+.cal-popup-title{font-size:.82rem;font-weight:800;color:var(--plum-900);margin-bottom:.4rem}
+.cal-popup-caption{font-size:.8rem;color:var(--slate-700);line-height:1.6;max-height:120px;overflow-y:auto}
 </style>
 </head>
 <body>
@@ -198,6 +222,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 <div class="tab-bar">
   <button class="tab-btn active" id="tabCreate" onclick="switchTab('create')">✍️ Create</button>
   <button class="tab-btn" id="tabQueue" onclick="switchTab('queue')">📋 My Queue <span id="queueCount" style="display:none;background:rgba(255,255,255,.25);padding:1px 7px;border-radius:99px;font-size:.7rem;margin-left:2px"></span></button>
+  <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">📅 Calendar</button>
   <button class="tab-btn" id="tabBatch" onclick="switchTab('batch')">⚡ Batch Week</button>
 </div>
 
@@ -374,6 +399,29 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
   </div>
 </div>
 
+<!-- ══ CALENDAR TAB ══ -->
+<div id="panelCalendar" style="display:none">
+  <div class="cal-wrap">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calShift(-1)">‹</button>
+      <div class="cal-month-label" id="calMonthLabel"></div>
+      <button class="cal-nav-btn" onclick="calShift(1)">›</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div>
+      <div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div><div class="cal-dow">Sun</div>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+    <div class="cal-legend">
+      <span class="cal-legend-dot" style="background:#E1306C"></span>Instagram
+      <span class="cal-legend-dot" style="background:#1877F2"></span>Facebook
+      <span class="cal-legend-dot" style="background:#222"></span>TikTok
+      <span class="cal-legend-dot" style="background:#FF0000"></span>YouTube
+      <span class="cal-legend-dot" style="background:#6D28D9"></span>Other
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="nav.js?v=6"></script>
@@ -420,11 +468,91 @@ function applyBrand(color){
 /* ── TABS ── */
 function switchTab(tab){
   currentTab=tab;
-  ['create','queue','batch'].forEach(t=>{
+  ['create','queue','calendar','batch'].forEach(t=>{
     document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display=t===tab?'block':'none';
     document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).className='tab-btn'+(t===tab?' active':'');
   });
   if(tab==='queue')renderQueue();
+  if(tab==='calendar')renderCalendar();
+}
+
+/* ── CALENDAR ── */
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+function calShift(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
+function platformColor(p){
+  const m={Instagram:'#E1306C',Facebook:'#1877F2',TikTok:'#222',YouTube:'#FF0000'};
+  return m[p]||'#6D28D9';
+}
+
+function renderCalendar(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent=months[calMonth]+' '+calYear;
+
+  // Build a map: 'YYYY-MM-DD' -> [items]
+  const dayMap={};
+  queueItems.forEach(item=>{
+    if(!item.scheduled_at)return;
+    const d=new Date(item.scheduled_at);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(!dayMap[key])dayMap[key]=[];
+    dayMap[key].push(item);
+  });
+
+  // First day of month (0=Sun...6=Sat), convert to Mon-start (0=Mon)
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const startOffset=(firstDay===0?6:firstDay-1);
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const todayStr=new Date().toISOString().slice(0,10);
+
+  let html='';
+  let cellCount=0;
+  // Leading cells from prev month
+  for(let i=startOffset-1;i>=0;i--){
+    html+=`<div class="cal-cell other-month"><div class="cal-day-num" style="color:#ccc">${daysInPrev-i}</div></div>`;
+    cellCount++;
+  }
+  // Current month days
+  for(let d=1;d<=daysInMonth;d++){
+    const key=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=key===todayStr;
+    const items=dayMap[key]||[];
+    const chips=items.slice(0,3).map(it=>{
+      const color=platformColor(it.platform||'');
+      const label=(it.reel_hook||it.hook||it.caption||'Post').slice(0,22);
+      return`<span class="cal-chip" style="background:${color}" onclick="showCalPopup(event,'${it.id}')" title="${(it.reel_hook||it.hook||'').replace(/'/g,'')}">${label}</span>`;
+    }).join('');
+    const more=items.length>3?`<span class="cal-chip more">+${items.length-3} more</span>`:'';
+    html+=`<div class="cal-cell${isToday?' today':''}"><div class="cal-day-num">${d}</div>${chips}${more}</div>`;
+    cellCount++;
+  }
+  // Trailing cells to fill last row
+  const remaining=(7-cellCount%7)%7;
+  for(let d=1;d<=remaining;d++){
+    html+=`<div class="cal-cell other-month"><div class="cal-day-num" style="color:#ccc">${d}</div></div>`;
+  }
+  document.getElementById('calDays').innerHTML=html;
+}
+
+function showCalPopup(e,id){
+  document.querySelectorAll('.cal-popup').forEach(p=>p.remove());
+  const item=queueItems.find(i=>i.id===id);
+  if(!item)return;
+  const time=item.scheduled_at?new Date(item.scheduled_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';
+  const popup=document.createElement('div');
+  popup.className='cal-popup';
+  popup.innerHTML=`<button class="cal-popup-close" onclick="this.closest('.cal-popup').remove()">×</button>
+    <div class="cal-popup-title">${item.platform||'Post'} · ${time}</div>
+    ${item.reel_hook?`<div style="font-size:.78rem;font-weight:700;color:var(--slate-700);margin-bottom:.3rem">${item.reel_hook}</div>`:''}
+    <div class="cal-popup-caption">${item.caption||'No caption yet.'}</div>`;
+  document.body.appendChild(popup);
+  const r=e.target.getBoundingClientRect();
+  const top=Math.min(r.bottom+6,window.innerHeight-200);
+  const left=Math.min(r.left,window.innerWidth-290);
+  popup.style.cssText+=`;top:${top+window.scrollY}px;left:${left}px;`;
+  document.addEventListener('click',function close(ev){if(!popup.contains(ev.target)){popup.remove();document.removeEventListener('click',close);}},{once:false});
 }
 
 /* ── PILLS ── */
