@@ -781,7 +781,7 @@ ${section('Post-Event',d.post)}
 ${section('Shopping List',(d.shopping||[]).map(s=>({t:`${s.n} — Qty: ${s.q||1}`,done:s.bought})))}
 ${section('Supplies to Pack',(d.supplies||[]).map(s=>({t:`${s.n} (×${s.q||1})`,done:s.packed})))}
 ${d.notes?`<div style="margin-top:12pt;border-top:1pt solid #ccc;padding-top:10pt"><div style="font-weight:700;text-transform:uppercase;font-size:9pt;letter-spacing:.06em;margin-bottom:4pt">Notes</div><div style="font-size:10pt;line-height:1.6">${d.notes}</div></div>`:''}
-<div style="margin-top:20pt;font-size:8pt;color:#aaa;text-align:center">Party Biz Hub · eventprosuite.vercel.app</div>
+<div style="margin-top:20pt;font-size:8pt;color:#aaa;text-align:center">Party Biz Hub · app.partybizhub.com</div>
 </body></html>`;
 
   const w=window.open('','_blank','width=750,height=900');

@@ -40,7 +40,7 @@ MY WEBSITE (mywebsite.html)
 - Choose from 5 templates: Luxe, Pop, Studio, Garden, Bloom
 - Fill in your business name, tagline, colors, packages, and more
 - Click Preview to see your site before saving
-- Click Save — your live website URL is eventprosuite.vercel.app/site.html?uid=YOUR_ID
+- Click Save — your live website URL is app.partybizhub.com/site.html?uid=YOUR_ID
 - Click Download to get an HTML file you can host anywhere
 
 PARTY ASSISTANT (assistant.html)
@@ -56,7 +56,7 @@ BUSINESS PROFILE (profile.html)
 
 BOOKING A CLIENT (book.html)
 - This is the public booking page your clients fill out
-- Share the link: eventprosuite.vercel.app/book.html?uid=YOUR_ID
+- Share the link: app.partybizhub.com/book.html?uid=YOUR_ID
 - Submissions go straight to your dashboard as new Inquiries
 
 CONTACT / QUESTIONS ON YOUR WEBSITE
@@ -93,7 +93,7 @@ module.exports = async function handler(req, res) {
       headers: {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://eventprosuite.vercel.app',
+        'HTTP-Referer': 'https://app.partybizhub.com',
         'X-Title': 'Party Biz Hub Help'
       },
       body: JSON.stringify({

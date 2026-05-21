@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
   const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
   const signToken = crypto.randomUUID();
-  const signingUrl = `https://eventprosuite.vercel.app/sign-contract.html?t=${signToken}`;
+  const signingUrl = `https://app.partybizhub.com/sign-contract.html?t=${signToken}`;
 
   // Build service description
   const parts = [serviceName || 'Party Services'];
