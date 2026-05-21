@@ -1,29 +1,58 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"/><title>Logo Preview</title>
+<head><meta charset="UTF-8"/><title>Logo Preview — Party Biz Hub</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#f0f0f0}
-.row{padding:48px;display:flex;align-items:center;gap:48px;flex-wrap:wrap}
+h2{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-bottom:24px;padding:0 48px}
+.section-label{font-size:18px;font-weight:800;color:#1F1A24;padding:40px 48px 0;letter-spacing:-.3px}
+.row{padding:24px 48px 40px;display:flex;align-items:flex-start;gap:48px;flex-wrap:wrap}
 .white{background:#ffffff}
 .dark{background:#1F1A24}
 .cream{background:#FCF8F4}
-.label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:16px}
+.label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:12px}
+.dark .label{color:#555}
 img{display:block}
+.divider{border:none;border-top:1px solid #ddd;margin:0 48px}
 </style>
 </head>
 <body>
+
+<!-- ===== OPTION 1: 3x3 Grid ===== -->
+<p class="section-label">Option 1 — Grid (current)</p>
+<h2>3×3 hub grid · center square is the anchor</h2>
+
 <div class="row white">
-  <div><div class="label">White background — full size</div><img src="partybizhub-logo.svg" height="96"/></div>
-  <div><div class="label">Small (nav size)</div><img src="partybizhub-logo.svg" height="42"/></div>
-  <div><div class="label">Tiny (favicon size)</div><img src="partybizhub-logo.svg" height="24"/></div>
+  <div><div class="label">Full size (96px)</div><img src="partybizhub-logo.svg" height="96"/></div>
+  <div><div class="label">Nav size (42px)</div><img src="partybizhub-logo.svg" height="42"/></div>
+  <div><div class="label">Tiny (24px)</div><img src="partybizhub-logo.svg" height="24"/></div>
 </div>
 <div class="row cream">
   <div><div class="label">Cream background</div><img src="partybizhub-logo.svg" height="96"/></div>
 </div>
 <div class="row dark">
-  <div><div class="label" style="color:#666">Dark background — full size</div><img src="partybizhub-logo.svg" height="96"/></div>
-  <div><div class="label" style="color:#666">Small (nav size)</div><img src="partybizhub-logo.svg" height="42"/></div>
+  <div><div class="label">Dark background</div><img src="partybizhub-logo.svg" height="96"/></div>
+  <div><div class="label">Nav size</div><img src="partybizhub-logo.svg" height="42"/></div>
 </div>
+
+<hr class="divider"/>
+
+<!-- ===== OPTION 2: PBH Monogram ===== -->
+<p class="section-label">Option 2 — PBH Monogram</p>
+<h2>Three overlapping blocks · B is the hub (center, tallest)</h2>
+
+<div class="row white">
+  <div><div class="label">Full size (96px)</div><img src="logo-option-2.svg" height="96"/></div>
+  <div><div class="label">Nav size (42px)</div><img src="logo-option-2.svg" height="42"/></div>
+  <div><div class="label">Tiny (24px)</div><img src="logo-option-2.svg" height="24"/></div>
+</div>
+<div class="row cream">
+  <div><div class="label">Cream background</div><img src="logo-option-2.svg" height="96"/></div>
+</div>
+<div class="row dark">
+  <div><div class="label">Dark background</div><img src="logo-option-2.svg" height="96"/></div>
+  <div><div class="label">Nav size</div><img src="logo-option-2.svg" height="42"/></div>
+</div>
+
 </body>
 </html>
