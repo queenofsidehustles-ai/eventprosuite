@@ -707,7 +707,7 @@ async function saveQuote() {
   toast('✓ Quote saved — click ' + ($('clientEmail').value.trim() ? '"Email to Client"' : '"Send to Client"') + ' to share');
 }
 
-function shareQuote() {
+async function shareQuote() {
   if (!_lastSavedQuoteId) { toast('Save the quote first'); return; }
   const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
   const link = base + 'view-quote.html?id=' + _lastSavedQuoteId;

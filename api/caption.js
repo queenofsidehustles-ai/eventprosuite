@@ -92,8 +92,8 @@ Return ONLY valid JSON — no markdown, no explanation:
       body: JSON.stringify({
         model: 'anthropic/claude-3.5-haiku',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 900,
-        temperature: 0.82
+        max_tokens: mode === 'batch' ? 2000 : 1200,
+        temperature: 0.78
       })
     });
   } catch (e) {
@@ -106,12 +106,13 @@ Return ONLY valid JSON — no markdown, no explanation:
   try {
     const data = JSON.parse(text);
     const content = data?.choices?.[0]?.message?.content || '';
-    // Extract JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(502).json({ error: 'AI did not return valid JSON', raw: content });
+    // Strip markdown fences if present, then extract JSON object
+    const stripped = content.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
+    const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(502).json({ error: 'AI did not return valid JSON', raw: content.slice(0, 400) });
     const parsed = JSON.parse(jsonMatch[0]);
     return res.json(parsed);
   } catch (e) {
-    return res.status(502).json({ error: 'Could not parse AI response', raw: text });
+    return res.status(502).json({ error: 'Could not parse AI response', raw: text.slice(0, 400) });
   }
 };
