@@ -77,6 +77,7 @@ module.exports = async function handler(req, res) {
     created_at: new Date().toISOString(),
   };
 
+  // Try to save contract to DB — non-fatal if table doesn't exist yet
   try {
     const insertRes = await fetch(`${SUPA_URL}/rest/v1/contracts`, {
       method: 'POST',
@@ -84,18 +85,16 @@ module.exports = async function handler(req, res) {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation',
+        'Prefer': 'return=minimal',
       },
       body: JSON.stringify(contractPayload),
     });
-
     if (!insertRes.ok) {
       const errText = await insertRes.text();
-      console.error('Contract insert failed:', errText);
-      return res.status(502).json({ error: 'Could not save contract: ' + errText.slice(0, 200) });
+      console.warn('Contract DB insert skipped:', errText.slice(0, 200));
     }
   } catch (e) {
-    return res.status(502).json({ error: 'Database error: ' + e.message });
+    console.warn('Contract DB error (non-fatal):', e.message);
   }
 
   // Send signing email via Resend (non-fatal if no key)

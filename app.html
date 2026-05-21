@@ -1175,6 +1175,18 @@ async function downloadPdf() {
   const el = document.getElementById('invoiceForPdf');
   if (!el) { toast('Nothing to export'); return; }
   toast('Building PDF...');
+
+  // Swap inputs to text spans so they don't render as boxes in the PDF
+  const replaced = [];
+  el.querySelectorAll('input').forEach(inp => {
+    const span = document.createElement('span');
+    span.textContent = inp.value;
+    span.style.cssText = 'display:inline-block;min-width:32px;text-align:center;font-size:12.5px';
+    Object.assign(span.dataset, inp.dataset);
+    inp.parentNode.replaceChild(span, inp);
+    replaced.push({ span, inp });
+  });
+
   try {
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
@@ -1215,6 +1227,11 @@ async function downloadPdf() {
   } catch (err) {
     console.error(err);
     toast('PDF failed — try Print instead');
+  } finally {
+    // Restore inputs
+    replaced.forEach(({ span, inp }) => {
+      if (span.parentNode) span.parentNode.replaceChild(inp, span);
+    });
   }
 }
 
