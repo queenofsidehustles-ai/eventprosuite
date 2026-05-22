@@ -6,6 +6,7 @@ module.exports = async (req, res) => {
   const {
     name, email, score, tier,
     recommendedPrice, currentEstimate, gap, serviceType,
+    pbh_source,
   } = req.body || {};
 
   if (!email || !name) return res.status(400).json({ ok: false, error: 'Name and email required' });
@@ -35,6 +36,7 @@ module.exports = async (req, res) => {
             pbh_tier:     tier,
             pbh_price:    String(recommendedPrice),
             pbh_service:  serviceType,
+            pbh_source:   pbh_source || 'direct',
           },
           groups: process.env.MAILER_LITE_GROUP_ID ? [process.env.MAILER_LITE_GROUP_ID] : [],
           status: 'active',

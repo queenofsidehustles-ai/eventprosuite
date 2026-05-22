@@ -467,6 +467,7 @@ let currentC    = 0;
 let calcPricing = {};
 let leadName    = '';
 let leadEmail   = '';
+let leadSource  = (new URLSearchParams(window.location.search)).get('utm_source') || 'direct';
 let screenHistory = ['screen-intro'];
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
@@ -695,6 +696,7 @@ async function submitLead() {
         serviceType:      calcPricing.service,
         quizAnswers:      quizAnswers,
         calcAnswers:      calcAnswers,
+        pbh_source:       leadSource,
       }),
     });
   } catch (_) {
