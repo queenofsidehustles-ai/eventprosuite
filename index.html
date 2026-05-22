@@ -521,12 +521,41 @@ a{text-decoration:none;color:inherit}
 <section class="pricing" id="pricing">
   <div class="section-inner">
     <div class="text-center">
-      <span class="eyebrow">Simple pricing</span>
-      <h2 class="section-title">Pick your plan. Start <span class="script">today.</span></h2>
-      <p class="section-sub">No annual contracts. No setup fees. Cancel any time. Start getting organized in the next 10 minutes.</p>
+      <span class="eyebrow">Founders Pricing — Limited Time</span>
+      <h2 class="section-title">Lock in your rate before <span class="script">it's gone.</span></h2>
+      <p class="section-sub">Founders pricing ends June 6th. After that, Starter goes to $37/mo and Pro goes to $57/mo. Lock in today and pay this rate forever.</p>
     </div>
+
+    <!-- Countdown Timer -->
+    <div id="countdown-bar" style="background:linear-gradient(135deg,#4C1D95,#6D28D9);border-radius:16px;padding:20px 28px;max-width:600px;margin:28px auto 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div style="color:rgba(255,255,255,0.85);font-size:14px;font-weight:600;">⏳ Founders rate expires in:</div>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <div style="text-align:center;">
+          <div id="cd-days" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Days</div>
+        </div>
+        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.4);margin-bottom:14px;">:</div>
+        <div style="text-align:center;">
+          <div id="cd-hours" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Hours</div>
+        </div>
+        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.4);margin-bottom:14px;">:</div>
+        <div style="text-align:center;">
+          <div id="cd-mins" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Mins</div>
+        </div>
+        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.4);margin-bottom:14px;">:</div>
+        <div style="text-align:center;">
+          <div id="cd-secs" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Secs</div>
+        </div>
+      </div>
+    </div>
+
     <div class="pricing-grid">
+      <!-- Starter -->
       <div class="price-card">
+        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#fff;font-size:11px;font-weight:800;padding:5px 16px;border-radius:999px;letter-spacing:.08em;white-space:nowrap;">🔒 Founders Rate</div>
         <div class="price-name">Starter</div>
         <div class="price-tagline">The full back office — everything you need to run your business.</div>
         <div class="price-amount">
@@ -534,7 +563,8 @@ a{text-decoration:none;color:inherit}
           <span class="price-num">27</span>
           <span class="price-per">/month</span>
         </div>
-        <div class="price-note">Cancel anytime. No contracts.</div>
+        <div style="font-size:12px;color:#9333ea;font-weight:700;margin-bottom:4px;">Going to <span style="text-decoration:line-through;color:var(--muted);">$37</span> after June 6th</div>
+        <div class="price-note">Lock in $27 forever. Cancel anytime.</div>
         <div class="price-divider"></div>
         <ul class="price-features">
           <li>Quote Builder — professional client quotes</li>
@@ -546,9 +576,10 @@ a{text-decoration:none;color:inherit}
           <li>Content Studio — AI-generated social posts</li>
           <li class="locked">Website Builder (Pro only)</li>
         </ul>
-        <a href="https://buy.stripe.com/5kQ28r4xDfxtbsGc4X7bW07" class="btn-price btn-price-primary">Get Starter — $27/mo →</a>
+        <a href="https://buy.stripe.com/5kQ28r4xDfxtbsGc4X7bW07" class="btn-price btn-price-primary">Lock In $27/mo — Founders Rate →</a>
       </div>
 
+      <!-- Pro -->
       <div class="price-card featured">
         <div class="price-name">Pro</div>
         <div class="price-tagline">Everything in Starter, plus your own party business website.</div>
@@ -557,7 +588,8 @@ a{text-decoration:none;color:inherit}
           <span class="price-num">47</span>
           <span class="price-per">/month</span>
         </div>
-        <div class="price-note">Cancel anytime. No contracts.</div>
+        <div style="font-size:12px;color:#9333ea;font-weight:700;margin-bottom:4px;">Going to <span style="text-decoration:line-through;color:var(--muted);">$57</span> after June 6th</div>
+        <div class="price-note">Lock in $47 forever. Cancel anytime.</div>
         <div class="price-divider"></div>
         <ul class="price-features">
           <li>Everything in Starter</li>
@@ -569,7 +601,7 @@ a{text-decoration:none;color:inherit}
           <li>PartyGenius AI — your 24/7 business coach</li>
           <li>Content Studio — AI-generated social posts</li>
         </ul>
-        <a href="https://buy.stripe.com/aFa14n6FL8518gugld7bW08" class="btn-price btn-price-gold">Get Pro — $47/mo →</a>
+        <a href="https://buy.stripe.com/aFa14n6FL8518gugld7bW08" class="btn-price btn-price-gold">Lock In $47/mo — Founders Rate →</a>
       </div>
     </div>
 
@@ -657,6 +689,31 @@ function toggleFaq(btn) {
   document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
   if (!isOpen) item.classList.add('open');
 }
+
+// Founders Rate Countdown — expires June 6, 2026 11:59 PM ET
+(function() {
+  const deadline = new Date('2026-06-07T03:59:00Z'); // midnight ET = 04:00 UTC
+  function update() {
+    const now  = new Date();
+    const diff = deadline - now;
+    if (diff <= 0) {
+      const bar = document.getElementById('countdown-bar');
+      if (bar) bar.innerHTML = '<div style="color:#fff;font-size:14px;font-weight:700;text-align:center;width:100%;">⚠️ Founders pricing has ended. New pricing is now in effect.</div>';
+      return;
+    }
+    const d = Math.floor(diff / 864e5);
+    const h = Math.floor((diff % 864e5) / 36e5);
+    const m = Math.floor((diff % 36e5) / 6e4);
+    const s = Math.floor((diff % 6e4) / 1e3);
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('cd-days').textContent  = d;
+    document.getElementById('cd-hours').textContent = pad(h);
+    document.getElementById('cd-mins').textContent  = pad(m);
+    document.getElementById('cd-secs').textContent  = pad(s);
+  }
+  update();
+  setInterval(update, 1000);
+})();
 </script>
 </body>
 </html>
