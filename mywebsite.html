@@ -744,34 +744,41 @@ input,select,textarea{font:inherit}
         </div>
       </div>
 
-      <!-- Social Media Handles -->
+      <!-- Social Media Handles — collapsible -->
       <div style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px dashed var(--line)">
-        <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Social media (optional)</div>
-        <p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem;line-height:1.55">Add the handle (without @) or full URL. Icons appear in your site nav and footer. Skip any you don't use.</p>
-        <div class="grid-2">
-          <div class="field">
-            <label>📷 Instagram</label>
-            <input type="text" id="socialInstagram" placeholder="e.g. yourbrand" oninput="onSectionInput('brand')"/>
+        <button type="button" onclick="toggleSocial()" id="socialToggleBtn"
+                style="display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;width:100%;text-align:left;">
+          <span style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;">Social media</span>
+          <span style="font-size:.72rem;color:var(--brand);font-weight:600;">(optional — tap to add)</span>
+          <span id="socialToggleArrow" style="margin-left:auto;color:var(--muted);font-size:.9rem;transition:transform .2s;">▼</span>
+        </button>
+        <div id="socialFields" style="display:none;margin-top:.8rem">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem;line-height:1.55">Add the handle (without @) or full URL. Icons appear in your site nav and footer. Skip any you don't use.</p>
+          <div class="grid-2">
+            <div class="field">
+              <label>📷 Instagram</label>
+              <input type="text" id="socialInstagram" placeholder="e.g. yourbrand" oninput="onSectionInput('brand')"/>
+            </div>
+            <div class="field">
+              <label>🎵 TikTok</label>
+              <input type="text" id="socialTiktok" placeholder="e.g. yourbrand" oninput="onSectionInput('brand')"/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>📘 Facebook</label>
+              <input type="text" id="socialFacebook" placeholder="e.g. yourbrand or full URL" oninput="onSectionInput('brand')"/>
+            </div>
+            <div class="field">
+              <label>▶️ YouTube</label>
+              <input type="text" id="socialYoutube" placeholder="e.g. @yourbrand" oninput="onSectionInput('brand')"/>
+            </div>
           </div>
           <div class="field">
-            <label>🎵 TikTok</label>
-            <input type="text" id="socialTiktok" placeholder="e.g. yourbrand" oninput="onSectionInput('brand')"/>
+            <label>🔗 Custom link (Pinterest, website, etc.)</label>
+            <input type="text" id="socialCustom" placeholder="e.g. https://pinterest.com/yourbrand" oninput="onSectionInput('brand')"/>
+            <div class="field-help">Optional 5th icon for any other platform you want to link.</div>
           </div>
-        </div>
-        <div class="grid-2">
-          <div class="field">
-            <label>📘 Facebook</label>
-            <input type="text" id="socialFacebook" placeholder="e.g. yourbrand or full URL" oninput="onSectionInput('brand')"/>
-          </div>
-          <div class="field">
-            <label>▶️ YouTube</label>
-            <input type="text" id="socialYoutube" placeholder="e.g. @yourbrand" oninput="onSectionInput('brand')"/>
-          </div>
-        </div>
-        <div class="field">
-          <label>🔗 Custom link (Pinterest, website, etc.)</label>
-          <input type="text" id="socialCustom" placeholder="e.g. https://pinterest.com/yourbrand" oninput="onSectionInput('brand')"/>
-          <div class="field-help">Optional 5th icon for any other platform you want to link.</div>
         </div>
       </div>
 
@@ -1543,6 +1550,15 @@ async function loadExistingBuild(){
       if(b.socialFacebook&&$('socialFacebook'))$('socialFacebook').value=b.socialFacebook;
       if(b.socialYoutube&&$('socialYoutube'))$('socialYoutube').value=b.socialYoutube;
       if(b.socialCustom&&$('socialCustom'))$('socialCustom').value=b.socialCustom;
+      // Auto-expand social section if any handle already saved
+      if(b.socialInstagram||b.socialTiktok||b.socialFacebook||b.socialYoutube||b.socialCustom){
+        const sf=document.getElementById('socialFields');
+        const sa=document.getElementById('socialToggleArrow');
+        const sb2=document.getElementById('socialToggleBtn');
+        if(sf){sf.style.display='block';}
+        if(sa){sa.style.transform='rotate(180deg)';}
+        if(sb2){const sp=sb2.querySelector('span:nth-child(2)');if(sp)sp.textContent='(tap to collapse)';}
+      }
       updateLogoTextPreview();
     }
 
@@ -1911,6 +1927,17 @@ function continueFromStep1(){
   markStepDone(1);
   unlockStep(2);
   goToStep(2);
+}
+
+function toggleSocial(){
+  const fields=document.getElementById('socialFields');
+  const arrow=document.getElementById('socialToggleArrow');
+  const btn=document.getElementById('socialToggleBtn');
+  const isOpen=fields.style.display!=='none';
+  fields.style.display=isOpen?'none':'block';
+  arrow.style.transform=isOpen?'':'rotate(180deg)';
+  btn.querySelector('span:nth-child(2)').textContent=isOpen?'(optional — tap to add)':'(tap to collapse)';
+  // Auto-expand if any social field already has a value
 }
 
 function continueFromStep2(){
