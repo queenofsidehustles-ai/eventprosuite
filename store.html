@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Digital Store | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>(function(){try{if(sessionStorage.getItem("pbh_auth")==="1"){document.documentElement.dataset.auth="ok";return;}var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<link rel="stylesheet" href="styles.css?v=6"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4C1D95;--plum-800:#6D28D9;--brand:#6D28D9;
+  --mauve:#8B5CF6;--pink:#E6A2BE;
+  --gold:#C9A227;--gold-bright:#D4AE52;
+  --cream:#FCF8F4;--off:#FFFDFC;
+  --border:#EAE3ED;--ink:#1F1A24;--muted:#6C6473;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --shadow:0 4px 16px rgba(109,40,217,.06),0 2px 4px rgba(109,40,217,.04);
+  --shadow-lg:0 20px 50px -12px rgba(109,40,217,.18),0 8px 16px -4px rgba(109,40,217,.08);
+  --radius:16px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:1.2rem 1.5rem 1.6rem;color:#fff}
+.page-header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.page-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#fff}
+.page-sub{font-size:.82rem;color:rgba(255,255,255,.8);margin-top:4px}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3A2A1A;border:none;padding:.65rem 1.3rem;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-primary:hover{filter:brightness(1.05);box-shadow:0 4px 12px rgba(201,162,39,.4)}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--ink);padding:.6rem 1.2rem;border-radius:10px;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-outline:hover{border-color:var(--brand);color:var(--brand)}
+.btn-danger{background:rgba(194,59,94,.1);border:1px solid rgba(194,59,94,.3);color:var(--danger);padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit}
+
+.wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
+
+.store-link-bar{background:rgba(109,40,217,.06);border:1.5px solid rgba(109,40,217,.15);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.6rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.store-link-bar .link-label{font-size:.8rem;font-weight:700;color:var(--plum-900);white-space:nowrap}
+.store-link-bar input{flex:1;min-width:180px;padding:.55rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;background:#fff;color:var(--ink)}
+.store-link-bar .copy-btn{background:var(--brand);color:#fff;border:none;padding:.55rem 1rem;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.store-link-bar .preview-btn{color:var(--brand);font-size:.8rem;font-weight:600;text-decoration:none;white-space:nowrap}
+
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-bottom:2rem}
+
+.product-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);transition:all .2s}
+.product-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.product-img{height:180px;background:linear-gradient(135deg,rgba(109,40,217,.08),rgba(230,162,190,.12));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.product-img img{width:100%;height:100%;object-fit:cover}
+.product-img .no-img{font-size:2.5rem;display:flex;flex-direction:column;align-items:center;gap:6px}
+.product-img .no-img span{font-size:.72rem;color:var(--muted);font-weight:500}
+.product-badge{position:absolute;top:10px;left:10px;background:rgba(109,40,217,.85);color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:capitalize;backdrop-filter:blur(4px)}
+.product-status{position:absolute;top:10px;right:10px;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)}
+.product-status.live{background:rgba(30,140,90,.85);color:#fff}
+.product-status.hidden{background:rgba(0,0,0,.5);color:#fff}
+.product-body{padding:16px 18px}
+.product-name{font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-desc{font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.product-price{font-size:1.2rem;font-weight:800;color:var(--ink);margin-bottom:12px}
+.product-price small{font-size:.7rem;color:var(--muted);font-weight:400;margin-left:3px}
+.product-actions{display:flex;gap:8px}
+.btn-edit{background:rgba(109,40,217,.08);border:1px solid rgba(109,40,217,.2);color:var(--brand);padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;flex:1;transition:all .12s}
+.btn-edit:hover{background:var(--brand);color:#fff}
+
+.empty-store{text-align:center;padding:60px 24px;background:#fff;border-radius:var(--radius);border:1px solid var(--border)}
+.empty-store .e-icon{font-size:3rem;margin-bottom:16px}
+.empty-store h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--plum-900);margin-bottom:8px}
+.empty-store p{color:var(--muted);font-size:.88rem;margin-bottom:24px;max-width:380px;margin-left:auto;margin-right:auto}
+
+/* ── Modal ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-head h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900)}
+.modal-close{border:none;background:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1}
+.field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:14px}
+.field label{font-size:.76rem;font-weight:700;color:#4A4354;letter-spacing:.02em}
+.field input,.field select,.field textarea{padding:.62rem .88rem;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;font-family:inherit;color:var(--ink);background:#fff;transition:all .12s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(109,40,217,.08)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-help{font-size:.72rem;color:var(--muted);margin-top:3px}
+
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.upload-zone:hover{border-color:var(--brand);background:rgba(109,40,217,.03)}
+.upload-zone.has-file{border-color:var(--success);border-style:solid;background:rgba(30,140,90,.04)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone .uz-icon{font-size:1.8rem;margin-bottom:6px}
+.upload-zone .uz-text{font-size:.82rem;color:var(--muted)}
+.upload-zone .uz-sub{font-size:.7rem;color:var(--muted);opacity:.7;margin-top:3px}
+
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--border);margin-top:16px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:.75rem 1.4rem;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:500}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:640px){.field-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-spinner"></div>
+  <div class="auth-gate-text">Opening Digital Store</div>
+</div>
+
+<!-- APP LAYOUT -->
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="pbhOverlay" class="pbh-overlay"></div>
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="page-header-inner">
+        <div>
+          <div class="page-title">🛍️ Digital Store</div>
+          <div class="page-sub">Sell party template bundles — customers pay and download instantly.</div>
+        </div>
+        <button class="btn-primary" onclick="openModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Product
+        </button>
+      </div>
+    </div>
+
+    <div class="wrap">
+
+      <!-- Store link bar -->
+      <div class="store-link-bar">
+        <span class="link-label">🔗 Your store link:</span>
+        <input type="text" id="storeLinkInput" readonly placeholder="Loading…"/>
+        <button class="copy-btn" onclick="copyStoreLink()">Copy Link</button>
+        <a id="storeLinkPreview" href="#" target="_blank" class="preview-btn">Preview →</a>
+      </div>
+
+      <!-- Products grid -->
+      <div id="productsGrid">
+        <div class="empty-store">
+          <div class="e-icon">⏳</div>
+          <p>Loading your products…</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Product Modal -->
+<div class="modal-backdrop" id="productModal">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 id="modalTitle">Add Product</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    <!-- Image upload -->
+    <div class="field">
+      <label>Product Image</label>
+      <div class="upload-zone" id="imgZone" onclick="document.getElementById('imgFile').click()">
+        <div id="imgPreviewWrap">
+          <div class="uz-icon">🖼️</div>
+          <div class="uz-text">Click to upload a product image</div>
+          <div class="uz-sub">PNG, JPG, WEBP — shown on your storefront</div>
+        </div>
+        <input type="file" id="imgFile" accept="image/*" style="display:none" onchange="previewImg(this)">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Product Name *</label>
+      <input type="text" id="pName" placeholder='e.g. Princess Party Bundle'/>
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <textarea id="pDesc" rows="2" placeholder="What's included? e.g. Chip bags, Capri Sun wrappers, cake toppers, water bottle labels — all in one Canva-ready ZIP."></textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Price ($)</label>
+        <input type="number" id="pPrice" placeholder="27.00" min="0" step="0.01"/>
+      </div>
+      <div class="field">
+        <label>Theme</label>
+        <select id="pTheme">
+          <option value="">— None —</option>
+          <option>Princess</option><option>Bluey</option><option>K-Pop</option>
+          <option>Barbie</option><option>Spider-Man</option><option>Frozen</option>
+          <option>Safari</option><option>Mermaid</option><option>Unicorn</option>
+          <option>Sports</option><option>Custom</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Digital file upload -->
+    <div class="field">
+      <label>Digital File (ZIP or PDF — what the customer downloads)</label>
+      <div class="upload-zone" id="fileZone" onclick="document.getElementById('digitalFile').click()">
+        <div id="filePreviewWrap">
+          <div class="uz-icon">📦</div>
+          <div class="uz-text">Click to upload your template ZIP or PDF</div>
+          <div class="uz-sub">Up to 100MB — delivered instantly after purchase</div>
+        </div>
+        <input type="file" id="digitalFile" accept=".zip,.pdf,.png,.jpg,.jpeg" style="display:none" onchange="previewFile(this)">
+      </div>
+      <div class="field-help" id="existingFile"></div>
+    </div>
+
+    <!-- Stripe payment link -->
+    <div class="field">
+      <label>Stripe Payment Link</label>
+      <input type="url" id="pStripeLink" placeholder="https://buy.stripe.com/…"/>
+      <div class="field-help">
+        In your Stripe dashboard → Payment Links → Create. Set the price to match above.
+        After payment, Stripe will redirect customers back to your store to download.
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Visible in Store</label>
+        <select id="pActive">
+          <option value="true">Yes — show to customers</option>
+          <option value="false">No — hide for now</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="saveBtn" onclick="saveProduct()">
+        <span id="saveBtnText">Save Product</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="nav.js?v=6"></script>
+<script src="help-widget.js?v=6"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null, products=[], editingId=null;
+let newImgFile=null, newDigitalFile=null;
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+  const{data:p}=await sb.from('profiles').select('full_name,profile_data').eq('id',currentUser.id).single();
+  const name=(p?.profile_data?.businessName)||p?.full_name||currentUser.email.split('@')[0];
+  setNavUser(name,name.charAt(0));
+  initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html';});
+  document.getElementById('pbhLayout').style.display='';
+  document.getElementById('authGate').style.display='none';
+
+  const storeUrl=`${location.origin}${location.pathname.replace('store.html','shopfront.html')}?uid=${currentUser.id}`;
+  document.getElementById('storeLinkInput').value=storeUrl;
+  document.getElementById('storeLinkPreview').href=storeUrl;
+
+  await loadProducts();
+}
+
+async function loadProducts(){
+  const{data,error}=await sb.from('products').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  if(error){console.error(error);return}
+  products=data||[];
+  renderProducts();
+}
+
+function renderProducts(){
+  const grid=document.getElementById('productsGrid');
+  if(!products.length){
+    grid.innerHTML=`<div class="empty-store">
+      <div class="e-icon">🎁</div>
+      <h3>Your store is empty</h3>
+      <p>Add your first party template bundle — chip bags, Capri Sun wrappers, cake toppers and more. Customers pay once and download instantly.</p>
+      <button class="btn-primary" onclick="openModal()">Add Your First Product</button>
+    </div>`;
+    return;
+  }
+  grid.innerHTML=`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
+}
+
+function productCard(p){
+  const imgHtml=p.image_url
+    ?`<img src="${esc(p.image_url)}" alt="${esc(p.name)}">`
+    :`<div class="no-img"><span>🎉</span><span>${esc(p.theme||'Party Bundle')}</span></div>`;
+  return `<div class="product-card">
+    <div class="product-img">
+      ${imgHtml}
+      ${p.theme?`<span class="product-badge">${esc(p.theme)}</span>`:''}
+      <span class="product-status ${p.active?'live':'hidden'}">${p.active?'Live':'Hidden'}</span>
+    </div>
+    <div class="product-body">
+      <div class="product-name">${esc(p.name)}</div>
+      <div class="product-desc">${esc(p.description||'No description yet.')}</div>
+      <div class="product-price">$${Number(p.price||0).toFixed(2)}<small>one-time</small></div>
+      <div class="product-actions">
+        <button class="btn-edit" onclick="editProduct('${p.id}')">Edit</button>
+        <button class="btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openModal(id){
+  editingId=id||null;
+  newImgFile=null;
+  newDigitalFile=null;
+  document.getElementById('modalTitle').textContent=id?'Edit Product':'Add Product';
+  document.getElementById('saveBtnText').textContent=id?'Save Changes':'Save Product';
+
+  if(id){
+    const p=products.find(x=>x.id===id);
+    if(!p)return;
+    document.getElementById('pName').value=p.name||'';
+    document.getElementById('pDesc').value=p.description||'';
+    document.getElementById('pPrice').value=p.price||'';
+    document.getElementById('pTheme').value=p.theme||'';
+    document.getElementById('pStripeLink').value=p.stripe_link||'';
+    document.getElementById('pActive').value=String(p.active!==false);
+    resetImgZone(p.image_url);
+    document.getElementById('existingFile').textContent=p.file_name?`Current file: ${p.file_name} (upload new to replace)`:'';
+    resetFileZone(p.file_name);
+  } else {
+    ['pName','pDesc','pPrice','pStripeLink'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pTheme').value='';
+    document.getElementById('pActive').value='true';
+    resetImgZone('');
+    resetFileZone('');
+    document.getElementById('existingFile').textContent='';
+  }
+  document.getElementById('productModal').classList.add('open');
+}
+function editProduct(id){openModal(id);}
+function closeModal(){document.getElementById('productModal').classList.remove('open');}
+document.getElementById('productModal').addEventListener('click',e=>{if(e.target===document.getElementById('productModal'))closeModal();});
+
+function resetImgZone(url){
+  const wrap=document.getElementById('imgPreviewWrap');
+  if(url){
+    wrap.innerHTML=`<img src="${url}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;display:block;">`;
+    document.getElementById('imgZone').classList.add('has-file');
+  } else {
+    wrap.innerHTML=`<div class="uz-icon">🖼️</div><div class="uz-text">Click to upload a product image</div><div class="uz-sub">PNG, JPG, WEBP</div>`;
+    document.getElementById('imgZone').classList.remove('has-file');
+  }
+}
+function resetFileZone(filename){
+  const wrap=document.getElementById('filePreviewWrap');
+  if(filename){
+    wrap.innerHTML=`<div class="uz-icon" style="color:var(--success)">✓</div><div class="uz-text" style="color:var(--success);font-weight:600">${esc(filename)}</div>`;
+    document.getElementById('fileZone').classList.add('has-file');
+  } else {
+    wrap.innerHTML=`<div class="uz-icon">📦</div><div class="uz-text">Click to upload your template ZIP or PDF</div><div class="uz-sub">Up to 100MB</div>`;
+    document.getElementById('fileZone').classList.remove('has-file');
+  }
+}
+
+function previewImg(input){
+  const file=input.files[0]; if(!file)return;
+  newImgFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>resetImgZone(e.target.result);
+  reader.readAsDataURL(file);
+}
+function previewFile(input){
+  const file=input.files[0]; if(!file)return;
+  newDigitalFile=file;
+  resetFileZone(file.name);
+}
+
+async function uploadToStorage(bucket,file,folder){
+  const ext=file.name.split('.').pop();
+  const path=`${folder}/${currentUser.id}/${Date.now()}.${ext}`;
+  const{error}=await sb.storage.from(bucket).upload(path,file,{upsert:true});
+  if(error)throw error;
+  const{data:{publicUrl}}=sb.storage.from(bucket).getPublicUrl(path);
+  return publicUrl;
+}
+
+async function saveProduct(){
+  const name=(document.getElementById('pName').value||'').trim();
+  if(!name){document.getElementById('pName').focus();return;}
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;
+  document.getElementById('saveBtnText').textContent='Saving…';
+  try{
+    let image_url=editingId?(products.find(x=>x.id===editingId)?.image_url||null):null;
+    let file_url=editingId?(products.find(x=>x.id===editingId)?.file_url||null):null;
+    let file_name=editingId?(products.find(x=>x.id===editingId)?.file_name||null):null;
+
+    if(newImgFile) image_url=await uploadToStorage('product-files',newImgFile,'images');
+    if(newDigitalFile){
+      file_url=await uploadToStorage('product-files',newDigitalFile,'bundles');
+      file_name=newDigitalFile.name;
+    }
+
+    const payload={
+      user_id:currentUser.id,
+      name,
+      description:(document.getElementById('pDesc').value||'').trim()||null,
+      price:parseFloat(document.getElementById('pPrice').value)||0,
+      theme:document.getElementById('pTheme').value||null,
+      stripe_link:(document.getElementById('pStripeLink').value||'').trim()||null,
+      active:document.getElementById('pActive').value==='true',
+      image_url,file_url,file_name,
+    };
+
+    let err;
+    if(editingId){
+      ({error:err}=await sb.from('products').update(payload).eq('id',editingId).eq('user_id',currentUser.id));
+    } else {
+      ({error:err}=await sb.from('products').insert(payload));
+    }
+    if(err)throw err;
+    showToast(editingId?'✓ Product updated!':'✓ Product added to your store!');
+    closeModal();
+    await loadProducts();
+  } catch(e){
+    showToast('Error: '+e.message);
+  } finally {
+    btn.disabled=false;
+    document.getElementById('saveBtnText').textContent=editingId?'Save Changes':'Save Product';
+  }
+}
+
+async function deleteProduct(id){
+  if(!confirm('Delete this product? This cannot be undone.'))return;
+  const{error}=await sb.from('products').delete().eq('id',id).eq('user_id',currentUser.id);
+  if(error){showToast('Delete failed: '+error.message);return;}
+  showToast('Product deleted.');
+  await loadProducts();
+}
+
+function copyStoreLink(){
+  navigator.clipboard.writeText(document.getElementById('storeLinkInput').value).then(()=>showToast('✓ Store link copied!'));
+}
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+init();
+</script>
+</body>
+</html>

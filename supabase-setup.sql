@@ -199,6 +199,82 @@ create policy "website_builds: anon can read" on website_builds
   for select to anon using (true);
 
 
+-- ── 7. DIGITAL PRODUCTS TABLE ────────────────────────────────
+-- Stores party template bundles for each planner's digital store
+
+create table if not exists products (
+  id             uuid default gen_random_uuid() primary key,
+  user_id        uuid references profiles(id) on delete cascade,
+  name           text not null,
+  description    text,
+  price          numeric default 0,
+  theme          text,
+  image_url      text,
+  file_url       text,
+  file_name      text,
+  stripe_link    text,
+  active         boolean default true,
+  created_at     timestamptz default now(),
+  updated_at     timestamptz default now()
+);
+
+alter table products enable row level security;
+
+drop policy if exists "products: owner can do all" on products;
+create policy "products: owner can do all" on products
+  for all
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "products: public can read active" on products;
+create policy "products: public can read active" on products
+  for select to anon
+  using (active = true);
+
+
+-- ── 8. STORAGE BUCKET FOR PRODUCT FILES ──────────────────────
+insert into storage.buckets (id, name, public)
+  values ('product-files', 'product-files', true)
+  on conflict (id) do nothing;
+
+drop policy if exists "product-files: owner can upload" on storage.objects;
+create policy "product-files: owner can upload" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'product-files');
+
+drop policy if exists "product-files: public read" on storage.objects;
+create policy "product-files: public read" on storage.objects
+  for select to anon
+  using (bucket_id = 'product-files');
+
+
+-- ── 9. STORAGE BUCKET FOR RECEIPTS ───────────────────────────
+-- Run this ONCE in Supabase → Storage → New Bucket
+-- OR paste into SQL Editor.
+
+insert into storage.buckets (id, name, public)
+  values ('receipts', 'receipts', true)
+  on conflict (id) do nothing;
+
+-- Allow authenticated users to upload their own receipts
+drop policy if exists "receipts: owner can upload" on storage.objects;
+create policy "receipts: owner can upload" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'receipts' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Allow authenticated users to read their own receipts
+drop policy if exists "receipts: owner can read" on storage.objects;
+create policy "receipts: owner can read" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'receipts');
+
+-- Allow public reads (so the URL works without a token)
+drop policy if exists "receipts: public read" on storage.objects;
+create policy "receipts: public read" on storage.objects
+  for select to anon
+  using (bucket_id = 'receipts');
+
+
 -- ── DONE ────────────────────────────────────────────────────────
--- All 6 tables are now set up with proper Row Level Security.
+-- All 6 tables + receipts storage bucket set up with proper RLS.
 -- ================================================================

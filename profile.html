@@ -377,8 +377,42 @@ input,select,textarea{font:inherit}
     <div>
       <div style="font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">Your Services (shown on booking form)</div>
       <div id="servicesList" style="margin-bottom:.8rem"></div>
-      <button class="btn btn-outline" onclick="addService()" style="font-size:.82rem">+ Add a Service</button>
+      <button class="btn btn-outline" onclick="openServiceModal()" style="font-size:.82rem">+ Add a Service</button>
       <div class="field-help" style="margin-top:.4rem">If left empty, clients see 4 generic options. Add your real packages here so clients pick the right one and you capture the right price.</div>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div id="serviceModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#fff;border-radius:20px;padding:28px 28px 24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(76,29,149,.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--plum-900);margin:0;">Add a Service</h3>
+          <button onclick="closeServiceModal()" style="border:none;background:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="field">
+            <label>Service Name *</label>
+            <input type="text" id="svcName" placeholder='e.g. Princess Party Package'/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="field">
+              <label>Starting Price ($)</label>
+              <input type="number" id="svcPrice" placeholder="350" min="0"/>
+            </div>
+            <div class="field">
+              <label>Duration</label>
+              <input type="text" id="svcDuration" placeholder='e.g. 2 hours'/>
+            </div>
+          </div>
+          <div class="field">
+            <label>Short Description (optional)</label>
+            <input type="text" id="svcDesc" placeholder='e.g. Includes setup, theme decor & cleanup'/>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <button class="btn btn-outline" onclick="closeServiceModal()" style="font-size:.85rem;">Cancel</button>
+          <button class="btn btn-primary" onclick="saveService()" style="font-size:.85rem;">Add Service</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -527,20 +561,30 @@ function renderServices(){
     </div>`).join('');
 }
 
-function addService(){
-  const name=prompt('Service name (e.g. "Princess Party Package"):');
-  if(!name||!name.trim())return;
-  const price=prompt('Starting price (numbers only, e.g. 350):');
-  const duration=prompt('Duration (e.g. "2 hours") — optional, press Cancel to skip:');
-  const desc=prompt('Short description — optional, press Cancel to skip:');
-  bookingServices.push({
-    name:name.trim(),
-    price:price?price.replace(/[^0-9.]/g,''):'',
-    duration:duration&&duration!==null?duration.trim():'',
-    description:desc&&desc!==null?desc.trim():''
-  });
-  renderServices();
+function openServiceModal(){
+  ['svcName','svcPrice','svcDuration','svcDesc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const m=document.getElementById('serviceModal');
+  m.style.display='flex';
+  setTimeout(()=>{const n=document.getElementById('svcName');if(n)n.focus();},50);
 }
+function closeServiceModal(){
+  document.getElementById('serviceModal').style.display='none';
+}
+function saveService(){
+  const name=(document.getElementById('svcName').value||'').trim();
+  if(!name){document.getElementById('svcName').focus();return;}
+  const price=(document.getElementById('svcPrice').value||'').replace(/[^0-9.]/g,'');
+  const duration=(document.getElementById('svcDuration').value||'').trim();
+  const description=(document.getElementById('svcDesc').value||'').trim();
+  bookingServices.push({name,price,duration,description});
+  renderServices();
+  closeServiceModal();
+}
+// Close on backdrop click
+document.addEventListener('DOMContentLoaded',()=>{
+  const m=document.getElementById('serviceModal');
+  if(m) m.addEventListener('click',e=>{if(e.target===m)closeServiceModal();});
+});
 
 function removeService(i){
   if(!confirm('Remove this service?'))return;

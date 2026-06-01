@@ -11,6 +11,7 @@
     { id: 'prep',      href: 'prep.html',      icon: '📋', label: 'Event Checklist' },
     { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors' },
     { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website', gated: true },
+    { id: 'store',     href: 'store.html',     icon: '🛍️', label: 'Digital Store' },
     { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI' },
     { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio' },
     { id: 'guide',     href: 'guide.html',     icon: '🚀', label: 'Quick Start Guide' },

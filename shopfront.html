@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Party Templates</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6D28D9;--primary-dark:#4C1D95;--primary-soft:rgba(109,40,217,.08);
+  --gold:#C9A227;--gold-soft:rgba(201,162,39,.12);
+  --success:#1E8C5A;--danger:#C23B5E;
+  --ink:#1F1A24;--muted:#6C6473;--border:#EAE3ED;--cream:#FCF8F4;
+  --shadow:0 4px 16px rgba(109,40,217,.08);
+  --shadow-lg:0 20px 50px -12px rgba(109,40,217,.2);
+  --radius:16px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.shop-header{background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
+.shop-brand{display:flex;align-items:center;gap:10px}
+.shop-logo{height:38px;width:auto;object-fit:contain;border-radius:8px}
+.shop-logo-fallback{width:38px;height:38px;background:linear-gradient(135deg,var(--primary),#E6A2BE);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.shop-name{font-weight:700;font-size:1rem;color:var(--ink)}
+.shop-tagline{font-size:.75rem;color:var(--muted);margin-top:1px}
+.header-right{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:52px 24px 36px;background:linear-gradient(160deg,rgba(109,40,217,.06) 0%,var(--cream) 60%)}
+.hero-badge{display:inline-block;background:rgba(109,40,217,.1);border:1px solid rgba(109,40,217,.2);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;color:var(--primary);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px}
+.hero h1{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:800;color:var(--ink);line-height:1.15;margin:0 0 12px}
+.hero p{color:var(--muted);font-size:.98rem;max-width:500px;margin:0 auto 24px;line-height:1.7}
+.hero-cta{display:inline-block;background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;font-weight:700;padding:12px 28px;border-radius:12px;text-decoration:none;font-size:.95rem;box-shadow:0 4px 14px rgba(109,40,217,.35)}
+
+/* ── FILTERS ── */
+.filters{max-width:1100px;margin:0 auto;padding:8px 24px 0;display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:.82rem;font-weight:500;cursor:pointer;transition:all .15s;font-family:inherit}
+.filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.filter-btn.active{background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(109,40,217,.3)}
+
+/* ── GRID ── */
+.grid-wrap{max-width:1100px;margin:0 auto;padding:20px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+
+.product-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);transition:all .2s;display:flex;flex-direction:column}
+.product-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.card-img{height:200px;background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(230,162,190,.1));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-img .no-img{text-align:center}
+.card-img .no-img .emoji{font-size:2.8rem;display:block;margin-bottom:6px}
+.card-img .no-img .label{font-size:.72rem;color:var(--primary);font-weight:600}
+.card-theme{position:absolute;top:10px;left:10px;background:rgba(109,40,217,.85);color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:capitalize;backdrop-filter:blur(4px)}
+.card-instant{position:absolute;top:10px;right:10px;background:rgba(30,140,90,.85);color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)}
+.card-body{padding:18px 20px 20px;flex:1;display:flex;flex-direction:column}
+.card-name{font-weight:700;font-size:.98rem;color:var(--ink);margin-bottom:5px;line-height:1.3}
+.card-desc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:16px;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-footer{display:flex;align-items:center;justify-content:space-between}
+.card-price{font-size:1.35rem;font-weight:800;color:var(--ink)}
+.card-price small{font-size:.68rem;color:var(--muted);font-weight:400;margin-left:3px}
+.buy-btn{background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap;text-decoration:none;display:inline-block}
+.buy-btn:hover{opacity:.9}
+.buy-btn.free{background:linear-gradient(135deg,var(--success),#16a34a)}
+
+/* ── EMPTY / LOADING ── */
+.state-box{text-align:center;padding:80px 24px;max-width:1100px;margin:0 auto}
+.state-box .s-icon{font-size:3rem;display:block;margin-bottom:16px}
+.state-box h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--ink);margin-bottom:8px}
+.state-box p{color:var(--muted);font-size:.9rem}
+
+/* ── SUCCESS MODAL (after Stripe payment) ── */
+.success-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:20px}
+.success-overlay.open{display:flex}
+.success-box{background:#fff;border-radius:24px;padding:40px 36px;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
+.success-icon{width:68px;height:68px;background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 20px rgba(109,40,217,.35)}
+.success-icon svg{width:32px;height:32px}
+.success-box h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ink);margin-bottom:10px}
+.success-box p{color:var(--muted);font-size:.9rem;line-height:1.7;margin-bottom:24px}
+.download-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;font-weight:700;font-size:.95rem;padding:14px 28px;border-radius:14px;text-decoration:none;margin-bottom:12px;box-shadow:0 4px 14px rgba(109,40,217,.35)}
+.steps{background:var(--primary-soft);border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:20px}
+.steps .s-title{font-weight:700;font-size:.82rem;color:var(--ink);margin-bottom:8px}
+.steps ol{padding-left:16px;font-size:.8rem;color:var(--muted);line-height:1.9}
+.back-link{color:var(--primary);font-size:.82rem;font-weight:500;text-decoration:none;cursor:pointer}
+
+/* ── TRUST BAR ── */
+.trust-bar{background:#fff;border-top:1px solid var(--border);padding:18px 24px}
+.trust-inner{max-width:800px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+.trust-item{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:.8rem}
+.trust-item svg{color:var(--primary);flex-shrink:0}
+
+.footer{padding:18px;text-align:center;color:var(--muted);font-size:.75rem}
+
+@media(max-width:640px){
+  .hero h1{font-size:1.7rem}
+  .grid-wrap{grid-template-columns:1fr}
+  .success-box{padding:28px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="shop-header">
+  <div class="shop-brand">
+    <div class="shop-logo-fallback" id="logoFallback">🎉</div>
+    <img id="shopLogo" style="display:none" alt="Store logo"/>
+    <div>
+      <div class="shop-name" id="shopName">Party Templates</div>
+      <div class="shop-tagline">Instant digital downloads</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Secure checkout
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Party Templates</div>
+  <h1>Ready-to-Sell Party<br>Template Bundles</h1>
+  <p>Chip bags, Capri Sun wrappers, cake toppers, water bottle labels & more.<br>Download instantly — customize in Canva.</p>
+  <a href="#products" class="hero-cta">Shop Now →</a>
+</div>
+
+<!-- FILTERS -->
+<div class="filters" id="filterBar"></div>
+
+<!-- PRODUCTS -->
+<div id="productsArea">
+  <div class="state-box">
+    <span class="s-icon">⏳</span>
+    <h2>Loading…</h2>
+  </div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure Stripe Checkout</div>
+    <div class="trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>Instant Download After Payment</div>
+    <div class="trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Canva-Ready Templates</div>
+  </div>
+</div>
+
+<div class="footer">Powered by <strong style="color:var(--primary)">Party Biz Hub</strong></div>
+
+<!-- SUCCESS MODAL (shows after Stripe redirect) -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>You're all set! 🎉</h2>
+    <p>Your purchase is complete. Download your files below — they're ready right now.</p>
+    <a id="downloadBtn" href="#" class="download-btn" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      Download Your Files
+    </a>
+    <div class="steps">
+      <div class="s-title">What to do next:</div>
+      <ol>
+        <li>Download and unzip the file</li>
+        <li>Open any template in Canva (free account works)</li>
+        <li>Customize with the party name, colors & date</li>
+        <li>Print at home or at a print shop — done!</li>
+      </ol>
+    </div>
+    <a class="back-link" onclick="closeSuccess()">← Back to store</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let products=[], activeFilter='', ownerId='';
+
+async function init(){
+  const params=new URLSearchParams(location.search);
+  ownerId=params.get('uid')||'';
+
+  // Check if redirected back from Stripe success
+  const success=params.get('success');
+  const productId=params.get('product');
+  if(success==='1'&&productId){
+    setTimeout(()=>showSuccess(productId),600);
+  }
+
+  if(!ownerId){
+    document.getElementById('productsArea').innerHTML=`<div class="state-box"><span class="s-icon">😕</span><h2>Store not found</h2><p>This store link is missing the shop ID.</p></div>`;
+    return;
+  }
+
+  // Load owner profile for branding
+  const{data:profile}=await sb.from('profiles').select('full_name,profile_data').eq('id',ownerId).single();
+  if(profile){
+    const d=profile.profile_data||{};
+    const name=d.businessName||profile.full_name||'Party Store';
+    document.getElementById('shopName').textContent=name;
+    document.title=name+' — Party Templates';
+    if(d.logoUrl){
+      document.getElementById('shopLogo').src=d.logoUrl;
+      document.getElementById('shopLogo').style.display='block';
+      document.getElementById('logoFallback').style.display='none';
+    }
+  }
+
+  // Load products
+  const{data,error}=await sb.from('products').select('*').eq('user_id',ownerId).eq('active',true).order('created_at',{ascending:false});
+  if(error){console.error(error);}
+  products=data||[];
+  buildFilters();
+  renderProducts();
+}
+
+function buildFilters(){
+  const themes=[...new Set(products.map(p=>p.theme).filter(Boolean))];
+  if(!themes.length){document.getElementById('filterBar').style.display='none';return;}
+  const bar=document.getElementById('filterBar');
+  bar.innerHTML=`<button class="filter-btn active" onclick="setFilter('',this)">All</button>`
+    +themes.map(t=>`<button class="filter-btn" onclick="setFilter('${esc(t)}',this)">${esc(t)}</button>`).join('');
+}
+
+function setFilter(theme,btn){
+  activeFilter=theme;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+function renderProducts(){
+  const filtered=activeFilter?products.filter(p=>p.theme===activeFilter):products;
+  if(!products.length){
+    document.getElementById('productsArea').innerHTML=`<div class="state-box"><span class="s-icon">🎈</span><h2>Coming Soon!</h2><p>New party template bundles dropping soon — check back shortly.</p></div>`;
+    return;
+  }
+  const grid=filtered.map(p=>{
+    const storeUrl=encodeURIComponent(location.href.split('?')[0]+'?uid='+ownerId+'&success=1&product='+p.id);
+    const buyUrl=p.stripe_link?(p.stripe_link+(p.stripe_link.includes('?')?'&':'?')+'success_url='+storeUrl):'#';
+    const isExternal=p.stripe_link&&p.stripe_link.startsWith('http');
+    return `<div class="product-card" id="products">
+      <div class="card-img">
+        ${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.name)}">`:`<div class="no-img"><span class="emoji">🎉</span><span class="label">${esc(p.theme||'Party Bundle')}</span></div>`}
+        ${p.theme?`<span class="card-theme">${esc(p.theme)}</span>`:''}
+        ${p.file_url?`<span class="card-instant">⚡ Instant Download</span>`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-name">${esc(p.name)}</div>
+        <div class="card-desc">${esc(p.description||'Digital party template bundle — customize in Canva.')}</div>
+        <div class="card-footer">
+          <div class="card-price">${p.price>0?'$'+Number(p.price).toFixed(2):'FREE'}<small>${p.price>0?'one-time':''}</small></div>
+          ${p.price>0&&p.stripe_link
+            ?`<a href="${esc(buyUrl)}" class="buy-btn" ${isExternal?'target="_blank"':''}>Buy Now</a>`
+            :p.price===0&&p.file_url
+            ?`<a href="${esc(p.file_url)}" class="buy-btn free" target="_blank" download>Get Free</a>`
+            :`<button class="buy-btn" style="opacity:.4;cursor:not-allowed" disabled>Coming Soon</button>`
+          }
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('productsArea').innerHTML=`<div class="grid-wrap" id="products">${grid}</div>`;
+}
+
+async function showSuccess(productId){
+  const p=products.find(x=>x.id===productId);
+  if(!p)return;
+  if(p.file_url){
+    document.getElementById('downloadBtn').href=p.file_url;
+    document.getElementById('downloadBtn').textContent='Download '+( p.file_name||'Your Files');
+    document.getElementById('downloadBtn').setAttribute('download','');
+  } else {
+    document.getElementById('downloadBtn').style.display='none';
+  }
+  document.getElementById('successOverlay').classList.add('open');
+}
+function closeSuccess(){
+  document.getElementById('successOverlay').classList.remove('open');
+  // Clean the URL
+  const clean=location.pathname+'?uid='+ownerId;
+  history.replaceState({},'',clean);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+init();
+</script>
+</body>
+</html>

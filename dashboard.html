@@ -70,6 +70,8 @@
   background:#fff;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .12s
 }
 .bq-btn:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.bq-quick{font-size:.72rem;font-weight:700;padding:4px 10px;border:1px solid var(--brand);border-radius:var(--radius-sm);background:rgba(109,40,217,.07);color:var(--brand);cursor:pointer;font-family:inherit;transition:all .12s;text-decoration:none;display:inline-block}
+.bq-quick:hover{background:var(--brand);color:#fff}
 
 .empty-state{text-align:center;padding:40px 20px}
 .empty-state .empty-icon{font-size:2.5rem;margin-bottom:12px}
@@ -428,10 +430,27 @@ const STATUS_LABELS = {
 function renderBookings() {
   const wrap = $('bookingsWrap');
   if (!allQuotes.length) {
-    wrap.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">📄</div>
-      <p>No quotes saved yet.<br>Build your first one to start tracking bookings.</p>
-      <a href="app.html" class="btn btn-gold">Build Your First Quote →</a>
+    wrap.innerHTML = `<div class="empty-state" style="padding:48px 24px;">
+      <div class="empty-icon" style="font-size:3rem;margin-bottom:16px;">🎉</div>
+      <div style="font-weight:700;font-size:1.05rem;color:var(--plum-900);margin-bottom:8px;">Welcome to Party Biz Hub!</div>
+      <p style="margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto;">Here's how to get started — takes less than 5 minutes:</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto 28px;text-align:left;">
+        <a href="profile.html" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--cream);border-radius:12px;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:all .15s;" onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:1.4rem;">⚙️</span>
+          <div><div style="font-weight:600;font-size:.88rem;color:var(--plum-900);">Step 1 — Set up your profile</div><div style="font-size:.78rem;color:var(--muted);">Add your business name, logo & services</div></div>
+          <span style="margin-left:auto;color:var(--muted);">→</span>
+        </a>
+        <a href="app.html" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--cream);border-radius:12px;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:all .15s;" onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:1.4rem;">💰</span>
+          <div><div style="font-weight:600;font-size:.88rem;color:var(--plum-900);">Step 2 — Build your first quote</div><div style="font-size:.78rem;color:var(--muted);">Price a party & send it to a client</div></div>
+          <span style="margin-left:auto;color:var(--muted);">→</span>
+        </a>
+        <a href="mywebsite.html" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--cream);border-radius:12px;border:1px solid var(--border);text-decoration:none;color:var(--ink);transition:all .15s;" onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:1.4rem;">🌐</span>
+          <div><div style="font-weight:600;font-size:.88rem;color:var(--plum-900);">Step 3 — Launch your website</div><div style="font-size:.78rem;color:var(--muted);">Pick a template & go live in minutes</div></div>
+          <span style="margin-left:auto;color:var(--muted);">→</span>
+        </a>
+      </div>
     </div>`;
     return;
   }
@@ -443,12 +462,24 @@ function renderBookings() {
     const amt    = q.total_amount ? '$' + Number(q.total_amount).toLocaleString('en-US', { minimumFractionDigits: 0 }) : '—';
     const isNew  = q._source === 'booking' && status === 'inquiry';
     const newBadge = isNew ? ' <span style="display:inline-block;background:#DC2626;color:#fff;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:999px;letter-spacing:.04em;vertical-align:middle">NEW</span>' : '';
+    const nextAction = {
+      'inquiry':      {label:'Send Quote →', href:`app.html`},
+      'quote-sent':   {label:'Mark Deposit Paid', fn:`quickStatus('${q.id}','deposit-paid')`},
+      'deposit-paid': {label:'Confirm Booking', fn:`quickStatus('${q.id}','confirmed')`},
+      'confirmed':    {label:'Mark Complete ✓', fn:`quickStatus('${q.id}','complete')`},
+      'complete':     null,
+    }[status];
+    const quickBtn = nextAction
+      ? nextAction.href
+        ? `<a href="${nextAction.href}" class="bq-quick" onclick="event.stopPropagation()">${nextAction.label}</a>`
+        : `<button class="bq-quick" onclick="${nextAction.fn};event.stopPropagation()">${nextAction.label}</button>`
+      : '';
     return `<tr onclick="openModal('${q.id}')">
       <td><div class="bq-name">${esc(q.client_name || 'Unnamed')}${newBadge}</div><div class="bq-type">${esc(q.event_type || '')}</div></td>
       <td class="bq-date">${date}</td>
       <td><span class="bq-status ${status}">${label}</span></td>
       <td class="bq-amount">${amt}</td>
-      <td><button class="bq-btn" onclick="openModal('${q.id}');event.stopPropagation()">Update</button></td>
+      <td style="white-space:nowrap;text-align:right;">${quickBtn}<button class="bq-btn" onclick="openModal('${q.id}');event.stopPropagation()" style="margin-left:4px;">⋯</button></td>
     </tr>`;
   }).join('');
 
@@ -477,6 +508,20 @@ function openModal(id) {
     b.classList.toggle('current', s === cur);
   });
   $('modalOverlay').classList.add('open');
+}
+
+async function quickStatus(id, status) {
+  const st = getStatuses();
+  const prev = st[id];
+  st[id] = status;
+  saveStatuses(st);
+  renderStats();
+  renderBookings();
+  if (status === 'confirmed' && prev !== 'confirmed') {
+    await maybeCreateProfitRecord(id);
+  } else {
+    showToast('✓ Status updated to ' + (STATUS_LABELS[status] || status));
+  }
 }
 
 async function applyStatus(status) {
