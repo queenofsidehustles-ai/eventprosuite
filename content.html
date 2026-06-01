@@ -145,6 +145,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
 .q-delete{margin-left:auto;font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:1.5px solid rgba(194,59,94,.2);background:#fff;color:var(--danger);cursor:pointer;font-family:inherit;transition:all .15s}
 .q-delete:hover{background:var(--danger);color:#fff}
 .q-date{font-size:.68rem;color:var(--muted);margin-top:.4rem}
+.q-preview-btn{font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:8px;border:1.5px solid rgba(109,40,217,.25);background:rgba(109,40,217,.06);color:var(--plum-900);cursor:pointer;font-family:inherit;transition:all .15s}
+.q-preview-btn:hover{background:var(--plum-900);color:#fff;border-color:var(--plum-900)}
+/* Preview modal */
+.preview-overlay{position:fixed;inset:0;background:rgba(15,10,25,.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.preview-modal{background:#fff;border-radius:20px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(76,29,149,.3)}
+.preview-modal-head{padding:1.2rem 1.4rem .8rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.preview-modal-head h3{font-family:'Playfair Display',serif;font-size:1rem;color:var(--plum-900);margin:0}
+.preview-modal-close{border:none;background:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1}
+.preview-modal-body{padding:1.2rem 1.4rem}
+.preview-media{width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-bottom:1rem;display:block}
+.preview-section{margin-bottom:1rem}
+.preview-label{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem}
+.preview-text{font-size:.88rem;color:var(--ink);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.preview-hashtags{font-size:.8rem;color:var(--brand);line-height:1.7}
+.preview-copy-btn{margin-top:.6rem;padding:.45rem 1rem;border-radius:8px;background:var(--plum-900);color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
 
 /* ── BATCH ── */
 .batch-intro{background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(109,40,217,.04));border:1px solid rgba(109,40,217,.2);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem}
@@ -437,6 +452,37 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5F3FF;color:var(--ink
     <div class="post-modal-actions">
       <button class="post-cancel" onclick="closePostOverlay()">Cancel</button>
       <button class="post-confirm" id="postConfirmBtn" onclick="executePostNow()">📤 Post Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Post Preview Modal -->
+<div class="preview-overlay" id="previewOverlay" style="display:none" onclick="if(event.target===this)closePreview()">
+  <div class="preview-modal">
+    <div class="preview-modal-head">
+      <h3 id="previewTitle">Post Preview</h3>
+      <button class="preview-modal-close" onclick="closePreview()">×</button>
+    </div>
+    <div class="preview-modal-body">
+      <div id="previewMediaWrap"></div>
+      <div class="preview-section" id="previewHookWrap" style="display:none">
+        <div class="preview-label">Hook / Opener</div>
+        <div class="preview-text" id="previewHook"></div>
+      </div>
+      <div class="preview-section">
+        <div class="preview-label">Caption</div>
+        <div class="preview-text" id="previewCaption"></div>
+        <button class="preview-copy-btn" onclick="copySingleText('previewCaption',this)">Copy Caption</button>
+      </div>
+      <div class="preview-section" id="previewStoryWrap" style="display:none">
+        <div class="preview-label">Story Caption</div>
+        <div class="preview-text" id="previewStory"></div>
+      </div>
+      <div class="preview-section" id="previewHashtagsWrap" style="display:none">
+        <div class="preview-label">Hashtags</div>
+        <div class="preview-hashtags" id="previewHashtags"></div>
+        <button class="preview-copy-btn" onclick="copySingleText('previewHashtags',this)" style="background:var(--brand)">Copy Hashtags</button>
+      </div>
     </div>
   </div>
 </div>
@@ -751,6 +797,7 @@ function renderQueue(){
       <div class="q-caption-preview">${esc(item.caption||'')}</div>
       <div class="q-card-actions">
         <button class="q-status ${item.status||'draft'}" onclick="cycleStatus('${item.id}','${item.status||'draft'}')" title="Click to change status: Draft → Ready → Posted">${statusLabel}</button>
+        <button class="q-preview-btn" onclick="previewItem('${item.id}')">👁 Preview</button>
         <button class="q-post-now" onclick="confirmPostNow('${item.id}')" title="Post now to your social accounts">📤 Post Now</button>
         <button class="q-copy" onclick="toggleSchedule('${item.id}')">📅 Schedule</button>
         <button class="q-copy" onclick="copyCaption('${item.id}')">Copy Caption</button>
@@ -781,6 +828,42 @@ async function cycleStatus(id,current){
   if(error){showToast('Update failed');return}
   await loadQueue();
   showToast(next==='ready'?'Marked as Ready ✅':next==='posted'?'Marked as Posted 🚀':'Back to Draft 📝');
+}
+
+function previewItem(id){
+  const item=queueItems.find(i=>i.id===id);
+  if(!item)return;
+  const isVideo=item.media_url&&/\.(mp4|mov|avi|webm)$/i.test(item.media_url);
+  const mWrap=document.getElementById('previewMediaWrap');
+  if(item.media_url){
+    mWrap.innerHTML=isVideo
+      ?`<video class="preview-media" src="${esc(item.media_url)}" controls muted playsinline></video>`
+      :`<img class="preview-media" src="${esc(item.media_url)}" alt="Post media"/>`;
+  } else { mWrap.innerHTML=''; }
+  document.getElementById('previewTitle').textContent=
+    `${item.post_type||'Post'} · ${item.platform||'Instagram'}`;
+  const hook=item.reel_hook||item.hook||'';
+  document.getElementById('previewHookWrap').style.display=hook?'block':'none';
+  document.getElementById('previewHook').textContent=hook;
+  document.getElementById('previewCaption').textContent=item.caption||'No caption yet.';
+  const story=item.story_caption||'';
+  document.getElementById('previewStoryWrap').style.display=story?'block':'none';
+  document.getElementById('previewStory').textContent=story;
+  const tags=item.hashtags||'';
+  document.getElementById('previewHashtagsWrap').style.display=tags?'block':'none';
+  document.getElementById('previewHashtags').textContent=tags;
+  document.getElementById('previewOverlay').style.display='flex';
+}
+function closePreview(){
+  document.getElementById('previewOverlay').style.display='none';
+}
+function copySingleText(elId,btn){
+  const text=document.getElementById(elId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✓ Copied!';
+    setTimeout(()=>btn.textContent=orig,1800);
+  });
 }
 
 function toggleSchedule(id){

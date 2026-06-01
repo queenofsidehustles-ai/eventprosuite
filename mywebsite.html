@@ -487,6 +487,19 @@ input,select,textarea{font:inherit}
   </div>
 </div>
 
+<!-- Niche Switch Confirm Modal -->
+<div id="nicheSwitchModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:20px;padding:28px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(76,29,149,.25);text-align:center;">
+    <div style="font-size:2rem;margin-bottom:12px;">🎨</div>
+    <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900);margin:0 0 10px;">Switch to this niche?</h3>
+    <p style="font-size:.85rem;color:var(--muted);line-height:1.6;margin:0 0 20px;">This will update your packages and niche description to match the new theme. Your business name, logo, brand colors, and reviews stay exactly the same.</p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button onclick="cancelNicheSwitch()" style="padding:.65rem 1.2rem;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;">Keep Current</button>
+      <button onclick="confirmNicheSwitch()" style="padding:.65rem 1.4rem;border-radius:10px;border:none;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(109,40,217,.3);">Yes, Switch →</button>
+    </div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="page-header" id="pageHeader" style="display:none">
   <div class="page-header-inner">
@@ -1759,22 +1772,40 @@ function previewTemplate(tpl){
 }
 
 let selectedNiche=null;
+let pendingNicheSwitch=null;
+
 function selectNiche(type,save=true){
   const isFirstPick=!selectedNiche;
   const isChangingNiche=selectedNiche&&selectedNiche!==type;
 
-  // Confirm overwrite if user is switching to a different niche
   if(isChangingNiche&&save){
-    const ok=confirm('Switching niches will replace your current packages and description with the new niche\'s defaults. Your business name, brand colors, and reviews stay safe. Continue?');
-    if(!ok){
-      // Re-highlight the previously selected niche
-      document.querySelectorAll('.niche-tile').forEach(t=>{
-        t.classList.toggle('selected',t.dataset.niche===selectedNiche);
-      });
-      return;
-    }
+    // Show proper modal instead of browser confirm()
+    pendingNicheSwitch=type;
+    document.getElementById('nicheSwitchModal').style.display='flex';
+    return;
   }
 
+  _applyNicheSelection(type,save,isFirstPick||isChangingNiche);
+}
+
+function confirmNicheSwitch(){
+  document.getElementById('nicheSwitchModal').style.display='none';
+  if(pendingNicheSwitch){
+    _applyNicheSelection(pendingNicheSwitch,true,true);
+    pendingNicheSwitch=null;
+  }
+}
+
+function cancelNicheSwitch(){
+  document.getElementById('nicheSwitchModal').style.display='none';
+  // Re-highlight the previously selected niche tile
+  document.querySelectorAll('.niche-tile').forEach(t=>{
+    t.classList.toggle('selected',t.dataset.niche===selectedNiche);
+  });
+  pendingNicheSwitch=null;
+}
+
+function _applyNicheSelection(type,save,applyDefaults){
   selectedNiche=type;
   document.querySelectorAll('.niche-tile').forEach(t=>{
     t.classList.toggle('selected',t.dataset.niche===type);
@@ -1782,8 +1813,7 @@ function selectNiche(type,save=true){
   $('step1NextBtn').disabled=false;
   unlockStep(2);
 
-  // Apply niche defaults on first pick OR explicit niche switch
-  if(save&&(isFirstPick||isChangingNiche)){
+  if(save&&applyDefaults){
     applyNicheDefaults(type);
     applyNichePalette(type);
   }

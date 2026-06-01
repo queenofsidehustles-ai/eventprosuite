@@ -39,6 +39,13 @@
 .setup-banner-body{flex:1;min-width:180px}
 .setup-banner-body strong{display:block;color:var(--text-primary);font-weight:700;font-size:.95rem;margin-bottom:3px}
 .setup-banner-body span{font-size:.8rem;color:var(--text-muted)}
+.checklist-step{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1.5px solid var(--border);border-radius:12px;text-decoration:none;color:var(--ink);transition:all .15s;font-family:inherit}
+.checklist-step:hover{border-color:var(--brand);box-shadow:0 2px 8px rgba(109,40,217,.1)}
+.checklist-step.done{border-color:rgba(30,140,90,.35);background:rgba(30,140,90,.04)}
+.chk-icon{font-size:1.3rem;flex-shrink:0}
+.chk-title{font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:1px}
+.chk-title.strikethrough{text-decoration:line-through;color:var(--muted)}
+.chk-sub{font-size:.72rem;color:var(--muted)}
 
 /* Bookings table */
 .bookings-table{width:100%;border-collapse:collapse}
@@ -185,14 +192,31 @@
         <span style="font-size:.78rem;color:var(--text-muted)">New here? The guide walks through every feature in plain English.</span>
       </div>
 
-      <!-- Profile setup banner -->
-      <div class="setup-banner" id="setupBanner" style="display:none">
-        <div class="setup-banner-icon">✨</div>
-        <div class="setup-banner-body">
-          <strong>Finish setting up your profile</strong>
-          <span>Add your business name, logo, and Stripe links so your quotes look professional.</span>
+      <!-- Setup checklist — shown until all steps complete -->
+      <div id="setupChecklist" style="display:none;background:linear-gradient(135deg,rgba(76,29,149,.04),rgba(109,40,217,.02));border:1.5px solid rgba(109,40,217,.15);border-radius:16px;padding:16px 20px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div style="font-weight:700;font-size:.92rem;color:var(--plum-900);">🚀 Getting Started — <span id="checklistProgress" style="color:var(--brand)">0 of 4 done</span></div>
+          <button onclick="document.getElementById('setupChecklist').style.display='none';localStorage.setItem('pbh_checklist_dismissed','1');"
+                  style="font-size:.72rem;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;">Hide</button>
         </div>
-        <a href="profile.html" class="btn btn-primary btn-sm">Set Up Profile →</a>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;" id="checklistItems">
+          <a id="chk_profile" href="profile.html" class="checklist-step">
+            <span class="chk-icon">⚙️</span>
+            <div><div class="chk-title">Set up your profile</div><div class="chk-sub">Business name, logo & services</div></div>
+          </a>
+          <a id="chk_quote" href="app.html" class="checklist-step">
+            <span class="chk-icon">💰</span>
+            <div><div class="chk-title">Build your first quote</div><div class="chk-sub">Price a party & send to a client</div></div>
+          </a>
+          <a id="chk_website" href="mywebsite.html" class="checklist-step">
+            <span class="chk-icon">🌐</span>
+            <div><div class="chk-title">Launch your website</div><div class="chk-sub">Pick a template, go live in minutes</div></div>
+          </a>
+          <a id="chk_content" href="content.html" class="checklist-step">
+            <span class="chk-icon">📱</span>
+            <div><div class="chk-title">Create your first post</div><div class="chk-sub">AI-generated caption, ready to post</div></div>
+          </a>
+        </div>
       </div>
 
       <!-- Stats -->
@@ -317,6 +341,26 @@ async function boot() {
     setNavUser(display);
     initNavSignout(async () => { sessionStorage.removeItem('pbh_auth'); await sb.auth.signOut(); window.location.href = 'login.html'; });
 
+    // Build setup checklist
+    if(!localStorage.getItem('pbh_checklist_dismissed')){
+      const hasBizName = !!bizName;
+      const hasLogo    = !!(pd.logoUrl);
+      const hasStripe  = !!(pd.stripeLinks && (pd.stripeLinks[0]||pd.stripeLink100));
+      // profile step = has biz name + logo
+      const profileDone = hasBizName && hasLogo;
+      // quote step = checked from allQuotes after load (checked later)
+      // website step = from website_builds (checked after load)
+      // content step = from content_items (checked after load)
+      window._checklistProfile = profileDone;
+
+      const steps = [
+        {id:'chk_profile', done: profileDone},
+      ];
+      let done = profileDone ? 1 : 0;
+      $('checklistProgress').textContent = `${done} of 4 done`;
+      if(profileDone){ markCheckDone('chk_profile'); }
+      $('setupChecklist').style.display = 'block';
+    }
     if (!bizName) $('setupBanner').style.display = 'flex';
 
     // Show app
@@ -366,6 +410,35 @@ async function loadData() {
   renderStats();
   renderBookings();
   renderFinancials(profitRes.data || []);
+
+  // Update checklist progress after data loads
+  if(!localStorage.getItem('pbh_checklist_dismissed')){
+    const quoteDone  = allQuotes.length > 0;
+    const profileDone = !!window._checklistProfile;
+    // Check website + content from Supabase
+    const[webRes, contentRes] = await Promise.all([
+      sb.from('website_builds').select('id').eq('user_id',(await sb.auth.getSession()).data.session.user.id).limit(1),
+      sb.from('content_items').select('id').eq('user_id',(await sb.auth.getSession()).data.session.user.id).limit(1),
+    ]);
+    const websiteDone  = !!(webRes.data && webRes.data.length);
+    const contentDone  = !!(contentRes.data && contentRes.data.length);
+    const total = [profileDone,quoteDone,websiteDone,contentDone].filter(Boolean).length;
+    $('checklistProgress').textContent = `${total} of 4 done`;
+    if(quoteDone)   markCheckDone('chk_quote');
+    if(websiteDone) markCheckDone('chk_website');
+    if(contentDone) markCheckDone('chk_content');
+    if(total===4)   $('setupChecklist').style.display='none'; // all done, hide
+  }
+}
+
+function markCheckDone(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.classList.add('done');
+  const title=el.querySelector('.chk-title');
+  if(title){title.classList.add('strikethrough');}
+  const icon=el.querySelector('.chk-icon');
+  if(icon){icon.textContent='✅';}
 }
 
 function getStatuses() {
