@@ -425,6 +425,9 @@ async function uploadToStorage(bucket,file,folder){
 async function saveProduct(){
   const name=(document.getElementById('pName').value||'').trim();
   if(!name){document.getElementById('pName').focus();return;}
+  // Refresh session — prevents "row-level security" errors if token expired while page was open
+  const{data:{session:fresh}}=await sb.auth.getSession();
+  if(!fresh){alert('Your session expired. Please sign in again.');window.location.href='login.html';return;}
   const btn=document.getElementById('saveBtn');
   btn.disabled=true;
   document.getElementById('saveBtnText').textContent='Saving…';
