@@ -342,6 +342,28 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         </div>
       </div>
 
+      <!-- Store Profile Settings -->
+      <div class="tpl-section">
+        <div class="tpl-section-head">
+          <div class="tpl-section-title">👋 About You &amp; Contact</div>
+          <div class="tpl-section-sub">Shows on your public store — helps customers know and trust you</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:.8rem">
+          <div class="field">
+            <label>About / Bio <span style="color:var(--muted);font-weight:400;font-size:.75rem">(optional)</span></label>
+            <textarea id="storeBio" rows="3" placeholder="Tell customers a little about you and your party business…" style="resize:vertical;font-family:inherit;font-size:.88rem;padding:.62rem .88rem;border:1.5px solid var(--border);border-radius:9px;width:100%;color:var(--ink)"></textarea>
+          </div>
+          <div class="field">
+            <label>Contact Email <span style="color:var(--muted);font-weight:400;font-size:.75rem">(shows a "Ask a Question" button on your store)</span></label>
+            <input type="email" id="storeContactEmail" placeholder="you@yourbiz.com"/>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn-primary" style="padding:.5rem 1.2rem;font-size:.82rem" onclick="saveStoreProfile()">Save Profile Info</button>
+            <span id="profileSaving" style="font-size:.72rem;color:var(--muted)"></span>
+          </div>
+        </div>
+      </div>
+
       <!-- Products grid -->
       <div id="productsGrid">
         <div class="empty-store">
@@ -558,7 +580,31 @@ async function init(){
   const active=document.getElementById('tpl-'+savedTpl);
   if(active)active.classList.add('active');
 
+  // Restore saved bio and contact email
+  const bioEl=document.getElementById('storeBio');
+  const emailEl=document.getElementById('storeContactEmail');
+  if(bioEl)bioEl.value=currentProfileData.bio||'';
+  if(emailEl)emailEl.value=currentProfileData.contactEmail||'';
+
   await loadProducts();
+}
+
+async function saveStoreProfile(){
+  const bio=(document.getElementById('storeBio').value||'').trim();
+  const contactEmail=(document.getElementById('storeContactEmail').value||'').trim();
+  const saving=document.getElementById('profileSaving');
+  if(saving)saving.textContent='Saving…';
+  try{
+    const{data:{session:fresh}}=await sb.auth.refreshSession();
+    if(!fresh){if(saving)saving.textContent='Session expired';return;}
+    const merged=Object.assign({},currentProfileData,{bio,contactEmail});
+    const{error}=await sb.from('profiles').update({profile_data:merged}).eq('id',currentUser.id);
+    if(error)throw error;
+    currentProfileData=merged;
+    if(saving){saving.textContent='✓ Saved!';setTimeout(()=>{saving.textContent=''},3000);}
+  }catch(e){
+    if(saving)saving.textContent='Error: '+(e.message||'unknown');
+  }
 }
 
 async function loadProducts(){
@@ -723,8 +769,14 @@ async function saveProduct(){
     closeModal();
     await loadProducts();
   } catch(e){
+    // Clear stuck file refs so next save attempt doesn't re-upload a failed file
+    newImgFile=null;
+    newDigitalFile=null;
+    resetImgZone(editingId?(products.find(x=>x.id===editingId)?.image_url||''):'');
+    resetFileZone(editingId?(products.find(x=>x.id===editingId)?.file_name||''):'');
     console.error('saveProduct failed:', e);
-    showToast('Error: '+(e.message||JSON.stringify(e)));
+    const msg=e.message||JSON.stringify(e);
+    showToast('Error: '+msg);
   } finally {
     btn.disabled=false;
     document.getElementById('saveBtnText').textContent=editingId?'Save Changes':'Save Product';

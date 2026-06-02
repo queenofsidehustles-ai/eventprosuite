@@ -47,7 +47,7 @@ img{max-width:100%;display:block}
 .st-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#9988aa;font-weight:500}
 
 /* Studio Hero — CLEAN, light */
-.st-hero{padding:72px 28px 56px;text-align:center;background:linear-gradient(180deg,#FDF7FC 0%,#fff 100%);position:relative;overflow:hidden}
+.st-hero{padding:32px 28px 24px;text-align:center;background:linear-gradient(180deg,#FDF7FC 0%,#fff 100%);position:relative;overflow:hidden}
 .st-hero::before{content:'';position:absolute;top:-120px;right:-120px;width:440px;height:440px;background:radial-gradient(circle,rgba(209,21,174,0.07),transparent 65%);pointer-events:none}
 .st-hero::after{content:'';position:absolute;bottom:-80px;left:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(212,168,64,0.08),transparent 65%);pointer-events:none}
 .st-hero-inner{position:relative;z-index:1;max-width:620px;margin:0 auto}
@@ -117,7 +117,7 @@ img{max-width:100%;display:block}
 .lx-biz-sub{font-size:.68rem;color:rgba(245,240,255,.5);margin-top:1px}
 .lx-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#D4A840;font-weight:600}
 
-.lx-hero{padding:80px 28px 64px;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(212,168,64,0.1),transparent 60%);position:relative;overflow:hidden;border-bottom:1px solid rgba(245,240,255,.07)}
+.lx-hero{padding:32px 28px 24px;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(212,168,64,0.1),transparent 60%);position:relative;overflow:hidden;border-bottom:1px solid rgba(245,240,255,.07)}
 .lx-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#D4A840;margin-bottom:24px}
 .lx-eyebrow::before,.lx-eyebrow::after{content:'';display:block;width:28px;height:1px;background:#D4A840;opacity:.6}
 .lx-h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,6vw,3.4rem);font-weight:800;color:#F5F0FF;line-height:1.08;letter-spacing:-.02em;margin-bottom:4px}
@@ -179,7 +179,7 @@ img{max-width:100%;display:block}
 .bl-biz-sub{font-size:.68rem;color:#c4849a;margin-top:1px}
 .bl-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#c4849a;font-weight:500}
 
-.bl-hero{padding:72px 28px 56px;text-align:center;background:linear-gradient(180deg,#fff 0%,#FEF0F5 100%);position:relative;overflow:hidden}
+.bl-hero{padding:32px 28px 24px;text-align:center;background:linear-gradient(180deg,#fff 0%,#FEF0F5 100%);position:relative;overflow:hidden}
 .bl-hero::before{content:'🌸';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.12;pointer-events:none;line-height:1}
 .bl-hero::after{content:'🌸';font-size:80px;position:absolute;bottom:-10px;left:-10px;opacity:.1;pointer-events:none;line-height:1}
 .bl-eyebrow{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d4709c;background:rgba(212,112,156,0.1);border:1px solid rgba(212,112,156,0.2);padding:5px 16px;border-radius:20px;margin-bottom:22px}
@@ -240,7 +240,7 @@ img{max-width:100%;display:block}
 .pp-biz-sub{font-size:.68rem;color:#9988aa;margin-top:1px;font-weight:600;letter-spacing:.04em}
 .pp-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#7559D4;font-weight:700}
 
-.pp-hero{padding:64px 28px 52px;text-align:center;background:linear-gradient(135deg,#F5F0FF 0%,#FDF0FA 60%,#F5F0FF 100%);position:relative;overflow:hidden;border-bottom:3px solid #D115AE}
+.pp-hero{padding:32px 28px 24px;text-align:center;background:linear-gradient(135deg,#F5F0FF 0%,#FDF0FA 60%,#F5F0FF 100%);position:relative;overflow:hidden;border-bottom:3px solid #D115AE}
 .pp-stripe{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#D115AE,#7559D4,#D4A840,#D115AE);background-size:200% 100%;animation:stripe 3s linear infinite}
 @keyframes stripe{0%{background-position:0 0}100%{background-position:200% 0}}
 .pp-eyebrow{display:inline-block;background:#D115AE;color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 18px;border-radius:4px;margin-bottom:22px}
@@ -306,6 +306,71 @@ img{max-width:100%;display:block}
 .next-steps .ns-title{font-weight:700;font-size:.78rem;color:#1A1A1A;margin-bottom:6px}
 .next-steps ol{padding-left:14px;font-size:.77rem;color:#6C6473;line-height:2}
 .back-link{color:#D115AE;font-size:.8rem;font-weight:600;cursor:pointer;display:inline-block;margin-top:4px}
+
+/* ── About Section ─────────────────────────── */
+.about-section{padding:32px 24px;max-width:760px;margin:0 auto}
+.about-inner{display:flex;gap:22px;align-items:flex-start}
+.about-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(209,21,174,.25)}
+.about-avatar-placeholder{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#D115AE,#7559D4);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
+.about-text{}
+.about-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:4px}
+.about-bio{font-size:.88rem;line-height:1.75;opacity:.75}
+.tpl-studio .about-section{border-top:1px solid #F0EBF5}
+.tpl-luxe .about-section{border-top:1px solid rgba(245,240,255,.07)}
+.tpl-bloom .about-section{border-top:1px solid #fce4ef}
+.tpl-pop .about-section{border-top:2px solid #1A1A1A}
+.tpl-luxe .about-name{color:#F5F0FF}
+.tpl-luxe .about-bio{color:rgba(245,240,255,.65)}
+.tpl-bloom .about-name{color:#2D1B2E}
+.tpl-pop .about-name{color:#1A1A1A;text-transform:uppercase;font-family:inherit;letter-spacing:.02em}
+
+/* ── FAQ ────────────────────────────────────── */
+.faq-section{max-width:760px;margin:0 auto;padding:32px 24px}
+.faq-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:18px}
+.tpl-luxe .faq-title{color:#F5F0FF}
+.tpl-bloom .faq-title{color:#2D1B2E}
+.tpl-pop .faq-title{font-family:inherit;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+.faq-item{border-radius:10px;overflow:hidden;margin-bottom:8px}
+.tpl-studio .faq-item{border:1px solid #F0EBF5}
+.tpl-luxe .faq-item{border:1px solid rgba(245,240,255,.1);background:#1A1035}
+.tpl-bloom .faq-item{border:1.5px solid #fce4ef;background:#fff}
+.tpl-pop .faq-item{border:2px solid #1A1A1A;border-radius:6px}
+.faq-q{width:100%;background:none;border:none;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:600;text-align:left;gap:12px}
+.tpl-studio .faq-q{color:#1A1A1A}
+.tpl-luxe .faq-q{color:#F5F0FF}
+.tpl-bloom .faq-q{color:#2D1B2E}
+.tpl-pop .faq-q{color:#1A1A1A;font-weight:800}
+.faq-chevron{font-size:.7rem;transition:transform .2s;flex-shrink:0;opacity:.5}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{display:none;padding:0 18px 14px;font-size:.82rem;line-height:1.75}
+.faq-item.open .faq-a{display:block}
+.tpl-studio .faq-a{color:#6C6473}
+.tpl-luxe .faq-a{color:rgba(245,240,255,.65)}
+.tpl-bloom .faq-a{color:#8a5a6e}
+.tpl-pop .faq-a{color:#6C6473}
+
+/* ── Contact Section ────────────────────────── */
+.contact-section{max-width:760px;margin:0 auto;padding:0 24px 40px;text-align:center}
+.contact-box{border-radius:14px;padding:28px 24px}
+.tpl-studio .contact-box{background:#FDF7FC;border:1px solid #F0EBF5}
+.tpl-luxe .contact-box{background:#1A1035;border:1px solid rgba(245,240,255,.08)}
+.tpl-bloom .contact-box{background:#FEF0F5;border:1.5px solid #fce4ef}
+.tpl-pop .contact-box{background:#F5F0FF;border:2px solid #1A1A1A;border-radius:8px}
+.contact-icon{font-size:2rem;margin-bottom:10px}
+.contact-h{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.tpl-luxe .contact-h{color:#F5F0FF;font-family:'Playfair Display',serif}
+.tpl-bloom .contact-h{color:#2D1B2E}
+.tpl-pop .contact-h{font-family:inherit;font-weight:900;text-transform:uppercase;letter-spacing:.02em;color:#1A1A1A}
+.contact-p{font-size:.82rem;line-height:1.7;margin-bottom:18px;opacity:.7}
+.contact-btn{display:inline-block;padding:11px 28px;border-radius:50px;font-weight:700;font-size:.85rem;text-decoration:none;transition:all .14s}
+.tpl-studio .contact-btn{background:#D115AE;color:#fff;box-shadow:0 4px 14px rgba(209,21,174,.28)}
+.tpl-studio .contact-btn:hover{background:#a50d87}
+.tpl-luxe .contact-btn{background:#D4A840;color:#1a0e00;font-weight:800}
+.tpl-luxe .contact-btn:hover{filter:brightness(1.08)}
+.tpl-bloom .contact-btn{background:#d4709c;color:#fff}
+.tpl-bloom .contact-btn:hover{background:#c45a8c}
+.tpl-pop .contact-btn{background:#D115AE;color:#fff;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:800}
+.tpl-pop .contact-btn:hover{background:#1A1A1A}
 
 @media(max-width:640px){
   .st-h1,.lx-h1,.bl-h1,.pp-h1{font-size:1.9rem}
@@ -383,7 +448,7 @@ async function init(){
   products=data||[];
 
   // Build the page shell for the chosen template
-  buildShell(bizName,tagline,d.logoUrl||null);
+  buildShell(bizName,tagline,d.logoUrl||null,d.bio||'',d.contactEmail||'');
 
   // Check for Stripe success redirect
   const success=params.get('success'),productId=params.get('product');
@@ -406,7 +471,7 @@ function renderError(title,msg){
 }
 
 /* ── Build the outer shell (nav + hero + trust + footer) ── */
-function buildShell(bizName,tagline,logoUrl){
+function buildShell(bizName,tagline,logoUrl,bio,contactEmail){
   const root=document.getElementById('shopRoot');
   root.className='shop-root visible tpl-'+tpl;
 
@@ -419,27 +484,73 @@ function buildShell(bizName,tagline,logoUrl){
 
   const navHtml=`<div class="${pfx}-nav"><div class="${pfx}-brand">${logoHtml}<div><div class="${pfx}-biz">${esc(bizName)}</div><div class="${pfx}-biz-sub">Party Printables</div></div></div>${secureHtml}</div>`;
 
-  const [eyebrowClass,h1Class,scriptClass,ruleClass,subClass,ctaClass]=prefix('eyebrow','h1','h1-script','rule','sub','cta');
-
   const heroHtml=`<div class="${pfx}-hero" id="heroSection">
-    ${tpl==='luxe'?`<div class="${pfx}-eyebrow">✦ Party Profit Printables™ ✦</div>`:`<div class="${pfx}-eyebrow">✦ Party Profit Printables™ ✦</div>`}
+    <div class="${pfx}-eyebrow">✦ Party Profit Printables™ ✦</div>
     <div class="${pfx}-h1">${esc(bizName)}</div>
     <div class="${pfx}-h1-script">Printables™</div>
     <div class="${pfx}-rule"></div>
-    <p class="${pfx}-sub">Add custom party favors to your business — without knowing graphic design.<br><em>Done-for-you templates your clients will love. You just add the name.</em></p>
+    <p class="${pfx}-sub">${esc(tagline)}</p>
     <a href="#products" class="${pfx}-cta">Shop Printables →</a>
   </div>`;
+
+  // About section (only if bio is set)
+  const aboutHtml=bio?`<div class="about-section">
+    <div class="about-inner">
+      ${logoUrl?`<img src="${esc(logoUrl)}" class="about-avatar" alt="${esc(bizName)}">`:`<div class="about-avatar-placeholder">🎉</div>`}
+      <div class="about-text">
+        <div class="about-name">${esc(bizName)}</div>
+        <div class="about-bio">${esc(bio)}</div>
+      </div>
+    </div>
+  </div>`:'';
+
+  // FAQ accordion
+  const faqs=[
+    ['How do I customize my printable?','After purchase, click the Canva link in your download. Make a copy in Canva (free account works!), then add the guest\'s name, date, and any colors you like. Download as PDF when done.'],
+    ['Do I need a Canva account?','Yes — these are Canva templates. A free account works perfectly. No design skills needed. Just click, type the name, and download.'],
+    ['How do I print my printables?','Download your PDF and print at home on card stock (65 lb works great), or take the file to your local FedEx, Staples, or print shop. Print at actual size (100%).'],
+    ['When will I receive my order?','Instantly! After payment you\'ll get a download link right on this page. No shipping, no waiting.'],
+    ['Can I use these for my clients\' parties?','Yes! Templates are licensed for personal and client use. You may not resell or redistribute the template files themselves.'],
+    ['What if I need help?',contactEmail?`Send us a message using the contact button on this page. We respond within 24 hours.`:'Contact the store owner for assistance.'],
+  ];
+  const faqItems=faqs.map((f,i)=>`<div class="faq-item" id="faq${i}">
+    <button class="faq-q" onclick="toggleFaq(${i})">
+      <span>${esc(f[0])}</span>
+      <span class="faq-chevron">▼</span>
+    </button>
+    <div class="faq-a">${esc(f[1])}</div>
+  </div>`).join('');
+  const faqHtml=`<div class="faq-section">
+    <div class="faq-title">Common Questions</div>
+    ${faqItems}
+  </div>`;
+
+  // Contact section (only if contactEmail is set)
+  const contactHtml=contactEmail?`<div class="contact-section">
+    <div class="contact-box">
+      <div class="contact-icon">💌</div>
+      <div class="contact-h">Have a question before you buy?</div>
+      <p class="contact-p">Send a message — we're happy to help you find the right printable for your party.</p>
+      <a href="mailto:${esc(contactEmail)}?subject=Question about Party Printables" class="contact-btn">Ask a Question →</a>
+    </div>
+  </div>`:'';
 
   const trustItems=[
     ['Secure Stripe Checkout'],['Instant Download After Payment'],['Canva-Ready Templates'],['Print at Home or Local Shop']
   ].map(([l])=>`<div class="${pfx}-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>${l}</div>`).join('');
 
-  root.innerHTML=ecoHtml+navHtml+heroHtml+
+  root.innerHTML=ecoHtml+navHtml+heroHtml+aboutHtml+
     `<div class="${pfx}-filters" id="filtersWrap" style="display:none"><div class="${pfx}-filter-label">Browse by theme</div><div class="${pfx}-filter-bar" id="filterBar"></div></div>`+
     `<div class="${pfx}-grid-head" id="gridHead" style="display:none"><div class="${pfx}-grid-title">Available Printables</div><span class="${pfx}-grid-count" id="productCount"></span></div>`+
     `<div id="productsArea"></div>`+
+    faqHtml+contactHtml+
     `<div class="${pfx}-trust"><div class="${pfx}-trust-in">${trustItems}</div></div>`+
     `<div class="${pfx}-footer">Powered by <a href="https://eventprosuite.vercel.app" target="_blank">Party Biz Hub</a> &nbsp;·&nbsp; <a href="https://eventprosuite.vercel.app" target="_blank">Kids Party Profit System™</a></div>`;
+}
+
+function toggleFaq(i){
+  const el=document.getElementById('faq'+i);
+  el.classList.toggle('open');
 }
 
 function prefix(...parts){return parts.map(p=>pfx+'-'+p);}
