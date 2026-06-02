@@ -521,6 +521,24 @@ async function showSuccess(productId){
   if(p?.file_url){btn.href=p.file_url;btn.style.display='flex';}
   else btn.style.display='none';
   document.getElementById('successOverlay').classList.add('open');
+
+  // Auto-record the sale in Supabase so seller can see it in their Sales tab
+  try{
+    const params=new URLSearchParams(location.search);
+    const sessionId=params.get('session')||params.get('session_id')||null;
+    // Use sessionStorage to prevent duplicate on page refresh
+    const dedupeKey='sale_'+(sessionId||productId+'_'+Date.now().toString(36));
+    if(!sessionStorage.getItem(dedupeKey)&&p){
+      sessionStorage.setItem(dedupeKey,'1');
+      await sb.from('sales').insert({
+        seller_id:ownerId,
+        product_id:p.id,
+        product_name:p.name,
+        amount:p.price||0,
+        stripe_session_id:sessionId||null,
+      });
+    }
+  }catch(_){/* never crash the success page over analytics */}
 }
 
 function closeSuccess(){

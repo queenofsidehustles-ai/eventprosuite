@@ -36,6 +36,43 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
 .wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
 
+/* ── Tabs ── */
+.store-tabs{display:flex;gap:4px;padding:1.2rem 1.5rem 0;max-width:1100px;margin:0 auto;border-bottom:2px solid var(--border)}
+.tab-btn{padding:.55rem 1.2rem;border-radius:10px 10px 0 0;border:none;background:transparent;font-family:inherit;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;margin-bottom:-2px;border-bottom:2px solid transparent}
+.tab-btn:hover{color:var(--ink);background:rgba(109,40,217,.04)}
+.tab-btn.active{color:var(--brand);border-bottom-color:var(--brand);background:rgba(109,40,217,.05)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── Sales Dashboard ── */
+.sales-wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 3rem}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:2rem}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.4rem;box-shadow:var(--shadow)}
+.stat-card .stat-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.stat-card .stat-value{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:var(--plum-900);line-height:1}
+.stat-card .stat-sub{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+.stat-card.highlight{background:linear-gradient(135deg,var(--plum-900),var(--brand));border:none}
+.stat-card.highlight .stat-label{color:rgba(255,255,255,.75)}
+.stat-card.highlight .stat-value{color:#fff}
+.stat-card.highlight .stat-sub{color:rgba(255,255,255,.6)}
+
+.sales-section-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--plum-900);margin-bottom:1rem}
+.sales-table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:2rem}
+.sales-table th{background:rgba(109,40,217,.05);padding:.7rem 1rem;text-align:left;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.sales-table td{padding:.75rem 1rem;font-size:.82rem;color:var(--ink);border-bottom:1px solid var(--border)}
+.sales-table tr:last-child td{border-bottom:none}
+.sales-table tr:hover td{background:rgba(109,40,217,.02)}
+.badge-delivered{background:rgba(30,140,90,.1);color:var(--success);font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px}
+.badge-pending{background:rgba(201,162,39,.1);color:var(--gold);font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px}
+.sales-empty{text-align:center;padding:60px 24px;background:#fff;border-radius:var(--radius);border:1px solid var(--border)}
+.sales-empty .e-icon{font-size:2.5rem;margin-bottom:12px}
+.sales-empty h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900);margin-bottom:6px}
+.sales-empty p{color:var(--muted);font-size:.83rem;max-width:380px;margin:0 auto;line-height:1.6}
+.top-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:2rem}
+.top-product-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.top-product-rank{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3A2A1A;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.top-product-info .name{font-weight:700;font-size:.82rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.top-product-info .sales-count{font-size:.72rem;color:var(--muted);margin-top:2px}
+
 .store-link-bar{background:rgba(109,40,217,.06);border:1.5px solid rgba(109,40,217,.15);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.6rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .store-link-bar .link-label{font-size:.8rem;font-weight:700;color:var(--plum-900);white-space:nowrap}
 .store-link-bar input{flex:1;min-width:180px;padding:.55rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;background:#fff;color:var(--ink)}
@@ -176,7 +213,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
     </div>
 
     <div id="storeContent" style="display:none">
-    <div class="wrap">
+
+      <!-- Tab bar -->
+      <div class="store-tabs">
+        <button class="tab-btn active" id="tabMyStore" onclick="switchTab('mystore')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          My Store
+        </button>
+        <button class="tab-btn" id="tabSales" onclick="switchTab('sales')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Sales &amp; Revenue
+        </button>
+      </div>
+
+      <!-- MY STORE TAB -->
+      <div class="tab-panel active" id="panelMystore">
+      <div class="wrap">
 
       <!-- Store link bar -->
       <div class="store-link-bar">
@@ -291,6 +343,56 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       </div>
 
     </div>
+    </div><!-- /panelMystore -->
+
+      <!-- SALES & REVENUE TAB -->
+      <div class="tab-panel" id="panelSales">
+      <div class="sales-wrap">
+
+        <!-- Stats row -->
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-label">Revenue This Month</div>
+            <div class="stat-value" id="statRevMonth">$0</div>
+            <div class="stat-sub" id="statRevMonthSub">Loading…</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Orders This Month</div>
+            <div class="stat-value" id="statOrdersMonth">0</div>
+            <div class="stat-sub">completed purchases</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="statRevTotal">$0</div>
+            <div class="stat-sub">all time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value" id="statOrdersTotal">0</div>
+            <div class="stat-sub">all time</div>
+          </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="sales-section-title">🏆 Top Selling Printables</div>
+        <div class="top-products" id="topProducts">
+          <div style="color:var(--muted);font-size:.82rem;padding:.5rem 0">Loading…</div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="sales-section-title">📋 Recent Orders</div>
+        <div id="salesTableWrap">
+          <div style="color:var(--muted);font-size:.82rem;padding:.5rem 0">Loading…</div>
+        </div>
+
+        <!-- Info note -->
+        <div style="background:rgba(109,40,217,.04);border:1px solid rgba(109,40,217,.12);border-radius:12px;padding:.9rem 1.1rem;font-size:.76rem;color:var(--muted);line-height:1.6;margin-top:1rem">
+          <strong style="color:var(--plum-900)">How sales are recorded:</strong> Every time a customer completes a Stripe payment and lands on your store's success page, the sale is automatically saved here. For full payment details, log into your <a href="https://dashboard.stripe.com" target="_blank" style="color:var(--brand);font-weight:600">Stripe Dashboard</a>.
+        </div>
+
+      </div>
+      </div><!-- /panelSales -->
+
     </div><!-- /storeContent -->
   </div>
 </div>
@@ -628,6 +730,73 @@ async function deleteProduct(id){
 
 function copyStoreLink(){
   navigator.clipboard.writeText(document.getElementById('storeLinkInput').value).then(()=>showToast('✓ Store link copied!'));
+}
+
+/* ── Tab switching ── */
+let salesLoaded=false;
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  document.getElementById('panel'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  if(name==='sales'&&!salesLoaded){salesLoaded=true;loadSales();}
+}
+
+/* ── Sales dashboard ── */
+async function loadSales(){
+  const{data,error}=await sb.from('sales').select('*').eq('seller_id',currentUser.id).order('created_at',{ascending:false});
+  if(error){console.error(error);return;}
+  const rows=data||[];
+
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
+  const monthRows=rows.filter(r=>r.created_at>=monthStart);
+
+  const revTotal=rows.reduce((s,r)=>s+Number(r.amount||0),0);
+  const revMonth=monthRows.reduce((s,r)=>s+Number(r.amount||0),0);
+
+  document.getElementById('statRevMonth').textContent='$'+revMonth.toFixed(2);
+  document.getElementById('statRevMonthSub').textContent=now.toLocaleString('default',{month:'long'})+' '+now.getFullYear();
+  document.getElementById('statOrdersMonth').textContent=monthRows.length;
+  document.getElementById('statRevTotal').textContent='$'+revTotal.toFixed(2);
+  document.getElementById('statOrdersTotal').textContent=rows.length;
+
+  // Top products
+  const counts={};
+  rows.forEach(r=>{const k=r.product_name||'Unknown';counts[k]=(counts[k]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const topEl=document.getElementById('topProducts');
+  if(!sorted.length){
+    topEl.innerHTML='<div style="color:var(--muted);font-size:.82rem">No sales yet — your top products will appear here once customers start buying.</div>';
+  } else {
+    topEl.innerHTML=sorted.map(([name,count],i)=>`
+      <div class="top-product-card">
+        <div class="top-product-rank">#${i+1}</div>
+        <div class="top-product-info">
+          <div class="name">${esc(name)}</div>
+          <div class="sales-count">${count} sale${count!==1?'s':''}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Recent orders table
+  const wrap=document.getElementById('salesTableWrap');
+  if(!rows.length){
+    wrap.innerHTML=`<div class="sales-empty"><div class="e-icon">📭</div><h3>No sales yet</h3><p>Once a customer completes a purchase on your storefront, their order will appear here automatically.</p></div>`;
+    return;
+  }
+  wrap.innerHTML=`<table class="sales-table">
+    <thead><tr>
+      <th>Date</th><th>Product</th><th>Amount</th><th>Delivery</th>
+    </tr></thead>
+    <tbody>${rows.slice(0,50).map(r=>`<tr>
+      <td>${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td>${esc(r.product_name||'—')}</td>
+      <td style="font-weight:700">$${Number(r.amount||0).toFixed(2)}</td>
+      <td><span class="badge-delivered">Delivered</span></td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
 }
 
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}

@@ -275,6 +275,33 @@ create policy "receipts: public read" on storage.objects
   using (bucket_id = 'receipts');
 
 
+-- ── 10. SALES TABLE ──────────────────────────────────────────────
+-- Auto-recorded when a customer lands on the shopfront success page.
+-- seller_id = the printables store owner (PBH user)
+
+create table if not exists sales (
+  id                uuid default gen_random_uuid() primary key,
+  seller_id         uuid references profiles(id) on delete cascade,
+  product_id        uuid references products(id) on delete set null,
+  product_name      text,
+  amount            numeric default 0,
+  stripe_session_id text unique,
+  created_at        timestamptz default now()
+);
+
+alter table sales enable row level security;
+
+-- Seller can read their own sales
+drop policy if exists "sales: seller can read" on sales;
+create policy "sales: seller can read" on sales
+  for select using (auth.uid() = seller_id);
+
+-- Anyone (anon) can insert — sale is recorded client-side from shopfront success page
+drop policy if exists "sales: anon can insert" on sales;
+create policy "sales: anon can insert" on sales
+  for insert to anon with check (true);
+
+
 -- ── DONE ────────────────────────────────────────────────────────
 -- All 6 tables + receipts storage bucket set up with proper RLS.
 -- ================================================================
