@@ -702,12 +702,19 @@ async function saveProduct(){
       image_url,file_url,file_name,
     };
 
-    let err;
-    if(editingId){
-      ({error:err}=await sb.from('products').update(payload).eq('id',editingId).eq('user_id',currentUser.id));
-    } else {
-      ({error:err}=await sb.from('products').insert(payload));
-    }
+    // Use server-side RPC (security definer) — bypasses RLS auth.uid() issues
+    const{data:rpcData,error:err}=await sb.rpc('save_product',{
+      p_id:editingId||null,
+      p_name:payload.name,
+      p_description:payload.description||null,
+      p_price:payload.price,
+      p_theme:payload.theme||null,
+      p_stripe_link:payload.stripe_link||null,
+      p_active:payload.active,
+      p_image_url:payload.image_url||null,
+      p_file_url:payload.file_url||null,
+      p_file_name:payload.file_name||null,
+    });
     if(err)throw err;
     showToast(editingId?'✓ Product updated!':'✓ Product added to your store!');
     closeModal();
