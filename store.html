@@ -521,6 +521,7 @@ async function selectShopTemplate(tpl){
 }
 
 async function init(){
+  console.log('[PPP store v2] init — using RPC save_product');
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
   currentUser=session.user;
@@ -720,7 +721,16 @@ async function saveProduct(){
     closeModal();
     await loadProducts();
   } catch(e){
-    showToast('Error: '+e.message);
+    // Full error in DevTools console for debugging
+    console.error('[PPP v2] saveProduct failed:', {
+      message: e.message,
+      code: e.code,
+      hint: e.hint,
+      details: e.details,
+      full: e
+    });
+    const detail=[e.code,e.hint,e.details].filter(Boolean).join(' | ');
+    showToast('Error [v2]: '+(e.message||'unknown')+(detail?' — '+detail:''));
   } finally {
     btn.disabled=false;
     document.getElementById('saveBtnText').textContent=editingId?'Save Changes':'Save Product';
