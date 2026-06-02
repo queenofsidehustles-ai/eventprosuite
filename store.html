@@ -246,9 +246,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         </button>
       </div>
 
-      <!-- Store link bar -->
+      <!-- Store handle + link bar -->
+      <div style="margin-bottom:.8rem">
+        <div style="font-size:.78rem;font-weight:700;color:var(--plum-900);margin-bottom:5px">🔗 Your store address on <strong>partybizhub.com</strong></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:.85rem;color:var(--muted);white-space:nowrap">partybizhub.com/store/</span>
+          <input type="text" id="storeSlugInput" placeholder="your-handle" style="width:160px;padding:.45rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit;color:var(--ink)" oninput="updateSlugPreview()"/>
+          <button class="btn-primary" style="padding:.45rem .9rem;font-size:.8rem" onclick="saveStoreSlug()">Save Handle</button>
+          <span id="slugSaving" style="font-size:.72rem;color:var(--muted)"></span>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Lowercase letters, numbers, and hyphens only. Example: <em>bear-hugs-events</em></div>
+      </div>
       <div class="store-link-bar">
-        <span class="link-label">🔗 Your store link:</span>
+        <span class="link-label">🔗 Share this link:</span>
         <input type="text" id="storeLinkInput" readonly placeholder="Loading…"/>
         <button class="copy-btn" onclick="copyStoreLink()">Copy Link</button>
         <a id="storeLinkPreview" href="#" target="_blank" class="preview-btn">Preview →</a>
@@ -590,7 +600,7 @@ async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
   currentUser=session.user;
-  const{data:p}=await sb.from('profiles').select('full_name,profile_data,has_kpps_access').eq('id',currentUser.id).single();
+  const{data:p}=await sb.from('profiles').select('full_name,profile_data,has_kpps_access,store_slug').eq('id',currentUser.id).single();
   const name=(p?.profile_data?.businessName)||p?.full_name||currentUser.email.split('@')[0];
   setNavUser(name,name.charAt(0));
   initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html';});
@@ -604,9 +614,6 @@ async function init(){
   }
 
   document.getElementById('storeContent').style.display='block';
-  const storeUrl=`${location.origin}${location.pathname.replace('store.html','shopfront.html')}?uid=${currentUser.id}`;
-  document.getElementById('storeLinkInput').value=storeUrl;
-  document.getElementById('storeLinkPreview').href=storeUrl;
 
   // Restore saved template choice
   currentProfileData=p?.profile_data||{};
@@ -621,7 +628,49 @@ async function init(){
   if(bioEl)bioEl.value=currentProfileData.bio||'';
   if(emailEl)emailEl.value=currentProfileData.contactEmail||'';
 
+  // Restore store slug and set link
+  const savedSlug=p?.store_slug||'';
+  const slugEl=document.getElementById('storeSlugInput');
+  if(slugEl)slugEl.value=savedSlug;
+  if(savedSlug){
+    const prettyUrl='https://partybizhub.com/store/'+savedSlug;
+    document.getElementById('storeLinkInput').value=prettyUrl;
+    document.getElementById('storeLinkPreview').href=prettyUrl;
+  } else {
+    const fallbackUrl=`${location.origin}${location.pathname.replace('store.html','shopfront.html')}?uid=${currentUser.id}`;
+    document.getElementById('storeLinkInput').value=fallbackUrl;
+    document.getElementById('storeLinkPreview').href=fallbackUrl;
+  }
+
   await loadProducts();
+}
+
+function updateSlugPreview(){
+  const raw=(document.getElementById('storeSlugInput').value||'').toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  document.getElementById('storeSlugInput').value=raw;
+  const link='https://partybizhub.com/store/'+raw;
+  document.getElementById('storeLinkInput').value=link;
+  document.getElementById('storeLinkPreview').href=link;
+}
+
+async function saveStoreSlug(){
+  const slug=(document.getElementById('storeSlugInput').value||'').trim();
+  const saving=document.getElementById('slugSaving');
+  if(!slug){if(saving)saving.textContent='Enter a handle first';return;}
+  if(saving)saving.textContent='Saving…';
+  try{
+    const{data:{session:fresh}}=await sb.auth.refreshSession();
+    if(!fresh){if(saving)saving.textContent='Session expired';return;}
+    // Check slug not taken by another user
+    const{data:existing}=await sb.from('profiles').select('id').eq('store_slug',slug).neq('id',currentUser.id).maybeSingle();
+    if(existing){if(saving)saving.textContent='That handle is taken — try another';return;}
+    const{error}=await sb.from('profiles').update({store_slug:slug}).eq('id',currentUser.id);
+    if(error)throw error;
+    if(saving){saving.textContent='✓ Handle saved!';setTimeout(()=>{saving.textContent=''},3000);}
+    updateSlugPreview();
+  }catch(e){
+    if(saving)saving.textContent='Error: '+(e.message||'unknown');
+  }
 }
 
 async function saveStoreProfile(){

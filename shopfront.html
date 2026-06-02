@@ -424,6 +424,13 @@ function setMeta(n,v){let e=document.querySelector(`meta[name="${n}"]`)||documen
 async function init(){
   const params=new URLSearchParams(location.search);
   ownerId=params.get('uid')||'';
+  const slug=params.get('slug')||'';
+
+  // Resolve slug → uid if needed
+  if(!ownerId&&slug){
+    const{data:slugProfile}=await sb.from('profiles').select('id').eq('store_slug',slug).maybeSingle();
+    if(slugProfile)ownerId=slugProfile.id;
+  }
 
   if(!ownerId){renderError('Store Not Found','This store link is missing an ID. Please contact the store owner.');hideGate();return;}
 

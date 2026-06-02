@@ -1,6 +1,9 @@
 {
   "cleanUrls": false,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/store/:slug", "destination": "/shopfront.html?slug=:slug" }
+  ],
   "functions": {
     "api/*.js": {
       "maxDuration": 30
