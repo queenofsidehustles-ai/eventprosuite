@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<!-- SEO — updated dynamically by JS once seller profile loads -->
 <title>Party Printables — Instant Digital Downloads</title>
 <meta name="description" content="Shop party printable templates — chip bags, water bottle labels, cake toppers and more. Customize in Canva and print at home. Instant download after payment."/>
 <meta name="robots" content="index, follow"/>
@@ -14,241 +12,328 @@
 <meta property="og:image" content="https://eventprosuite.vercel.app/partybizhub-logo.png"/>
 <meta property="og:url" content=""/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Party Printables — Instant Digital Downloads"/>
-<meta name="twitter:description" content="Done-for-you party printable templates. Customize in Canva — instant download."/>
-
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --pink:#D115AE;
-  --pink-dark:#a50d87;
-  --pink-soft:rgba(209,21,174,0.08);
-  --gold:#D4A840;
-  --gold-soft:rgba(212,168,64,0.15);
-  --purple:#7559D4;
-  --purple-soft:rgba(117,89,212,0.08);
-  --ink:#1A1A1A;
-  --muted:#6C6473;
-  --border:#EDE8F5;
-  --cream:#FDF9FB;
-  --white:#FFFFFF;
-  --shadow:0 4px 16px rgba(209,21,174,0.07);
-  --shadow-lg:0 20px 50px -12px rgba(209,21,174,0.22);
-  --radius:18px;
-}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;background:#fff}
+a{text-decoration:none}
+img{max-width:100%;display:block}
 
-/* ── ECOSYSTEM STRIP ── */
-.eco-strip{background:linear-gradient(90deg,var(--purple),var(--pink));padding:9px 24px;text-align:center;color:rgba(255,255,255,0.88);font-size:.74rem;font-weight:500;letter-spacing:.01em}
-.eco-strip strong{color:#fff;font-weight:700}
-.eco-strip a{color:var(--gold);text-decoration:none;font-weight:700}
+/* Loading gate */
+#gate{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:999;transition:opacity .3s}
+#gate.out{opacity:0;pointer-events:none}
+.spinner{width:40px;height:40px;border:3px solid #f0e6f7;border-top-color:#D115AE;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── HEADER ── */
-.shop-header{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
-.shop-brand{display:flex;align-items:center;gap:12px}
-.shop-logo{height:40px;width:auto;object-fit:contain;border-radius:8px}
-.logo-fallback{width:40px;height:40px;background:linear-gradient(135deg,var(--pink),var(--purple));border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;flex-shrink:0;box-shadow:0 4px 10px rgba(209,21,174,0.3)}
-.brand-name{font-weight:800;font-size:1rem;color:var(--ink);line-height:1.2}
-.brand-sub{font-size:.7rem;color:var(--muted);margin-top:2px}
-.header-secure{display:flex;align-items:center;gap:6px;font-size:.77rem;color:var(--muted);background:var(--purple-soft);padding:7px 14px;border-radius:20px;border:1px solid rgba(117,89,212,0.12)}
+/* ── SHARED TOKENS ─────────────────────────────────── */
+.shop-root{display:none}
+.shop-root.visible{display:block}
 
-/* ── HERO ── */
-.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#160824 0%,#3D1560 50%,#5e2fa8 100%);padding:64px 24px 56px;text-align:center;color:#fff}
-.hero-glow-1{position:absolute;top:-80px;right:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(209,21,174,0.35),transparent 65%);pointer-events:none}
-.hero-glow-2{position:absolute;bottom:-60px;left:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(212,168,64,0.25),transparent 65%);pointer-events:none}
-.hero-glow-3{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:200px;background:radial-gradient(ellipse,rgba(117,89,212,0.2),transparent 70%);pointer-events:none}
-.hero-inner{position:relative;z-index:1;max-width:680px;margin:0 auto}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(212,168,64,0.18);border:1px solid rgba(212,168,64,0.4);border-radius:20px;padding:5px 16px;font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.07em;text-transform:uppercase;margin-bottom:22px}
-.hero-title-main{font-family:'Playfair Display',serif;font-size:3rem;font-weight:800;color:#fff;line-height:1.05;display:block}
-.hero-title-script{font-family:'Dancing Script',cursive;font-size:2.6rem;font-weight:700;color:var(--gold);display:block;margin-top:6px;text-shadow:0 0 30px rgba(212,168,64,0.4)}
-.hero-divider{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:20px auto}
-.hero-sub{color:rgba(255,255,255,0.82);font-size:1.02rem;line-height:1.75;max-width:520px;margin:0 auto 32px}
-.hero-cta{display:inline-block;background:linear-gradient(135deg,var(--pink),#8B30E0);color:#fff;font-weight:700;padding:15px 36px;border-radius:14px;text-decoration:none;font-size:.98rem;box-shadow:0 8px 24px rgba(209,21,174,0.45);transition:all .18s;border:1px solid rgba(255,255,255,0.1)}
-.hero-cta:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(209,21,174,0.55)}
+/* ══════════════════════════════════════════════════
+   TEMPLATE 1 — STUDIO (clean, white, minimal)
+═══════════════════════════════════════════════════ */
+.tpl-studio{background:#fff;color:#1A1A1A}
 
-/* ── FILTER BAR ── */
-.filter-section{max-width:1160px;margin:0 auto;padding:24px 24px 0}
-.filter-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
-.filter-bar{display:flex;gap:8px;flex-wrap:wrap}
-.filter-btn{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
-.filter-btn:hover{border-color:var(--pink);color:var(--pink)}
-.filter-btn.active{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(209,21,174,0.3)}
+.st-eco{background:linear-gradient(90deg,#7559D4,#D115AE);padding:8px 20px;text-align:center;font-size:.72rem;color:rgba(255,255,255,.9);font-weight:500}
+.st-eco strong{color:#fff;font-weight:700}
 
-/* ── SECTION HEADER ── */
-.section-head{max-width:1160px;margin:0 auto;padding:24px 24px 0;display:flex;align-items:baseline;justify-content:space-between}
-.section-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--ink)}
-.product-count{font-size:.78rem;color:var(--muted)}
+.st-nav{background:#fff;border-bottom:1px solid #f0ebf5;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 6px rgba(0,0,0,0.04)}
+.st-brand{display:flex;align-items:center;gap:10px}
+.st-logo-box{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#D115AE,#7559D4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0}
+.st-biz{font-weight:800;font-size:.95rem;color:#1A1A1A;line-height:1.2}
+.st-biz-sub{font-size:.68rem;color:#9988aa;margin-top:1px}
+.st-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#9988aa;font-weight:500}
 
-/* ── PRODUCT GRID ── */
-.grid-wrap{max-width:1160px;margin:0 auto;padding:18px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:24px}
+/* Studio Hero — CLEAN, light */
+.st-hero{padding:72px 28px 56px;text-align:center;background:linear-gradient(180deg,#FDF7FC 0%,#fff 100%);position:relative;overflow:hidden}
+.st-hero::before{content:'';position:absolute;top:-120px;right:-120px;width:440px;height:440px;background:radial-gradient(circle,rgba(209,21,174,0.07),transparent 65%);pointer-events:none}
+.st-hero::after{content:'';position:absolute;bottom:-80px;left:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(212,168,64,0.08),transparent 65%);pointer-events:none}
+.st-hero-inner{position:relative;z-index:1;max-width:620px;margin:0 auto}
+.st-eyebrow{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#D115AE;background:rgba(209,21,174,0.08);border:1px solid rgba(209,21,174,0.18);padding:5px 16px;border-radius:20px;margin-bottom:22px}
+.st-h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,6vw,3.4rem);font-weight:800;color:#1A1A1A;line-height:1.08;letter-spacing:-.02em;margin-bottom:4px}
+.st-h1-script{font-family:'Dancing Script',cursive;font-size:clamp(2rem,5.5vw,3rem);font-weight:700;color:#D115AE;display:block;margin-bottom:18px}
+.st-rule{width:52px;height:2px;background:linear-gradient(90deg,#D4A840,rgba(212,168,64,0));margin:0 auto 20px;border-radius:1px}
+.st-sub{font-size:1rem;color:#6C6473;line-height:1.75;max-width:480px;margin:0 auto 30px}
+.st-cta{display:inline-block;background:#D115AE;color:#fff;font-weight:700;padding:14px 32px;border-radius:50px;font-size:.93rem;box-shadow:0 6px 20px rgba(209,21,174,0.32);transition:all .15s}
+.st-cta:hover{background:#a50d87;transform:translateY(-1px);box-shadow:0 10px 26px rgba(209,21,174,0.4)}
 
-/* ── PRODUCT CARD ── */
-.product-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);transition:all .22s;display:flex;flex-direction:column}
-.product-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
-.card-img{height:216px;background:linear-gradient(135deg,var(--pink-soft),var(--purple-soft));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .35s}
-.product-card:hover .card-img img{transform:scale(1.05)}
-.card-img .no-img{text-align:center;padding:16px}
-.card-img .no-img .emoji{font-size:3.2rem;display:block;margin-bottom:8px}
-.card-img .no-img .label{font-size:.7rem;color:var(--pink);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.card-theme-badge{position:absolute;top:12px;left:12px;background:rgba(209,21,174,0.88);color:#fff;font-size:.64rem;font-weight:700;padding:4px 11px;border-radius:20px;text-transform:capitalize;backdrop-filter:blur(4px);letter-spacing:.02em}
-.card-instant-badge{position:absolute;top:12px;right:12px;background:rgba(30,140,90,0.88);color:#fff;font-size:.64rem;font-weight:700;padding:4px 11px;border-radius:20px;backdrop-filter:blur(4px)}
-.card-body{padding:18px 20px 20px;flex:1;display:flex;flex-direction:column}
-.card-name{font-family:'Playfair Display',serif;font-weight:700;font-size:1.02rem;color:var(--ink);margin-bottom:6px;line-height:1.3}
-.card-desc{font-size:.79rem;color:var(--muted);line-height:1.65;margin-bottom:16px;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.card-price{font-size:1.45rem;font-weight:800;color:var(--ink);line-height:1}
-.card-price-sub{font-size:.67rem;color:var(--muted);font-weight:400;margin-top:3px}
-.buy-btn{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;border-radius:11px;padding:11px 22px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;text-decoration:none;display:inline-block;box-shadow:0 4px 14px rgba(209,21,174,0.32)}
-.buy-btn:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 8px 20px rgba(209,21,174,0.4)}
-.buy-btn.free-btn{background:linear-gradient(135deg,#1E8C5A,#16a34a);box-shadow:0 4px 14px rgba(30,140,90,0.3)}
-.buy-btn.disabled-btn{opacity:.35;cursor:not-allowed;pointer-events:none;background:#aaa;box-shadow:none}
+/* Studio Filters */
+.st-filters{max-width:1160px;margin:0 auto;padding:22px 24px 0}
+.st-filter-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9988aa;margin-bottom:10px}
+.st-filter-bar{display:flex;gap:8px;flex-wrap:wrap}
+.st-filter-btn{padding:6px 16px;border-radius:20px;border:1.5px solid #EDE8F5;background:#fff;color:#6C6473;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .14s;font-family:inherit}
+.st-filter-btn:hover{border-color:#D115AE;color:#D115AE}
+.st-filter-btn.active{background:#D115AE;color:#fff;border-color:#D115AE;box-shadow:0 3px 10px rgba(209,21,174,0.28)}
 
-/* ── EMPTY / LOADING STATE ── */
+/* Studio Grid */
+.st-grid-head{max-width:1160px;margin:0 auto;padding:20px 24px 0;display:flex;align-items:baseline;gap:10px}
+.st-grid-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:#1A1A1A}
+.st-grid-count{font-size:.78rem;color:#9988aa}
+.st-grid{max-width:1160px;margin:0 auto;padding:16px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+
+/* Studio Card */
+.st-card{background:#fff;border-radius:16px;border:1px solid #F0EBF5;overflow:hidden;box-shadow:0 2px 10px rgba(209,21,174,0.06);transition:all .2s;display:flex;flex-direction:column}
+.st-card:hover{box-shadow:0 12px 36px rgba(209,21,174,0.14);transform:translateY(-3px)}
+.st-card-img{height:200px;background:linear-gradient(135deg,rgba(209,21,174,0.07),rgba(117,89,212,0.07));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.st-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.st-card:hover .st-card-img img{transform:scale(1.04)}
+.st-card-img .no-img{text-align:center}
+.st-card-img .no-img .e{font-size:2.8rem;display:block;margin-bottom:6px}
+.st-card-img .no-img .l{font-size:.68rem;color:#D115AE;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.st-theme-tag{position:absolute;top:10px;left:10px;background:rgba(209,21,174,0.88);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:capitalize;backdrop-filter:blur(4px)}
+.st-dl-tag{position:absolute;top:10px;right:10px;background:rgba(30,140,90,0.88);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)}
+.st-card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+.st-card-name{font-family:'Playfair Display',serif;font-weight:700;font-size:.97rem;color:#1A1A1A;margin-bottom:5px;line-height:1.3}
+.st-card-desc{font-size:.77rem;color:#6C6473;line-height:1.65;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.st-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.st-price{font-size:1.35rem;font-weight:800;color:#1A1A1A;line-height:1}
+.st-price-sub{font-size:.65rem;color:#9988aa;margin-top:2px}
+.st-buy{background:#D115AE;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .14s;white-space:nowrap;text-decoration:none;display:inline-block;box-shadow:0 3px 10px rgba(209,21,174,0.28)}
+.st-buy:hover{background:#a50d87;transform:translateY(-1px)}
+.st-buy.free{background:#1E8C5A;box-shadow:0 3px 10px rgba(30,140,90,0.28)}
+.st-buy.soon{background:#ddd;color:#999;cursor:not-allowed;box-shadow:none;pointer-events:none}
+
+/* Studio Trust Bar */
+.st-trust{background:#FDF7FC;border-top:1px solid #F0EBF5;padding:18px 24px}
+.st-trust-in{max-width:840px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:22px}
+.st-trust-item{display:flex;align-items:center;gap:7px;color:#6C6473;font-size:.78rem;font-weight:500}
+
+/* Studio Footer */
+.st-footer{padding:18px;text-align:center;color:#9988aa;font-size:.73rem;border-top:1px solid #F0EBF5}
+.st-footer a{color:#D115AE;font-weight:600}
+
+/* ══════════════════════════════════════════════════
+   TEMPLATE 2 — LUXE (dark, editorial, gold)
+═══════════════════════════════════════════════════ */
+.tpl-luxe{background:#0D0820;color:#F5F0FF}
+
+.lx-eco{background:linear-gradient(90deg,#D4A840,#c49020);padding:8px 20px;text-align:center;font-size:.72rem;color:rgba(26,10,0,.9);font-weight:600}
+.lx-nav{background:rgba(13,8,32,.92);border-bottom:1px solid rgba(245,240,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
+.lx-brand{display:flex;align-items:center;gap:10px}
+.lx-logo-box{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#D4A840,#c49020);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.lx-biz{font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem;color:#F5F0FF}
+.lx-biz-sub{font-size:.68rem;color:rgba(245,240,255,.5);margin-top:1px}
+.lx-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#D4A840;font-weight:600}
+
+.lx-hero{padding:80px 28px 64px;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(212,168,64,0.1),transparent 60%);position:relative;overflow:hidden;border-bottom:1px solid rgba(245,240,255,.07)}
+.lx-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#D4A840;margin-bottom:24px}
+.lx-eyebrow::before,.lx-eyebrow::after{content:'';display:block;width:28px;height:1px;background:#D4A840;opacity:.6}
+.lx-h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,6vw,3.4rem);font-weight:800;color:#F5F0FF;line-height:1.08;letter-spacing:-.02em;margin-bottom:4px}
+.lx-h1-script{font-family:'Dancing Script',cursive;font-size:clamp(2rem,5.5vw,3rem);font-weight:700;color:#D4A840;display:block;margin-bottom:18px}
+.lx-rule{width:52px;height:1px;background:linear-gradient(90deg,transparent,#D4A840,transparent);margin:0 auto 22px}
+.lx-sub{font-size:1rem;color:rgba(245,240,255,.7);line-height:1.75;max-width:480px;margin:0 auto 30px}
+.lx-cta{display:inline-block;background:linear-gradient(135deg,#D4A840,#c49020);color:#1a0e00;font-weight:800;padding:14px 32px;border-radius:50px;font-size:.93rem;box-shadow:0 6px 20px rgba(212,168,64,0.35);transition:all .15s}
+.lx-cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+.lx-filters{max-width:1160px;margin:0 auto;padding:22px 24px 0}
+.lx-filter-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(245,240,255,.4);margin-bottom:10px}
+.lx-filter-bar{display:flex;gap:8px;flex-wrap:wrap}
+.lx-filter-btn{padding:6px 16px;border-radius:20px;border:1px solid rgba(245,240,255,.12);background:transparent;color:rgba(245,240,255,.6);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .14s;font-family:inherit}
+.lx-filter-btn:hover{border-color:#D4A840;color:#D4A840}
+.lx-filter-btn.active{background:#D4A840;color:#1a0e00;border-color:#D4A840;font-weight:800}
+
+.lx-grid-head{max-width:1160px;margin:0 auto;padding:20px 24px 0;display:flex;align-items:baseline;gap:10px;border-bottom:1px solid rgba(245,240,255,.07);padding-bottom:16px}
+.lx-grid-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:#F5F0FF}
+.lx-grid-count{font-size:.78rem;color:rgba(245,240,255,.4)}
+.lx-grid{max-width:1160px;margin:0 auto;padding:20px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+
+.lx-card{background:#1A1035;border-radius:16px;border:1px solid rgba(245,240,255,.08);overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:all .2s;display:flex;flex-direction:column}
+.lx-card:hover{box-shadow:0 16px 48px rgba(212,168,64,0.2);transform:translateY(-3px);border-color:rgba(212,168,64,0.3)}
+.lx-card-img{height:200px;background:linear-gradient(135deg,rgba(212,168,64,0.08),rgba(209,21,174,0.08));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.lx-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.lx-card:hover .lx-card-img img{transform:scale(1.04)}
+.lx-card-img .no-img{text-align:center}
+.lx-card-img .no-img .e{font-size:2.8rem;display:block;margin-bottom:6px}
+.lx-card-img .no-img .l{font-size:.68rem;color:#D4A840;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.lx-theme-tag{position:absolute;top:10px;left:10px;background:rgba(212,168,64,0.9);color:#1a0e00;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:capitalize}
+.lx-dl-tag{position:absolute;top:10px;right:10px;background:rgba(30,140,90,0.9);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px}
+.lx-card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+.lx-card-name{font-family:'Playfair Display',serif;font-weight:700;font-size:.97rem;color:#F5F0FF;margin-bottom:5px;line-height:1.3}
+.lx-card-desc{font-size:.77rem;color:rgba(245,240,255,.5);line-height:1.65;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lx-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lx-price{font-size:1.35rem;font-weight:800;color:#D4A840;line-height:1}
+.lx-price-sub{font-size:.65rem;color:rgba(245,240,255,.4);margin-top:2px}
+.lx-buy{background:linear-gradient(135deg,#D4A840,#c49020);color:#1a0e00;border:none;border-radius:10px;padding:10px 20px;font-weight:800;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .14s;white-space:nowrap;text-decoration:none;display:inline-block}
+.lx-buy:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.lx-buy.free{background:linear-gradient(135deg,#1E8C5A,#16a34a);color:#fff}
+.lx-buy.soon{background:rgba(245,240,255,.1);color:rgba(245,240,255,.3);cursor:not-allowed;pointer-events:none}
+
+.lx-trust{background:#160D2B;border-top:1px solid rgba(245,240,255,.07);padding:18px 24px}
+.lx-trust-in{max-width:840px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:22px}
+.lx-trust-item{display:flex;align-items:center;gap:7px;color:rgba(245,240,255,.5);font-size:.78rem;font-weight:500}
+.lx-footer{padding:18px;text-align:center;color:rgba(245,240,255,.3);font-size:.73rem}
+.lx-footer a{color:#D4A840;font-weight:600}
+
+/* ══════════════════════════════════════════════════
+   TEMPLATE 3 — BLOOM (soft pastel, feminine)
+═══════════════════════════════════════════════════ */
+.tpl-bloom{background:#FEF6F9;color:#2D1B2E}
+
+.bl-eco{background:linear-gradient(90deg,#e8a0c4,#d4709c);padding:8px 20px;text-align:center;font-size:.72rem;color:#fff;font-weight:600}
+.bl-nav{background:rgba(255,255,255,.95);border-bottom:1px solid #f5d8e8;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(8px)}
+.bl-brand{display:flex;align-items:center;gap:10px}
+.bl-logo-box{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f0a8c8,#d4709c);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.bl-biz{font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem;color:#2D1B2E}
+.bl-biz-sub{font-size:.68rem;color:#c4849a;margin-top:1px}
+.bl-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#c4849a;font-weight:500}
+
+.bl-hero{padding:72px 28px 56px;text-align:center;background:linear-gradient(180deg,#fff 0%,#FEF0F5 100%);position:relative;overflow:hidden}
+.bl-hero::before{content:'🌸';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.12;pointer-events:none;line-height:1}
+.bl-hero::after{content:'🌸';font-size:80px;position:absolute;bottom:-10px;left:-10px;opacity:.1;pointer-events:none;line-height:1}
+.bl-eyebrow{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d4709c;background:rgba(212,112,156,0.1);border:1px solid rgba(212,112,156,0.2);padding:5px 16px;border-radius:20px;margin-bottom:22px}
+.bl-h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5.5vw,3.2rem);font-weight:800;color:#2D1B2E;line-height:1.1;margin-bottom:4px}
+.bl-h1-script{font-family:'Dancing Script',cursive;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:700;color:#d4709c;display:block;margin-bottom:18px}
+.bl-rule{width:52px;height:2px;background:linear-gradient(90deg,#f0a8c8,rgba(240,168,200,0));margin:0 auto 20px;border-radius:1px}
+.bl-sub{font-size:1rem;color:#8a5a6e;line-height:1.75;max-width:480px;margin:0 auto 30px}
+.bl-cta{display:inline-block;background:linear-gradient(135deg,#d4709c,#c45a8c);color:#fff;font-weight:700;padding:14px 32px;border-radius:50px;font-size:.93rem;box-shadow:0 6px 20px rgba(212,112,156,0.35);transition:all .15s}
+.bl-cta:hover{filter:brightness(1.05);transform:translateY(-1px)}
+
+.bl-filters{max-width:1160px;margin:0 auto;padding:22px 24px 0}
+.bl-filter-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#c4849a;margin-bottom:10px}
+.bl-filter-bar{display:flex;gap:8px;flex-wrap:wrap}
+.bl-filter-btn{padding:6px 16px;border-radius:20px;border:1.5px solid #f5d8e8;background:#fff;color:#8a5a6e;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .14s;font-family:inherit}
+.bl-filter-btn:hover{border-color:#d4709c;color:#d4709c}
+.bl-filter-btn.active{background:#d4709c;color:#fff;border-color:#d4709c}
+
+.bl-grid-head{max-width:1160px;margin:0 auto;padding:20px 24px 0;display:flex;align-items:baseline;gap:10px}
+.bl-grid-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:#2D1B2E}
+.bl-grid-count{font-size:.78rem;color:#c4849a}
+.bl-grid{max-width:1160px;margin:0 auto;padding:16px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+
+.bl-card{background:#fff;border-radius:20px;border:1.5px solid #fce4ef;overflow:hidden;box-shadow:0 4px 16px rgba(212,112,156,0.08);transition:all .2s;display:flex;flex-direction:column}
+.bl-card:hover{box-shadow:0 14px 40px rgba(212,112,156,0.18);transform:translateY(-3px)}
+.bl-card-img{height:200px;background:linear-gradient(135deg,rgba(240,168,200,0.15),rgba(212,112,156,0.08));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.bl-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.bl-card:hover .bl-card-img img{transform:scale(1.04)}
+.bl-theme-tag{position:absolute;top:10px;left:10px;background:rgba(212,112,156,0.9);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:capitalize}
+.bl-dl-tag{position:absolute;top:10px;right:10px;background:rgba(30,140,90,0.9);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px}
+.bl-card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+.bl-card-name{font-family:'Playfair Display',serif;font-weight:700;font-size:.97rem;color:#2D1B2E;margin-bottom:5px;line-height:1.3}
+.bl-card-desc{font-size:.77rem;color:#8a5a6e;line-height:1.65;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bl-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bl-price{font-size:1.35rem;font-weight:800;color:#2D1B2E;line-height:1}
+.bl-price-sub{font-size:.65rem;color:#c4849a;margin-top:2px}
+.bl-buy{background:#d4709c;color:#fff;border:none;border-radius:50px;padding:10px 20px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .14s;white-space:nowrap;text-decoration:none;display:inline-block;box-shadow:0 3px 10px rgba(212,112,156,0.3)}
+.bl-buy:hover{background:#c45a8c;transform:translateY(-1px)}
+.bl-buy.free{background:#1E8C5A}
+.bl-buy.soon{background:#f5d8e8;color:#c4849a;cursor:not-allowed;pointer-events:none}
+
+.bl-trust{background:#fff;border-top:1px solid #fce4ef;padding:18px 24px}
+.bl-trust-in{max-width:840px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:22px}
+.bl-trust-item{display:flex;align-items:center;gap:7px;color:#8a5a6e;font-size:.78rem;font-weight:500}
+.bl-footer{padding:18px;text-align:center;color:#c4849a;font-size:.73rem;border-top:1px solid #fce4ef}
+.bl-footer a{color:#d4709c;font-weight:600}
+
+/* ══════════════════════════════════════════════════
+   TEMPLATE 4 — POP (bold, colorful, energetic)
+═══════════════════════════════════════════════════ */
+.tpl-pop{background:#F5F0FF;color:#1A1A1A}
+
+.pp-eco{background:#1A1A1A;padding:8px 20px;text-align:center;font-size:.72rem;color:rgba(255,255,255,.85);font-weight:500}
+.pp-eco strong{color:#D4A840}
+.pp-nav{background:#fff;border-bottom:3px solid #D115AE;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.pp-brand{display:flex;align-items:center;gap:10px}
+.pp-logo-box{width:38px;height:38px;border-radius:8px;background:#D115AE;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.pp-biz{font-weight:900;font-size:.95rem;color:#1A1A1A;text-transform:uppercase;letter-spacing:.02em}
+.pp-biz-sub{font-size:.68rem;color:#9988aa;margin-top:1px;font-weight:600;letter-spacing:.04em}
+.pp-secure{display:flex;align-items:center;gap:5px;font-size:.75rem;color:#7559D4;font-weight:700}
+
+.pp-hero{padding:64px 28px 52px;text-align:center;background:linear-gradient(135deg,#F5F0FF 0%,#FDF0FA 60%,#F5F0FF 100%);position:relative;overflow:hidden;border-bottom:3px solid #D115AE}
+.pp-stripe{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#D115AE,#7559D4,#D4A840,#D115AE);background-size:200% 100%;animation:stripe 3s linear infinite}
+@keyframes stripe{0%{background-position:0 0}100%{background-position:200% 0}}
+.pp-eyebrow{display:inline-block;background:#D115AE;color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 18px;border-radius:4px;margin-bottom:22px}
+.pp-h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:900;color:#1A1A1A;line-height:1.05;letter-spacing:-.03em;margin-bottom:4px}
+.pp-h1-script{font-family:'Dancing Script',cursive;font-size:clamp(2rem,5.5vw,3rem);font-weight:700;color:#D115AE;display:block;margin-bottom:18px}
+.pp-rule{width:60px;height:4px;background:#D4A840;margin:0 auto 20px;border-radius:2px}
+.pp-sub{font-size:1rem;color:#6C6473;line-height:1.7;max-width:480px;margin:0 auto 30px}
+.pp-cta{display:inline-block;background:#1A1A1A;color:#fff;font-weight:900;padding:14px 36px;border-radius:6px;font-size:.95rem;letter-spacing:.02em;transition:all .14s;text-transform:uppercase}
+.pp-cta:hover{background:#D115AE;transform:translateY(-1px)}
+
+.pp-filters{max-width:1160px;margin:0 auto;padding:22px 24px 0}
+.pp-filter-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#9988aa;margin-bottom:10px}
+.pp-filter-bar{display:flex;gap:8px;flex-wrap:wrap}
+.pp-filter-btn{padding:6px 16px;border-radius:4px;border:2px solid #1A1A1A;background:#fff;color:#1A1A1A;font-size:.8rem;font-weight:800;cursor:pointer;transition:all .12s;font-family:inherit;text-transform:uppercase;letter-spacing:.04em}
+.pp-filter-btn:hover{border-color:#D115AE;color:#D115AE}
+.pp-filter-btn.active{background:#D115AE;color:#fff;border-color:#D115AE}
+
+.pp-grid-head{max-width:1160px;margin:0 auto;padding:20px 24px 0;display:flex;align-items:baseline;gap:10px}
+.pp-grid-title{font-size:1.25rem;font-weight:900;color:#1A1A1A;text-transform:uppercase;letter-spacing:.02em}
+.pp-grid-count{font-size:.78rem;color:#9988aa;font-weight:700}
+.pp-grid{max-width:1160px;margin:0 auto;padding:16px 24px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+
+.pp-card{background:#fff;border-radius:8px;border:2px solid #1A1A1A;overflow:hidden;box-shadow:4px 4px 0 #D115AE;transition:all .15s;display:flex;flex-direction:column}
+.pp-card:hover{box-shadow:6px 6px 0 #D115AE;transform:translate(-2px,-2px)}
+.pp-card-img{height:200px;background:linear-gradient(135deg,rgba(209,21,174,0.1),rgba(117,89,212,0.1));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pp-card-img img{width:100%;height:100%;object-fit:cover}
+.pp-theme-tag{position:absolute;top:10px;left:10px;background:#D115AE;color:#fff;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.pp-dl-tag{position:absolute;top:10px;right:10px;background:#1A1A1A;color:#D4A840;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:4px}
+.pp-card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column;border-top:2px solid #1A1A1A}
+.pp-card-name{font-weight:800;font-size:.97rem;color:#1A1A1A;margin-bottom:5px;line-height:1.3;text-transform:uppercase;letter-spacing:.01em}
+.pp-card-desc{font-size:.77rem;color:#6C6473;line-height:1.65;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pp-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pp-price{font-size:1.35rem;font-weight:900;color:#D115AE;line-height:1}
+.pp-price-sub{font-size:.65rem;color:#9988aa;margin-top:2px;font-weight:700}
+.pp-buy{background:#D115AE;color:#fff;border:2px solid #D115AE;border-radius:6px;padding:10px 20px;font-weight:800;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap;text-decoration:none;display:inline-block;text-transform:uppercase;letter-spacing:.04em}
+.pp-buy:hover{background:#1A1A1A;border-color:#1A1A1A}
+.pp-buy.free{background:#1E8C5A;border-color:#1E8C5A}
+.pp-buy.soon{background:#ddd;border-color:#ddd;color:#999;cursor:not-allowed;pointer-events:none}
+
+.pp-trust{background:#1A1A1A;padding:18px 24px}
+.pp-trust-in{max-width:840px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:22px}
+.pp-trust-item{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.6);font-size:.78rem;font-weight:600}
+.pp-trust-item svg{color:#D4A840}
+.pp-footer{padding:18px;text-align:center;color:rgba(255,255,255,.4);font-size:.73rem;background:#1A1A1A}
+.pp-footer a{color:#D4A840;font-weight:600}
+
+/* ── Shared state boxes ─────────────────────── */
 .state-box{text-align:center;padding:80px 24px;max-width:1160px;margin:0 auto}
-.state-icon{font-size:3.5rem;display:block;margin-bottom:18px}
-.state-box h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ink);margin-bottom:10px}
-.state-box p{color:var(--muted);font-size:.92rem;max-width:380px;margin:0 auto;line-height:1.7}
+.state-icon{font-size:3.2rem;display:block;margin-bottom:16px}
+.state-h{font-family:'Playfair Display',serif;font-size:1.35rem;color:inherit;margin-bottom:10px}
+.state-p{font-size:.9rem;opacity:.65;max-width:360px;margin:0 auto;line-height:1.7}
 
-/* ── TRUST BAR ── */
-.trust-bar{background:var(--white);border-top:1px solid var(--border);padding:20px 24px;margin-top:8px}
-.trust-inner{max-width:860px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
-.trust-item{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem;font-weight:500}
-
-/* ── FOOTER ── */
-.footer{padding:22px 24px;text-align:center;color:var(--muted);font-size:.75rem;border-top:1px solid var(--border);background:var(--white)}
-.footer a{color:var(--pink);text-decoration:none;font-weight:600}
-.footer a:hover{text-decoration:underline}
-
-/* ── SUCCESS OVERLAY ── */
-.success-overlay{display:none;position:fixed;inset:0;background:rgba(22,8,36,0.6);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+/* ── Success Overlay ───────────────────────── */
+.success-overlay{display:none;position:fixed;inset:0;background:rgba(10,4,24,.65);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
 .success-overlay.open{display:flex}
-.success-box{background:var(--white);border-radius:24px;padding:40px 36px;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
-.success-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--pink),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 10px 28px rgba(209,21,174,0.4)}
-.success-icon svg{width:34px;height:34px}
-.success-box h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ink);margin-bottom:10px}
-.success-box p{color:var(--muted);font-size:.9rem;line-height:1.75;margin-bottom:24px}
-.download-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-weight:700;font-size:.95rem;padding:15px 28px;border-radius:14px;text-decoration:none;margin-bottom:14px;box-shadow:0 6px 18px rgba(209,21,174,0.38)}
-.steps{background:var(--pink-soft);border:1px solid rgba(209,21,174,0.12);border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:20px}
-.steps .s-title{font-weight:700;font-size:.82rem;color:var(--ink);margin-bottom:8px}
-.steps ol{padding-left:16px;font-size:.8rem;color:var(--muted);line-height:2}
-.back-link{color:var(--pink);font-size:.82rem;font-weight:600;text-decoration:none;cursor:pointer;display:inline-block;margin-top:4px}
+.success-box{background:#fff;border-radius:20px;padding:36px 32px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.25)}
+.success-icon{width:68px;height:68px;background:linear-gradient(135deg,#D115AE,#7559D4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.success-icon svg{width:32px;height:32px}
+.success-box h2{font-family:'Playfair Display',serif;font-size:1.45rem;color:#1A1A1A;margin-bottom:10px}
+.success-box p{color:#6C6473;font-size:.88rem;line-height:1.75;margin-bottom:22px}
+.dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#D115AE;color:#fff;font-weight:700;font-size:.92rem;padding:14px 24px;border-radius:12px;text-decoration:none;margin-bottom:12px;box-shadow:0 6px 16px rgba(209,21,174,0.35)}
+.next-steps{background:#FDF7FC;border-radius:10px;padding:12px 14px;text-align:left;margin-bottom:18px}
+.next-steps .ns-title{font-weight:700;font-size:.78rem;color:#1A1A1A;margin-bottom:6px}
+.next-steps ol{padding-left:14px;font-size:.77rem;color:#6C6473;line-height:2}
+.back-link{color:#D115AE;font-size:.8rem;font-weight:600;cursor:pointer;display:inline-block;margin-top:4px}
 
 @media(max-width:640px){
-  .hero-title-main{font-size:2.1rem}
-  .hero-title-script{font-size:1.9rem}
-  .hero-sub{font-size:.93rem}
-  .grid-wrap{grid-template-columns:1fr;padding:14px 16px 40px}
-  .success-box{padding:28px 20px}
-  .shop-header{padding:12px 16px}
+  .st-h1,.lx-h1,.bl-h1,.pp-h1{font-size:1.9rem}
+  .st-h1-script,.lx-h1-script,.bl-h1-script,.pp-h1-script{font-size:1.75rem}
+  .st-grid,.lx-grid,.bl-grid,.pp-grid{grid-template-columns:1fr;padding:14px 16px 40px}
+  .success-box{padding:24px 18px}
 }
 </style>
 </head>
 <body>
 
-<!-- Ecosystem Strip -->
-<div class="eco-strip">
-  Part of the <strong>Party Biz Hub</strong> ecosystem &nbsp;·&nbsp; Powered by <strong>Kids Party Profit System™</strong>
-</div>
+<div id="gate"><div class="spinner"></div></div>
 
-<!-- Header -->
-<div class="shop-header">
-  <div class="shop-brand">
-    <div class="logo-fallback" id="logoFallback">🎉</div>
-    <img id="shopLogo" class="shop-logo" style="display:none" alt="Store logo"/>
-    <div>
-      <div class="brand-name" id="shopName">Party Printables</div>
-      <div class="brand-sub">Instant digital downloads</div>
-    </div>
-  </div>
-  <div class="header-secure">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    Secure checkout
-  </div>
-</div>
+<div class="shop-root" id="shopRoot"></div>
 
-<!-- Hero -->
-<div class="hero">
-  <div class="hero-glow-1"></div>
-  <div class="hero-glow-2"></div>
-  <div class="hero-glow-3"></div>
-  <div class="hero-inner">
-    <div class="hero-badge">✦ Party Profit Printables™ ✦</div>
-    <span class="hero-title-main" id="heroBusinessName">Party Profit</span>
-    <span class="hero-title-script">Printables™</span>
-    <div class="hero-divider"></div>
-    <p class="hero-sub">Add custom party favors to your business — without knowing graphic design.<br>Done-for-you templates your clients will love. <em>You just add the name.</em></p>
-    <a href="#products" class="hero-cta">Shop Printables →</a>
-  </div>
-</div>
-
-<!-- Filter Bar -->
-<div class="filter-section" id="filterSection" style="display:none">
-  <div class="filter-label">Browse by theme</div>
-  <div class="filter-bar" id="filterBar"></div>
-</div>
-
-<!-- Section header -->
-<div class="section-head" id="sectionHead" style="display:none">
-  <div class="section-title">Available Printables</div>
-  <div class="product-count" id="productCount"></div>
-</div>
-
-<!-- Products Area -->
-<div id="productsArea">
-  <div class="state-box">
-    <span class="state-icon">✨</span>
-    <h2>Loading printables…</h2>
-    <p>Just a moment while we fetch the collection.</p>
-  </div>
-</div>
-
-<!-- Trust Bar -->
-<div class="trust-bar">
-  <div class="trust-inner">
-    <div class="trust-item">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      Secure Stripe Checkout
-    </div>
-    <div class="trust-item">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-      Instant Download After Payment
-    </div>
-    <div class="trust-item">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      Canva-Ready Templates
-    </div>
-    <div class="trust-item">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      Print at Home or Local Shop
-    </div>
-  </div>
-</div>
-
-<!-- Footer -->
-<div class="footer">
-  Powered by <a href="https://eventprosuite.vercel.app" target="_blank">Party Biz Hub</a>
-  &nbsp;·&nbsp;
-  <a href="https://eventprosuite.vercel.app" target="_blank">Kids Party Profit System™</a>
-</div>
-
-<!-- Success Overlay (shown after Stripe payment redirect) -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-box">
     <div class="success-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <h2>You're all set! 🎉</h2>
-    <p>Your purchase is complete. Your printable template is ready — download it now and customize it in Canva in minutes.</p>
-    <a id="downloadBtn" href="#" class="download-btn" target="_blank">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+    <p>Your purchase is complete. Download your printable and customize it in Canva in minutes.</p>
+    <a id="downloadBtn" href="#" class="dl-btn" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
       Download Your Printable
     </a>
-    <div class="steps">
-      <div class="s-title">What to do next:</div>
+    <div class="next-steps">
+      <div class="ns-title">What to do next:</div>
       <ol>
         <li>Click the download button above</li>
         <li>Open the Canva template link (free account works!)</li>
@@ -265,173 +350,183 @@ const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let products=[], activeFilter='', ownerId='';
+let products=[], activeFilter='', ownerId='', tpl='studio';
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setMeta(n,v){let e=document.querySelector(`meta[name="${n}"]`)||document.querySelector(`meta[property="${n}"]`);if(e)e.content=v;}
 
 async function init(){
   const params=new URLSearchParams(location.search);
   ownerId=params.get('uid')||'';
 
-  // Check if redirected back from Stripe with success
-  const success=params.get('success');
-  const productId=params.get('product');
-  if(success==='1'&&productId){
-    setTimeout(()=>showSuccess(productId),700);
-  }
+  if(!ownerId){renderError('Store Not Found','This store link is missing an ID. Please contact the store owner.');hideGate();return;}
 
-  if(!ownerId){
-    document.getElementById('productsArea').innerHTML=`<div class="state-box">
-      <span class="state-icon">😕</span>
-      <h2>Store Not Found</h2>
-      <p>This store link is missing an ID. Please contact the store owner for the correct link.</p>
-    </div>`;
-    return;
-  }
-
-  // Load owner profile for branding + SEO
+  // Load seller profile
   const{data:profile}=await sb.from('profiles').select('full_name,profile_data').eq('id',ownerId).single();
-  if(profile){
-    const d=profile.profile_data||{};
-    const bizName=d.businessName||profile.full_name||'Party Printables';
-    const tagline=d.tagline||'Instant digital party printable downloads';
+  const d=profile?.profile_data||{};
+  const bizName=d.businessName||profile?.full_name||'Party Printables';
+  const tagline=d.tagline||'Instant digital party printable downloads';
+  tpl=d.shopTemplate||'studio'; // seller's chosen template
 
-    // Visible branding
-    document.getElementById('shopName').textContent=bizName;
-    document.getElementById('heroBusinessName').textContent=bizName;
-    document.title=bizName+' | Party Printables — Instant Digital Downloads';
+  // SEO
+  document.title=bizName+' | Party Printables — Instant Digital Downloads';
+  setMeta('description',tagline+'. Shop party printable templates — customize in Canva, download instantly.');
+  setMeta('og:title',bizName+' | Party Printables');
+  setMeta('og:description',tagline);
+  setMeta('og:url',location.href);
+  if(d.logoUrl)setMeta('og:image',d.logoUrl);
 
-    // SEO meta tags
-    setMeta('description', tagline+'. Shop party printable templates — chip bags, water bottle labels, cake toppers and more. Customize in Canva, download instantly.');
-    setMeta('og:title', bizName+' | Party Printables');
-    setMeta('og:description', tagline+'. Canva-ready party printable templates — download instantly.');
-    setMeta('og:url', location.href);
-    setMeta('twitter:title', bizName+' | Party Printables');
-    setMeta('twitter:description', tagline);
-
-    if(d.logoUrl){
-      document.getElementById('shopLogo').src=d.logoUrl;
-      document.getElementById('shopLogo').style.display='block';
-      document.getElementById('logoFallback').style.display='none';
-      setMeta('og:image', d.logoUrl);
-      setMeta('twitter:image', d.logoUrl);
-    }
-  }
-
-  // Load active products for this seller
-  const{data,error}=await sb.from('products').select('*').eq('user_id',ownerId).eq('active',true).order('created_at',{ascending:false});
-  if(error){console.error('Products load error:',error);}
+  // Load products
+  const{data}=await sb.from('products').select('*').eq('user_id',ownerId).eq('active',true).order('created_at',{ascending:false});
   products=data||[];
+
+  // Build the page shell for the chosen template
+  buildShell(bizName,tagline,d.logoUrl||null);
+
+  // Check for Stripe success redirect
+  const success=params.get('success'),productId=params.get('product');
+  if(success==='1'&&productId) setTimeout(()=>showSuccess(productId),600);
+
   buildFilters();
   renderProducts();
+  hideGate();
 }
 
-function setMeta(name, content){
-  let el=document.querySelector(`meta[name="${name}"]`)||document.querySelector(`meta[property="${name}"]`);
-  if(el) el.setAttribute('content', content);
+function hideGate(){
+  const g=document.getElementById('gate');
+  g.classList.add('out');
+  setTimeout(()=>{g.style.display='none';document.getElementById('shopRoot').classList.add('visible');},320);
 }
+
+function renderError(title,msg){
+  document.getElementById('shopRoot').className='shop-root visible tpl-studio';
+  document.getElementById('shopRoot').innerHTML=`<div class="state-box"><span class="state-icon">😕</span><h2 class="state-h">${esc(title)}</h2><p class="state-p">${esc(msg)}</p></div>`;
+}
+
+/* ── Build the outer shell (nav + hero + trust + footer) ── */
+function buildShell(bizName,tagline,logoUrl){
+  const root=document.getElementById('shopRoot');
+  root.className='shop-root visible tpl-'+tpl;
+
+  const logoHtml=logoUrl
+    ?`<img src="${esc(logoUrl)}" style="height:38px;width:auto;border-radius:8px;" alt="${esc(bizName)}">`
+    :`<div class="${tpl}-logo-box">🎉</div>`;
+
+  const ecoHtml=`<div class="${tpl}-eco">Part of the <strong>Party Biz Hub</strong> ecosystem &nbsp;·&nbsp; Powered by <strong>Kids Party Profit System™</strong></div>`;
+  const secureHtml=`<div class="${tpl}-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure checkout</div>`;
+
+  const navHtml=`<div class="${tpl}-nav">${ecoHtml}<div class="${tpl}-brand">${logoHtml}<div><div class="${tpl}-biz">${esc(bizName)}</div><div class="${tpl}-biz-sub">Party Printables</div></div></div>${secureHtml}</div>`;
+
+  const [eyebrowClass,h1Class,scriptClass,ruleClass,subClass,ctaClass]=prefix('eyebrow','h1','h1-script','rule','sub','cta');
+
+  const heroHtml=`<div class="${tpl}-hero" id="heroSection">
+    ${tpl==='luxe'?`<div class="${tpl}-eyebrow">✦ Party Profit Printables™ ✦</div>`:`<div class="${tpl}-eyebrow">✦ Party Profit Printables™ ✦</div>`}
+    <div class="${tpl}-h1">${esc(bizName)}</div>
+    <div class="${tpl}-h1-script">Printables™</div>
+    <div class="${tpl}-rule"></div>
+    <p class="${tpl}-sub">Add custom party favors to your business — without knowing graphic design.<br><em>Done-for-you templates your clients will love. You just add the name.</em></p>
+    <a href="#products" class="${tpl}-cta">Shop Printables →</a>
+  </div>`;
+
+  const trustItems=[
+    ['Secure Stripe Checkout'],['Instant Download After Payment'],['Canva-Ready Templates'],['Print at Home or Local Shop']
+  ].map(([l])=>`<div class="${tpl}-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>${l}</div>`).join('');
+
+  root.innerHTML=navHtml+heroHtml+
+    `<div class="${tpl}-filters" id="filtersWrap" style="display:none"><div class="${tpl}-filter-label">Browse by theme</div><div class="${tpl}-filter-bar" id="filterBar"></div></div>`+
+    `<div class="${tpl}-grid-head" id="gridHead" style="display:none"><div class="${tpl}-grid-title">Available Printables</div><span class="${tpl}-grid-count" id="productCount"></span></div>`+
+    `<div id="productsArea"></div>`+
+    `<div class="${tpl}-trust"><div class="${tpl}-trust-in">${trustItems}</div></div>`+
+    `<div class="${tpl}-footer">Powered by <a href="https://eventprosuite.vercel.app" target="_blank">Party Biz Hub</a> &nbsp;·&nbsp; <a href="https://eventprosuite.vercel.app" target="_blank">Kids Party Profit System™</a></div>`;
+}
+
+function prefix(...parts){return parts.map(p=>tpl+'-'+p);}
 
 function buildFilters(){
   const themes=[...new Set(products.map(p=>p.theme).filter(Boolean))];
-  if(!themes.length){
-    document.getElementById('filterSection').style.display='none';
-    return;
-  }
-  document.getElementById('filterSection').style.display='block';
-  const bar=document.getElementById('filterBar');
-  bar.innerHTML=`<button class="filter-btn active" onclick="setFilter('',this)">All</button>`
-    +themes.map(t=>`<button class="filter-btn" onclick="setFilter('${esc(t)}',this)">${esc(t)}</button>`).join('');
+  const wrap=document.getElementById('filtersWrap');
+  if(!themes.length||!wrap){return;}
+  wrap.style.display='block';
+  document.getElementById('filterBar').innerHTML=
+    `<button class="${tpl}-filter-btn active" onclick="setFilter('',this)">All</button>`+
+    themes.map(t=>`<button class="${tpl}-filter-btn" onclick="setFilter('${esc(t)}',this)">${esc(t)}</button>`).join('');
 }
 
 function setFilter(theme,btn){
   activeFilter=theme;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.'+tpl+'-filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderProducts();
 }
 
 function renderProducts(){
+  const area=document.getElementById('productsArea');
+  const gridHead=document.getElementById('gridHead');
+  const counter=document.getElementById('productCount');
+  if(!area) return;
+
   const filtered=activeFilter?products.filter(p=>p.theme===activeFilter):products;
 
   if(!products.length){
-    document.getElementById('sectionHead').style.display='none';
-    document.getElementById('productsArea').innerHTML=`<div class="state-box">
-      <span class="state-icon">🎈</span>
-      <h2>Printables Coming Soon!</h2>
-      <p>New party template bundles dropping shortly — check back soon.</p>
-    </div>`;
+    if(gridHead) gridHead.style.display='none';
+    area.innerHTML=`<div class="state-box"><span class="state-icon">🎈</span><h2 class="state-h">Printables Coming Soon!</h2><p class="state-p">New party template bundles dropping shortly — check back soon.</p></div>`;
     return;
   }
 
-  // Show section header with count
-  document.getElementById('sectionHead').style.display='flex';
-  document.getElementById('productCount').textContent=filtered.length+' item'+(filtered.length!==1?'s':'');
+  if(gridHead) gridHead.style.display='flex';
+  if(counter) counter.textContent=filtered.length+' item'+(filtered.length!==1?'s':'');
 
-  const storeBaseEncoded=encodeURIComponent(location.href.split('?')[0]+'?uid='+ownerId+'&success=1&product=');
+  const storeBase=encodeURIComponent(location.href.split('?')[0]+'?uid='+ownerId+'&success=1&product=');
 
   const cards=filtered.map(p=>{
-    const successUrl=storeBaseEncoded+p.id;
     const buyUrl=p.stripe_link
-      ?(p.stripe_link+(p.stripe_link.includes('?')?'&':'?')+'success_url='+successUrl)
+      ?(p.stripe_link+(p.stripe_link.includes('?')?'&':'?')+'success_url='+storeBase+p.id)
       :'#';
 
-    let btnHtml;
-    if(p.price>0&&p.stripe_link){
-      btnHtml=`<a href="${esc(buyUrl)}" class="buy-btn" target="_blank">Buy Now</a>`;
-    } else if(p.price===0&&(p.file_url||p.stripe_link)){
-      btnHtml=`<a href="${esc(p.file_url||'#')}" class="buy-btn free-btn" target="_blank">Get Free</a>`;
-    } else {
-      btnHtml=`<span class="buy-btn disabled-btn">Coming Soon</span>`;
-    }
+    let btn;
+    if(p.price>0&&p.stripe_link) btn=`<a href="${esc(buyUrl)}" class="${tpl}-buy" target="_blank">Buy Now</a>`;
+    else if(p.price===0&&(p.file_url||p.stripe_link)) btn=`<a href="${esc(p.file_url||'#')}" class="${tpl}-buy free" target="_blank">Get Free</a>`;
+    else btn=`<span class="${tpl}-buy soon">Coming Soon</span>`;
 
-    return `<div class="product-card">
-      <div class="card-img">
-        ${p.image_url
-          ?`<img src="${esc(p.image_url)}" alt="${esc(p.name)} party printable" loading="lazy">`
-          :`<div class="no-img"><span class="emoji">🎉</span><span class="label">${esc(p.theme||'Printable')}</span></div>`}
-        ${p.theme?`<span class="card-theme-badge">${esc(p.theme)}</span>`:''}
-        ${(p.file_url||p.stripe_link)?`<span class="card-instant-badge">⚡ Instant Download</span>`:''}
+    return `<div class="${tpl}-card" id="products">
+      <div class="${tpl}-card-img">
+        ${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.name)} party printable" loading="lazy">`:`<div class="no-img"><span class="e">🎉</span><span class="l">${esc(p.theme||'Printable')}</span></div>`}
+        ${p.theme?`<span class="${tpl}-theme-tag">${esc(p.theme)}</span>`:''}
+        ${(p.file_url||p.stripe_link)?`<span class="${tpl}-dl-tag">⚡ Download</span>`:''}
       </div>
-      <div class="card-body">
-        <div class="card-name">${esc(p.name)}</div>
-        <div class="card-desc">${esc(p.description||'Customize in Canva — add the name, print at home or your local print shop.')}</div>
-        <div class="card-footer">
+      <div class="${tpl}-card-body">
+        <div class="${tpl}-card-name">${esc(p.name)}</div>
+        <div class="${tpl}-card-desc">${esc(p.description||'Customize in Canva — add the name, print at home or your local print shop.')}</div>
+        <div class="${tpl}-card-foot">
           <div>
-            <div class="card-price">${p.price>0?'$'+Number(p.price).toFixed(2):'FREE'}</div>
-            <div class="card-price-sub">${p.price>0?'one-time download':''}</div>
+            <div class="${tpl}-price">${p.price>0?'$'+Number(p.price).toFixed(2):'FREE'}</div>
+            <div class="${tpl}-price-sub">${p.price>0?'one-time download':''}</div>
           </div>
-          ${btnHtml}
+          ${btn}
         </div>
       </div>
     </div>`;
   }).join('');
 
-  document.getElementById('productsArea').innerHTML=`<div class="grid-wrap" id="products">${cards}</div>`;
+  area.innerHTML=`<div class="${tpl}-grid" id="products">${cards}</div>`;
 }
 
 async function showSuccess(productId){
-  // products may not be loaded yet — wait briefly then try
   if(!products.length){
     const{data}=await sb.from('products').select('*').eq('user_id',ownerId).eq('active',true);
     products=data||[];
   }
   const p=products.find(x=>x.id===productId);
-  if(!p) return;
   const btn=document.getElementById('downloadBtn');
-  if(p.file_url){
-    btn.href=p.file_url;
-    btn.style.display='flex';
-  } else {
-    btn.style.display='none';
-  }
+  if(p?.file_url){btn.href=p.file_url;btn.style.display='flex';}
+  else btn.style.display='none';
   document.getElementById('successOverlay').classList.add('open');
 }
 
 function closeSuccess(){
   document.getElementById('successOverlay').classList.remove('open');
-  const clean=location.pathname+'?uid='+ownerId;
-  history.replaceState({},'',clean);
+  history.replaceState({},'',location.pathname+'?uid='+ownerId);
 }
-
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 init();
 </script>
