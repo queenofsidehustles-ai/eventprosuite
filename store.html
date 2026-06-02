@@ -675,14 +675,9 @@ async function uploadToStorage(bucket,file,folder){
 async function saveProduct(){
   const name=(document.getElementById('pName').value||'').trim();
   if(!name){document.getElementById('pName').focus();return;}
-  // Refresh session and build a one-shot client with the token explicitly in the header.
-  // This guarantees auth.uid() is non-null server-side regardless of client session state.
+  // Refresh session — updates sb's internal state so all subsequent requests are authenticated
   const{data:{session:fresh},error:_re}=await sb.auth.refreshSession();
   if(!fresh){alert('Session expired — please sign out and sign back in.');window.location.href='login.html';return;}
-  const authSb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
-    global:{headers:{Authorization:'Bearer '+fresh.access_token}},
-    auth:{persistSession:false,autoRefreshToken:false}
-  });
   const btn=document.getElementById('saveBtn');
   btn.disabled=true;
   document.getElementById('saveBtnText').textContent='Saving…';
@@ -708,12 +703,12 @@ async function saveProduct(){
       image_url,file_url,file_name,
     };
 
-    // Use authSb (explicit Authorization header) so auth.uid() is always valid server-side
+    // Use global sb — session was just refreshed above, storage uploads already prove it's authenticated
     let err;
     if(editingId){
-      ({error:err}=await authSb.from('products').update(payload).eq('id',editingId).eq('user_id',currentUser.id));
+      ({error:err}=await sb.from('products').update(payload).eq('id',editingId).eq('user_id',currentUser.id));
     }else{
-      ({error:err}=await authSb.from('products').insert(payload));
+      ({error:err}=await sb.from('products').insert(payload));
     }
     if(err)throw err;
     showToast(editingId?'✓ Product updated!':'✓ Product added to your store!');
