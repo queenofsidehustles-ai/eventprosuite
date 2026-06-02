@@ -1991,6 +1991,9 @@ function debouncedSave(){
 
 async function saveNow(){
   if(!currentUser)return;
+  // Refresh session token — prevents "Save failed" when token expires mid-session
+  const{data:{session:fresh}}=await sb.auth.getSession();
+  if(!fresh){$('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Session expired — please sign in again';return;}
   const payload={
     user_id:currentUser.id,
     business_name:$('businessName').value||null,
