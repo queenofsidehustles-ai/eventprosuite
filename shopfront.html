@@ -350,7 +350,8 @@ const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let products=[], activeFilter='', ownerId='', tpl='studio';
+const TPL_PFX={studio:'st',luxe:'lx',bloom:'bl',pop:'pp'};
+let products=[], activeFilter='', ownerId='', tpl='studio', pfx='st';
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function setMeta(n,v){let e=document.querySelector(`meta[name="${n}"]`)||document.querySelector(`meta[property="${n}"]`);if(e)e.content=v;}
@@ -367,6 +368,7 @@ async function init(){
   const bizName=d.businessName||profile?.full_name||'Party Printables';
   const tagline=d.tagline||'Instant digital party printable downloads';
   tpl=d.shopTemplate||'studio'; // seller's chosen template
+  pfx=TPL_PFX[tpl]||'st';
 
   // SEO
   document.title=bizName+' | Party Printables — Instant Digital Downloads';
@@ -410,37 +412,37 @@ function buildShell(bizName,tagline,logoUrl){
 
   const logoHtml=logoUrl
     ?`<img src="${esc(logoUrl)}" style="height:38px;width:auto;border-radius:8px;" alt="${esc(bizName)}">`
-    :`<div class="${tpl}-logo-box">🎉</div>`;
+    :`<div class="${pfx}-logo-box">🎉</div>`;
 
-  const ecoHtml=`<div class="${tpl}-eco">Part of the <strong>Party Biz Hub</strong> ecosystem &nbsp;·&nbsp; Powered by <strong>Kids Party Profit System™</strong></div>`;
-  const secureHtml=`<div class="${tpl}-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure checkout</div>`;
+  const ecoHtml=`<div class="${pfx}-eco">Part of the <strong>Party Biz Hub</strong> ecosystem &nbsp;·&nbsp; Powered by <strong>Kids Party Profit System™</strong></div>`;
+  const secureHtml=`<div class="${pfx}-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure checkout</div>`;
 
-  const navHtml=`<div class="${tpl}-nav">${ecoHtml}<div class="${tpl}-brand">${logoHtml}<div><div class="${tpl}-biz">${esc(bizName)}</div><div class="${tpl}-biz-sub">Party Printables</div></div></div>${secureHtml}</div>`;
+  const navHtml=`<div class="${pfx}-nav"><div class="${pfx}-brand">${logoHtml}<div><div class="${pfx}-biz">${esc(bizName)}</div><div class="${pfx}-biz-sub">Party Printables</div></div></div>${secureHtml}</div>`;
 
   const [eyebrowClass,h1Class,scriptClass,ruleClass,subClass,ctaClass]=prefix('eyebrow','h1','h1-script','rule','sub','cta');
 
-  const heroHtml=`<div class="${tpl}-hero" id="heroSection">
-    ${tpl==='luxe'?`<div class="${tpl}-eyebrow">✦ Party Profit Printables™ ✦</div>`:`<div class="${tpl}-eyebrow">✦ Party Profit Printables™ ✦</div>`}
-    <div class="${tpl}-h1">${esc(bizName)}</div>
-    <div class="${tpl}-h1-script">Printables™</div>
-    <div class="${tpl}-rule"></div>
-    <p class="${tpl}-sub">Add custom party favors to your business — without knowing graphic design.<br><em>Done-for-you templates your clients will love. You just add the name.</em></p>
-    <a href="#products" class="${tpl}-cta">Shop Printables →</a>
+  const heroHtml=`<div class="${pfx}-hero" id="heroSection">
+    ${tpl==='luxe'?`<div class="${pfx}-eyebrow">✦ Party Profit Printables™ ✦</div>`:`<div class="${pfx}-eyebrow">✦ Party Profit Printables™ ✦</div>`}
+    <div class="${pfx}-h1">${esc(bizName)}</div>
+    <div class="${pfx}-h1-script">Printables™</div>
+    <div class="${pfx}-rule"></div>
+    <p class="${pfx}-sub">Add custom party favors to your business — without knowing graphic design.<br><em>Done-for-you templates your clients will love. You just add the name.</em></p>
+    <a href="#products" class="${pfx}-cta">Shop Printables →</a>
   </div>`;
 
   const trustItems=[
     ['Secure Stripe Checkout'],['Instant Download After Payment'],['Canva-Ready Templates'],['Print at Home or Local Shop']
-  ].map(([l])=>`<div class="${tpl}-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>${l}</div>`).join('');
+  ].map(([l])=>`<div class="${pfx}-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>${l}</div>`).join('');
 
-  root.innerHTML=navHtml+heroHtml+
-    `<div class="${tpl}-filters" id="filtersWrap" style="display:none"><div class="${tpl}-filter-label">Browse by theme</div><div class="${tpl}-filter-bar" id="filterBar"></div></div>`+
-    `<div class="${tpl}-grid-head" id="gridHead" style="display:none"><div class="${tpl}-grid-title">Available Printables</div><span class="${tpl}-grid-count" id="productCount"></span></div>`+
+  root.innerHTML=ecoHtml+navHtml+heroHtml+
+    `<div class="${pfx}-filters" id="filtersWrap" style="display:none"><div class="${pfx}-filter-label">Browse by theme</div><div class="${pfx}-filter-bar" id="filterBar"></div></div>`+
+    `<div class="${pfx}-grid-head" id="gridHead" style="display:none"><div class="${pfx}-grid-title">Available Printables</div><span class="${pfx}-grid-count" id="productCount"></span></div>`+
     `<div id="productsArea"></div>`+
-    `<div class="${tpl}-trust"><div class="${tpl}-trust-in">${trustItems}</div></div>`+
-    `<div class="${tpl}-footer">Powered by <a href="https://eventprosuite.vercel.app" target="_blank">Party Biz Hub</a> &nbsp;·&nbsp; <a href="https://eventprosuite.vercel.app" target="_blank">Kids Party Profit System™</a></div>`;
+    `<div class="${pfx}-trust"><div class="${pfx}-trust-in">${trustItems}</div></div>`+
+    `<div class="${pfx}-footer">Powered by <a href="https://eventprosuite.vercel.app" target="_blank">Party Biz Hub</a> &nbsp;·&nbsp; <a href="https://eventprosuite.vercel.app" target="_blank">Kids Party Profit System™</a></div>`;
 }
 
-function prefix(...parts){return parts.map(p=>tpl+'-'+p);}
+function prefix(...parts){return parts.map(p=>pfx+'-'+p);}
 
 function buildFilters(){
   const themes=[...new Set(products.map(p=>p.theme).filter(Boolean))];
@@ -448,13 +450,13 @@ function buildFilters(){
   if(!themes.length||!wrap){return;}
   wrap.style.display='block';
   document.getElementById('filterBar').innerHTML=
-    `<button class="${tpl}-filter-btn active" onclick="setFilter('',this)">All</button>`+
-    themes.map(t=>`<button class="${tpl}-filter-btn" onclick="setFilter('${esc(t)}',this)">${esc(t)}</button>`).join('');
+    `<button class="${pfx}-filter-btn active" onclick="setFilter('',this)">All</button>`+
+    themes.map(t=>`<button class="${pfx}-filter-btn" onclick="setFilter('${esc(t)}',this)">${esc(t)}</button>`).join('');
 }
 
 function setFilter(theme,btn){
   activeFilter=theme;
-  document.querySelectorAll('.'+tpl+'-filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.'+pfx+'-filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderProducts();
 }
@@ -484,23 +486,25 @@ function renderProducts(){
       :'#';
 
     let btn;
-    if(p.price>0&&p.stripe_link) btn=`<a href="${esc(buyUrl)}" class="${tpl}-buy" target="_blank">Buy Now</a>`;
-    else if(p.price===0&&(p.file_url||p.stripe_link)) btn=`<a href="${esc(p.file_url||'#')}" class="${tpl}-buy free" target="_blank">Get Free</a>`;
-    else btn=`<span class="${tpl}-buy soon">Coming Soon</span>`;
+    if(p.price>0&&p.stripe_link) btn=`<a href="${esc(buyUrl)}" class="${pfx}-buy" target="_blank">Buy Now</a>`;
+    else if(p.price===0&&(p.file_url||p.stripe_link)) btn=`<a href="${esc(p.file_url||'#')}" class="${pfx}-buy free" target="_blank">Get Free</a>`;
+    else btn=`<span class="${pfx}-buy soon">Coming Soon</span>`;
 
-    return `<div class="${tpl}-card" id="products">
-      <div class="${tpl}-card-img">
+    const clickTarget=buyUrl!=='#'?buyUrl:(p.file_url||null);
+    const cardClick=clickTarget?`onclick="window.open('${clickTarget.replace(/'/g,"\\'")}','_blank')" style="cursor:pointer"`:'';
+    return `<div class="${pfx}-card" ${cardClick}>
+      <div class="${pfx}-card-img">
         ${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.name)} party printable" loading="lazy">`:`<div class="no-img"><span class="e">🎉</span><span class="l">${esc(p.theme||'Printable')}</span></div>`}
-        ${p.theme?`<span class="${tpl}-theme-tag">${esc(p.theme)}</span>`:''}
-        ${(p.file_url||p.stripe_link)?`<span class="${tpl}-dl-tag">⚡ Download</span>`:''}
+        ${p.theme?`<span class="${pfx}-theme-tag">${esc(p.theme)}</span>`:''}
+        ${(p.file_url||p.stripe_link)?`<span class="${pfx}-dl-tag">⚡ Download</span>`:''}
       </div>
-      <div class="${tpl}-card-body">
-        <div class="${tpl}-card-name">${esc(p.name)}</div>
-        <div class="${tpl}-card-desc">${esc(p.description||'Customize in Canva — add the name, print at home or your local print shop.')}</div>
-        <div class="${tpl}-card-foot">
+      <div class="${pfx}-card-body">
+        <div class="${pfx}-card-name">${esc(p.name)}</div>
+        <div class="${pfx}-card-desc">${esc(p.description||'Customize in Canva — add the name, print at home or your local print shop.')}</div>
+        <div class="${pfx}-card-foot">
           <div>
-            <div class="${tpl}-price">${p.price>0?'$'+Number(p.price).toFixed(2):'FREE'}</div>
-            <div class="${tpl}-price-sub">${p.price>0?'one-time download':''}</div>
+            <div class="${pfx}-price">${p.price>0?'$'+Number(p.price).toFixed(2):'FREE'}</div>
+            <div class="${pfx}-price-sub">${p.price>0?'one-time download':''}</div>
           </div>
           ${btn}
         </div>
@@ -508,7 +512,7 @@ function renderProducts(){
     </div>`;
   }).join('');
 
-  area.innerHTML=`<div class="${tpl}-grid" id="products">${cards}</div>`;
+  area.innerHTML=`<div class="${pfx}-grid" id="products">${cards}</div>`;
 }
 
 async function showSuccess(productId){
