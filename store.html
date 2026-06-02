@@ -721,16 +721,21 @@ async function saveProduct(){
     closeModal();
     await loadProducts();
   } catch(e){
-    // Full error in DevTools console for debugging
-    console.error('[PPP v2] saveProduct failed:', {
-      message: e.message,
-      code: e.code,
-      hint: e.hint,
-      details: e.details,
-      full: e
-    });
-    const detail=[e.code,e.hint,e.details].filter(Boolean).join(' | ');
-    showToast('Error [v2]: '+(e.message||'unknown')+(detail?' — '+detail:''));
+    console.error('[PPP v2] saveProduct failed:', e);
+    // Show every field Supabase returns so we can diagnose without expanding objects
+    const parts=[
+      e.message&&('msg:'+e.message),
+      e.code&&('code:'+e.code),
+      e.hint&&('hint:'+e.hint),
+      e.details&&('details:'+e.details),
+      typeof e==='string'&&e
+    ].filter(Boolean);
+    const fullMsg=parts.length?parts.join(' | '):JSON.stringify(e);
+    showToast(fullMsg,8000);
+    // Also write to a visible div so it won't disappear
+    let dbg=document.getElementById('dbgMsg');
+    if(!dbg){dbg=document.createElement('div');dbg.id='dbgMsg';dbg.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a0a1a;color:#ffddff;padding:12px 18px;border-radius:10px;font-size:.75rem;max-width:90vw;word-break:break-all;z-index:9999;border:1px solid #d115ae';document.body.appendChild(dbg);}
+    dbg.textContent=fullMsg;
   } finally {
     btn.disabled=false;
     document.getElementById('saveBtnText').textContent=editingId?'Save Changes':'Save Product';
@@ -816,7 +821,7 @@ async function loadSales(){
   </table>`;
 }
 
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showToast(m,dur=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 init();
