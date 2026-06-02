@@ -155,7 +155,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:.75rem 1.4rem;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:500}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-@media(max-width:640px){.field-row{grid-template-columns:1fr}}
+/* Quick-fill bar */
+.quickfill{background:linear-gradient(135deg,rgba(109,40,217,.06),rgba(209,21,174,.04));border:1.5px solid rgba(109,40,217,.14);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.quickfill-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--brand);margin-bottom:8px}
+.quickfill-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.quickfill-row select,.quickfill-row input{flex:1;min-width:140px;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;color:var(--ink);background:#fff}
+.quickfill-btn{padding:.5rem 1rem;background:var(--brand);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.quickfill-btn:hover{background:#5b21b6}
+
+@media(max-width:640px){.field-row{grid-template-columns:1fr}.quickfill-row{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -435,6 +443,29 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
 
+    <!-- Quick Fill -->
+    <div class="quickfill" id="quickfillBar">
+      <div class="quickfill-label">✨ Quick Fill — choose a product type &amp; theme to auto-fill the form</div>
+      <div class="quickfill-row">
+        <select id="qfType">
+          <option value="">— Product Type —</option>
+          <option value="chip-bag">Chip Bag Label</option>
+          <option value="capri-sun">Capri Sun Label</option>
+          <option value="water-bottle">Water Bottle Label</option>
+          <option value="candy-bar">Candy Bar Wrapper</option>
+          <option value="pringles">Pringles Wrapper</option>
+          <option value="favor-bag">Favor Bag Topper</option>
+          <option value="treat-box">Treat Box Label</option>
+          <option value="cupcake">Cupcake Topper</option>
+          <option value="thank-you">Thank You Tag</option>
+          <option value="sticker">Sticker Sheet</option>
+          <option value="welcome-invite">Welcome Sign &amp; Invitation</option>
+        </select>
+        <input type="text" id="qfTheme" placeholder="Theme name (e.g. Unicorn)"/>
+        <button class="quickfill-btn" onclick="applyQuickFill()">Auto-fill ✨</button>
+      </div>
+    </div>
+
     <!-- Image upload -->
     <div class="field">
       <label>Product Image</label>
@@ -467,10 +498,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <label>Theme</label>
         <select id="pTheme">
           <option value="">— None —</option>
-          <option>Princess</option><option>Bluey</option><option>K-Pop</option>
-          <option>Barbie</option><option>Spider-Man</option><option>Frozen</option>
-          <option>Safari</option><option>Mermaid</option><option>Unicorn</option>
-          <option>Sports</option><option>Custom</option>
+          <option>Unicorn</option><option>Princess</option><option>Mermaid</option>
+          <option>Dinosaur</option><option>Safari</option><option>Jungle</option>
+          <option>Tropical</option><option>Butterfly</option><option>Fairy</option>
+          <option>Bluey</option><option>Barbie</option><option>Frozen</option>
+          <option>Spider-Man</option><option>PAW Patrol</option><option>Cocomelon</option>
+          <option>Sports</option><option>Baseball</option><option>Soccer</option>
+          <option>Football</option><option>Basketball</option>
+          <option>Superhero</option><option>K-Pop</option><option>Custom</option>
         </select>
       </div>
     </div>
@@ -657,6 +692,7 @@ function openModal(id){
   document.getElementById('modalTitle').textContent=id?'Edit Product':'Add Product';
   document.getElementById('saveBtnText').textContent=id?'Save Changes':'Save Product';
 
+  const qfBar=document.getElementById('quickfillBar');
   if(id){
     const p=products.find(x=>x.id===id);
     if(!p)return;
@@ -669,19 +705,90 @@ function openModal(id){
     resetImgZone(p.image_url);
     document.getElementById('existingFile').textContent=p.file_name?`Current file: ${p.file_name} (upload new to replace)`:'';
     resetFileZone(p.file_name);
+    if(qfBar)qfBar.style.display='none';
   } else {
     ['pName','pDesc','pPrice','pStripeLink'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('pTheme').value='';
     document.getElementById('pActive').value='true';
+    document.getElementById('qfType').value='';
+    document.getElementById('qfTheme').value='';
     resetImgZone('');
     resetFileZone('');
     document.getElementById('existingFile').textContent='';
+    if(qfBar)qfBar.style.display='';
   }
   document.getElementById('productModal').classList.add('open');
 }
 function editProduct(id){openModal(id);}
 function closeModal(){document.getElementById('productModal').classList.remove('open');}
 document.getElementById('productModal').addEventListener('click',e=>{if(e.target===document.getElementById('productModal'))closeModal();});
+
+const PRODUCT_TEMPLATES={
+  'chip-bag':{
+    name:'[Theme] Birthday Chip Bag Printable',
+    desc:'Custom [theme] birthday chip bag printable — personalize with your guest\'s name in Canva and print at home or your local print shop. Canva template included. Perfect for [theme]-themed birthday party favors. Instant digital download.',
+  },
+  'capri-sun':{
+    name:'[Theme] Birthday Capri Sun Label Printable',
+    desc:'Dress up Capri Sun juice pouches with this adorable [theme] birthday label! Download the Canva template, personalize with the guest\'s name, and print at home. Fits standard Capri Sun pouches. Instant digital download.',
+  },
+  'water-bottle':{
+    name:'[Theme] Birthday Water Bottle Label Printable',
+    desc:'Custom [theme] birthday water bottle labels — personalize with the guest\'s name in Canva and print at home. Fits standard water bottles. Canva template included. Instant digital download.',
+  },
+  'candy-bar':{
+    name:'[Theme] Birthday Candy Bar Wrapper Printable',
+    desc:'Wrap Hershey\'s bars in these beautiful [theme] birthday wrappers! Customize with the guest\'s name in Canva and print at home. Fits standard 1.55 oz Hershey bars. Instant digital download.',
+  },
+  'pringles':{
+    name:'[Theme] Birthday Pringles Wrapper Printable',
+    desc:'Custom [theme] Pringles can cover printable — personalize in Canva, print, cut, and wrap! Perfect party favor for [theme]-themed birthdays. Canva template included. Instant digital download.',
+  },
+  'favor-bag':{
+    name:'[Theme] Birthday Favor Bag Topper Printable',
+    desc:'Finish your [theme] party favor bags with these custom toppers! Personalize with the guest\'s name in Canva, print on card stock, fold, and staple. Canva template included. Instant digital download.',
+  },
+  'treat-box':{
+    name:'[Theme] Birthday Treat Box Printable',
+    desc:'Custom [theme] birthday treat box printable — fold it yourself for a professional finish! Personalize with the guest\'s name in Canva and print on card stock. Perfect for party favors and goody bags. Instant digital download.',
+  },
+  'cupcake':{
+    name:'[Theme] Birthday Cupcake Topper Printable',
+    desc:'Decorate your [theme] birthday cupcakes with these adorable custom toppers! Print on card stock, cut out, and attach with a toothpick. Personalize with the guest\'s name in Canva. Instant digital download.',
+  },
+  'thank-you':{
+    name:'[Theme] Birthday Thank You Tag Printable',
+    desc:'Show your appreciation with these custom [theme] birthday thank you tags! Add the guest\'s name in Canva, print on card stock, and attach to favor bags or gifts. Canva template included. Instant digital download.',
+  },
+  'sticker':{
+    name:'[Theme] Birthday Sticker Sheet Printable',
+    desc:'Fun [theme] birthday sticker sheet — print on sticker paper at home! Personalize with the guest\'s name in Canva and use on party bags, envelopes, loot bags, or as sticker favors. Instant digital download.',
+  },
+  'welcome-invite':{
+    name:'[Theme] Birthday Welcome Sign & Invitation Printable',
+    desc:'Set the scene with this [theme] birthday welcome sign and matching invitation card! Personalize with the name, date, and party details in Canva. Print at home or your local print shop. Canva template included. Instant digital download.',
+  },
+};
+
+function applyQuickFill(){
+  const typeKey=document.getElementById('qfType').value;
+  const theme=(document.getElementById('qfTheme').value||'').trim();
+  if(!typeKey){showToast('Pick a product type first');return;}
+  const tpl=PRODUCT_TEMPLATES[typeKey];
+  if(!tpl)return;
+  const t=theme||'[Theme]';
+  const nameEl=document.getElementById('pName');
+  const descEl=document.getElementById('pDesc');
+  nameEl.value=tpl.name.replace(/\[Theme\]/g,t);
+  descEl.value=tpl.desc.replace(/\[theme\]/g,t.toLowerCase()).replace(/\[Theme\]/g,t);
+  if(theme){
+    const themeSelect=document.getElementById('pTheme');
+    const match=[...themeSelect.options].find(o=>o.value.toLowerCase()===theme.toLowerCase());
+    if(match)themeSelect.value=match.value;
+    else{themeSelect.value='Custom';}
+  }
+  showToast('✓ Form filled! Review and adjust as needed.');
+}
 
 function resetImgZone(url){
   const wrap=document.getElementById('imgPreviewWrap');
