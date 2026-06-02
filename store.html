@@ -230,6 +230,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       <div class="tab-panel active" id="panelMystore">
       <div class="wrap">
 
+      <!-- Add Product — always visible at top of My Store tab -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+        <button class="btn-primary" onclick="openModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Product
+        </button>
+      </div>
+
       <!-- Store link bar -->
       <div class="store-link-bar">
         <span class="link-label">🔗 Your store link:</span>
@@ -715,21 +723,8 @@ async function saveProduct(){
     closeModal();
     await loadProducts();
   } catch(e){
-    console.error('[PPP v2] saveProduct failed:', e);
-    // Show every field Supabase returns so we can diagnose without expanding objects
-    const parts=[
-      e.message&&('msg:'+e.message),
-      e.code&&('code:'+e.code),
-      e.hint&&('hint:'+e.hint),
-      e.details&&('details:'+e.details),
-      typeof e==='string'&&e
-    ].filter(Boolean);
-    const fullMsg=parts.length?parts.join(' | '):JSON.stringify(e);
-    showToast(fullMsg,8000);
-    // Also write to a visible div so it won't disappear
-    let dbg=document.getElementById('dbgMsg');
-    if(!dbg){dbg=document.createElement('div');dbg.id='dbgMsg';dbg.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a0a1a;color:#ffddff;padding:12px 18px;border-radius:10px;font-size:.75rem;max-width:90vw;word-break:break-all;z-index:9999;border:1px solid #d115ae';document.body.appendChild(dbg);}
-    dbg.textContent=fullMsg;
+    console.error('saveProduct failed:', e);
+    showToast('Error: '+(e.message||JSON.stringify(e)));
   } finally {
     btn.disabled=false;
     document.getElementById('saveBtnText').textContent=editingId?'Save Changes':'Save Product';
