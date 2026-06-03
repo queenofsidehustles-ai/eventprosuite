@@ -2,6 +2,7 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/join", "destination": "/join.html" },
     { "source": "/store/:slug", "destination": "/shopfront.html?slug=:slug" }
   ],
   "functions": {
