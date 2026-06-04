@@ -232,6 +232,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           Sales &amp; Revenue
         </button>
+        <button class="tab-btn" id="tabGuide" onclick="switchTab('guide')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Getting Started
+        </button>
       </div>
 
       <!-- MY STORE TAB -->
@@ -375,6 +379,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
             <label>Contact Email <span style="color:var(--muted);font-weight:400;font-size:.75rem">(shows a "Ask a Question" button on your store)</span></label>
             <input type="email" id="storeContactEmail" placeholder="you@yourbiz.com"/>
           </div>
+          <div class="field" style="margin-top:.5rem">
+            <label>💳 Payment Link <span style="color:var(--muted);font-weight:400;font-size:.75rem">(PayPal, Stripe, Square — customers click Buy and go here)</span></label>
+            <input type="url" id="storePaymentLink" placeholder="https://paypal.me/yourusername  or  https://buy.stripe.com/..."/>
+            <div style="margin-top:5px;display:flex;gap:8px;flex-wrap:wrap">
+              <a href="https://paypal.com/paypalme" target="_blank" style="font-size:.72rem;font-weight:700;color:#003087;text-decoration:none;background:#f0f4ff;border:1px solid #c8d8ff;padding:3px 10px;border-radius:6px">Get PayPal Link →</a>
+              <a href="https://dashboard.stripe.com/payment-links" target="_blank" style="font-size:.72rem;font-weight:700;color:#635bff;text-decoration:none;background:#f5f4ff;border:1px solid #d8d4ff;padding:3px 10px;border-radius:6px">Get Stripe Link →</a>
+              <a href="https://squareup.com/us/en/online-checkout" target="_blank" style="font-size:.72rem;font-weight:700;color:#006aff;text-decoration:none;background:#f0f7ff;border:1px solid #c0d8ff;padding:3px 10px;border-radius:6px">Get Square Link →</a>
+            </div>
+          </div>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn-primary" style="padding:.5rem 1.2rem;font-size:.82rem" onclick="saveStoreProfile()">Save Profile Info</button>
             <span id="profileSaving" style="font-size:.72rem;color:var(--muted)"></span>
@@ -440,6 +453,87 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
       </div>
       </div><!-- /panelSales -->
+
+      <!-- GETTING STARTED TAB -->
+      <div class="tab-panel" id="panelGuide">
+      <div class="wrap" style="max-width:760px">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:var(--plum-900);margin-bottom:4px">🚀 Getting Started</h2>
+          <p style="font-size:.88rem;color:var(--muted);line-height:1.7">Follow these 5 steps to get your store live and ready to sell.</p>
+        </div>
+
+        <!-- Step 1 -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px">Complete your store profile</div>
+            <p style="font-size:.83rem;color:var(--muted);line-height:1.65">Go to the <strong>My Store</strong> tab → scroll down to "About You &amp; Contact." Add your business name, a short bio, your logo, and contact email. This shows on your public store and helps customers trust you.</p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px">Set up your payment link</div>
+            <p style="font-size:.83rem;color:var(--muted);line-height:1.65">You need a way to collect money. Pick one option and paste the link in the <strong>Payment Link</strong> field in your store profile:</p>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+              <div style="background:#f8f9ff;border:1px solid #e0e8ff;border-radius:10px;padding:10px 14px">
+                <div style="font-weight:700;font-size:.82rem;color:#003087">PayPal (easiest — most people already have it)</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Go to <strong>paypal.com/paypalme</strong> → create your PayPal.me link → paste it in the Payment Link field. Free to set up.</div>
+              </div>
+              <div style="background:#f5f4ff;border:1px solid #d8d4ff;border-radius:10px;padding:10px 14px">
+                <div style="font-weight:700;font-size:.82rem;color:#635bff">Stripe (most professional)</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Go to <strong>dashboard.stripe.com → Payment Links → Create</strong>. Set a product price → copy the link → paste it here. Requires a bank account to activate.</div>
+              </div>
+              <div style="background:#f0f7ff;border:1px solid #c0d8ff;border-radius:10px;padding:10px 14px">
+                <div style="font-weight:700;font-size:.82rem;color:#006aff">Square (good if you also do in-person sales)</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:3px">Go to <strong>squareup.com → Online Checkout → Create a payment link</strong>. Copy and paste it here.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px">Add your first product</div>
+            <p style="font-size:.83rem;color:var(--muted);line-height:1.65">Click <strong>Add Product</strong> in the My Store tab. Use the <strong>✨ Quick Fill</strong> button — pick a product type (Chip Bag Label, Water Bottle Label, etc.), type the theme name (Unicorn, Dinosaur, etc.), and click Auto-fill. It writes the name and SEO description for you. Add a price and paste your payment link for that product.</p>
+            <div style="background:#fff8e0;border:1px solid #f0d060;border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.78rem;color:#7a5500;font-weight:600">💡 Tip: Upload a photo of your printable as the product image — customers buy what they can see.</div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px">Set your store handle and share your link</div>
+            <p style="font-size:.83rem;color:var(--muted);line-height:1.65">In the My Store tab, find the <strong>Your store address on partybizhub.com</strong> field. Type a short handle (example: <em>bear-hugs-events</em>). Your store link becomes <strong>partybizhub.com/store/your-handle</strong>. Copy it and share it everywhere — Instagram bio, Facebook, Linktree, text messages.</p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;display:flex;gap:16px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
+          <div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px">Pick your store theme</div>
+            <p style="font-size:.83rem;color:var(--muted);line-height:1.65">Back in the My Store tab, scroll up to the <strong>Store Template</strong> section. Pick the look that matches your brand — Studio (clean, light), Luxe (dark, gold), Bloom (soft pink), or Pop (bold). Your store updates instantly.</p>
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <div style="background:linear-gradient(135deg,rgba(109,40,217,.04),rgba(232,23,138,.03));border:1.5px solid var(--border);border-radius:14px;padding:20px">
+          <div style="font-weight:800;font-size:.95rem;color:var(--plum-900);margin-bottom:14px">❓ Common Questions</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">Do my customers download instantly?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Yes — once they pay through your payment link, you send them the Canva template link or file. For fully automated delivery, use Gumroad as your payment processor (it handles delivery automatically).</div></div>
+            <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">Can I sell products I created myself — not just the Party Profit Printables templates?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Yes — you can add any digital product to your store. The Quick Fill is pre-loaded with the Party Profit Printables templates, but you can type any product name and description manually.</div></div>
+            <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">How do I customize the names (like changing "Unicorn" to "Dinosaur")?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">You customize in Canva. Open the Canva template link, click the text you want to change, type the new name. Download as PDF Print. Done. Your graphic designer included step-by-step Canva instructions with your template package.</div></div>
+            <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">What if I need help?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Email <strong>support@partybizhub.com</strong> and we'll get back to you within 24 hours.</div></div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /panelGuide -->
 
     </div><!-- /storeContent -->
   </div>
@@ -627,6 +721,8 @@ async function init(){
   const emailEl=document.getElementById('storeContactEmail');
   if(bioEl)bioEl.value=currentProfileData.bio||'';
   if(emailEl)emailEl.value=currentProfileData.contactEmail||'';
+  const payEl=document.getElementById('storePaymentLink');
+  if(payEl)payEl.value=currentProfileData.paymentLink||'';
 
   // Restore store slug and set link
   const savedSlug=p?.store_slug||'';
@@ -676,12 +772,13 @@ async function saveStoreSlug(){
 async function saveStoreProfile(){
   const bio=(document.getElementById('storeBio').value||'').trim();
   const contactEmail=(document.getElementById('storeContactEmail').value||'').trim();
+  const paymentLink=(document.getElementById('storePaymentLink').value||'').trim();
   const saving=document.getElementById('profileSaving');
   if(saving)saving.textContent='Saving…';
   try{
     const{data:{session:fresh}}=await sb.auth.refreshSession();
     if(!fresh){if(saving)saving.textContent='Session expired';return;}
-    const merged=Object.assign({},currentProfileData,{bio,contactEmail});
+    const merged=Object.assign({},currentProfileData,{bio,contactEmail,paymentLink});
     const{error}=await sb.from('profiles').update({profile_data:merged}).eq('id',currentUser.id);
     if(error)throw error;
     currentProfileData=merged;

@@ -5,28 +5,35 @@
 (function () {
   const PAGES = [
     { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
-    { id: 'app',       href: 'app.html',       icon: '📄', label: 'Quote Builder' },
-    { id: 'contract',  href: 'contract.html',  icon: '📝', label: 'Contract' },
-    { id: 'profit',    href: 'profit.html',    icon: '💰', label: 'Profit Calc' },
-    { id: 'prep',      href: 'prep.html',      icon: '📋', label: 'Event Checklist' },
-    { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors' },
-    { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website', gated: true },
-    { id: 'store',     href: 'store.html',     icon: '🛍️', label: 'Digital Store', gated: true },
-    { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI' },
-    { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio' },
+    { id: 'store',     href: 'store.html',     icon: '🛍️', label: 'Digital Store' },
+    { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website' },
+    { id: 'app',       href: 'app.html',       icon: '📄', label: 'Quote Builder',   pbhOnly: true },
+    { id: 'contract',  href: 'contract.html',  icon: '📝', label: 'Contract',        pbhOnly: true },
+    { id: 'profit',    href: 'profit.html',    icon: '💰', label: 'Profit Calc',     pbhOnly: true },
+    { id: 'prep',      href: 'prep.html',      icon: '📋', label: 'Event Checklist', pbhOnly: true },
+    { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors',         pbhOnly: true },
+    { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI',  pbhOnly: true },
+    { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio',  pbhOnly: true },
     { id: 'guide',     href: 'guide.html',     icon: '🚀', label: 'Quick Start Guide' },
   ];
 
   const filename = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
 
   function build() {
+    const isPrintablesOnly = (window.pbhPlan === 'printables');
     const items = PAGES.map(p => {
       const active = filename === p.id ? ' active' : '';
-      const lock = (p.gated && !window.pbhProAccess) ? '<span class="snav-lock" title="KPPS feature">🔒</span>' : '';
+      const isLocked = p.pbhOnly && isPrintablesOnly;
+      if (isLocked) {
+        return `<span class="snav-item snav-locked" title="Upgrade to Party Biz Hub" onclick="showUpgradePrompt()">
+          <span class="snav-icon" style="opacity:.45">${p.icon}</span>
+          <span class="snav-label" style="opacity:.45">${p.label}</span>
+          <span class="snav-lock">🔒</span>
+        </span>`;
+      }
       return `<a href="${p.href}" class="snav-item${active}">
         <span class="snav-icon">${p.icon}</span>
         <span class="snav-label">${p.label}</span>
-        ${lock}
       </a>`;
     }).join('');
 
@@ -80,9 +87,28 @@
   };
 
   window.setNavPlan = function (plan) {
+    window.pbhPlan = plan;
     window.pbhProAccess = (plan === 'pro' || plan === 'kpps');
-    const lockEl = document.querySelector('.snav-lock');
-    if (lockEl) lockEl.style.display = window.pbhProAccess ? 'none' : '';
+    const mount = document.getElementById('pbhSidebar');
+    if (mount) mount.innerHTML = build();
+  };
+
+  window.showUpgradePrompt = function () {
+    let modal = document.getElementById('upgradeModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'upgradeModal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML = `<div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <div style="font-size:2.5rem;margin-bottom:12px">🔒</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:#1F1A24;margin-bottom:8px">Party Biz Hub Feature</h3>
+        <p style="font-size:.88rem;color:#6C6473;line-height:1.7;margin-bottom:20px">This tool is included with the full <strong>Party Biz Hub</strong> membership — quote builder, contracts, profit calculator, vendor directory, and more.</p>
+        <a href="https://buy.stripe.com/3cI28r0hndpl0O2d917bW06" target="_blank" style="display:block;background:linear-gradient(135deg,#7B3F9E,#E8178A);color:#fff;font-weight:800;padding:14px;border-radius:12px;text-decoration:none;font-size:.9rem;margin-bottom:10px">Upgrade to Party Biz Hub →</a>
+        <button onclick="document.getElementById('upgradeModal').remove()" style="background:none;border:none;color:#9990aa;font-size:.82rem;cursor:pointer;font-family:inherit">Not right now</button>
+      </div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+    }
   };
 
   window.initNavSignout = function (handler) {
