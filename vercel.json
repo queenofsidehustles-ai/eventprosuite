@@ -2,6 +2,7 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/login", "destination": "/login.html" },
     { "source": "/join", "destination": "/join.html" },
     { "source": "/success-printables", "destination": "/success-printables.html" },
     { "source": "/license", "destination": "/license.html" },
