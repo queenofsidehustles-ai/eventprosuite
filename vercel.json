@@ -4,6 +4,7 @@
   "rewrites": [
     { "source": "/join", "destination": "/join.html" },
     { "source": "/success-printables", "destination": "/success-printables.html" },
+    { "source": "/license", "destination": "/license.html" },
     { "source": "/store/:slug", "destination": "/shopfront.html?slug=:slug" }
   ],
   "functions": {
