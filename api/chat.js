@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
       headers: {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://eventprosuite.vercel.app',
+        'HTTP-Referer': 'https://partybizhub.com',
         'X-Title': 'Party Biz Hub'
       },
       body: JSON.stringify({

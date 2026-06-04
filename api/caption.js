@@ -86,7 +86,7 @@ Return ONLY valid JSON — no markdown, no explanation:
       headers: {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://eventprosuite.vercel.app',
+        'HTTP-Referer': 'https://partybizhub.com',
         'X-Title': 'Party Biz Hub Content'
       },
       body: JSON.stringify({
