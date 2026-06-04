@@ -133,11 +133,18 @@
 
   <div class="message" id="authMessage"></div>
 
-  <!-- KPPS INVITE BANNER (shown when ?invite=KPPS) -->
+  <!-- KPPS INVITE BANNER -->
   <div id="inviteBanner" style="display:none;background:linear-gradient(135deg,#1a0e2a,#3b1f6b);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:18px;border:1.5px solid rgba(212,168,64,.5);text-align:center">
     <div style="font-size:1.4rem;margin-bottom:4px">🎉</div>
     <div style="font-weight:800;font-size:.95rem;margin-bottom:3px">👑 KPPS Member — Welcome to Party Biz Hub!</div>
     <div style="font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.55">Create your free account below to access your full Party Biz Hub back office — quote builder, contracts, profit calculator, vendor directory, digital store, and more. All included with your KPPS membership.</div>
+  </div>
+
+  <!-- PRINTABLES INVITE BANNER -->
+  <div id="printablesBanner" style="display:none;background:linear-gradient(135deg,#7B3F9E,#E8178A);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:18px;border:1.5px solid rgba(232,23,138,.4);text-align:center">
+    <div style="font-size:1.4rem;margin-bottom:4px">🎨</div>
+    <div style="font-weight:800;font-size:.95rem;margin-bottom:3px">Welcome — Party Profit Printables™!</div>
+    <div style="font-size:.82rem;color:rgba(255,255,255,.9);line-height:1.55">Create your free account below to access your Digital Store and all 15 party printable templates. Your purchase is confirmed — this takes less than 2 minutes.</div>
   </div>
 
   <!-- MAIN AUTH -->
@@ -215,22 +222,33 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const urlParams = new URLSearchParams(window.location.search);
 const inviteCode = (urlParams.get('invite') || '').toUpperCase();
 const isKppsInvite = inviteCode === 'KPPS';
+const isPrintablesInvite = inviteCode === 'PRINTABLES';
+
 if (isKppsInvite) {
   localStorage.setItem('pbh_invite', 'KPPS');
   document.getElementById('inviteBanner').style.display = 'block';
   switchTab('signup');
+} else if (isPrintablesInvite) {
+  localStorage.setItem('pbh_invite', 'PRINTABLES');
+  document.getElementById('printablesBanner').style.display = 'block';
+  switchTab('signup');
 } else if (localStorage.getItem('pbh_invite') === 'KPPS') {
-  // Still show banner if invite was saved from a previous visit
   document.getElementById('inviteBanner').style.display = 'block';
+  switchTab('signup');
+} else if (localStorage.getItem('pbh_invite') === 'PRINTABLES') {
+  document.getElementById('printablesBanner').style.display = 'block';
   switchTab('signup');
 }
 
 // Auto-redirect if already logged in
 sb.auth.getSession().then(async ({ data: { session } }) => {
   if (!session) return;
-  // If KPPS invite link, grant access before redirecting
-  if (localStorage.getItem('pbh_invite') === 'KPPS') {
+  const invite = localStorage.getItem('pbh_invite');
+  if (invite === 'KPPS') {
     await sb.from('profiles').upsert({ id: session.user.id, has_kpps_access: true, has_paid: true }, { onConflict: 'id' });
+    localStorage.removeItem('pbh_invite');
+  } else if (invite === 'PRINTABLES') {
+    await sb.from('profiles').upsert({ id: session.user.id, has_printables_access: true }, { onConflict: 'id' });
     localStorage.removeItem('pbh_invite');
   }
   const { data: profile } = await sb
@@ -332,14 +350,12 @@ async function handleSignup() {
     return;
   }
 
-  // If KPPS invite, grant has_kpps_access on the new profile
-  if (localStorage.getItem('pbh_invite') === 'KPPS' && data.user) {
-    await sb.from('profiles').upsert({
-      id: data.user.id,
-      has_kpps_access: true,
-      has_paid: true,
-      full_name: name,
-    }, { onConflict: 'id' });
+  const invite = localStorage.getItem('pbh_invite');
+  if (invite === 'KPPS' && data.user) {
+    await sb.from('profiles').upsert({ id: data.user.id, has_kpps_access: true, has_paid: true, full_name: name }, { onConflict: 'id' });
+    localStorage.removeItem('pbh_invite');
+  } else if (invite === 'PRINTABLES' && data.user) {
+    await sb.from('profiles').upsert({ id: data.user.id, has_printables_access: true, full_name: name }, { onConflict: 'id' });
     localStorage.removeItem('pbh_invite');
   }
 
