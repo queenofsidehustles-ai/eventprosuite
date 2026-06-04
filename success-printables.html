@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>You're In! 🎉 — Party Profit Printables™</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:#1F1A24;background:#fff;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+:root{
+  --pink:#E8178A;--pink-soft:#FFF0F7;--pink-mid:#FCE4F1;
+  --purple:#7B3F9E;--purple-deep:#4C1D95;
+  --gold:#D4A840;--gold-soft:#FDF5DC;
+  --ink:#1F1A24;--muted:#6C6473;
+}
+
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid #F0E8F5;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo img{height:32px;width:auto}
+.nav-logo-text{font-weight:800;font-size:.9rem;color:var(--purple-deep)}
+.nav-logo-sub{font-size:.62rem;color:var(--pink);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+
+/* CONFETTI BAR */
+.confetti-bar{background:linear-gradient(90deg,var(--purple-deep),var(--pink));padding:12px 20px;text-align:center;color:#fff;font-size:.85rem;font-weight:700;letter-spacing:.02em}
+.confetti-bar .gold{color:var(--gold)}
+
+/* HERO */
+.hero{flex:1;padding:56px 24px 48px;text-align:center;background:linear-gradient(160deg,#FFF5FB 0%,#F8F0FF 60%,#FFF5FB 100%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(232,23,138,.08),transparent 65%);pointer-events:none}
+.hero-inner{max-width:640px;margin:0 auto;position:relative;z-index:1}
+
+/* SUCCESS ICON */
+.success-ring{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#c0107a);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 12px 36px rgba(232,23,138,.35)}
+.success-ring svg{width:44px;height:44px}
+
+.hero-eyebrow{display:inline-block;background:var(--gold-soft);border:1.5px solid var(--gold);color:#3A2800;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 16px;border-radius:999px;margin-bottom:18px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--purple-deep);line-height:1.1;margin-bottom:10px}
+.hero h1 .script{font-family:'Dancing Script',cursive;color:var(--pink);display:block;font-size:1.05em}
+.hero-sub{font-size:1rem;color:var(--muted);line-height:1.8;margin-bottom:32px}
+.hero-sub strong{color:var(--ink)}
+
+/* NEXT STEPS CARD */
+.steps-card{background:#fff;border-radius:20px;border:2px solid var(--pink-mid);padding:32px 28px;margin-bottom:28px;text-align:left;box-shadow:0 8px 32px rgba(123,63,158,.08)}
+.steps-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--purple-deep);margin-bottom:20px;text-align:center}
+.step{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.step:last-child{margin-bottom:0}
+.step-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--pink),#c0107a);color:#fff;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-text{}
+.step-title{font-weight:700;font-size:.92rem;color:var(--purple-deep);margin-bottom:3px}
+.step-desc{font-size:.83rem;color:var(--muted);line-height:1.65}
+.step-desc a{color:var(--pink);font-weight:600}
+
+/* FOUNDING BADGE */
+.founding-badge{background:linear-gradient(135deg,var(--purple-deep),#6B21A8);border-radius:16px;padding:22px 24px;color:#fff;margin-bottom:28px;display:flex;align-items:flex-start;gap:14px;text-align:left}
+.founding-badge .badge-icon{font-size:1.8rem;flex-shrink:0}
+.founding-badge-title{font-weight:800;font-size:.95rem;margin-bottom:4px;color:#fff}
+.founding-badge-desc{font-size:.83rem;color:rgba(255,255,255,.85);line-height:1.65}
+.founding-badge-desc strong{color:var(--gold)}
+
+/* SHARE */
+.share-section{margin-bottom:28px}
+.share-label{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.share-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;font-weight:700;font-size:.85rem;text-decoration:none;transition:all .14s;border:2px solid var(--pink);color:var(--pink);background:#fff}
+.share-btn:hover{background:var(--pink);color:#fff}
+
+/* FOOTER */
+footer{background:var(--purple-deep);padding:20px 24px;text-align:center;color:rgba(255,255,255,.5);font-size:.75rem}
+footer a{color:rgba(255,255,255,.6);font-weight:600}
+
+@media(max-width:480px){
+  .steps-card{padding:22px 18px}
+  .hero{padding:36px 20px 32px}
+}
+</style>
+</head>
+<body>
+
+<div class="confetti-bar">
+  🎉 &nbsp;Payment confirmed! Welcome to the <span class="gold">Founding Member</span> family&nbsp; 🎉
+</div>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <img src="partybizhub-logo.svg" alt="Party Biz Hub"/>
+    <div>
+      <div class="nav-logo-text">Party Biz Hub</div>
+      <div class="nav-logo-sub">Kids Party Profit System™</div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <div class="hero-eyebrow">👑 Founding Member Confirmed</div>
+    <h1>
+      You're officially in.
+      <span class="script">Welcome to the family!</span>
+    </h1>
+    <p class="hero-sub">
+      Your payment went through and your spot is secured. <strong>Here's exactly what happens next</strong> — read this so you know what to expect.
+    </p>
+
+    <!-- NEXT STEPS -->
+    <div class="steps-card">
+      <div class="steps-title">Your next 3 steps 👇</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <div class="step-title">Check your email</div>
+          <div class="step-desc">You'll receive a confirmation from Stripe for your records. Then within <strong>24 hours</strong>, watch for an email from Party Biz Hub with your personal access link.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <div class="step-title">Create your Party Biz Hub account</div>
+          <div class="step-desc">Once you get your access email, click the link to set up your account at <a href="login.html">partybizhub.app</a>. Your Digital Store and all 15 templates will be waiting for you.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <div class="step-title">Set up your store and share your link</div>
+          <div class="step-desc">Pick your store name, choose your theme, add your products — and you're open for business. Your store can be live and selling the same day.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOUNDING MEMBER REMINDER -->
+    <div class="founding-badge">
+      <span class="badge-icon">👑</span>
+      <div>
+        <div class="founding-badge-title">You locked in the founding member rate.</div>
+        <div class="founding-badge-desc">Every new template added to the library comes into your store automatically — at <strong>no extra charge, ever</strong>. The library is growing. You grow with it.</div>
+      </div>
+    </div>
+
+    <!-- SHARE -->
+    <div class="share-section">
+      <div class="share-label">Spread the word 💌</div>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://partybizhub.app/join" target="_blank" class="share-btn">
+        📣 Share with a party planner friend
+      </a>
+    </div>
+
+    <p style="font-size:.78rem;color:var(--muted);line-height:1.7">
+      Questions? Email us at <a href="mailto:queenofsidehustles@gmail.com" style="color:var(--pink);font-weight:600">queenofsidehustles@gmail.com</a><br/>
+      We respond within 24 hours.
+    </p>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Party Biz Hub™ · Kids Party Profit System™ &nbsp;·&nbsp; <a href="join.html">Back to sales page</a></p>
+</footer>
+
+</body>
+</html>
