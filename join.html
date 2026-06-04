@@ -198,7 +198,7 @@ footer strong{color:rgba(255,255,255,.8)}
   .hero h1{font-size:2.2rem}
   .countdown-timer{gap:10px}
   .ct-num{font-size:2.2rem}
-  .hero .sample-grid{grid-template-columns:1fr!important}
+  .hero div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
 }
 </style>
 </head>
@@ -239,7 +239,31 @@ footer strong{color:rgba(255,255,255,.8)}
     <p class="hero-sub">
       Get <strong>15 done-for-you party printable templates</strong> + your own branded digital store — and start earning from your party skills while you're at school pickup, at your 9-to-5, or fast asleep.
     </p>
-    <div class="hero-cta-group">
+    <!-- SAMPLE IMAGES — show the product before asking for the buy -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:36px;max-width:900px;margin-left:auto;margin-right:auto">
+      <div>
+        <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);margin-bottom:8px">🦄 Unicorn Theme Pack</div>
+        <div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(123,63,158,.14),0 20px 50px rgba(123,63,158,.18)">
+          <img src="unicorn-sample.png" alt="Unicorn theme party printables"/>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">🦁 Jungle Safari Theme Pack</div>
+        <div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(123,63,158,.14),0 20px 50px rgba(123,63,158,.18)">
+          <img src="safari-sample.png" alt="Jungle Safari theme party printables"/>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e63946;margin-bottom:8px">🕷️ Spiderman Theme Pack</div>
+        <div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(123,63,158,.14),0 20px 50px rgba(123,63,158,.18)">
+          <img src="spiderman-sample.png" alt="Spiderman theme party printables"/>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:.78rem;color:var(--muted)">3 of 14 starter themes shown — all 14 included, more being added regularly ✦</p>
+
+    <!-- CTA + TERMS — after seeing the product -->
+    <div class="hero-cta-group" style="margin-top:32px">
       <label style="display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.8);border:1.5px solid var(--pink-mid);border-radius:12px;padding:14px 16px;cursor:pointer;max-width:520px;text-align:left">
         <input type="checkbox" id="licenseCheck" onchange="toggleBuyBtn()" style="width:18px;height:18px;accent-color:var(--pink);flex-shrink:0;margin-top:2px"/>
         <span style="font-size:.8rem;color:var(--ink);line-height:1.6">
@@ -251,21 +275,6 @@ footer strong{color:rgba(255,255,255,.8)}
       </a>
       <div class="hero-fine">One-time payment. No subscription. No design skills needed. <strong>Founding member price locks in today.</strong></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:40px;max-width:760px;margin-left:auto;margin-right:auto">
-      <div>
-        <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);margin-bottom:8px">🦄 Unicorn Theme Pack</div>
-        <div style="border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(123,63,158,.18)">
-          <img src="unicorn-sample.png" alt="Unicorn theme party printables — chip bags, water bottle labels, candy bar wrappers, juice pouches and stickers"/>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">🦁 Safari Theme Pack</div>
-        <div style="border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(123,63,158,.18)">
-          <img src="safari-sample.png" alt="Safari theme party printables — chip bags, water bottle labels, candy bar wrappers, juice pouches and stickers"/>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top:14px;font-size:.78rem;color:var(--muted)">Two of 15 starter themes — more being added regularly ✦</p>
   </div>
 </section>
 
@@ -279,6 +288,98 @@ footer strong{color:rgba(255,255,255,.8)}
     <div class="trust-item"><span class="trust-icon">✅</span> Instant digital delivery to your customers</div>
   </div>
 </div>
+
+<!-- THEME GALLERY -->
+<section style="background:linear-gradient(160deg,#F3E8FF,#FFE8F7);padding:56px 24px;position:relative;overflow:hidden">
+  <div style="position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(232,23,138,.1),transparent 65%);pointer-events:none"></div>
+  <div style="max-width:920px;margin:0 auto;position:relative;z-index:1">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pink);margin-bottom:10px">The Theme Library</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;color:var(--purple-deep);line-height:1.15;margin-bottom:10px">14 themes. 11 items each.<br><span style="font-family:'Dancing Script',cursive;color:var(--pink)">Founding members get every new one free.</span></h2>
+      <p style="font-size:.92rem;color:var(--muted);max-width:560px;margin:0 auto">Each theme pack includes chip bag labels, Capri Sun labels, water bottle labels, candy bar wrappers, Pringles wrappers, favor bag toppers, treat box labels, cupcake toppers, thank you tags, sticker sheets, and welcome sign &amp; invitation.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+
+      <!-- Available now -->
+      <div style="background:#fff;border-radius:14px;padding:16px 12px;text-align:center;border:2px solid rgba(232,23,138,.25);box-shadow:0 4px 16px rgba(232,23,138,.1),0 10px 30px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🦄</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Unicorn</div>
+        <span style="font-size:.65rem;font-weight:800;background:linear-gradient(135deg,var(--pink),#c0107a);color:#fff;padding:2px 10px;border-radius:999px">Available Now</span>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px 12px;text-align:center;border:2px solid rgba(232,23,138,.25);box-shadow:0 4px 16px rgba(232,23,138,.1),0 10px 30px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🦁</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Jungle Safari</div>
+        <span style="font-size:.65rem;font-weight:800;background:linear-gradient(135deg,var(--pink),#c0107a);color:#fff;padding:2px 10px;border-radius:999px">Available Now</span>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px 12px;text-align:center;border:2px solid rgba(232,23,138,.25);box-shadow:0 4px 16px rgba(232,23,138,.1),0 10px 30px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🕷️</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Spiderman</div>
+        <span style="font-size:.65rem;font-weight:800;background:linear-gradient(135deg,var(--pink),#c0107a);color:#fff;padding:2px 10px;border-radius:999px">Available Now</span>
+      </div>
+
+      <!-- Coming soon -->
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">👸</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Royal Princess</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">💅</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Pink Fashion Glam</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🐕</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Bluey</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">⚽</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Soccer Champion</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🧜</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Mermaid</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🦕</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Dinosaur</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🦸</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Superhero</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🎮</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Pixel Gamer</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🎤</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">K-Pop</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🚧</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Construction</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+      <div style="background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border-radius:14px;padding:16px 12px;text-align:center;border:1.5px solid rgba(123,63,158,.15);box-shadow:0 2px 10px rgba(123,63,158,.08)">
+        <div style="font-size:1.8rem;margin-bottom:6px">🧖</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--purple-deep);margin-bottom:4px">Spa Day</div>
+        <span style="font-size:.65rem;font-weight:700;background:#F3E8FF;color:var(--purple);padding:2px 10px;border-radius:999px">Coming Soon</span>
+      </div>
+
+    </div>
+    <div style="margin-top:20px;text-align:center;background:linear-gradient(135deg,rgba(212,168,64,.12),rgba(212,168,64,.06));border:1.5px solid rgba(212,168,64,.4);border-radius:14px;padding:14px 20px">
+      <p style="font-size:.88rem;color:var(--purple-deep);font-weight:700">👑 Founding members lock in at $97 and receive every new theme added to the library — automatically, at no extra charge.</p>
+    </div>
+  </div>
+</section>
 
 <!-- PAIN SECTION -->
 <section class="pain-section">
