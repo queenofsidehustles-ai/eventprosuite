@@ -364,6 +364,52 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         </div>
       </div>
 
+      <!-- Brand Colors -->
+      <div class="tpl-section">
+        <div class="tpl-section-head">
+          <div class="tpl-section-title">🎨 Brand Colors</div>
+          <div class="tpl-section-sub">Customize your store to match your brand — overrides the template defaults</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:.8rem;align-items:flex-end">
+          <div class="field" style="flex:1;min-width:120px">
+            <label style="margin-bottom:6px">Primary Color</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="color" id="brandPrimary" value="#D115AE" style="width:40px;height:36px;padding:2px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer"/>
+              <span id="brandPrimaryHex" style="font-size:.78rem;color:var(--muted);font-family:monospace">#D115AE</span>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Buttons &amp; accents</div>
+          </div>
+          <div class="field" style="flex:1;min-width:120px">
+            <label style="margin-bottom:6px">Accent Color</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="color" id="brandAccent" value="#7559D4" style="width:40px;height:36px;padding:2px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer"/>
+              <span id="brandAccentHex" style="font-size:.78rem;color:var(--muted);font-family:monospace">#7559D4</span>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Banner &amp; highlights</div>
+          </div>
+          <div class="field" style="flex:1;min-width:120px">
+            <label style="margin-bottom:6px">Background Tint</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="color" id="brandBg" value="#FAF0FF" style="width:40px;height:36px;padding:2px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer"/>
+              <span id="brandBgHex" style="font-size:.78rem;color:var(--muted);font-family:monospace">#FAF0FF</span>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Hero &amp; page background</div>
+          </div>
+          <div>
+            <button class="btn-primary" style="padding:.5rem 1.2rem;font-size:.82rem" onclick="saveBrandColors()">Save Colors</button>
+            <span id="colorSaving" style="font-size:.72rem;color:var(--muted);margin-left:6px"></span>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:.72rem;color:var(--muted);font-weight:600">Quick presets:</span>
+          <button onclick="applyColorPreset('#D115AE','#7559D4','#FAF0FF')" style="font-size:.7rem;padding:3px 10px;border-radius:999px;border:1.5px solid #e8b0f0;background:#fdf0ff;cursor:pointer;font-family:inherit;color:#7B3F9E;font-weight:600">Purple Pink</button>
+          <button onclick="applyColorPreset('#E8178A','#9333ea','#FFF5FB')" style="font-size:.7rem;padding:3px 10px;border-radius:999px;border:1.5px solid #fbc0de;background:#fff0f7;cursor:pointer;font-family:inherit;color:#c01070;font-weight:600">Hot Pink</button>
+          <button onclick="applyColorPreset('#D4A840','#7559D4','#FDF8EC')" style="font-size:.7rem;padding:3px 10px;border-radius:999px;border:1.5px solid #f0d88a;background:#fdf8e8;cursor:pointer;font-family:inherit;color:#8a6200;font-weight:600">Gold &amp; Purple</button>
+          <button onclick="applyColorPreset('#1E8C5A','#2563eb','#F0FBF5')" style="font-size:.7rem;padding:3px 10px;border-radius:999px;border:1.5px solid #a0e0c0;background:#f0fbf5;cursor:pointer;font-family:inherit;color:#145e3a;font-weight:600">Green &amp; Blue</button>
+          <button onclick="applyColorPreset('#e63946','#457b9d','#FFF5F5')" style="font-size:.7rem;padding:3px 10px;border-radius:999px;border:1.5px solid #f8b4b8;background:#fff5f5;cursor:pointer;font-family:inherit;color:#a00010;font-weight:600">Red &amp; Blue</button>
+        </div>
+      </div>
+
       <!-- Store Profile Settings -->
       <div class="tpl-section">
         <div class="tpl-section-head">
@@ -498,9 +544,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start">
           <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
           <div>
-            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:4px">Add your first product</div>
-            <p style="font-size:.83rem;color:var(--muted);line-height:1.65">Click <strong>Add Product</strong> in the My Store tab. Use the <strong>✨ Quick Fill</strong> button — pick a product type (Chip Bag Label, Water Bottle Label, etc.), type the theme name (Unicorn, Dinosaur, etc.), and click Auto-fill. It writes the name and SEO description for you. Add a price and paste your payment link for that product.</p>
-            <div style="background:#fff8e0;border:1px solid #f0d060;border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.78rem;color:#7a5500;font-weight:600">💡 Tip: Upload a photo of your printable as the product image — customers buy what they can see.</div>
+            <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:10px">Add your first product</div>
+            <ol style="padding-left:0;list-style:none;display:flex;flex-direction:column;gap:7px">
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</span><span>Click <strong style="color:var(--ink)">Add Product</strong> button at the top of the My Store tab</span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</span><span>Click <strong style="color:var(--ink)">✨ Quick Fill</strong> and select a product type (e.g. Chip Bag Label)</span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</span><span>Type the theme name (e.g. <em>Unicorn</em> or <em>Dinosaur</em>) → click <strong style="color:var(--ink)">Auto-fill ✨</strong></span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</span><span>Set a price and paste your payment link in the <strong style="color:var(--ink)">Buy Link</strong> field</span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">5</span><span>Upload a photo of your printable — <strong style="color:var(--ink)">customers buy what they can see</strong></span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">6</span><span>Click <strong style="color:var(--ink)">Save Product</strong> — it appears on your store instantly</span></li>
+            </ol>
           </div>
         </div>
 
@@ -723,6 +775,10 @@ async function init(){
   if(emailEl)emailEl.value=currentProfileData.contactEmail||'';
   const payEl=document.getElementById('storePaymentLink');
   if(payEl)payEl.value=currentProfileData.paymentLink||'';
+  const bc=currentProfileData.brandColors||{};
+  if(bc.primary){const el=document.getElementById('brandPrimary');if(el){el.value=bc.primary;document.getElementById('brandPrimaryHex').textContent=bc.primary;}}
+  if(bc.accent){const el=document.getElementById('brandAccent');if(el){el.value=bc.accent;document.getElementById('brandAccentHex').textContent=bc.accent;}}
+  if(bc.bg){const el=document.getElementById('brandBg');if(el){el.value=bc.bg;document.getElementById('brandBgHex').textContent=bc.bg;}}
 
   // Restore store slug and set link
   const savedSlug=p?.store_slug||'';
@@ -764,6 +820,41 @@ async function saveStoreSlug(){
     if(error)throw error;
     if(saving){saving.textContent='✓ Handle saved!';setTimeout(()=>{saving.textContent=''},3000);}
     updateSlugPreview();
+  }catch(e){
+    if(saving)saving.textContent='Error: '+(e.message||'unknown');
+  }
+}
+
+// ── Brand color pickers ──
+document.addEventListener('DOMContentLoaded',()=>{
+  ['brandPrimary','brandAccent','brandBg'].forEach(id=>{
+    const el=document.getElementById(id);
+    const hex=document.getElementById(id+'Hex');
+    if(el&&hex) el.addEventListener('input',()=>{hex.textContent=el.value;});
+  });
+});
+
+function applyColorPreset(primary,accent,bg){
+  const p=document.getElementById('brandPrimary');
+  const a=document.getElementById('brandAccent');
+  const b=document.getElementById('brandBg');
+  if(p){p.value=primary;document.getElementById('brandPrimaryHex').textContent=primary;}
+  if(a){a.value=accent;document.getElementById('brandAccentHex').textContent=accent;}
+  if(b){b.value=bg;document.getElementById('brandBgHex').textContent=bg;}
+}
+
+async function saveBrandColors(){
+  const primary=document.getElementById('brandPrimary').value;
+  const accent=document.getElementById('brandAccent').value;
+  const bg=document.getElementById('brandBg').value;
+  const saving=document.getElementById('colorSaving');
+  if(saving)saving.textContent='Saving…';
+  try{
+    const merged=Object.assign({},currentProfileData,{brandColors:{primary,accent,bg}});
+    const{error}=await sb.from('profiles').update({profile_data:merged}).eq('id',currentUser.id);
+    if(error)throw error;
+    currentProfileData=merged;
+    if(saving){saving.textContent='✓ Saved!';setTimeout(()=>{saving.textContent=''},3000);}
   }catch(e){
     if(saving)saving.textContent='Error: '+(e.message||'unknown');
   }
