@@ -426,6 +426,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function setMeta(n,v){let e=document.querySelector(`meta[name="${n}"]`)||document.querySelector(`meta[property="${n}"]`);if(e)e.content=v;}
 
 async function init(){
+  try {
   const params=new URLSearchParams(location.search);
   ownerId=params.get('uid')||'';
   const slug=params.get('slug')||'';
@@ -464,7 +465,7 @@ async function init(){
   // Apply subscriber's brand colors if set
   const bc = d.brandColors || {};
   if(bc.primary || bc.accent || bc.bg){
-    const pfxName = template;
+    const pfxName = pfx;
     const p = bc.primary || '#D115AE';
     const a = bc.accent  || '#7559D4';
     const bg = bc.bg     || '#FAF0FF';
@@ -491,6 +492,11 @@ async function init(){
   buildFilters();
   renderProducts();
   hideGate();
+  } catch(err) {
+    console.error('Shopfront init error:', err);
+    hideGate();
+    renderError('Something went wrong', 'Unable to load this store. Please try refreshing the page.');
+  }
 }
 
 function hideGate(){
@@ -516,7 +522,7 @@ function buildShell(bizName,tagline,logoUrl,bio,contactEmail){
   const ecoHtml=`<div class="${pfx}-eco">Part of the <strong>Party Biz Hub</strong> ecosystem &nbsp;·&nbsp; Powered by <strong>Kids Party Profit System™</strong></div>`;
   const secureHtml=`<div class="${pfx}-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure checkout</div>`;
 
-  const shopBtnStyle = template==='lx'
+  const shopBtnStyle = tpl==='lx'
     ? 'display:inline-block;background:linear-gradient(135deg,#E8BC48,#c49020);color:#1a0e00;font-weight:800;padding:8px 20px;border-radius:50px;font-size:.78rem;text-decoration:none;white-space:nowrap;box-shadow:0 3px 10px rgba(212,168,64,.4)'
     : 'display:inline-block;background:linear-gradient(135deg,#D115AE,#9a0d82);color:#fff;font-weight:700;padding:8px 20px;border-radius:50px;font-size:.78rem;text-decoration:none;white-space:nowrap;box-shadow:0 3px 10px rgba(209,21,174,.4)';
   const navHtml=`<div class="${pfx}-nav"><div class="${pfx}-brand">${logoHtml}<div><div class="${pfx}-biz">${esc(bizName)}</div><div class="${pfx}-biz-sub">Party Printables</div></div></div><a href="#products" style="${shopBtnStyle}">Shop Now →</a></div>`;
