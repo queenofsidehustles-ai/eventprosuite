@@ -77,7 +77,7 @@ img{max-width:100%;display:block}
 /* Studio Card */
 .st-card{background:#fff;border-radius:18px;border:1px solid rgba(209,21,174,.1);overflow:hidden;box-shadow:0 2px 8px rgba(209,21,174,.06),0 8px 24px rgba(117,89,212,.08),0 20px 40px rgba(117,89,212,.05);transition:all .25s;display:flex;flex-direction:column}
 .st-card:hover{box-shadow:0 4px 16px rgba(209,21,174,.1),0 16px 40px rgba(117,89,212,.16),0 28px 56px rgba(117,89,212,.10);transform:translateY(-5px)}
-.st-card-img{height:260px;background:linear-gradient(135deg,rgba(209,21,174,0.05),rgba(117,89,212,0.05));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.st-card-img{height:170px;background:linear-gradient(135deg,rgba(209,21,174,0.05),rgba(117,89,212,0.05));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .st-card-img img{width:100%;height:100%;object-fit:contain;transition:transform .3s;padding:4px}
 .st-card:hover .st-card-img img{transform:scale(1.04)}
 .st-card-img .no-img{text-align:center}
@@ -144,7 +144,7 @@ img{max-width:100%;display:block}
 
 .lx-card{background:linear-gradient(180deg,#1F1240,#160D30);border-radius:18px;border:1px solid rgba(212,168,64,.12);overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.4),0 16px 40px rgba(0,0,0,.3),0 0 0 1px rgba(212,168,64,.06);transition:all .25s;display:flex;flex-direction:column}
 .lx-card:hover{box-shadow:0 8px 24px rgba(212,168,64,.16),0 24px 56px rgba(212,168,64,.12),0 0 0 1px rgba(212,168,64,.3);transform:translateY(-5px);border-color:rgba(212,168,64,.35)}
-.lx-card-img{height:260px;background:linear-gradient(135deg,rgba(212,168,64,0.06),rgba(209,21,174,0.06));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.lx-card-img{height:170px;background:linear-gradient(135deg,rgba(212,168,64,0.06),rgba(209,21,174,0.06));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .lx-card-img img{width:100%;height:100%;object-fit:contain;transition:transform .3s;padding:4px}
 .lx-card:hover .lx-card-img img{transform:scale(1.04)}
 .lx-card-img .no-img{text-align:center}
@@ -516,7 +516,10 @@ function buildShell(bizName,tagline,logoUrl,bio,contactEmail){
   const ecoHtml=`<div class="${pfx}-eco">Part of the <strong>Party Biz Hub</strong> ecosystem &nbsp;·&nbsp; Powered by <strong>Kids Party Profit System™</strong></div>`;
   const secureHtml=`<div class="${pfx}-secure"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure checkout</div>`;
 
-  const navHtml=`<div class="${pfx}-nav"><div class="${pfx}-brand">${logoHtml}<div><div class="${pfx}-biz">${esc(bizName)}</div><div class="${pfx}-biz-sub">Party Printables</div></div></div>${secureHtml}</div>`;
+  const shopBtnStyle = template==='lx'
+    ? 'display:inline-block;background:linear-gradient(135deg,#E8BC48,#c49020);color:#1a0e00;font-weight:800;padding:8px 20px;border-radius:50px;font-size:.78rem;text-decoration:none;white-space:nowrap;box-shadow:0 3px 10px rgba(212,168,64,.4)'
+    : 'display:inline-block;background:linear-gradient(135deg,#D115AE,#9a0d82);color:#fff;font-weight:700;padding:8px 20px;border-radius:50px;font-size:.78rem;text-decoration:none;white-space:nowrap;box-shadow:0 3px 10px rgba(209,21,174,.4)';
+  const navHtml=`<div class="${pfx}-nav"><div class="${pfx}-brand">${logoHtml}<div><div class="${pfx}-biz">${esc(bizName)}</div><div class="${pfx}-biz-sub">Party Printables</div></div></div><a href="#products" style="${shopBtnStyle}">Shop Now →</a></div>`;
 
   const heroHtml=`<div class="${pfx}-hero" id="heroSection">
     <div class="${pfx}-eyebrow">✦ Party Profit Printables™ ✦</div>
@@ -524,7 +527,6 @@ function buildShell(bizName,tagline,logoUrl,bio,contactEmail){
     <div class="${pfx}-h1-script">Printables™</div>
     <div class="${pfx}-rule"></div>
     <p class="${pfx}-sub">${esc(tagline)}</p>
-    <a href="#products" class="${pfx}-cta">Shop Printables →</a>
   </div>`;
 
   // About section (only if bio is set)

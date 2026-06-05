@@ -441,7 +441,7 @@
           <button type="button" class="tiny-btn" id="printBtn">🖨 Print</button>
           <button type="button" class="tiny-btn" id="copyBtn">📋 Copy text</button>
           <button type="button" class="tiny-btn btn-primary" style="color:#fff;border:none" id="saveQuoteBtn">💾 Save Quote</button>
-          <button type="button" class="tiny-btn" id="shareQuoteBtn" style="display:none">📤 Send to Client</button>
+          <button type="button" class="tiny-btn" id="shareQuoteBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then click to email to client">📧 Email to Client</button>
         </div>
       </div>
       <div class="preview-body" id="fullPreview"></div>
@@ -702,7 +702,8 @@ async function saveQuote() {
   if (shareBtn) {
     const hasEmail = !!$('clientEmail').value.trim();
     shareBtn.textContent = hasEmail ? '📧 Email to Client' : '📤 Send to Client';
-    shareBtn.style.display = 'inline-flex';
+    shareBtn.style.opacity = '1';
+    shareBtn.style.pointerEvents = 'auto';
   }
   toast('✓ Quote saved — click ' + ($('clientEmail').value.trim() ? '"Email to Client"' : '"Send to Client"') + ' to share');
 }

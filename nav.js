@@ -5,7 +5,7 @@
 (function () {
   const PAGES = [
     { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
-    { id: 'store',     href: 'store.html',     icon: '🛍️', label: 'Digital Store' },
+    { id: 'store',     href: 'store.html',     icon: '🛍️', label: 'Party Profit Printables' },
     { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website' },
     { id: 'app',       href: 'app.html',       icon: '📄', label: 'Quote Builder',   pbhOnly: true },
     { id: 'contract',  href: 'contract.html',  icon: '📝', label: 'Contract',        pbhOnly: true },
