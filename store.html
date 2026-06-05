@@ -547,10 +547,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
             <div style="font-weight:700;font-size:.95rem;color:var(--ink);margin-bottom:10px">Add your first product</div>
             <ol style="padding-left:0;list-style:none;display:flex;flex-direction:column;gap:7px">
               <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</span><span>Click <strong style="color:var(--ink)">Add Product</strong> button at the top of the My Store tab</span></li>
-              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</span><span>Click <strong style="color:var(--ink)">✨ Quick Fill</strong> and select a product type (e.g. Chip Bag Label)</span></li>
-              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</span><span>Type the theme name (e.g. <em>Unicorn</em> or <em>Dinosaur</em>) → click <strong style="color:var(--ink)">Auto-fill ✨</strong></span></li>
-              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</span><span>Set a price and paste your payment link in the <strong style="color:var(--ink)">Buy Link</strong> field</span></li>
-              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">5</span><span>Upload a photo of your printable — <strong style="color:var(--ink)">customers buy what they can see</strong></span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</span><span>Click <strong style="color:var(--ink)">✨ Quick Fill</strong> — type a theme name (e.g. <em>Unicorn</em>) → click <strong style="color:var(--ink)">Auto-fill ✨</strong></span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</span><span>This fills in the full bundle name and SEO description — all 11 items listed automatically</span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</span><span>Set a price — your store payment link (set in Step 2) handles checkout automatically</span></li>
+              <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">5</span><span>Upload a photo of your printable bundle — <strong style="color:var(--ink)">customers buy what they can see</strong></span></li>
               <li style="display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--muted);line-height:1.55"><span style="min-width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">6</span><span>Click <strong style="color:var(--ink)">Save Product</strong> — it appears on your store instantly</span></li>
             </ol>
           </div>
@@ -601,23 +601,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
     <!-- Quick Fill -->
     <div class="quickfill" id="quickfillBar">
-      <div class="quickfill-label">✨ Quick Fill — choose a product type &amp; theme to auto-fill the form</div>
+      <div class="quickfill-label">✨ Quick Fill — type a theme name to auto-fill the full bundle listing</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">Each listing = a complete 11-item theme bundle (chip bags, labels, toppers &amp; more — sold as a set)</div>
       <div class="quickfill-row">
-        <select id="qfType">
-          <option value="">— Product Type —</option>
-          <option value="chip-bag">Chip Bag Label</option>
-          <option value="capri-sun">Capri Sun Label</option>
-          <option value="water-bottle">Water Bottle Label</option>
-          <option value="candy-bar">Candy Bar Wrapper</option>
-          <option value="pringles">Pringles Wrapper</option>
-          <option value="favor-bag">Favor Bag Topper</option>
-          <option value="treat-box">Treat Box Label</option>
-          <option value="cupcake">Cupcake Topper</option>
-          <option value="thank-you">Thank You Tag</option>
-          <option value="sticker">Sticker Sheet</option>
-          <option value="welcome-invite">Welcome Sign &amp; Invitation</option>
-        </select>
-        <input type="text" id="qfTheme" placeholder="Theme name (e.g. Unicorn)"/>
+        <input type="text" id="qfTheme" placeholder="Theme name (e.g. Unicorn, Dinosaur, Spiderman…)" style="flex:2"/>
         <button class="quickfill-btn" onclick="applyQuickFill()">Auto-fill ✨</button>
       </div>
     </div>
@@ -680,15 +667,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       <div class="field-help" id="existingFile"></div>
     </div>
 
-    <!-- Stripe payment link -->
-    <div class="field">
-      <label>Stripe Payment Link</label>
-      <input type="url" id="pStripeLink" placeholder="https://buy.stripe.com/…"/>
-      <div class="field-help">
-        In your Stripe dashboard → Payment Links → Create. Set the price to match above.
-        After payment, Stripe will redirect customers back to your store to download.
-      </div>
-    </div>
+    <!-- Payment handled by store-level payment link in Store Profile -->
 
     <div class="field-row">
       <div class="field">
@@ -937,14 +916,14 @@ function openModal(id){
     document.getElementById('pDesc').value=p.description||'';
     document.getElementById('pPrice').value=p.price||'';
     document.getElementById('pTheme').value=p.theme||'';
-    document.getElementById('pStripeLink').value=p.stripe_link||'';
+    // stripe_link now handled at store level
     document.getElementById('pActive').value=String(p.active!==false);
     resetImgZone(p.image_url);
     document.getElementById('existingFile').textContent=p.file_name?`Current file: ${p.file_name} (upload new to replace)`:'';
     resetFileZone(p.file_name);
     if(qfBar)qfBar.style.display='none';
   } else {
-    ['pName','pDesc','pPrice','pStripeLink'].forEach(id=>document.getElementById(id).value='');
+    ['pName','pDesc','pPrice'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('pTheme').value='';
     document.getElementById('pActive').value='true';
     document.getElementById('qfType').value='';
@@ -1008,23 +987,21 @@ const PRODUCT_TEMPLATES={
 };
 
 function applyQuickFill(){
-  const typeKey=document.getElementById('qfType').value;
   const theme=(document.getElementById('qfTheme').value||'').trim();
-  if(!typeKey){showToast('Pick a product type first');return;}
-  const tpl=PRODUCT_TEMPLATES[typeKey];
-  if(!tpl)return;
-  const t=theme||'[Theme]';
+  if(!theme){showToast('Type a theme name first (e.g. Unicorn)');return;}
+  const t=theme;
+  const tLow=t.toLowerCase();
   const nameEl=document.getElementById('pName');
   const descEl=document.getElementById('pDesc');
-  nameEl.value=tpl.name.replace(/\[Theme\]/g,t);
-  descEl.value=tpl.desc.replace(/\[theme\]/g,t.toLowerCase()).replace(/\[Theme\]/g,t);
-  if(theme){
-    const themeSelect=document.getElementById('pTheme');
-    const match=[...themeSelect.options].find(o=>o.value.toLowerCase()===theme.toLowerCase());
+  nameEl.value=`${t} Birthday Party Printables Bundle — Complete Set`;
+  descEl.value=`Complete ${t}-themed birthday party printable bundle — instant digital download. Includes all 11 designs: chip bag labels, Capri Sun labels, water bottle labels, candy bar wrappers, Pringles wrappers, favor bag toppers, treat box labels, cupcake toppers, thank you tags, sticker sheets, and welcome sign & invitation. Customize with any name in Canva — no design skills required. Print at home or at your local print shop. Perfect for ${tLow}-themed birthday parties, baby showers, and celebrations.`;
+  const themeSelect=document.getElementById('pTheme');
+  if(themeSelect){
+    const match=[...themeSelect.options].find(o=>o.value.toLowerCase()===tLow);
     if(match)themeSelect.value=match.value;
-    else{themeSelect.value='Custom';}
+    else themeSelect.value='Custom';
   }
-  showToast('✓ Form filled! Review and adjust as needed.');
+  showToast('✓ Bundle listing filled! Upload a photo and set your price.');
 }
 
 function resetImgZone(url){
@@ -1096,7 +1073,7 @@ async function saveProduct(){
       description:(document.getElementById('pDesc').value||'').trim()||null,
       price:parseFloat(document.getElementById('pPrice').value)||0,
       theme:document.getElementById('pTheme').value||null,
-      stripe_link:(document.getElementById('pStripeLink').value||'').trim()||null,
+      stripe_link:null,
       active:document.getElementById('pActive').value==='true',
       image_url,file_url,file_name,
     };
