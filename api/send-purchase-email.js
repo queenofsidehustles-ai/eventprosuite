@@ -60,6 +60,13 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   }
 
   const session = event.data?.object || {};
+
+  // Only process PPP purchases ($97 = 9700 cents). Ignore PBH subscriptions and other payments.
+  const amountTotal = session.amount_total || 0;
+  if (amountTotal !== 9700) {
+    return res.json({ received: true, note: 'Not a PPP purchase — skipped' });
+  }
+
   const customerEmail = session.customer_details?.email || session.customer_email || '';
   const customerName = session.customer_details?.name || '';
 
