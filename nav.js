@@ -14,7 +14,7 @@
     { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors',         pbhOnly: true },
     { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI',  pbhOnly: true },
     { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio',  pbhOnly: true },
-    { id: 'guide',     href: 'guide.html',     icon: '🚀', label: 'Quick Start Guide' },
+    { id: 'guide',     href: 'welcome.html',   icon: '🚀', label: 'Quick Start Guide' },
   ];
 
   const filename = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';

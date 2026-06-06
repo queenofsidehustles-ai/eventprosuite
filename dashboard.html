@@ -341,6 +341,11 @@ async function boot() {
     setNavUser(display);
     initNavSignout(async () => { sessionStorage.removeItem('pbh_auth'); await sb.auth.signOut(); window.location.href = 'login.html'; });
 
+    // First-time welcome redirect for new printables users
+    if(profile?.has_printables_access===true&&!profile?.has_kpps_access&&!localStorage.getItem('pbh_welcome_seen_'+currentUser.id)){
+      window.location.href='welcome.html';return;
+    }
+
     // Build setup checklist
     if(!localStorage.getItem('pbh_checklist_dismissed')){
       const hasBizName = !!bizName;

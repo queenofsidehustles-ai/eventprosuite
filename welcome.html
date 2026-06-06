@@ -1,314 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome to Party Biz Hub™ — You're a Founding Member!</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy: #0d1b3e;
-      --navy-mid: #162d5e;
-      --navy-light: #1e3d7a;
-      --navy-pale: #e6ebf5;
-      --gold: #c9a84c;
-      --gold-bright: #d4ae52;
-      --gold-light: #fdf8ec;
-      --white: #ffffff;
-      --off: #f7f8fc;
-      --mid: #3d4f6e;
-      --muted: #7a8aaa;
-      --border: #dde3ef;
-      --success: #1e8c5a;
-      --radius: 14px;
-    }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--navy);
-      color: white;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── NAV ── */
-    nav {
-      background: var(--navy);
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 3rem;
-      border-bottom: 1px solid rgba(201,168,76,0.25);
-    }
-    .nav-brand {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--gold-bright);
-      letter-spacing: 0.02em;
-    }
-    .nav-link {
-      color: rgba(255,255,255,0.6);
-      text-decoration: none;
-      font-size: 0.82rem;
-      font-weight: 500;
-    }
-    @media (max-width: 640px) { nav { padding: 0 1.2rem; } }
-
-    /* ── WELCOME HERO ── */
-    .welcome-wrap {
-      min-height: calc(100vh - 60px);
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 3rem 1.5rem 4rem;
-    }
-    .welcome-card {
-      max-width: 700px;
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(201,168,76,0.25);
-      border-radius: var(--radius);
-      padding: 3rem 2.5rem;
-      backdrop-filter: blur(8px);
-      text-align: center;
-    }
-    @media (max-width: 640px) {
-      .welcome-card { padding: 2rem 1.5rem; }
-    }
-
-    .success-icon {
-      width: 70px;
-      height: 70px;
-      margin: 0 auto 1.5rem;
-      background: rgba(30,140,90,0.15);
-      border: 2px solid var(--success);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: var(--success);
-      animation: popIn 0.5s ease-out;
-    }
-    @keyframes popIn {
-      0% { transform: scale(0); opacity: 0; }
-      70% { transform: scale(1.1); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .welcome-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1rem;
-    }
-    .welcome-eyebrow::before, .welcome-eyebrow::after {
-      content: '';
-      display: block;
-      width: 20px;
-      height: 1px;
-      background: var(--gold);
-    }
-
-    .welcome-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.9rem, 4.5vw, 2.6rem);
-      font-weight: 700;
-      color: white;
-      line-height: 1.15;
-      margin-bottom: 1rem;
-    }
-    .welcome-title em { color: var(--gold-bright); font-style: italic; }
-
-    .welcome-sub {
-      font-size: 0.95rem;
-      color: rgba(255,255,255,0.7);
-      line-height: 1.7;
-      max-width: 520px;
-      margin: 0 auto 2rem;
-    }
-
-    /* Steps */
-    .steps-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1.2rem;
-    }
-    .steps {
-      text-align: left;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
-      padding: 1.5rem 1.8rem;
-      margin-bottom: 2rem;
-    }
-    .step {
-      display: flex;
-      gap: 1rem;
-      padding: 0.85rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .step:last-child { border-bottom: none; padding-bottom: 0; }
-    .step:first-child { padding-top: 0; }
-    .step-num {
-      flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      background: var(--gold);
-      color: var(--navy);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.82rem;
-      font-family: 'Cormorant Garamond', serif;
-    }
-    .step-content { flex: 1; }
-    .step-title {
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: white;
-      margin-bottom: 0.2rem;
-    }
-    .step-desc {
-      font-size: 0.82rem;
-      color: rgba(255,255,255,0.6);
-      line-height: 1.55;
-    }
-    .step-desc a { color: var(--gold-bright); text-decoration: underline; }
-
-    /* CTA */
-    .welcome-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 700;
-      font-size: 0.95rem;
-      padding: 1rem 2.5rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      text-decoration: none;
-      letter-spacing: 0.02em;
-      transition: all 0.18s;
-    }
-    .welcome-cta:hover {
-      background: var(--gold-bright);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(201,168,76,0.35);
-    }
-
-    .welcome-meta {
-      margin-top: 1.8rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.45);
-      line-height: 1.7;
-    }
-    .welcome-meta strong { color: var(--gold-bright); }
-    .welcome-meta a { color: var(--gold-bright); text-decoration: none; }
-    .welcome-meta a:hover { text-decoration: underline; }
-
-    /* Founder badge */
-    .founder-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
-      color: var(--navy);
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.35rem 0.9rem;
-      border-radius: 20px;
-      margin-bottom: 1.2rem;
-      box-shadow: 0 4px 16px rgba(201,168,76,0.3);
-    }
-
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Getting Started | Party Profit Printables</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--pink:#D115AE;--purple:#6D28D9;--plum:#4C1D95;--gold:#C9A227;--cream:#FCF8F4;--border:#EAE3ED;--ink:#1F1A24;--muted:#6C6473;--success:#1E8C5A}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased}
+.topbar{background:linear-gradient(135deg,var(--plum),var(--purple));padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:.95rem}
+.topbar-brand img{height:30px}
+.btn-store{background:linear-gradient(135deg,var(--gold),#D4AE52);color:#3A2A1A;padding:.45rem 1.1rem;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;border:none;cursor:pointer;font-family:inherit}
+.hero{background:linear-gradient(135deg,var(--plum),var(--purple) 60%,#8B5CF6);padding:3rem 1.5rem;text-align:center;color:#fff}
+.hero-emoji{font-size:56px;margin-bottom:1rem}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;margin-bottom:.8rem;line-height:1.2}
+.hero p{font-size:1rem;color:rgba(255,255,255,.88);max-width:500px;margin:0 auto 1.5rem;line-height:1.7}
+.hero-note{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:30px;padding:.5rem 1.2rem;font-size:.82rem;color:rgba(255,255,255,.9)}
+.toc{max-width:900px;margin:2rem auto 0;padding:0 1.5rem}
+.toc-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.toc-chip{display:flex;align-items:center;gap:6px;padding:.5rem 1rem;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--plum);text-decoration:none;transition:all .15s;white-space:nowrap}
+.toc-chip:hover{border-color:var(--purple);background:rgba(109,40,217,.05)}
+.content{max-width:900px;margin:0 auto;padding:1.5rem 1.5rem 5rem}
+.card{background:#fff;border-radius:20px;border:1px solid var(--border);overflow:hidden;margin-bottom:1.8rem;box-shadow:0 2px 16px rgba(26,16,32,.05)}
+.card-head{padding:1.3rem 1.6rem;background:linear-gradient(135deg,var(--plum),var(--purple));color:#fff;display:flex;align-items:center;gap:14px}
+.card-icon{font-size:32px;line-height:1;flex-shrink:0}
+.card-head h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:3px}
+.card-head p{font-size:.82rem;color:rgba(255,255,255,.82);line-height:1.5}
+.card-body{padding:1.4rem 1.6rem}
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#8B5CF6);color:#fff;font-weight:800;font-size:.82rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-title{font-weight:700;font-size:.92rem;margin-bottom:3px}
+.step-desc{font-size:.84rem;color:var(--muted);line-height:1.65}
+.step-desc strong{color:var(--ink)}
+.options{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.option-box{border-radius:12px;padding:14px 16px;border:1.5px solid}
+.option-box.paypal{border-color:#c8d8ff;background:#f0f4ff}
+.option-box.stripe{border-color:#d8d4ff;background:#f5f4ff}
+.option-box.square{border-color:#c0d8ff;background:#f0f7ff}
+.option-title{font-weight:800;font-size:.85rem;margin-bottom:6px}
+.option-title.paypal{color:#003087}
+.option-title.stripe{color:#635bff}
+.option-title.square{color:#006aff}
+.option-steps{font-size:.8rem;color:var(--muted);line-height:1.7;padding-left:14px}
+.tpl-preview-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.tpl-preview-item{border:2px solid var(--border);border-radius:10px;overflow:hidden}
+.tpl-preview-swatch{height:50px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff}
+.tpl-preview-label{padding:6px 10px;font-size:.75rem;font-weight:700;color:var(--ink)}
+.tpl-preview-sub{font-size:.67rem;color:var(--muted);padding:0 10px 8px}
+.tip{background:rgba(30,140,90,.06);border:1.5px solid rgba(30,140,90,.2);border-radius:10px;padding:12px 14px;font-size:.82rem;color:#145e3a;line-height:1.6;margin-top:10px}
+.tip strong{color:var(--success)}
+.warn{background:rgba(201,162,39,.07);border:1.5px solid rgba(201,162,39,.25);border-radius:10px;padding:12px 14px;font-size:.82rem;color:#6b5000;line-height:1.6;margin-top:10px}
+.section-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:2.5rem 0 .8rem;padding-left:2px}
+.sell-box{border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.faq{display:flex;flex-direction:column;gap:10px}
+.faq-item{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
+.faq-q{padding:14px 16px;font-weight:700;font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;user-select:none}
+.faq-q:hover{background:rgba(109,40,217,.03)}
+.faq-chevron{color:var(--muted);transition:transform .2s;flex-shrink:0;font-style:normal}
+.faq-a{display:none;padding:0 16px 14px;font-size:.84rem;color:var(--muted);line-height:1.7;border-top:1px solid var(--border)}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.bottom-cta{text-align:center;padding:3rem 1.5rem;background:linear-gradient(135deg,var(--plum),var(--purple));color:#fff;border-radius:24px;margin:2rem 0}
+.bottom-cta h2{font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:.8rem}
+.bottom-cta p{color:rgba(255,255,255,.85);margin-bottom:1.5rem;font-size:.95rem}
+.btn-big{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),#D4AE52);color:#3A2A1A;font-weight:800;font-size:1rem;padding:1rem 2rem;border-radius:14px;text-decoration:none;border:none;cursor:pointer;font-family:inherit}
+.info-row{font-size:.83rem;color:var(--muted);line-height:1.9;margin-bottom:14px}
+@media(max-width:600px){.card-head{flex-direction:column;text-align:center}.tpl-preview-row{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-brand">Party Biz Hub™</div>
-  <a href="index.html" class="nav-link">← Home</a>
-</nav>
+<div class="topbar">
+  <div class="topbar-brand"><img src="partybizhub-logo.svg" alt="PBH"/> Party Profit Printables</div>
+  <button class="btn-store" onclick="goToStore()">My Store →</button>
+</div>
 
-<!-- WELCOME -->
-<div class="welcome-wrap">
-  <div class="welcome-card">
+<div class="hero">
+  <div class="hero-emoji">🎉</div>
+  <h1>You're in! Welcome to<br/>Party Profit Printables</h1>
+  <p>This guide walks you through setup — step by step, in plain English. No tech experience needed.</p>
+  <div class="hero-note">📌 This guide lives in your Quick Start Guide link in the sidebar — always available</div>
+</div>
 
-    <div class="success-icon">✓</div>
-
-    <div class="founder-badge">✦ Founder Member</div>
-
-    <div class="welcome-eyebrow">Payment Confirmed</div>
-
-    <h1 class="welcome-title">Welcome to <em>Party Biz Hub™</em></h1>
-
-    <p class="welcome-sub">
-      Your membership is confirmed. You now have full access to your Party Biz Hub back office — quote builder, contracts, profit calculator, vendor directory, event prep tools, and more. Your receipt from Stripe is on its way to your email.
-    </p>
-
-    <div class="steps-title">Your next 3 steps</div>
-    <div class="steps">
-
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <div class="step-title">Create your free account</div>
-          <div class="step-desc">
-            Use the <strong>same email address</strong> you used for your purchase. Click the button below — it takes less than 2 minutes.
-          </div>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <div class="step-title">Set up your business profile</div>
-          <div class="step-desc">
-            Add your business name, logo, and colors. Takes about 3 minutes — every quote and contract you send will be fully branded as yours.
-          </div>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <div class="step-title">Send your first quote</div>
-          <div class="step-desc">
-            Open the Quote Builder and generate a real client quote in under 5 minutes. Pick your services, set your prices, download as PDF or copy the link. Done.
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <a href="login.html?invite=KPPS" class="welcome-cta">Create My Free Account →</a>
-
-    <div class="welcome-meta">
-      Questions? Email <a href="mailto:queenofsidehustles@gmail.com">queenofsidehustles@gmail.com</a><br/>
-      Receipt sent to your email · Access granted instantly on signup
-    </div>
-
+<div class="toc">
+  <div class="toc-grid">
+    <a href="#store-name" class="toc-chip">🔗 Store Name</a>
+    <a href="#payment" class="toc-chip">💳 Get Paid</a>
+    <a href="#design" class="toc-chip">🎨 Store Design</a>
+    <a href="#templates" class="toc-chip">📦 Add Templates</a>
+    <a href="#canva" class="toc-chip">✏️ Edit in Canva</a>
+    <a href="#share" class="toc-chip">📣 Share &amp; Sell</a>
+    <a href="#printing" class="toc-chip">🖨️ Printing Guide</a>
+    <a href="#domain" class="toc-chip">🌐 Custom Domain</a>
+    <a href="#etsy" class="toc-chip">🛍️ Sell Elsewhere</a>
+    <a href="#faq-planner" class="toc-chip">❓ Your FAQs</a>
+    <a href="#faq-customer" class="toc-chip">💬 Customer Q&amp;A</a>
   </div>
 </div>
 
+<div class="content">
+
+  <div class="section-label">Setup — Do These First</div>
+
+  <!-- Store Name -->
+  <div class="card" id="store-name">
+    <div class="card-head">
+      <div class="card-icon">🔗</div>
+      <div><h2>Step 1 — Your Store Name &amp; Link</h2>
+      <p>Your store lives at partybizhub.com/store/YOUR-NAME — this is the link you share everywhere</p></div>
+    </div>
+    <div class="card-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><div class="step-title">Go to your Digital Store</div><div class="step-desc">Click <strong>Party Profit Printables</strong> in the left sidebar.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div><div class="step-title">Find "Your store address" at the top</div><div class="step-desc">You'll see a field next to <strong>partybizhub.com/store/</strong></div></div></div>
+        <div class="step"><div class="step-num">3</div><div><div class="step-title">Type your handle</div><div class="step-desc">Pick something short and easy — like <strong>princess-party-co</strong> or <strong>mias-printables</strong>. Lowercase letters, numbers, and hyphens only. No spaces.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div><div class="step-title">Click Save Handle</div><div class="step-desc">Your store link is now live. Copy it and save it!</div></div></div>
+      </div>
+      <div class="tip"><strong>Tip:</strong> Keep it short. People will type this in their phone and share it with friends. Something like <em>partybizhub.com/store/star-parties</em> is perfect.</div>
+    </div>
+  </div>
+
+  <!-- Payment -->
+  <div class="card" id="payment">
+    <div class="card-head">
+      <div class="card-icon">💳</div>
+      <div><h2>Step 2 — Connect Your Payment</h2>
+      <p>Pick ONE option — this is how money comes to you when customers buy</p></div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">You only need one. Pick the easiest one for you right now — you can change it later.</p>
+      <div class="options">
+        <div class="option-box paypal">
+          <div class="option-title paypal">PayPal — Easiest. Most people already have it.</div>
+          <ol class="option-steps">
+            <li>Go to <strong>paypal.com/paypalme</strong> and sign in (create a free account if needed)</li>
+            <li>Choose a username for your PayPal.me link</li>
+            <li>Copy your link (looks like paypal.me/YourName)</li>
+            <li>In your store: scroll to "About You &amp; Contact" → paste it in <strong>Payment Link</strong> → Save</li>
+          </ol>
+        </div>
+        <div class="option-box stripe">
+          <div class="option-title stripe">Stripe — Most professional. Customers pay by card (no PayPal needed).</div>
+          <ol class="option-steps">
+            <li>Go to <strong>dashboard.stripe.com</strong> — create a free account (need a bank account to receive money)</li>
+            <li>Click <strong>Payment Links</strong> on the left → click <strong>Create</strong></li>
+            <li>Name it anything and set a price → copy the link (starts with buy.stripe.com)</li>
+            <li>Paste it in your store's Payment Link field → Save</li>
+          </ol>
+        </div>
+        <div class="option-box square">
+          <div class="option-title square">Square — Good if you also sell in person at events.</div>
+          <ol class="option-steps">
+            <li>Go to <strong>squareup.com</strong> → create a free account</li>
+            <li>Go to Online Checkout → Create a payment link</li>
+            <li>Copy the link → paste it in your store's Payment Link field → Save</li>
+          </ol>
+        </div>
+      </div>
+      <div class="warn" style="margin-top:12px"><strong>Do this before sharing your store:</strong> Click your own payment link and make sure it works. Test it yourself first.</div>
+    </div>
+  </div>
+
+  <!-- Store Design -->
+  <div class="card" id="design">
+    <div class="card-head">
+      <div class="card-icon">🎨</div>
+      <div><h2>Step 3 — Make Your Store Look Like You</h2>
+      <p>Pick a design style and brand colors — updates instantly, no tech skills needed</p></div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">Go to <strong>Digital Store → My Store tab</strong> and scroll to "Your Store Design."</p>
+      <div class="tpl-preview-row">
+        <div class="tpl-preview-item"><div class="tpl-preview-swatch" style="background:#D115AE">Studio</div><div class="tpl-preview-label">Studio</div><div class="tpl-preview-sub">Clean &amp; white. Simple and professional.</div></div>
+        <div class="tpl-preview-item"><div class="tpl-preview-swatch" style="background:#0D0820">Luxe</div><div class="tpl-preview-label">Luxe</div><div class="tpl-preview-sub">Dark &amp; gold. Fancy and elegant.</div></div>
+        <div class="tpl-preview-item"><div class="tpl-preview-swatch" style="background:#d4709c">Bloom</div><div class="tpl-preview-label">Bloom</div><div class="tpl-preview-sub">Soft pink. Sweet and feminine.</div></div>
+        <div class="tpl-preview-item"><div class="tpl-preview-swatch" style="background:#1A1A1A">Pop</div><div class="tpl-preview-label">Pop</div><div class="tpl-preview-sub">Bold colors. Fun and energetic.</div></div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="step-title" style="margin-bottom:8px">Adding your brand colors:</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-desc">Scroll to <strong>Brand Colors</strong> in the My Store tab</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-desc">Click the colored box next to Primary, Accent, or Background to change each color</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-desc">Click <strong>Save Colors</strong> — your store updates right away</div></div>
+        </div>
+        <div class="tip"><strong>Not sure what colors to use?</strong> Click one of the Quick Preset buttons — they have beautiful ready-made combinations. You can always change them later.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Templates -->
+  <div class="card" id="templates">
+    <div class="card-head">
+      <div class="card-icon">📦</div>
+      <div><h2>Step 4 — Add Templates to Your Store</h2>
+      <p>Your template library is ready — click to claim and it shows up in your store immediately</p></div>
+    </div>
+    <div class="card-body">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><div class="step-title">Click the Template Library tab</div><div class="step-desc">In your Digital Store, click <strong>Template Library</strong> at the top. You'll see all available party theme bundles.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div><div class="step-title">Browse and pick your themes</div><div class="step-desc">Each card is a full party bundle — Unicorn, Princess, Dinosaur, and more. Your plan shows how many you can add at the top of the library page.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div><div class="step-title">Click "Add to My Store"</div><div class="step-desc">That theme is now live on your public storefront. Customers can see it and buy it right away.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div><div class="step-title">Repeat for each theme you want</div><div class="step-desc">Add as many as your plan allows. You can also add your own products anytime using the <strong>Add Product</strong> button.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit in Canva -->
+  <div class="card" id="canva">
+    <div class="card-head">
+      <div class="card-icon">✏️</div>
+      <div><h2>Step 5 — How to Edit Templates in Canva</h2>
+      <p>Canva is free. If you can type a text message, you can do this.</p></div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">When your customer downloads their purchase, they get a file with Canva links inside. Here is how it works:</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><div class="step-title">Open the downloaded file</div><div class="step-desc">The file your customer downloads has Canva links listed inside — one for each item in the bundle.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div><div class="step-title">Click any Canva link</div><div class="step-desc">It opens in the browser. Canva asks you to make a copy. Click <strong>Use Template</strong>. A free Canva account is all you need.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div><div class="step-title">Click on any text to change it</div><div class="step-desc">Just click the text (like the guest's name or party date) and type the new text. It is exactly like editing a text message.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div><div class="step-title">Change colors if you want</div><div class="step-desc">Click any colored shape → click the color box at the top → pick a new color. You can match the party theme perfectly.</div></div></div>
+        <div class="step"><div class="step-num">5</div><div><div class="step-title">Download when done</div><div class="step-desc">Click <strong>Share</strong> (top right corner) → <strong>Download</strong> → choose <strong>PDF Print</strong> for best quality. Ready to print!</div></div></div>
+      </div>
+      <div class="tip"><strong>Money tip:</strong> Many sellers charge an extra $10-20 to customize the template for the customer (add the name, change colors). This is called a "done-for-you" add-on. Customers love it and it is easy extra income.</div>
+    </div>
+  </div>
+
+  <!-- Share Your Store -->
+  <div class="card" id="share">
+    <div class="card-head">
+      <div class="card-icon">📣</div>
+      <div><h2>Step 6 — Share Your Store &amp; Start Selling</h2>
+      <p>Your store is live. Now people need to find it!</p></div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Copy your store link from the top of the My Store tab. Then share it everywhere:</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:14px">
+        <div style="background:#f8f4ff;border:1.5px solid #e0d0f8;border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:var(--plum);margin-bottom:4px">Instagram</div><div style="font-size:.78rem;color:var(--muted)">Put your store link in your bio. Post pictures of your templates with the link in the caption.</div></div>
+        <div style="background:#f0f4ff;border:1.5px solid #c8d8ff;border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:#003087;margin-bottom:4px">Facebook</div><div style="font-size:.78rem;color:var(--muted)">Post in local mom groups, birthday party groups, and your personal profile.</div></div>
+        <div style="background:#fff8f0;border:1.5px solid #ffd8b0;border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:#b35000;margin-bottom:4px">Pinterest</div><div style="font-size:.78rem;color:var(--muted)">Pin your template images with your store link. Party planning is one of Pinterest's most searched topics.</div></div>
+        <div style="background:#f0fff4;border:1.5px solid #a0e0c0;border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:#145e3a;margin-bottom:4px">Text &amp; Word of Mouth</div><div style="font-size:.78rem;color:var(--muted)">Text your link to family and friends. Tell them what you sell. Word of mouth is powerful.</div></div>
+      </div>
+      <div class="tip"><strong>Pricing guide:</strong> Most digital party bundles sell for $8-18. Start at $9.99 to get your first sales. Raise prices as you get more customers.</div>
+    </div>
+  </div>
+
+  <div class="section-label">Bonus Guides</div>
+
+  <!-- Printing Guide -->
+  <div class="card" id="printing">
+    <div class="card-head">
+      <div class="card-icon">🖨️</div>
+      <div><h2>Printing Guide</h2>
+      <p>Where to print and how to handle physical orders if your customer wants them</p></div>
+    </div>
+    <div class="card-body">
+      <div class="step-title" style="margin-bottom:10px">Where to get items printed:</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <div style="font-size:.84rem;color:var(--muted);padding:10px 14px;background:#f9f6ff;border-radius:8px;border-left:3px solid var(--purple)"><strong style="color:var(--ink)">Staples or Office Depot</strong> — Great quality. Upload your PDF online or go in person. Same-day pickup available. Good for cardstock.</div>
+        <div style="font-size:.84rem;color:var(--muted);padding:10px 14px;background:#f9f6ff;border-radius:8px;border-left:3px solid var(--purple)"><strong style="color:var(--ink)">Walmart Photo Center</strong> — Affordable and fast. Upload online and pick up in about an hour.</div>
+        <div style="font-size:.84rem;color:var(--muted);padding:10px 14px;background:#f9f6ff;border-radius:8px;border-left:3px solid var(--purple)"><strong style="color:var(--ink)">Canva Print</strong> — Order directly from Canva when you download. Ships to your door in a few days.</div>
+        <div style="font-size:.84rem;color:var(--muted);padding:10px 14px;background:#f9f6ff;border-radius:8px;border-left:3px solid var(--purple)"><strong style="color:var(--ink)">Home Printer</strong> — Works great. Regular paper for chip bags and labels. Cardstock for toppers.</div>
+      </div>
+      <div class="step-title" style="margin-bottom:8px">Paper to use:</div>
+      <div class="info-row">
+        Chip bags, water bottle labels, Capri Sun labels → <strong>Regular copy paper</strong><br/>
+        Cupcake toppers, favor bag toppers, treat boxes → <strong>Cardstock</strong> (holds up better)<br/>
+        Sticker designs → <strong>Sticker paper</strong> (find on Amazon or Walmart)<br/>
+        Premium finish → <strong>Glossy photo paper</strong>
+      </div>
+      <div class="step-title" style="margin-bottom:8px">How to seal chip bags:</div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-desc">Print your chip bag design and cut it out</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-desc">Open an individual snack-size bag of chips (1 oz size works best)</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-desc">Wrap the printed design around the bag like a sleeve</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-desc"><strong>With heat:</strong> Use a hair straightener on LOWEST heat. Slide it along the top and bottom of the bag. Hold 2 seconds. Let cool.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-desc"><strong>No heat option:</strong> Use double-sided tape on the inside edges of the paper to hold it around the bag.</div></div>
+      </div>
+      <div class="tip"><strong>Pro tip:</strong> Buy chip bags in bulk at Costco or Sam's Club. Individual snack-size bags fit most templates perfectly.</div>
+    </div>
+  </div>
+
+  <!-- Custom Domain -->
+  <div class="card" id="domain">
+    <div class="card-head">
+      <div class="card-icon">🌐</div>
+      <div><h2>Custom Domain (Optional)</h2>
+      <p>You do not need this — your partybizhub.com link works perfectly. But here is how if you want one.</p></div>
+    </div>
+    <div class="card-body">
+      <div class="warn" style="margin-bottom:14px"><strong>Remember:</strong> Your partybizhub.com/store/your-handle link is free and works great. A custom domain is a nice extra — not a requirement.</div>
+      <div class="step-title" style="margin-bottom:8px">Where to buy a domain (about $10-15 per year):</div>
+      <div class="info-row">
+        <strong>Namecheap</strong> (namecheap.com) — Cheapest option, very beginner-friendly<br/>
+        <strong>Google Domains</strong> (domains.google.com) — Easy if you already use Google<br/>
+        <strong>GoDaddy</strong> (godaddy.com) — Popular, good customer support<br/>
+        <strong>Squarespace Domains</strong> — Good if you already use Squarespace
+      </div>
+      <div class="step-title" style="margin-bottom:8px">How to forward your domain to your store:</div>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">This makes yourdomain.com redirect to your partybizhub.com store. Like a postal forwarding address for your website.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:#f9f6ff;border:1px solid var(--border);border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:var(--plum);margin-bottom:5px">Namecheap:</div><div style="font-size:.79rem;color:var(--muted);line-height:1.7">Log in → Manage your domain → Redirect Domain → paste your partybizhub.com/store/your-handle link → Save.</div></div>
+        <div style="background:#f9f6ff;border:1px solid var(--border);border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:var(--plum);margin-bottom:5px">GoDaddy:</div><div style="font-size:.79rem;color:var(--muted);line-height:1.7">Log in → My Products → your domain → Manage DNS → Forwarding → Add → Domain → paste your store link → Save.</div></div>
+        <div style="background:#f9f6ff;border:1px solid var(--border);border-radius:10px;padding:12px 14px"><div style="font-weight:700;font-size:.83rem;color:var(--plum);margin-bottom:5px">Google Domains:</div><div style="font-size:.79rem;color:var(--muted);line-height:1.7">domains.google → your domain → DNS → Synthetic records → Subdomain forward → paste your store link → Save.</div></div>
+      </div>
+      <div class="tip" style="margin-top:10px"><strong>Note:</strong> After setup, it takes 24-48 hours to activate. That is normal.</div>
+    </div>
+  </div>
+
+  <!-- Where Else to Sell -->
+  <div class="card" id="etsy">
+    <div class="card-head">
+      <div class="card-icon">🛍️</div>
+      <div><h2>Where Else to Sell</h2>
+      <p>Your Party Biz Hub store is your home base — but these other places can bring in extra sales</p></div>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="sell-box" style="border:1.5px solid #ffe0c0;background:#fff8f2"><div style="font-weight:800;font-size:.88rem;color:#b35000;margin-bottom:6px">Etsy — Great for reaching new customers</div><div style="font-size:.8rem;color:var(--muted);line-height:1.7">Create a shop at etsy.com/sell. List your templates using your mockup images. When someone buys, send them the Canva link via Etsy message. Fee: $0.20 per listing + 6.5% per sale.</div></div>
+        <div class="sell-box" style="border:1.5px solid #ffd8e0;background:#fff5f7"><div style="font-weight:800;font-size:.88rem;color:#9b1a36;margin-bottom:6px">Gumroad — Automatic delivery, zero extra work</div><div style="font-size:.8rem;color:var(--muted);line-height:1.7">Sign up free at gumroad.com. Upload your file. When someone buys, Gumroad delivers it automatically and pays you. True passive income. Fee: 10% per sale on the free plan.</div></div>
+        <div class="sell-box" style="border:1.5px solid #c0e0ff;background:#f0f7ff"><div style="font-weight:800;font-size:.88rem;color:#004080;margin-bottom:6px">Payhip — Similar to Gumroad, lower fees</div><div style="font-size:.8rem;color:var(--muted);line-height:1.7">Sign up free at payhip.com. Same idea as Gumroad — auto-delivers files. Fee: 5% per sale on the free plan.</div></div>
+        <div class="sell-box" style="border:1.5px solid #d0f0d0;background:#f0fff0"><div style="font-weight:800;font-size:.88rem;color:#145e3a;margin-bottom:6px">Facebook Groups — Free and reaches local buyers fast</div><div style="font-size:.8rem;color:var(--muted);line-height:1.7">Post in local mom groups, birthday party planning groups, and kids activity groups. Share your store link. Zero cost.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Frequently Asked Questions</div>
+
+  <!-- Your FAQ -->
+  <div class="card" id="faq-planner">
+    <div class="card-head">
+      <div class="card-icon">❓</div>
+      <div><h2>Your Questions — Running This Business</h2>
+      <p>Plain answers, no tech speak</p></div>
+    </div>
+    <div class="card-body">
+      <div class="faq">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need to know anything about design? <span class="faq-chevron">▾</span></div><div class="faq-a">No! The designs are done for you. You only change text (like a name or date) in Canva. If you can type a text message, you can do this.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What price should I charge my customers? <span class="faq-chevron">▾</span></div><div class="faq-a">Most digital party bundles sell for $8-18. Start at $9.99 to get your first sales. After you have reviews and traffic, raise your prices. Check Etsy for "party printables" to see what others charge.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I change colors to match any party theme? <span class="faq-chevron">▾</span></div><div class="faq-a">Yes! Colors, text, and names are all editable in Canva. You can turn any design into any color your customer wants. Characters and images in the design are fixed, but everything else is flexible.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What if my customer does not have Canva? <span class="faq-chevron">▾</span></div><div class="faq-a">Canva is free and most people can learn it in 10 minutes. You can also offer to customize the template FOR them and charge extra — many customers love the "done for you" option. Charge $10-20 more for this service.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need to print or ship anything? <span class="faq-chevron">▾</span></div><div class="faq-a">No shipping ever! You sell a digital file. Your customer downloads it, edits it in Canva, and prints it themselves. You never touch a printer. That is the beauty of this business model.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I sell products that are not in the library? <span class="faq-chevron">▾</span></div><div class="faq-a">Yes! Use the "Add Product" button in your store to add any digital product you want. You are not limited to the library. Your own designs, your own files — anything goes.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What is my refund policy? <span class="faq-chevron">▾</span></div><div class="faq-a">Most digital sellers have a no-refund policy since the file cannot be returned. Add a note to your store: "Due to the digital nature of this product, all sales are final." But always offer to fix problems or exchange for another design — that keeps customers happy.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does my customer get their file after they pay? <span class="faq-chevron">▾</span></div><div class="faq-a">After they pay through your Stripe or PayPal link, they get redirected to your store with a download button. They click it and get the file instantly. They can also type their email on that page to get a copy sent to their inbox.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">I need help — who do I contact? <span class="faq-chevron">▾</span></div><div class="faq-a">Email support@partybizhub.com and we will get back to you within 24 hours.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer FAQ -->
+  <div class="card" id="faq-customer">
+    <div class="card-head">
+      <div class="card-icon">💬</div>
+      <div><h2>Your Customers' Questions — Copy &amp; Paste These!</h2>
+      <p>Save these in your phone's notes app so you can respond fast when customers ask</p></div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:14px">These are the most common questions your customers (the party parents) will ask you. Just copy and paste these answers.</p>
+      <div class="faq">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Will I get my files right away? <span class="faq-chevron">▾</span></div><div class="faq-a">Yes! As soon as your payment goes through, you get a download button right on the page. You can also type your email to get a copy sent to your inbox.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need Canva? <span class="faq-chevron">▾</span></div><div class="faq-a">Yes, but Canva is completely free! Go to canva.com and create a free account — it only takes 2 minutes. Once you're in, click the template link from your download and you're ready to customize.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I change the name on the design? <span class="faq-chevron">▾</span></div><div class="faq-a">Absolutely! Everything is editable in Canva. Click on any text and type whatever you want. It is as easy as typing in a text message.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Where do I print these? <span class="faq-chevron">▾</span></div><div class="faq-a">Anywhere! At home on a regular printer, at Staples, Office Depot, Walmart's photo center, or FedEx Print and Ship. Download as PDF Print from Canva and take it to any print shop.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What size do I print? <span class="faq-chevron">▾</span></div><div class="faq-a">The templates are already set to the right size. When printing, choose 100% or "actual size." Most printers do this automatically — you do not need to change anything.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I share this file with a friend? <span class="faq-chevron">▾</span></div><div class="faq-a">These files are for your personal use for one party. If your friend wants to use it for their party, they can purchase their own copy — it's an instant download so they'll have it right away!</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Something does not look right — can you help? <span class="faq-chevron">▾</span></div><div class="faq-a">Of course! Send me a message at [your email address] and I'll fix it for you right away. I want your party to be perfect!</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="bottom-cta">
+    <h2>You're ready to go!</h2>
+    <p>Your store is set up. Your templates are ready. All that's left is to share your link and start selling.</p>
+    <button class="btn-big" onclick="goToStore()">Take Me to My Store →</button>
+    <div style="margin-top:1rem;font-size:.78rem;color:rgba(255,255,255,.6)">Find this guide again anytime — click Quick Start Guide in your sidebar</div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUserId='';
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return;}
+  currentUserId=session.user.id;
+}
+
+function goToStore(){
+  if(currentUserId)localStorage.setItem('pbh_welcome_seen_'+currentUserId,'1');
+  window.location.href='store.html';
+}
+
+function toggleFaq(el){
+  el.closest('.faq-item').classList.toggle('open');
+}
+
+init();
+</script>
 </body>
 </html>

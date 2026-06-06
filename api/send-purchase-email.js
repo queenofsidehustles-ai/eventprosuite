@@ -1,14 +1,168 @@
+const crypto = require('crypto');
+
+function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, stripe-signature');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Stripe webhook — needs raw body for signature verification
+  if (req.headers['stripe-signature']) {
+    const rawBody = await readRawBody(req);
+    return handleStripeWebhook(res, rawBody, req.headers['stripe-signature']);
+  }
 
   const body = req.body || {};
   if (body.action === 'generate-copy') return handleGenerateCopy(res, body);
   return handleSendEmail(res, body);
 };
+
+module.exports.config = { api: { bodyParser: true } };
+
+async function handleStripeWebhook(res, rawBody, sigHeader) {
+  const STRIPE_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+  const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  // Verify Stripe signature
+  if (STRIPE_SECRET) {
+    try {
+      const parts = sigHeader.split(',');
+      const ts = (parts.find(p => p.startsWith('t=')) || '').slice(2);
+      const sig = (parts.find(p => p.startsWith('v1=')) || '').slice(3);
+      const expected = crypto.createHmac('sha256', STRIPE_SECRET).update(`${ts}.${rawBody}`).digest('hex');
+      const valid = crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(sig, 'hex'));
+      if (!valid) return res.status(400).json({ error: 'Invalid signature' });
+    } catch (_) {
+      return res.status(400).json({ error: 'Signature check failed' });
+    }
+  }
+
+  let event;
+  try { event = JSON.parse(rawBody.toString()); } catch (_) {
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
+
+  if (event.type !== 'checkout.session.completed') {
+    return res.json({ received: true });
+  }
+
+  const session = event.data?.object || {};
+  const customerEmail = session.customer_details?.email || session.customer_email || '';
+  const customerName = session.customer_details?.name || '';
+
+  if (!customerEmail || !SUPABASE_SERVICE_KEY) {
+    return res.json({ received: true, note: 'Missing email or service key' });
+  }
+
+  const adminHeaders = {
+    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+    'apikey': SUPABASE_SERVICE_KEY,
+    'Content-Type': 'application/json',
+  };
+
+  // Create or find Supabase user
+  let userId = null;
+  try {
+    const createRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({ email: customerEmail, email_confirm: true, user_metadata: { full_name: customerName } }),
+    });
+    const created = await createRes.json();
+    if (created.id) {
+      userId = created.id;
+    } else if (created.msg && created.msg.includes('already')) {
+      // User exists — find them
+      const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(customerEmail)}`, { headers: adminHeaders });
+      const list = await listRes.json();
+      userId = list?.users?.[0]?.id || null;
+    }
+  } catch (_) {}
+
+  if (!userId) return res.json({ received: true, note: 'Could not create or find user' });
+
+  // Set profile access
+  await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+    method: 'POST',
+    headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({
+      id: userId, email: customerEmail, full_name: customerName,
+      has_paid: true, has_printables_access: true, library_tier: 'tier1',
+    }),
+  }).catch(() => {});
+
+  // Generate magic login link
+  let loginUrl = 'https://app.partybizhub.com/login.html';
+  try {
+    const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({ type: 'magiclink', email: customerEmail, options: { redirect_to: 'https://app.partybizhub.com/welcome.html' } }),
+    });
+    const linkData = await linkRes.json();
+    if (linkData.action_link) loginUrl = linkData.action_link;
+  } catch (_) {}
+
+  // Send welcome email
+  if (RESEND_KEY) {
+    const firstName = (customerName || '').split(' ')[0] || 'there';
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
+.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.top{background:linear-gradient(135deg,#4C1D95,#6D28D9,#D115AE);padding:32px;color:#fff;text-align:center}
+.top h1{margin:0 0 8px;font-size:1.4rem;font-weight:800}
+.top p{margin:0;font-size:.9rem;opacity:.85}
+.body{padding:28px 32px}
+.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}
+.btn{display:block;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}
+.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}
+.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}
+.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}
+.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}
+</style></head><body>
+<div class="wrap">
+<div class="top"><h1>You're in! Welcome to Party Profit Printables</h1><p>Your account is ready — let's get your store set up</p></div>
+<div class="body">
+<p>Hi ${firstName},</p>
+<p>You now have access to <strong>Party Profit Printables</strong> on Party Biz Hub. Click the button below to log in and set up your store:</p>
+<a href="${loginUrl}" class="btn">Log In to My Store →</a>
+<div class="steps">
+<p>Here is what to do first:</p>
+<ol>
+<li>Click the button above to access your account</li>
+<li>Set your store name and payment link</li>
+<li>Pick your store design (colors and style)</li>
+<li>Add templates from the library</li>
+<li>Share your store link and start selling!</li>
+</ol>
+</div>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link: <a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+</div>
+<div class="footer">Questions? Email support@partybizhub.com — we respond within 24 hours.</div>
+</div></body></html>`;
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject: 'Your Party Profit Printables access is ready!', html }),
+    }).catch(() => {});
+  }
+
+  return res.json({ received: true });
+}
 
 async function handleGenerateCopy(res, body) {
   const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
