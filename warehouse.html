@@ -342,10 +342,10 @@ async function generateWithAI() {
   btn.disabled = true;
   status.textContent = '✨ Writing…';
   try {
-    const res = await fetch('/api/generate-template-copy', {
+    const res = await fetch('/api/send-purchase-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, theme }),
+      body: JSON.stringify({ action: 'generate-copy', name, theme }),
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);

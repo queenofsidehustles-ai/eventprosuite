@@ -5,10 +5,66 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const body = req.body || {};
+
+  // Route to AI copy generator when action='generate-copy'
+  if (body.action === 'generate-copy') {
+    return handleGenerateCopy(res, body);
+  }
+  return handleSendEmail(res, body);
+};
+
+async function handleGenerateCopy(res, body) {
+  const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
+  const { name, theme } = body;
+
+  if (!name) return res.status(400).json({ error: 'name is required' });
+  if (!OPENROUTER_KEY) return res.status(200).json({ error: 'OPENROUTER_API_KEY not set in Vercel env vars' });
+
+  const prompt = `You are helping a party printables business owner. Write copy for a digital template pack listing.
+
+Template name: "${name}"
+Theme: "${theme || 'General party'}"
+
+Write TWO things:
+
+1. DESCRIPTION — 2 sentences for party planners browsing a template library. Mention that it's a complete bundle and name 4-5 specific printable types included (chip bags, water bottle labels, cupcake toppers, etc). Make it sound professional and exciting.
+
+2. INSTRUCTIONS — Exactly 5 steps telling a customer how to use this Canva template pack after purchase. Assume they received a ZIP file with a Canva template link inside. Keep steps short and clear.
+
+Respond ONLY with valid JSON in this exact format — no extra text:
+{"description": "your description here", "instructions": "Step 1 text here\nStep 2 text here\nStep 3 text here\nStep 4 text here\nStep 5 text here"}`;
+
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + OPENROUTER_KEY,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://partybizhub.com',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-haiku',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 500,
+      }),
+    });
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse AI response');
+    const parsed = JSON.parse(jsonMatch[0]);
+    return res.json({ description: parsed.description || '', instructions: parsed.instructions || '' });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+}
+
+async function handleSendEmail(res, body) {
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
   const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
-  const { customerEmail, customerName, productName, downloadUrl, instructions, sellerName } = req.body || {};
+  const { customerEmail, customerName, productName, downloadUrl, instructions, sellerName } = body;
 
   if (!customerEmail || !downloadUrl) {
     return res.status(400).json({ error: 'customerEmail and downloadUrl are required' });
@@ -18,7 +74,6 @@ module.exports = async function handler(req, res) {
   }
 
   const firstName = (customerName || '').split(' ')[0] || 'there';
-
   const instructionRows = instructions
     ? instructions.split('\n').filter(l => l.trim()).map(l => `<li style="margin-bottom:6px">${l.trim()}</li>`).join('')
     : '';
@@ -62,23 +117,13 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
   try {
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + RESEND_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: customerEmail,
-        subject: `🎉 Your download: ${productName || 'Party Printable'}`,
-        html,
-      }),
+      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject: `🎉 Your download: ${productName || 'Party Printable'}`, html }),
     });
-    const body = await emailRes.json().catch(() => ({}));
-    if (!emailRes.ok) {
-      return res.status(200).json({ sent: false, note: 'Email failed: ' + (body.message || emailRes.status) });
-    }
+    const result = await emailRes.json().catch(() => ({}));
+    if (!emailRes.ok) return res.status(200).json({ sent: false, note: 'Email failed: ' + (result.message || emailRes.status) });
     return res.json({ sent: true });
   } catch (e) {
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
-};
+}
