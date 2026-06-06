@@ -132,9 +132,21 @@
     });
   };
 
+  function autoDetectAdmin() {
+    try {
+      const raw = localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token');
+      if (!raw) return;
+      const token = JSON.parse(raw);
+      if ((token?.user?.email || '') === 'ggkidsspa@gmail.com') {
+        window.setNavAdmin();
+      }
+    } catch (_) {}
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => { init(); autoDetectAdmin(); });
   } else {
     init();
+    autoDetectAdmin();
   }
 })();
