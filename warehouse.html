@@ -206,7 +206,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(
       </div>
 
       <div class="field">
-        <label>Template File (ZIP or PDF) *</label>
+        <label>Template File (ZIP or PDF) <span style="color:var(--muted);font-weight:400">(optional — add later when ready)</span></label>
         <div class="upload-zone" id="fileZone" onclick="document.getElementById('tFile').click()">
           <div id="filePreview"><div class="uz-icon">📦</div><div class="uz-text">Click to upload ZIP or PDF</div></div>
           <input type="file" id="tFile" accept=".zip,.pdf" style="display:none" onchange="previewFile(this)"/>
@@ -387,7 +387,7 @@ async function generateWithAI() {
 async function uploadTemplate() {
   const name = (document.getElementById('tName').value || '').trim();
   if (!name) { document.getElementById('tName').focus(); return; }
-  if (!newTplFile) { showToast('Please upload a ZIP or PDF file'); return; }
+  // ZIP file is optional — can be added later
 
   const btn = document.getElementById('uploadBtn');
   const status = document.getElementById('uploadStatus');
