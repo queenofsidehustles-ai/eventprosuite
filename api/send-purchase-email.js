@@ -143,7 +143,6 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
 </style></head><body>
 <div class="wrap">
 <div class="top">
-  <img src="https://app.partybizhub.com/partybizhub-logo.png" alt="Party Biz Hub" class="logo"/>
   <h1>You're in! Welcome to Party Profit Printables</h1>
   <p>Your account is ready — let's get your store set up</p>
 </div>
