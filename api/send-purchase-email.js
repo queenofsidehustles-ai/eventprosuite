@@ -129,9 +129,10 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
 body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
 .wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-.top{background:linear-gradient(135deg,#4C1D95,#6D28D9,#D115AE);padding:32px;color:#fff;text-align:center}
-.top h1{margin:0 0 8px;font-size:1.4rem;font-weight:800}
-.top p{margin:0;font-size:.9rem;opacity:.85}
+.top{background:linear-gradient(135deg,#4C1D95,#6D28D9,#D115AE);padding:28px 32px 24px;color:#fff;text-align:center}
+.logo{height:38px;width:auto;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto}
+.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}
+.top p{margin:0;font-size:.88rem;opacity:.85}
 .body{padding:28px 32px}
 .body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}
 .btn{display:block;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}
@@ -141,7 +142,11 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
 .footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}
 </style></head><body>
 <div class="wrap">
-<div class="top"><h1>You're in! Welcome to Party Profit Printables</h1><p>Your account is ready — let's get your store set up</p></div>
+<div class="top">
+  <img src="https://app.partybizhub.com/partybizhub-logo.png" alt="Party Biz Hub" class="logo"/>
+  <h1>You're in! Welcome to Party Profit Printables</h1>
+  <p>Your account is ready — let's get your store set up</p>
+</div>
 <div class="body">
 <p>Hi ${firstName},</p>
 <p>You now have access to <strong>Party Profit Printables</strong> on Party Biz Hub. Click the button below to log in and set up your store:</p>
@@ -156,9 +161,9 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
 <li>Share your store link and start selling!</li>
 </ol>
 </div>
-<p style="font-size:.82rem;color:#888">If the button does not work, copy this link: <a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link into your browser:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div>
-<div class="footer">Questions? Email support@partybizhub.com — we respond within 24 hours.</div>
+<div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
 </div></body></html>`;
 
     await fetch('https://api.resend.com/emails', {
