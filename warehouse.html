@@ -174,20 +174,42 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(
         <div class="field-help">One step per line. These appear as a numbered list in the customer's email after they buy.</div>
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label>Preview Image</label>
-          <div class="upload-zone" id="imgZone">
-            <div id="imgPreview"><div class="uz-icon">🖼️</div><div class="uz-text">Click to upload image</div></div>
-            <input type="file" id="imgFile" accept="image/*" onchange="previewImg(this)"/>
+      <div class="field">
+        <label>Preview Images — up to 6 photos (customers can click through to see all)</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px" id="imgGrid">
+          <div class="upload-zone" id="imgZone0" style="min-height:90px" onclick="document.getElementById('imgFile0').click()">
+            <div id="imgPreview0"><div class="uz-icon" style="font-size:1.2rem">🖼️</div><div class="uz-text" style="font-size:.72rem">Main Photo *</div></div>
+            <input type="file" id="imgFile0" accept="image/*" style="display:none" onchange="previewImgSlot(this,0)"/>
+          </div>
+          <div class="upload-zone" id="imgZone1" style="min-height:90px" onclick="document.getElementById('imgFile1').click()">
+            <div id="imgPreview1"><div class="uz-icon" style="font-size:1.2rem">➕</div><div class="uz-text" style="font-size:.72rem">Photo 2</div></div>
+            <input type="file" id="imgFile1" accept="image/*" style="display:none" onchange="previewImgSlot(this,1)"/>
+          </div>
+          <div class="upload-zone" id="imgZone2" style="min-height:90px" onclick="document.getElementById('imgFile2').click()">
+            <div id="imgPreview2"><div class="uz-icon" style="font-size:1.2rem">➕</div><div class="uz-text" style="font-size:.72rem">Photo 3</div></div>
+            <input type="file" id="imgFile2" accept="image/*" style="display:none" onchange="previewImgSlot(this,2)"/>
+          </div>
+          <div class="upload-zone" id="imgZone3" style="min-height:90px" onclick="document.getElementById('imgFile3').click()">
+            <div id="imgPreview3"><div class="uz-icon" style="font-size:1.2rem">➕</div><div class="uz-text" style="font-size:.72rem">Photo 4</div></div>
+            <input type="file" id="imgFile3" accept="image/*" style="display:none" onchange="previewImgSlot(this,3)"/>
+          </div>
+          <div class="upload-zone" id="imgZone4" style="min-height:90px" onclick="document.getElementById('imgFile4').click()">
+            <div id="imgPreview4"><div class="uz-icon" style="font-size:1.2rem">➕</div><div class="uz-text" style="font-size:.72rem">Photo 5</div></div>
+            <input type="file" id="imgFile4" accept="image/*" style="display:none" onchange="previewImgSlot(this,4)"/>
+          </div>
+          <div class="upload-zone" id="imgZone5" style="min-height:90px" onclick="document.getElementById('imgFile5').click()">
+            <div id="imgPreview5"><div class="uz-icon" style="font-size:1.2rem">➕</div><div class="uz-text" style="font-size:.72rem">Photo 6</div></div>
+            <input type="file" id="imgFile5" accept="image/*" style="display:none" onchange="previewImgSlot(this,5)"/>
           </div>
         </div>
-        <div class="field">
-          <label>Template File (ZIP or PDF) *</label>
-          <div class="upload-zone" id="fileZone">
-            <div id="filePreview"><div class="uz-icon">📦</div><div class="uz-text">Click to upload ZIP or PDF</div></div>
-            <input type="file" id="tFile" accept=".zip,.pdf" onchange="previewFile(this)"/>
-          </div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:5px">Main photo is required. Photos 2-6 are optional extras customers can click through on your storefront.</div>
+      </div>
+
+      <div class="field">
+        <label>Template File (ZIP or PDF) *</label>
+        <div class="upload-zone" id="fileZone" onclick="document.getElementById('tFile').click()">
+          <div id="filePreview"><div class="uz-icon">📦</div><div class="uz-text">Click to upload ZIP or PDF</div></div>
+          <input type="file" id="tFile" accept=".zip,.pdf" style="display:none" onchange="previewFile(this)"/>
         </div>
       </div>
 
@@ -282,7 +304,8 @@ const ADMIN_EMAIL = 'ggkidsspa@gmail.com';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let templates = [], editingId = null;
-let newImgFile = null, newTplFile = null;
+let newImgFiles = [null,null,null,null,null,null]; // slots 0-5
+let newTplFile = null;
 
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
@@ -378,10 +401,16 @@ async function uploadTemplate() {
 
     status.textContent = 'Uploading files…';
     let image_url = null, file_url = null, file_name = null;
+    const image_urls = [];
 
-    if (newImgFile) {
-      image_url = await uploadFile('product-files', newImgFile, 'library-images');
+    for (let i = 0; i < 6; i++) {
+      if (newImgFiles[i]) {
+        const url = await uploadFile('product-files', newImgFiles[i], 'library-images');
+        image_urls.push(url);
+        if (i === 0) image_url = url;
+      }
     }
+
     if (newTplFile) {
       file_url = await uploadFile('product-files', newTplFile, 'library-bundles');
       file_name = newTplFile.name;
@@ -393,7 +422,8 @@ async function uploadTemplate() {
       theme: document.getElementById('tTheme').value || null,
       description: (document.getElementById('tDesc').value || '').trim() || null,
       instructions: (document.getElementById('tInstructions').value || '').trim() || null,
-      image_url, file_url, file_name,
+      image_url, image_urls: image_urls.length ? image_urls : null,
+      file_url, file_name,
       active: document.getElementById('tActive').value === 'true',
     });
     if (error) throw error;
@@ -415,8 +445,13 @@ function resetUploadForm() {
   ['tName','tDesc','tInstructions'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('tTheme').value = '';
   document.getElementById('tActive').value = 'true';
-  newImgFile = null; newTplFile = null;
-  resetZone('imgZone','imgPreview','🖼️','Click to upload image');
+  newImgFiles = [null,null,null,null,null,null]; newTplFile = null;
+  const labels = ['Main Photo *','Photo 2','Photo 3','Photo 4','Photo 5','Photo 6'];
+  const icons  = ['🖼️','➕','➕','➕','➕','➕'];
+  for (let i = 0; i < 6; i++) {
+    document.getElementById('imgZone'+i).classList.remove('has-file');
+    document.getElementById('imgPreview'+i).innerHTML = `<div class="uz-icon" style="font-size:1.2rem">${icons[i]}</div><div class="uz-text" style="font-size:.72rem">${labels[i]}</div>`;
+  }
   resetZone('fileZone','filePreview','📦','Click to upload ZIP or PDF');
 }
 
@@ -494,13 +529,13 @@ async function deleteTemplate(id) {
 }
 
 // ── File preview helpers ──
-function previewImg(input) {
+function previewImgSlot(input, slot) {
   const f = input.files[0]; if (!f) return;
-  newImgFile = f;
+  newImgFiles[slot] = f;
   const r = new FileReader();
   r.onload = e => {
-    document.getElementById('imgPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100px;object-fit:cover;border-radius:8px">`;
-    document.getElementById('imgZone').classList.add('has-file');
+    document.getElementById('imgPreview'+slot).innerHTML = `<img src="${e.target.result}" style="width:100%;height:80px;object-fit:cover;border-radius:6px">`;
+    document.getElementById('imgZone'+slot).classList.add('has-file');
   };
   r.readAsDataURL(f);
 }
