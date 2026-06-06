@@ -753,6 +753,7 @@ async function init(){
   document.getElementById('authGate').style.display='none';
 
   userLibraryTier=p?.library_tier||'tier1';
+  if(currentUser.email==='ggkidsspa@gmail.com'&&typeof setNavAdmin==='function')setNavAdmin();
   const hasAccess=p?.has_kpps_access===true;
   if(!hasAccess){
     document.getElementById('upgradeGate').style.display='block';

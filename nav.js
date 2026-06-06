@@ -111,6 +111,17 @@
     }
   };
 
+  window.setNavAdmin = function () {
+    const nav = document.querySelector('.sidebar-nav');
+    if (!nav || nav.querySelector('.snav-admin')) return;
+    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+    const link = document.createElement('a');
+    link.href = 'warehouse.html';
+    link.className = 'snav-item snav-admin' + (currentPage === 'warehouse' ? ' active' : '');
+    link.innerHTML = '<span class="snav-icon">📦</span><span class="snav-label">Template Warehouse</span>';
+    nav.appendChild(link);
+  };
+
   window.initNavSignout = function (handler) {
     // Mark session active so next page skips the spinner
     sessionStorage.setItem('pbh_auth', '1');

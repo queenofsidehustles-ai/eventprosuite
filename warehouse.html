@@ -154,6 +154,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(
         </div>
       </div>
 
+      <!-- AI Generate button -->
+      <div style="margin-bottom:14px">
+        <button onclick="generateWithAI()" id="aiGenBtn" class="btn-primary" style="font-size:.82rem;padding:.5rem 1.2rem">
+          ✨ Generate Description &amp; Instructions with AI
+        </button>
+        <span id="aiGenStatus" style="font-size:.75rem;color:var(--muted);margin-left:10px"></span>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Fill in the Template Name first, then click — AI writes both fields for you instantly.</div>
+      </div>
+
       <div class="field">
         <label>Description (shown to party planners in the library)</label>
         <textarea id="tDesc" rows="2" placeholder="e.g. Complete Unicorn birthday bundle — chip bags, Capri Sun labels, water bottle labels, cake toppers and more. All 11 designs in one Canva-ready ZIP."></textarea>
@@ -321,6 +330,34 @@ function renderGrid() {
         </div>
       </div>
     </div>`).join('') + '</div>';
+}
+
+// ── AI generation ──
+async function generateWithAI() {
+  const name = (document.getElementById('tName').value || '').trim();
+  if (!name) { document.getElementById('tName').focus(); showToast('Enter a template name first'); return; }
+  const theme = document.getElementById('tTheme').value || '';
+  const btn = document.getElementById('aiGenBtn');
+  const status = document.getElementById('aiGenStatus');
+  btn.disabled = true;
+  status.textContent = '✨ Writing…';
+  try {
+    const res = await fetch('/api/generate-template-copy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, theme }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.description) document.getElementById('tDesc').value = data.description;
+    if (data.instructions) document.getElementById('tInstructions').value = data.instructions;
+    status.textContent = '✓ Done — review and edit as needed';
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  } catch (e) {
+    status.textContent = 'Error: ' + (e.message || 'unknown');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── Upload new template ──
