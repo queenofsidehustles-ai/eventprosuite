@@ -302,6 +302,55 @@ create policy "sales: anon can insert" on sales
   for insert to anon with check (true);
 
 
+-- ── 11. LIBRARY TEMPLATES TABLE ──────────────────────────────────
+-- Monica's master warehouse of party template packs.
+-- All authenticated users can browse; only admin writes via warehouse.html.
+
+create table if not exists library_templates (
+  id           uuid default gen_random_uuid() primary key,
+  name         text not null,
+  theme        text,
+  description  text,
+  image_url    text,
+  file_url     text,
+  file_name    text,
+  instructions text,
+  active       boolean default true,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
+);
+
+-- RLS disabled — admin check is done client-side in warehouse.html
+alter table library_templates disable row level security;
+
+
+-- ── 12. LIBRARY CLAIMS TABLE ─────────────────────────────────────
+-- Tracks which party planners have claimed (added) which library templates.
+
+create table if not exists library_claims (
+  id          uuid default gen_random_uuid() primary key,
+  user_id     uuid references profiles(id) on delete cascade,
+  template_id uuid references library_templates(id) on delete cascade,
+  product_id  uuid references products(id) on delete set null,
+  claimed_at  timestamptz default now(),
+  unique(user_id, template_id)
+);
+
+alter table library_claims disable row level security;
+
+
+-- ── ADDITIONS TO EXISTING TABLES ─────────────────────────────────
+-- library_tier: 'founding' = unlimited, 'tier1' = 15 max, 'tier2' = 30 max, 'unlimited'
+alter table profiles add column if not exists library_tier text default 'tier1';
+
+-- instructions: step-by-step guide shown to customer after purchase (email + success page)
+alter table products add column if not exists instructions text;
+
+-- library_template_id: links a cloned product back to the source library template
+alter table products add column if not exists library_template_id uuid references library_templates(id) on delete set null;
+
+
 -- ── DONE ────────────────────────────────────────────────────────
--- All 6 tables + receipts storage bucket set up with proper RLS.
+-- All tables + storage buckets set up with proper RLS.
+-- Run the ALTER TABLE lines above on any existing database to add new columns.
 -- ================================================================

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Template Warehouse | Admin</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4C1D95;--brand:#6D28D9;--mauve:#8B5CF6;
+  --pink:#D115AE;--gold:#C9A227;
+  --cream:#FCF8F4;--border:#EAE3ED;--ink:#1F1A24;--muted:#6C6473;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --shadow:0 4px 16px rgba(109,40,217,.07);
+  --shadow-lg:0 20px 50px -12px rgba(109,40,217,.18);
+  --radius:14px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#1A0A36,#3B1D8F);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header-logo{display:flex;align-items:center;gap:10px;font-family:'Playfair Display',serif;font-size:1.1rem;color:#fff;font-weight:700}
+.header-logo img{height:32px}
+.admin-badge{background:rgba(209,21,174,.3);color:#f9a8e8;border:1px solid rgba(209,21,174,.4);padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.header-right{display:flex;align-items:center;gap:12px}
+.signout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);padding:.4rem .9rem;border-radius:8px;font-size:.8rem;cursor:pointer;font-family:inherit}
+.signout-btn:hover{background:rgba(255,255,255,.2)}
+
+/* ── Layout ── */
+.wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--plum-900);margin-bottom:.35rem}
+.page-sub{font-size:.88rem;color:var(--muted);margin-bottom:2rem}
+
+/* ── Section cards ── */
+.section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem 1.6rem;margin-bottom:2rem;box-shadow:var(--shadow)}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.2rem;gap:12px;flex-wrap:wrap}
+.section-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900);font-weight:700}
+.section-sub{font-size:.78rem;color:var(--muted)}
+
+/* ── Buttons ── */
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--brand));color:#fff;border:none;padding:.65rem 1.3rem;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--ink);padding:.6rem 1.2rem;border-radius:10px;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit}
+.btn-outline:hover{border-color:var(--brand);color:var(--brand)}
+.btn-danger{background:rgba(194,59,94,.1);border:1px solid rgba(194,59,94,.25);color:var(--danger);padding:.38rem .85rem;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-sm{padding:.38rem .85rem;font-size:.78rem}
+.btn-success{background:rgba(30,140,90,.1);border:1px solid rgba(30,140,90,.25);color:var(--success);padding:.38rem .85rem;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* ── Form fields ── */
+.field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:12px}
+.field label{font-size:.75rem;font-weight:700;color:#4A4354;letter-spacing:.02em}
+.field input,.field select,.field textarea{padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;font-family:inherit;color:var(--ink);background:#fff;transition:border .12s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(109,40,217,.08)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-help{font-size:.7rem;color:var(--muted);margin-top:2px}
+
+/* ── Upload zone ── */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;position:relative;transition:all .15s}
+.upload-zone:hover{border-color:var(--brand);background:rgba(109,40,217,.03)}
+.upload-zone.has-file{border-color:var(--success);border-style:solid;background:rgba(30,140,90,.04)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz-icon{font-size:1.6rem;margin-bottom:5px}
+.uz-text{font-size:.8rem;color:var(--muted)}
+
+/* ── Template grid ── */
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.tpl-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.tpl-img{height:160px;background:linear-gradient(135deg,rgba(109,40,217,.08),rgba(209,21,174,.06));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.tpl-img img{width:100%;height:100%;object-fit:cover}
+.tpl-img .no-img{font-size:2.5rem;opacity:.4}
+.tpl-status{position:absolute;top:8px;right:8px;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px}
+.tpl-status.live{background:rgba(30,140,90,.85);color:#fff}
+.tpl-status.hidden{background:rgba(0,0,0,.45);color:#fff}
+.tpl-body{padding:14px 16px}
+.tpl-name{font-weight:700;font-size:.92rem;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpl-desc{font-size:.76rem;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tpl-actions{display:flex;gap:8px;flex-wrap:wrap}
+.tpl-badge{display:inline-block;background:rgba(109,40,217,.08);color:var(--brand);font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:capitalize}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:.75rem 1.4rem;border-radius:999px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:500}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Modal ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:26px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-head h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900)}
+.modal-close{border:none;background:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--border);margin-top:14px}
+
+/* ── Tier info box ── */
+.info-box{background:rgba(109,40,217,.05);border:1.5px solid rgba(109,40,217,.15);border-radius:12px;padding:14px 16px;font-size:.82rem;color:var(--muted);line-height:1.65}
+.info-box strong{color:var(--plum-900)}
+
+@media(max-width:600px){.field-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <img src="partybizhub-logo.svg" alt="PBH"/>
+    Template Warehouse
+  </div>
+  <div class="header-right">
+    <span class="admin-badge">ADMIN ONLY</span>
+    <button class="signout-btn" onclick="signOut()">Sign Out</button>
+  </div>
+</div>
+
+<!-- AUTH LOADING -->
+<div id="authMsg" style="text-align:center;padding:4rem 2rem;color:var(--muted);font-size:.9rem">Checking access…</div>
+
+<!-- MAIN CONTENT (hidden until auth check passes) -->
+<div class="wrap" id="mainContent" style="display:none">
+
+  <div class="page-title">📦 Template Warehouse</div>
+  <div class="page-sub">Upload and manage the master library of party template packs. Party planners browse and claim these from their Digital Store.</div>
+
+  <!-- ── UPLOAD FORM ── -->
+  <div class="section" id="uploadSection">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Upload New Template Pack</div>
+        <div class="section-sub">Fill in all details — the instructions field goes directly into the customer's purchase email</div>
+      </div>
+      <button class="btn-outline btn-sm" onclick="collapseUpload()" id="collapseBtn">Hide Form ↑</button>
+    </div>
+    <div id="uploadForm">
+
+      <div class="field-row">
+        <div class="field">
+          <label>Template Name *</label>
+          <input type="text" id="tName" placeholder="e.g. Unicorn Birthday Bundle"/>
+        </div>
+        <div class="field">
+          <label>Theme</label>
+          <select id="tTheme">
+            <option value="">— None —</option>
+            <option>Unicorn</option><option>Princess</option><option>Mermaid</option>
+            <option>Dinosaur</option><option>Safari</option><option>Jungle</option>
+            <option>Tropical</option><option>Butterfly</option><option>Fairy</option>
+            <option>Bluey</option><option>Barbie</option><option>Frozen</option>
+            <option>Spider-Man</option><option>PAW Patrol</option><option>Cocomelon</option>
+            <option>Sports</option><option>Superhero</option><option>Custom</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Description (shown to party planners in the library)</label>
+        <textarea id="tDesc" rows="2" placeholder="e.g. Complete Unicorn birthday bundle — chip bags, Capri Sun labels, water bottle labels, cake toppers and more. All 11 designs in one Canva-ready ZIP."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Customer Instructions (step-by-step — goes in the purchase email)</label>
+        <textarea id="tInstructions" rows="5" placeholder="Write one step per line. Example:&#10;Open the Canva link included in your ZIP file&#10;Click 'Use Template' to make your own copy (free Canva account works)&#10;Click on the text to change the guest's name and party date&#10;Download as PDF Print when done&#10;Print at home or upload to a print shop"></textarea>
+        <div class="field-help">One step per line. These appear as a numbered list in the customer's email after they buy.</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Preview Image</label>
+          <div class="upload-zone" id="imgZone">
+            <div id="imgPreview"><div class="uz-icon">🖼️</div><div class="uz-text">Click to upload image</div></div>
+            <input type="file" id="imgFile" accept="image/*" onchange="previewImg(this)"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Template File (ZIP or PDF) *</label>
+          <div class="upload-zone" id="fileZone">
+            <div id="filePreview"><div class="uz-icon">📦</div><div class="uz-text">Click to upload ZIP or PDF</div></div>
+            <input type="file" id="tFile" accept=".zip,.pdf" onchange="previewFile(this)"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Visible in Library</label>
+          <select id="tActive">
+            <option value="true">Yes — show to party planners</option>
+            <option value="false">No — save as draft</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="uploadBtn" onclick="uploadTemplate()" style="margin-top:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="uploadBtnText">Save Template</span>
+      </button>
+      <span id="uploadStatus" style="font-size:.78rem;color:var(--muted);margin-left:10px"></span>
+    </div>
+  </div>
+
+  <!-- ── TEMPLATE GRID ── -->
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">📚 Library (<span id="tplCount">0</span> templates)</div>
+        <div class="section-sub">Click Edit to update details — delete cannot be undone</div>
+      </div>
+      <button class="btn-outline btn-sm" onclick="loadTemplates()">Refresh</button>
+    </div>
+    <div id="tplGrid">
+      <div style="color:var(--muted);font-size:.85rem">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ── TIER INFO ── -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🏷️ Managing Party Planner Tiers</div>
+    </div>
+    <div class="info-box">
+      <strong>To change a party planner's library tier</strong>, run this SQL in your Supabase dashboard (supabase.com → your project → SQL Editor):<br/><br/>
+      <code style="background:#f0ebff;padding:8px 12px;border-radius:8px;display:block;font-size:.82rem;color:#4C1D95;white-space:pre-wrap;margin:8px 0">UPDATE profiles SET library_tier = 'founding' WHERE email = 'their@email.com';</code>
+      <strong>Tier values:</strong><br/>
+      • <code>founding</code> — Unlimited slots, gets all future templates for free<br/>
+      • <code>tier1</code> — Up to 15 templates (default for all new users)<br/>
+      • <code>tier2</code> — Up to 30 templates<br/>
+      • <code>unlimited</code> — Unlimited slots
+    </div>
+  </div>
+
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3>Edit Template</h3>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Name *</label><input type="text" id="eName"/></div>
+      <div class="field"><label>Theme</label><select id="eTheme">
+        <option value="">— None —</option>
+        <option>Unicorn</option><option>Princess</option><option>Mermaid</option>
+        <option>Dinosaur</option><option>Safari</option><option>Jungle</option>
+        <option>Tropical</option><option>Butterfly</option><option>Fairy</option>
+        <option>Bluey</option><option>Barbie</option><option>Frozen</option>
+        <option>Spider-Man</option><option>PAW Patrol</option><option>Cocomelon</option>
+        <option>Sports</option><option>Superhero</option><option>Custom</option>
+      </select></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="eDesc" rows="2"></textarea></div>
+    <div class="field"><label>Customer Instructions (one step per line)</label><textarea id="eInstructions" rows="5"></textarea></div>
+    <div class="field"><label>Visible in Library</label>
+      <select id="eActive"><option value="true">Yes</option><option value="false">No (draft)</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-primary" id="editSaveBtn" onclick="saveEdit()"><span id="editSaveBtnText">Save Changes</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const ADMIN_EMAIL = 'ggkidsspa@gmail.com';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let templates = [], editingId = null;
+let newImgFile = null, newTplFile = null;
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('authMsg').innerHTML = 'You need to be logged in to access this page. <a href="login.html" style="color:var(--brand);font-weight:700">Log in →</a>';
+    return;
+  }
+  if (session.user.email !== ADMIN_EMAIL) {
+    document.getElementById('authMsg').innerHTML = '🔒 Admin access only. <a href="dashboard.html" style="color:var(--brand);font-weight:700">← Back to Dashboard</a>';
+    return;
+  }
+  document.getElementById('authMsg').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  await loadTemplates();
+}
+
+async function loadTemplates() {
+  const { data, error } = await sb.from('library_templates').select('*').order('created_at', { ascending: false });
+  if (error) { showToast('Error loading: ' + error.message); return; }
+  templates = data || [];
+  document.getElementById('tplCount').textContent = templates.length;
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('tplGrid');
+  if (!templates.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px 0">No templates yet — upload your first one above.</div>';
+    return;
+  }
+  grid.innerHTML = '<div class="tpl-grid">' + templates.map(t => `
+    <div class="tpl-card">
+      <div class="tpl-img">
+        ${t.image_url ? `<img src="${esc(t.image_url)}" alt="${esc(t.name)}">` : '<div class="no-img">🎉</div>'}
+        <span class="tpl-status ${t.active ? 'live' : 'hidden'}">${t.active ? 'Live' : 'Draft'}</span>
+      </div>
+      <div class="tpl-body">
+        ${t.theme ? `<span class="tpl-badge">${esc(t.theme)}</span>` : ''}
+        <div class="tpl-name">${esc(t.name)}</div>
+        <div class="tpl-desc">${esc(t.description || 'No description.')}</div>
+        <div class="tpl-actions">
+          <button class="btn-outline btn-sm" onclick="openEdit('${t.id}')">Edit</button>
+          <button class="${t.active ? 'btn-danger' : 'btn-success'} btn-sm" onclick="toggleActive('${t.id}',${!t.active})">${t.active ? 'Hide' : 'Publish'}</button>
+          <button class="btn-danger btn-sm" onclick="deleteTemplate('${t.id}')">Delete</button>
+        </div>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+// ── Upload new template ──
+async function uploadTemplate() {
+  const name = (document.getElementById('tName').value || '').trim();
+  if (!name) { document.getElementById('tName').focus(); return; }
+  if (!newTplFile) { showToast('Please upload a ZIP or PDF file'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  const status = document.getElementById('uploadStatus');
+  btn.disabled = true;
+  document.getElementById('uploadBtnText').textContent = 'Saving…';
+  status.textContent = '';
+
+  try {
+    const { data: { session: fresh } } = await sb.auth.refreshSession();
+    if (!fresh) { showToast('Session expired — please sign out and back in.'); return; }
+
+    status.textContent = 'Uploading files…';
+    let image_url = null, file_url = null, file_name = null;
+
+    if (newImgFile) {
+      image_url = await uploadFile('product-files', newImgFile, 'library-images');
+    }
+    if (newTplFile) {
+      file_url = await uploadFile('product-files', newTplFile, 'library-bundles');
+      file_name = newTplFile.name;
+    }
+
+    status.textContent = 'Saving to database…';
+    const { error } = await sb.from('library_templates').insert({
+      name,
+      theme: document.getElementById('tTheme').value || null,
+      description: (document.getElementById('tDesc').value || '').trim() || null,
+      instructions: (document.getElementById('tInstructions').value || '').trim() || null,
+      image_url, file_url, file_name,
+      active: document.getElementById('tActive').value === 'true',
+    });
+    if (error) throw error;
+
+    showToast('✓ Template saved to the library!');
+    resetUploadForm();
+    await loadTemplates();
+  } catch (e) {
+    showToast('Error: ' + (e.message || 'unknown'));
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('uploadBtnText').textContent = 'Save Template';
+    status.textContent = '';
+  }
+}
+
+function resetUploadForm() {
+  ['tName','tDesc','tInstructions'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tTheme').value = '';
+  document.getElementById('tActive').value = 'true';
+  newImgFile = null; newTplFile = null;
+  resetZone('imgZone','imgPreview','🖼️','Click to upload image');
+  resetZone('fileZone','filePreview','📦','Click to upload ZIP or PDF');
+}
+
+async function uploadFile(bucket, file, folder) {
+  const ext = file.name.split('.').pop();
+  const path = `${folder}/${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from(bucket).upload(path, file, { upsert: true });
+  if (error) throw error;
+  return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+}
+
+// ── Edit existing template ──
+function openEdit(id) {
+  const t = templates.find(x => x.id === id);
+  if (!t) return;
+  editingId = id;
+  document.getElementById('eName').value = t.name || '';
+  document.getElementById('eTheme').value = t.theme || '';
+  document.getElementById('eDesc').value = t.description || '';
+  document.getElementById('eInstructions').value = t.instructions || '';
+  document.getElementById('eActive').value = String(t.active !== false);
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal() {
+  editingId = null;
+  document.getElementById('editModal').classList.remove('open');
+}
+
+async function saveEdit() {
+  const name = (document.getElementById('eName').value || '').trim();
+  if (!name) { document.getElementById('eName').focus(); return; }
+
+  const btn = document.getElementById('editSaveBtn');
+  btn.disabled = true;
+  document.getElementById('editSaveBtnText').textContent = 'Saving…';
+
+  try {
+    const { data: { session: fresh } } = await sb.auth.refreshSession();
+    if (!fresh) { showToast('Session expired'); return; }
+
+    const { error } = await sb.from('library_templates').update({
+      name,
+      theme: document.getElementById('eTheme').value || null,
+      description: (document.getElementById('eDesc').value || '').trim() || null,
+      instructions: (document.getElementById('eInstructions').value || '').trim() || null,
+      active: document.getElementById('eActive').value === 'true',
+      updated_at: new Date().toISOString(),
+    }).eq('id', editingId);
+
+    if (error) throw error;
+    showToast('✓ Template updated!');
+    closeEditModal();
+    await loadTemplates();
+  } catch (e) {
+    showToast('Error: ' + (e.message || 'unknown'));
+  } finally {
+    btn.disabled = false;
+    document.getElementById('editSaveBtnText').textContent = 'Save Changes';
+  }
+}
+
+async function toggleActive(id, newState) {
+  const { error } = await sb.from('library_templates').update({ active: newState, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast(newState ? '✓ Template published' : 'Template hidden');
+  await loadTemplates();
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template? Party planners who already claimed it will keep their product. This cannot be undone.')) return;
+  const { error } = await sb.from('library_templates').delete().eq('id', id);
+  if (error) { showToast('Delete failed: ' + error.message); return; }
+  showToast('Template deleted.');
+  await loadTemplates();
+}
+
+// ── File preview helpers ──
+function previewImg(input) {
+  const f = input.files[0]; if (!f) return;
+  newImgFile = f;
+  const r = new FileReader();
+  r.onload = e => {
+    document.getElementById('imgPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100px;object-fit:cover;border-radius:8px">`;
+    document.getElementById('imgZone').classList.add('has-file');
+  };
+  r.readAsDataURL(f);
+}
+function previewFile(input) {
+  const f = input.files[0]; if (!f) return;
+  newTplFile = f;
+  document.getElementById('filePreview').innerHTML = `<div class="uz-icon" style="color:var(--success)">✓</div><div class="uz-text" style="color:var(--success);font-weight:600">${esc(f.name)}</div>`;
+  document.getElementById('fileZone').classList.add('has-file');
+}
+function resetZone(zoneId, previewId, icon, label) {
+  document.getElementById(previewId).innerHTML = `<div class="uz-icon">${icon}</div><div class="uz-text">${label}</div>`;
+  document.getElementById(zoneId).classList.remove('has-file');
+}
+
+// ── Collapse upload form ──
+let uploadCollapsed = false;
+function collapseUpload() {
+  uploadCollapsed = !uploadCollapsed;
+  document.getElementById('uploadForm').style.display = uploadCollapsed ? 'none' : '';
+  document.getElementById('collapseBtn').textContent = uploadCollapsed ? 'Show Form ↓' : 'Hide Form ↑';
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+
+function showToast(m, dur = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = m;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+init();
+</script>
+</body>
+</html>

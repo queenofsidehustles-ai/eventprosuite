@@ -401,6 +401,15 @@ img{max-width:100%;display:block}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
       Download Your Printable
     </a>
+    <!-- Email delivery capture -->
+    <div id="emailCaptureBox" style="margin:14px 0;padding:14px 16px;background:#f8f0ff;border-radius:10px;border:1px solid rgba(117,89,212,.18);text-align:left">
+      <div style="font-size:.78rem;font-weight:700;color:#7559D4;margin-bottom:8px">📧 Send a copy to your inbox</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="email" id="customerEmailInput" placeholder="your@email.com" style="flex:1;padding:.5rem .75rem;border:1.5px solid #d8ccf0;border-radius:8px;font-size:.82rem;font-family:inherit;color:#1F1A24;background:#fff;min-width:0"/>
+        <button onclick="sendPurchaseEmail()" id="sendEmailBtn" style="padding:.5rem 1rem;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">Send</button>
+      </div>
+      <div id="emailSentMsg" style="font-size:.72rem;color:#666;margin-top:6px;min-height:14px"></div>
+    </div>
     <div class="next-steps">
       <div class="ns-title">What to do next:</div>
       <ol>
@@ -421,6 +430,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const TPL_PFX={studio:'st',luxe:'lx',bloom:'bl',pop:'pp'};
 let products=[], activeFilter='', ownerId='', tpl='studio', pfx='st';
+let successProduct=null, sellerBizName='';
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function setMeta(n,v){let e=document.querySelector(`meta[name="${n}"]`)||document.querySelector(`meta[property="${n}"]`);if(e)e.content=v;}
@@ -443,6 +453,7 @@ async function init(){
   const{data:profile}=await sb.from('profiles').select('full_name,profile_data').eq('id',ownerId).single();
   const d=profile?.profile_data||{};
   const bizName=d.businessName||profile?.full_name||'Party Printables';
+  sellerBizName=bizName;
   const tagline=d.tagline||'Instant digital party printable downloads';
   tpl=d.shopTemplate||'studio'; // seller's chosen template
   pfx=TPL_PFX[tpl]||'st';
@@ -675,9 +686,15 @@ async function showSuccess(productId){
     products=data||[];
   }
   const p=products.find(x=>x.id===productId);
+  successProduct=p||null;
   const btn=document.getElementById('downloadBtn');
   if(p?.file_url){btn.href=p.file_url;btn.style.display='flex';}
   else btn.style.display='none';
+  // Reset email capture
+  document.getElementById('customerEmailInput').value='';
+  document.getElementById('emailSentMsg').textContent='';
+  const sendBtn=document.getElementById('sendEmailBtn');
+  sendBtn.disabled=false;sendBtn.textContent='Send';
   document.getElementById('successOverlay').classList.add('open');
 
   // Auto-record the sale in Supabase so seller can see it in their Sales tab
@@ -702,6 +719,42 @@ async function showSuccess(productId){
 function closeSuccess(){
   document.getElementById('successOverlay').classList.remove('open');
   history.replaceState({},'',location.pathname+'?uid='+ownerId);
+}
+
+async function sendPurchaseEmail(){
+  const email=(document.getElementById('customerEmailInput').value||'').trim();
+  const msgEl=document.getElementById('emailSentMsg');
+  if(!email){msgEl.textContent='Please enter your email address';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msgEl.textContent='Please enter a valid email';return;}
+  if(!successProduct?.file_url){msgEl.textContent='No download link found for this product.';return;}
+
+  const btn=document.getElementById('sendEmailBtn');
+  btn.disabled=true;btn.textContent='Sending…';msgEl.textContent='';
+
+  try{
+    const res=await fetch('/api/send-purchase-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        customerEmail:email,
+        productName:successProduct?.name,
+        downloadUrl:successProduct?.file_url,
+        instructions:successProduct?.instructions||null,
+        sellerName:sellerBizName,
+      }),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(data.sent){
+      msgEl.textContent='✓ Sent! Check your inbox (and spam folder just in case).';
+      btn.textContent='✓ Sent';
+    }else{
+      msgEl.textContent=data.note||'Could not send. Try again.';
+      btn.disabled=false;btn.textContent='Send';
+    }
+  }catch(e){
+    msgEl.textContent='Error: '+e.message;
+    btn.disabled=false;btn.textContent='Send';
+  }
 }
 
 init();

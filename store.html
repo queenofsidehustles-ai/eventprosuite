@@ -236,6 +236,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           Getting Started
         </button>
+        <button class="tab-btn" id="tabLibrary" onclick="switchTab('library')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Template Library
+        </button>
       </div>
 
       <!-- MY STORE TAB -->
@@ -587,6 +591,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       </div>
       </div><!-- /panelGuide -->
 
+      <!-- TEMPLATE LIBRARY TAB -->
+      <div class="tab-panel" id="panelLibrary">
+      <div class="wrap">
+
+        <!-- Tier badge -->
+        <div id="libraryTierBadge" style="margin-bottom:1.4rem"></div>
+
+        <!-- Library grid -->
+        <div id="libraryGrid">
+          <div style="color:var(--muted);font-size:.85rem">Loading library…</div>
+        </div>
+
+      </div>
+      </div><!-- /panelLibrary -->
+
     </div><!-- /storeContent -->
   </div>
 </div>
@@ -698,6 +717,7 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null, products=[], editingId=null, currentProfileData={};
 let newImgFile=null, newDigitalFile=null;
+let userLibraryTier='tier1', libraryTemplates=[], libraryClaims=[], libraryLoaded=false;
 
 async function selectShopTemplate(tpl){
   // Update UI
@@ -725,13 +745,14 @@ async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
   currentUser=session.user;
-  const{data:p}=await sb.from('profiles').select('full_name,profile_data,has_kpps_access,store_slug').eq('id',currentUser.id).single();
+  const{data:p}=await sb.from('profiles').select('full_name,profile_data,has_kpps_access,store_slug,library_tier').eq('id',currentUser.id).single();
   const name=(p?.profile_data?.businessName)||p?.full_name||currentUser.email.split('@')[0];
   setNavUser(name,name.charAt(0));
   initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html';});
   document.getElementById('pbhLayout').style.display='';
   document.getElementById('authGate').style.display='none';
 
+  userLibraryTier=p?.library_tier||'tier1';
   const hasAccess=p?.has_kpps_access===true;
   if(!hasAccess){
     document.getElementById('upgradeGate').style.display='block';
@@ -1124,6 +1145,7 @@ function switchTab(name){
   document.getElementById('tab'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
   document.getElementById('panel'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
   if(name==='sales'&&!salesLoaded){salesLoaded=true;loadSales();}
+  if(name==='library'&&!libraryLoaded){libraryLoaded=true;loadLibrary();}
 }
 
 /* ── Sales dashboard ── */
@@ -1185,6 +1207,123 @@ async function loadSales(){
 
 function showToast(m,dur=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── Template Library ── */
+const TIER_LIMITS={founding:Infinity,tier1:15,tier2:30,unlimited:Infinity};
+const TIER_LABELS={founding:'🌟 Founding Member',tier1:'📦 Tier 1',tier2:'📦 Tier 2',unlimited:'✨ Unlimited'};
+
+async function loadLibrary(){
+  const[{data:tpls},{data:claims}]=await Promise.all([
+    sb.from('library_templates').select('*').eq('active',true).order('created_at',{ascending:false}),
+    sb.from('library_claims').select('*').eq('user_id',currentUser.id),
+  ]);
+  libraryTemplates=tpls||[];
+  libraryClaims=claims||[];
+  renderLibrary();
+}
+
+function renderLibrary(){
+  const tier=userLibraryTier||'tier1';
+  const limit=TIER_LIMITS[tier]||15;
+  const used=libraryClaims.length;
+  const remaining=isFinite(limit)?Math.max(0,limit-used):null;
+
+  // Tier badge
+  const badgeEl=document.getElementById('libraryTierBadge');
+  const slotText=remaining===null?'Unlimited access':'<strong>'+used+' used</strong> · '+(remaining>0?remaining+' remaining':'0 remaining — upgrade for more');
+  badgeEl.innerHTML=`<div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div>
+      <span style="font-weight:800;font-size:.88rem;color:var(--plum-900)">${TIER_LABELS[tier]||'Tier 1'}</span>
+      <span style="font-size:.78rem;color:var(--muted);margin-left:10px">${slotText}</span>
+    </div>
+    ${isFinite(limit)?`<div style="background:rgba(109,40,217,.06);border-radius:8px;height:8px;width:160px;overflow:hidden"><div style="background:var(--brand);height:100%;width:${Math.min(100,Math.round((used/limit)*100))}%;border-radius:8px;transition:width .4s"></div></div>`:''}
+  </div>`;
+
+  // Template grid
+  const gridEl=document.getElementById('libraryGrid');
+  if(!libraryTemplates.length){
+    gridEl.innerHTML='<div style="text-align:center;padding:60px 24px;background:#fff;border-radius:var(--radius);border:1px solid var(--border)"><div style="font-size:2.5rem;margin-bottom:12px">🎁</div><h3 style="font-family:\'Playfair Display\',serif;color:var(--plum-900);margin-bottom:8px">Library is empty</h3><p style="color:var(--muted);font-size:.85rem">Monica hasn\'t uploaded any templates yet. Check back soon!</p></div>';
+    return;
+  }
+
+  const claimedIds=new Set(libraryClaims.map(c=>c.template_id));
+  const canClaim=remaining===null||remaining>0;
+
+  gridEl.innerHTML='<div class="products-grid">'+libraryTemplates.map(t=>{
+    const claimed=claimedIds.has(t.id);
+    const imgHtml=t.image_url
+      ?`<img src="${esc(t.image_url)}" alt="${esc(t.name)}">`
+      :'<div class="no-img"><span>🎉</span></div>';
+    const actionBtn=claimed
+      ?`<button class="btn-edit" style="flex:1;background:rgba(30,140,90,.08);border-color:rgba(30,140,90,.2);color:var(--success);cursor:default" disabled>✓ Added to Store</button>`
+      :canClaim
+        ?`<button class="btn-edit" style="flex:1" onclick="claimTemplate('${t.id}')">Add to My Store</button>`
+        :`<button class="btn-edit" style="flex:1;opacity:.5;cursor:not-allowed" disabled>Slot limit reached</button>`;
+    return`<div class="product-card">
+      <div class="product-img">
+        ${imgHtml}
+        ${t.theme?`<span class="product-badge">${esc(t.theme)}</span>`:''}
+        ${claimed?'<span class="product-status live">Added</span>':''}
+      </div>
+      <div class="product-body">
+        <div class="product-name">${esc(t.name)}</div>
+        <div class="product-desc">${esc(t.description||'No description.')}</div>
+        <div class="product-actions">${actionBtn}</div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+async function claimTemplate(templateId){
+  const tier=userLibraryTier||'tier1';
+  const limit=TIER_LIMITS[tier]||15;
+  if(isFinite(limit)&&libraryClaims.length>=limit){
+    showToast('You\'ve reached your template limit — contact support to upgrade!');
+    return;
+  }
+  const template=libraryTemplates.find(t=>t.id===templateId);
+  if(!template)return;
+
+  // Disable the button immediately to prevent double-click
+  const btn=document.querySelector(`[onclick="claimTemplate('${templateId}')"]`);
+  if(btn){btn.disabled=true;btn.textContent='Adding…';}
+
+  try{
+    const{data:{session:fresh}}=await sb.auth.refreshSession();
+    if(!fresh){showToast('Session expired — please sign out and back in.');return;}
+
+    const{data:product,error:pErr}=await sb.from('products').insert({
+      user_id:currentUser.id,
+      name:template.name,
+      description:template.description||null,
+      price:0,
+      theme:template.theme||null,
+      image_url:template.image_url||null,
+      file_url:template.file_url||null,
+      file_name:template.file_name||null,
+      instructions:template.instructions||null,
+      library_template_id:template.id,
+      active:true,
+    }).select().single();
+
+    if(pErr)throw pErr;
+
+    await sb.from('library_claims').insert({
+      user_id:currentUser.id,
+      template_id:templateId,
+      product_id:product?.id||null,
+    });
+
+    libraryClaims.push({template_id:templateId,product_id:product?.id});
+    showToast('✓ Template added to your store!');
+    renderLibrary();
+    // Reload products so it shows up in My Store tab too
+    await loadProducts();
+  }catch(e){
+    showToast('Error: '+(e.message||'unknown'));
+    if(btn){btn.disabled=false;btn.textContent='Add to My Store';}
+  }
+}
 
 init();
 </script>
