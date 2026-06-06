@@ -686,7 +686,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
       <div class="field-help" id="existingFile"></div>
     </div>
 
-    <!-- Payment handled by store-level payment link in Store Profile -->
+    <!-- Per-product Stripe payment link -->
+    <div class="field">
+      <label>Stripe Payment Link (for this product)</label>
+      <input type="url" id="pStripeLink" placeholder="https://buy.stripe.com/..."/>
+      <div class="field-help">Create a payment link in Stripe for this product's price, then paste it here. Customers click "Buy Now" and pay through Stripe.</div>
+    </div>
 
     <div class="field-row">
       <div class="field">
@@ -940,6 +945,7 @@ function openModal(id){
     document.getElementById('pTheme').value=p.theme||'';
     // stripe_link now handled at store level
     document.getElementById('pActive').value=String(p.active!==false);
+    document.getElementById('pStripeLink').value=p.stripe_link||'';
     resetImgZone(p.image_url);
     document.getElementById('existingFile').textContent=p.file_name?`Current file: ${p.file_name} (upload new to replace)`:'';
     resetFileZone(p.file_name);
@@ -948,6 +954,7 @@ function openModal(id){
     ['pName','pDesc','pPrice'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('pTheme').value='';
     document.getElementById('pActive').value='true';
+    document.getElementById('pStripeLink').value='';
     document.getElementById('qfType').value='';
     document.getElementById('qfTheme').value='';
     resetImgZone('');
@@ -1095,7 +1102,7 @@ async function saveProduct(){
       description:(document.getElementById('pDesc').value||'').trim()||null,
       price:parseFloat(document.getElementById('pPrice').value)||0,
       theme:document.getElementById('pTheme').value||null,
-      stripe_link:null,
+      stripe_link:(document.getElementById('pStripeLink').value||'').trim()||null,
       active:document.getElementById('pActive').value==='true',
       image_url,file_url,file_name,
     };
