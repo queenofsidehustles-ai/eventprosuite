@@ -584,6 +584,37 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
           </div>
         </div>
 
+        <!-- Add to existing website -->
+        <div style="background:linear-gradient(135deg,rgba(212,168,64,.06),rgba(212,168,64,.02));border:1.5px solid rgba(212,168,64,.35);border-radius:14px;padding:20px;margin-bottom:16px">
+          <div style="font-weight:800;font-size:.95rem;color:var(--plum-900);margin-bottom:6px">🌐 Already have a website? Add your store to it.</div>
+          <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:14px">You don't need any special code. Your store is a real web page — just link to it like any other link. Here's how on each platform:</p>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:.8rem">
+            <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+              <div style="font-weight:700;color:var(--ink);margin-bottom:3px">Squarespace, Wix, or Weebly</div>
+              <div style="color:var(--muted);line-height:1.65">Add a <strong>Button block</strong> anywhere on your site. Paste your store link as the URL. Label it "Shop My Party Printables" or "Order Yours Here."</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+              <div style="font-weight:700;color:var(--ink);margin-bottom:3px">WordPress</div>
+              <div style="color:var(--muted);line-height:1.65">Add a button in any page or post. Paste your store link as the URL. Done — no plugins needed.</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+              <div style="font-weight:700;color:var(--ink);margin-bottom:3px">Instagram bio</div>
+              <div style="color:var(--muted);line-height:1.65">Paste your store link directly in your bio URL field. One tap and customers are shopping.</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+              <div style="font-weight:700;color:var(--ink);margin-bottom:3px">Facebook page</div>
+              <div style="color:var(--muted);line-height:1.65">Add it as your page website URL, or pin a post with your store link to the top of your page.</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+              <div style="font-weight:700;color:var(--ink);margin-bottom:3px">Linktree / link-in-bio tools</div>
+              <div style="color:var(--muted);line-height:1.65">Add a new button, paste your store link, label it "My Party Printables Shop." It shows up alongside all your other links.</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;background:rgba(109,40,217,.06);border-radius:8px;padding:10px 12px;font-size:.78rem;color:var(--plum-900);line-height:1.6">
+            <strong>Your store link:</strong> <span id="guideStoreLink" style="font-family:monospace;word-break:break-all">Copy it from the My Store tab above</span>
+          </div>
+        </div>
+
         <!-- FAQ -->
         <div style="background:linear-gradient(135deg,rgba(109,40,217,.04),rgba(232,23,138,.03));border:1.5px solid var(--border);border-radius:14px;padding:20px">
           <div style="font-weight:800;font-size:.95rem;color:var(--plum-900);margin-bottom:14px">❓ Common Questions</div>
@@ -803,6 +834,7 @@ async function init(){
   if(savedSlug){
     const prettyUrl='https://partybizhub.com/store/'+savedSlug;
     document.getElementById('storeLinkInput').value=prettyUrl;
+    const guideLink=document.getElementById('guideStoreLink');if(guideLink)guideLink.textContent=prettyUrl;
     document.getElementById('storeLinkPreview').href=prettyUrl;
   } else {
     const fallbackUrl=`${location.origin}${location.pathname.replace('store.html','shopfront.html')}?uid=${currentUser.id}`;

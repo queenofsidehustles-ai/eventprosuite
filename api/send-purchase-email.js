@@ -24,6 +24,7 @@ module.exports = async function handler(req, res) {
 
   const body = req.body || {};
   if (body.action === 'generate-copy') return handleGenerateCopy(res, body);
+  if (body.action === 'grant-access') return handleGrantAccess(res, body);
   return handleSendEmail(res, body);
 };
 
@@ -266,6 +267,97 @@ Return ONLY this JSON with a string array for instructions:
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
+}
+
+async function handleGrantAccess(res, body) {
+  const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  const { email, accessType, customerName } = body; // accessType: 'ppp' | 'kpps' | 'both'
+  if (!email) return res.status(400).json({ error: 'email is required' });
+  if (!SUPABASE_SERVICE_KEY) return res.status(500).json({ error: 'Service key not configured' });
+
+  const adminHeaders = {
+    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+    'apikey': SUPABASE_SERVICE_KEY,
+    'Content-Type': 'application/json',
+  };
+
+  // Find or create Supabase user
+  let userId = null;
+  try {
+    const createRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({ email, email_confirm: true, user_metadata: { full_name: customerName || '' } }),
+    });
+    const created = await createRes.json();
+    if (created.id) {
+      userId = created.id;
+    } else if (created.msg && created.msg.includes('already')) {
+      const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, { headers: adminHeaders });
+      const list = await listRes.json();
+      userId = list?.users?.[0]?.id || null;
+    }
+  } catch (_) {}
+
+  if (!userId) return res.status(400).json({ error: 'Could not find or create user' });
+
+  // Build profile payload based on access type
+  const isKPPS = accessType === 'kpps' || accessType === 'both';
+  const isPPP  = accessType === 'ppp'  || accessType === 'both' || isKPPS;
+  const profilePayload = {
+    id: userId, email, has_paid: true, library_tier: 'founding',
+    ...(isPPP  && { has_printables_access: true }),
+    ...(isKPPS && { has_kpps_access: true }),
+  };
+  if (customerName) profilePayload.full_name = customerName;
+
+  await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+    method: 'POST',
+    headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify(profilePayload),
+  }).catch(() => {});
+
+  // Generate magic login link
+  const redirectPage = isKPPS ? 'dashboard.html' : 'welcome.html';
+  let loginUrl = `https://app.partybizhub.com/${redirectPage}`;
+  try {
+    const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({ type: 'magiclink', email, options: { redirect_to: `https://app.partybizhub.com/${redirectPage}` } }),
+    });
+    const linkData = await linkRes.json();
+    if (linkData.action_link) loginUrl = linkData.action_link;
+  } catch (_) {}
+
+  // Send welcome email
+  if (RESEND_KEY) {
+    const firstName = (customerName || '').split(' ')[0] || 'there';
+    const accessLabel = isKPPS ? 'Kids Party Profit System™ (full access)' : 'Party Profit Printables™';
+    const steps = isKPPS
+      ? ['Click the button above to log into your dashboard','Explore your digital store, quote builder, contracts, and more','Check out the Party Profit Printables™ template library','Use the Quick Start guide inside your store to get set up','Reach out to support@partybizhub.com with any questions']
+      : ['Click the button above to access your account','Set your store name and payment link','Pick your store design','Add templates from the library','Share your store link and start selling!'];
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}.top{background:linear-gradient(135deg,${isKPPS?'#1a0040,#4C1D95,#7B2A8F':'#4C1D95,#6D28D9,#D115AE'});padding:28px 32px 24px;color:#fff;text-align:center}.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}.top p{margin:0;font-size:.88rem;opacity:.85}.body{padding:28px 32px}.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}.btn{display:block;background:linear-gradient(135deg,${isKPPS?'#4C1D95,#7B2A8F':'#D115AE,#7559D4'});color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}</style></head><body>
+<div class="wrap"><div class="top"><h1>Your access is ready!</h1><p>${accessLabel}</p></div>
+<div class="body"><p>Hi ${firstName},</p><p>Your access to <strong>${accessLabel}</strong> has been set up. Click below to log in:</p>
+<a href="${loginUrl}" class="btn">Log In Now →</a>
+<div class="steps"><p>Here is what to do first:</p><ol>${steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+</div><div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
+</div></body></html>`;
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to: email, subject: `Your ${accessLabel} access is ready!`, html }),
+    }).catch(() => {});
+  }
+
+  return res.json({ success: true, loginUrl });
 }
 
 async function handleSendEmail(res, body) {
