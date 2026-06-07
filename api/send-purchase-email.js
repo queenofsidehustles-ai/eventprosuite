@@ -68,6 +68,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     9700: sessionMode === 'payment' ? 'founding' : 'unlimited', // $97 one-time = founding; $97/mo = unlimited
     2700: 'tier1',   // $27/mo = Basic (15 templates)
     4700: 'tier2',   // $47/mo = Pro (30 templates)
+    6700: 'tier3',   // $67/mo = Advanced (45 templates)
   };
   const assignedTier = TIER_MAP[amountTotal];
   if (!assignedTier) {

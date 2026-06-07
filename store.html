@@ -1217,8 +1217,8 @@ function showToast(m,dur=2500){const t=document.getElementById('toast');t.textCo
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 /* ── Template Library ── */
-const TIER_LIMITS={founding:Infinity,tier1:15,tier2:30,unlimited:Infinity};
-const TIER_LABELS={founding:'🌟 Founding Member',tier1:'📦 Tier 1',tier2:'📦 Tier 2',unlimited:'✨ Unlimited'};
+const TIER_LIMITS={founding:Infinity,tier1:15,tier2:30,tier3:45,unlimited:Infinity};
+const TIER_LABELS={founding:'👑 Founding Member (Unlimited)',tier1:'📦 Basic — 15 templates',tier2:'📦 Pro — 30 templates',tier3:'📦 Advanced — 45 templates',unlimited:'✨ Unlimited'};
 
 async function loadLibrary(){
   const[{data:tpls},{data:claims}]=await Promise.all([
