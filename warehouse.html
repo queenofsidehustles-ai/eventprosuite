@@ -322,6 +322,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(
     </div>
     <div class="field"><label>Description</label><textarea id="eDesc" rows="2"></textarea></div>
     <div class="field"><label>Customer Instructions (one step per line)</label><textarea id="eInstructions" rows="5"></textarea></div>
+    <div class="field">
+      <label>Customer Deliverable PDF <span style="font-weight:400;color:var(--muted)">(upload now or replace existing)</span></label>
+      <div class="upload-zone" id="eFileZone" onclick="document.getElementById('eFile').click()">
+        <div id="eFilePreview"><div class="uz-icon">📄</div><div class="uz-text" id="eFileText">Click to upload PDF</div></div>
+        <input type="file" id="eFile" accept=".pdf,.zip" style="display:none" onchange="previewEditFile(this)"/>
+      </div>
+      <div id="eExistingFile" style="font-size:.75rem;color:var(--muted);margin-top:4px"></div>
+    </div>
     <div class="field"><label>Visible in Library</label>
       <select id="eActive"><option value="true">Yes</option><option value="false">No (draft)</option></select>
     </div>
@@ -543,20 +551,35 @@ async function uploadFile(bucket, file, folder) {
   return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
+let editingFile = null;
+
+function previewEditFile(input) {
+  if (!input.files[0]) return;
+  editingFile = input.files[0];
+  document.getElementById('eFileText').textContent = '📄 ' + editingFile.name;
+}
+
 // ── Edit existing template ──
 function openEdit(id) {
   const t = templates.find(x => x.id === id);
   if (!t) return;
   editingId = id;
+  editingFile = null;
   document.getElementById('eName').value = t.name || '';
   document.getElementById('eTheme').value = t.theme || '';
   document.getElementById('eDesc').value = t.description || '';
   document.getElementById('eInstructions').value = t.instructions || '';
   document.getElementById('eActive').value = String(t.active !== false);
+  document.getElementById('eFile').value = '';
+  document.getElementById('eFileText').textContent = 'Click to upload PDF';
+  document.getElementById('eExistingFile').textContent = t.file_name
+    ? 'Current file: ' + t.file_name + ' — upload a new one to replace it'
+    : 'No PDF uploaded yet — upload one now';
   document.getElementById('editModal').classList.add('open');
 }
 function closeEditModal() {
   editingId = null;
+  editingFile = null;
   document.getElementById('editModal').classList.remove('open');
 }
 
@@ -572,14 +595,25 @@ async function saveEdit() {
     const { data: { session: fresh } } = await sb.auth.refreshSession();
     if (!fresh) { showToast('Session expired'); return; }
 
-    const { error } = await sb.from('library_templates').update({
+    // Upload new PDF if one was selected
+    let file_url = undefined, file_name = undefined;
+    if (editingFile) {
+      document.getElementById('editSaveBtnText').textContent = 'Uploading PDF…';
+      file_url = await uploadFile('product-files', editingFile, 'library-bundles');
+      file_name = editingFile.name;
+    }
+
+    const updatePayload = {
       name,
       theme: document.getElementById('eTheme').value || null,
       description: (document.getElementById('eDesc').value || '').trim() || null,
       instructions: (document.getElementById('eInstructions').value || '').trim() || null,
       active: document.getElementById('eActive').value === 'true',
       updated_at: new Date().toISOString(),
-    }).eq('id', editingId);
+    };
+    if (file_url !== undefined) { updatePayload.file_url = file_url; updatePayload.file_name = file_name; }
+
+    const { error } = await sb.from('library_templates').update(updatePayload).eq('id', editingId);
 
     if (error) throw error;
     showToast('✓ Template updated!');
