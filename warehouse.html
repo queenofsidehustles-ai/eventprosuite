@@ -206,10 +206,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(
       </div>
 
       <div class="field">
-        <label>Template File (ZIP or PDF) <span style="color:var(--muted);font-weight:400">(optional — add later when ready)</span></label>
+        <label>Customer Deliverable PDF <span style="color:var(--muted);font-weight:400">(the file planners download and deliver to their customers — PDF preferred)</span></label>
         <div class="upload-zone" id="fileZone" onclick="document.getElementById('tFile').click()">
-          <div id="filePreview"><div class="uz-icon">📦</div><div class="uz-text">Click to upload ZIP or PDF</div></div>
-          <input type="file" id="tFile" accept=".zip,.pdf" style="display:none" onchange="previewFile(this)"/>
+          <div id="filePreview"><div class="uz-icon">📄</div><div class="uz-text">Click to upload PDF (or ZIP if needed)</div></div>
+          <input type="file" id="tFile" accept=".pdf,.zip" style="display:none" onchange="previewFile(this)"/>
         </div>
       </div>
 
@@ -532,7 +532,7 @@ function resetUploadForm() {
     document.getElementById('imgZone'+i).classList.remove('has-file');
     document.getElementById('imgPreview'+i).innerHTML = `<div class="uz-icon" style="font-size:1.2rem">${icons[i]}</div><div class="uz-text" style="font-size:.72rem">${labels[i]}</div>`;
   }
-  resetZone('fileZone','filePreview','📦','Click to upload ZIP or PDF');
+  resetZone('fileZone','filePreview','📄','Click to upload PDF (or ZIP if needed)');
 }
 
 async function uploadFile(bucket, file, folder) {

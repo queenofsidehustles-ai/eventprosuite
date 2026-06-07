@@ -85,6 +85,11 @@ img{max-width:100%;display:block}
 .st-card-img .no-img .l{font-size:.68rem;color:#D115AE;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .st-theme-tag{position:absolute;top:10px;left:10px;background:rgba(209,21,174,0.88);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:capitalize;backdrop-filter:blur(4px)}
 .st-dl-tag{position:absolute;top:10px;right:10px;background:rgba(30,140,90,0.88);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)}
+
+/* ── Gallery dots (shared across all templates) ── */
+.gallery-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
+.gallery-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5);border:1.5px solid rgba(255,255,255,.8);padding:0;cursor:pointer;transition:all .15s;flex-shrink:0;pointer-events:auto}
+.gallery-dot.active{background:#fff;border-color:#fff;transform:scale(1.25)}
 .st-card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
 .st-card-name{font-family:'Playfair Display',serif;font-weight:700;font-size:.97rem;color:#1A1A1A;margin-bottom:5px;line-height:1.3}
 .st-card-desc{font-size:.77rem;color:#6C6473;line-height:1.65;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -694,11 +699,27 @@ function renderProducts(){
 
     const hasAction=(p.price>0&&effectiveLink)||(p.price===0&&p.file_url);
     const cardClick=hasAction?`onclick="startCheckout('${p.id}')" style="cursor:pointer"`:'';
+
+    // Build gallery — use image_urls array if available, fall back to single image_url
+    const galleryImgs=(()=>{
+      const arr=Array.isArray(p.image_urls)&&p.image_urls.length>0?[...p.image_urls]:[];
+      if(p.image_url&&!arr.includes(p.image_url))arr.unshift(p.image_url);
+      return arr.filter(Boolean);
+    })();
+    const mainImg=galleryImgs[0]||'';
+    const mainImgHtml=mainImg
+      ?`<img id="gimg-${p.id}" src="${esc(mainImg)}" alt="${esc(p.name)} party printable" loading="lazy">`
+      :`<div class="no-img"><span class="e">🎉</span><span class="l">${esc(p.theme||'Printable')}</span></div>`;
+    const dotsHtml=galleryImgs.length>1
+      ?`<div class="gallery-dots">${galleryImgs.map((url,i)=>`<button class="gallery-dot${i===0?' active':''}" onclick="event.stopPropagation();swapImg('${p.id}',this,'${esc(url)}')" aria-label="Photo ${i+1}"></button>`).join('')}</div>`
+      :'';
+
     return `<div class="${pfx}-card" ${cardClick}>
       <div class="${pfx}-card-img">
-        ${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.name)} party printable" loading="lazy">`:`<div class="no-img"><span class="e">🎉</span><span class="l">${esc(p.theme||'Printable')}</span></div>`}
+        ${mainImgHtml}
         ${p.theme?`<span class="${pfx}-theme-tag">${esc(p.theme)}</span>`:''}
         ${(p.file_url||p.stripe_link)?`<span class="${pfx}-dl-tag">⚡ Download</span>`:''}
+        ${dotsHtml}
       </div>
       <div class="${pfx}-card-body">
         <div class="${pfx}-card-name">${esc(p.name)}</div>
@@ -715,6 +736,14 @@ function renderProducts(){
   }).join('');
 
   area.innerHTML=`<div class="${pfx}-grid" id="products">${cards}</div>`;
+}
+
+function swapImg(pid, dot, url){
+  const img=document.getElementById('gimg-'+pid);
+  if(img)img.src=url;
+  const dots=dot.parentElement.querySelectorAll('.gallery-dot');
+  dots.forEach(d=>d.classList.remove('active'));
+  dot.classList.add('active');
 }
 
 /* ── Pre-checkout flow ── */
