@@ -3,32 +3,37 @@
  * Include on every inner page. Call setNavUser(name) after auth.
  */
 (function () {
+  // PPP-only users see these items locked. KPPS users see everything.
   const PAGES = [
-    { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
-    { id: 'store',     href: 'store.html',     icon: '🛍️', label: 'Party Profit Printables' },
-    { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'My Website' },
-    { id: 'app',       href: 'app.html',       icon: '📄', label: 'Quote Builder',   pbhOnly: true },
-    { id: 'contract',  href: 'contract.html',  icon: '📝', label: 'Contract',        pbhOnly: true },
-    { id: 'profit',    href: 'profit.html',    icon: '💰', label: 'Profit Calc',     pbhOnly: true },
-    { id: 'prep',      href: 'prep.html',      icon: '📋', label: 'Event Checklist', pbhOnly: true },
-    { id: 'vendors',   href: 'vendors.html',   icon: '🤝', label: 'Vendors',         pbhOnly: true },
-    { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI',  pbhOnly: true },
-    { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio',  pbhOnly: true },
-    { id: 'guide',          href: 'welcome.html',       icon: '🚀', label: 'Quick Start Guide' },
-    { id: 'marketing-guide', href: 'marketing-guide.html', icon: '📣', label: 'Marketing Guide' },
+    { id: 'dashboard',  href: 'dashboard.html',  icon: '🏠', label: 'Home' },
+    { id: 'store',      href: 'store.html',       icon: '🛍️', label: 'Party Profit Printables' },
+    { id: 'mywebsite',  href: 'mywebsite.html',   icon: '🌐', label: 'My Website',       kppsOnly: true },
+    { id: 'app',        href: 'app.html',          icon: '📄', label: 'Quote Builder',    kppsOnly: true },
+    { id: 'contract',   href: 'contract.html',     icon: '📝', label: 'Contract',         kppsOnly: true },
+    { id: 'profit',     href: 'profit.html',       icon: '💰', label: 'Profit Calc',      kppsOnly: true },
+    { id: 'prep',       href: 'prep.html',         icon: '📋', label: 'Event Checklist',  kppsOnly: true },
+    { id: 'vendors',    href: 'vendors.html',      icon: '🤝', label: 'Vendors',          kppsOnly: true },
+    { id: 'assistant',  href: 'assistant.html',    icon: '🤖', label: 'PartyGenius AI',   kppsOnly: true },
+    { id: 'content',    href: 'content.html',      icon: '📱', label: 'Content Studio',   kppsOnly: true },
   ];
+  // Quick Start Guide and Marketing Guide live inside the Party Profit Printables tabs — not in the sidebar
 
   const filename = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
 
+  function isPPPOnly() {
+    // Set by each page after auth — 'printables' = PPP only, anything else = full KPPS access
+    return window.pbhPlan === 'printables';
+  }
+
   function build() {
-    const isPrintablesOnly = (window.pbhPlan === 'printables');
+    const locked = isPPPOnly();
     const items = PAGES.map(p => {
       const active = filename === p.id ? ' active' : '';
-      const isLocked = p.pbhOnly && isPrintablesOnly;
+      const isLocked = p.kppsOnly && locked;
       if (isLocked) {
-        return `<span class="snav-item snav-locked" title="Upgrade to Party Biz Hub" onclick="showUpgradePrompt()">
-          <span class="snav-icon" style="opacity:.45">${p.icon}</span>
-          <span class="snav-label" style="opacity:.45">${p.label}</span>
+        return `<span class="snav-item snav-locked" title="Upgrade to Kids Party Profit System™" onclick="showUpgradePrompt()">
+          <span class="snav-icon" style="opacity:.4">${p.icon}</span>
+          <span class="snav-label" style="opacity:.4">${p.label}</span>
           <span class="snav-lock">🔒</span>
         </span>`;
       }
@@ -87,29 +92,39 @@
     if (a) a.textContent = (initial || (name && name.charAt(0)) || '?').toUpperCase();
   };
 
+  // Call this after auth to set the plan — re-renders the nav with correct lock state
   window.setNavPlan = function (plan) {
     window.pbhPlan = plan;
-    window.pbhProAccess = (plan === 'pro' || plan === 'kpps');
     const mount = document.getElementById('pbhSidebar');
     if (mount) mount.innerHTML = build();
+    // Re-attach event listeners after rebuild
+    const hamburger = document.getElementById('pbhHamburger');
+    const overlay   = document.getElementById('pbhOverlay');
+    const closeBtn  = document.getElementById('sidebarClose');
+    const open  = () => { mount.classList.add('open');  overlay && overlay.classList.add('show'); };
+    const close = () => { mount.classList.remove('open'); overlay && overlay.classList.remove('show'); };
+    if (hamburger) hamburger.addEventListener('click', open);
+    if (overlay)   overlay.addEventListener('click', close);
+    if (closeBtn)  closeBtn.addEventListener('click', close);
+    autoDetectAdmin();
   };
 
+  // Upgrade prompt for PPP users trying to access KPPS features
   window.showUpgradePrompt = function () {
-    let modal = document.getElementById('upgradeModal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'upgradeModal';
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-      modal.innerHTML = `<div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-        <div style="font-size:2.5rem;margin-bottom:12px">🔒</div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:#1F1A24;margin-bottom:8px">Party Biz Hub Feature</h3>
-        <p style="font-size:.88rem;color:#6C6473;line-height:1.7;margin-bottom:20px">This tool is included with the full <strong>Party Biz Hub</strong> membership — quote builder, contracts, profit calculator, vendor directory, and more.</p>
-        <a href="https://buy.stripe.com/3cI28r0hndpl0O2d917bW06" target="_blank" style="display:block;background:linear-gradient(135deg,#7B3F9E,#E8178A);color:#fff;font-weight:800;padding:14px;border-radius:12px;text-decoration:none;font-size:.9rem;margin-bottom:10px">Upgrade to Party Biz Hub →</a>
-        <button onclick="document.getElementById('upgradeModal').remove()" style="background:none;border:none;color:#9990aa;font-size:.82rem;cursor:pointer;font-family:inherit">Not right now</button>
-      </div>`;
-      document.body.appendChild(modal);
-      modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
-    }
+    if (document.getElementById('upgradeModal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'upgradeModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+    modal.innerHTML = `<div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3)">
+      <div style="font-size:2.2rem;margin-bottom:10px">🔒</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:#1F1A24;margin-bottom:8px">Kids Party Profit System™ Feature</h3>
+      <p style="font-size:.88rem;color:#6C6473;line-height:1.75;margin-bottom:6px">This tool is part of the full <strong style="color:#1F1A24">Kids Party Profit System™</strong> — quote builder, contracts, profit calculator, event checklist, vendor directory, content studio, and AI assistant.</p>
+      <p style="font-size:.85rem;color:#7B3F9E;font-weight:700;background:#F5EAFF;border-radius:10px;padding:10px 14px;margin-bottom:20px">👑 Already have Party Profit Printables? Your $97 applies — upgrade for just <strong>$400 more</strong>.</p>
+      <a href="https://buy.stripe.com/dRm8wPe8d70XgN0c4X7bW09" target="_blank" style="display:block;background:linear-gradient(135deg,#7B3F9E,#E8178A);color:#fff;font-weight:800;padding:14px;border-radius:12px;text-decoration:none;font-size:.92rem;margin-bottom:10px;box-shadow:0 6px 16px rgba(123,63,158,.35)">Upgrade to Full System — $400 →</a>
+      <button onclick="document.getElementById('upgradeModal').remove()" style="background:none;border:none;color:#9990aa;font-size:.82rem;cursor:pointer;font-family:inherit">Not right now</button>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   };
 
   window.setNavAdmin = function () {
@@ -124,11 +139,11 @@
   };
 
   window.initNavSignout = function (handler) {
-    // Mark session active so next page skips the spinner
     sessionStorage.setItem('pbh_auth', '1');
     const btn = document.getElementById('sidebarSignout');
     if (btn) btn.addEventListener('click', () => {
       sessionStorage.removeItem('pbh_auth');
+      localStorage.removeItem('pbh_plan');
       handler();
     });
   };
@@ -138,9 +153,7 @@
       const raw = localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token');
       if (!raw) return;
       const token = JSON.parse(raw);
-      if ((token?.user?.email || '') === 'ggkidsspa@gmail.com') {
-        window.setNavAdmin();
-      }
+      if ((token?.user?.email || '') === 'ggkidsspa@gmail.com') window.setNavAdmin && window.setNavAdmin();
     } catch (_) {}
   }
 

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>You're Fully Unlocked! — Kids Party Profit System™</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:#1F1A24;background:#fff;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+:root{--purple:#7B3F9E;--purple-deep:#4C1D95;--gold:#D4A840;--gold-soft:#FDF5DC;--ink:#1F1A24;--muted:#6C6473}
+
+.nav{background:#fff;border-bottom:1px solid #F0E8F5;padding:14px 24px;display:flex;align-items:center}
+.nav-logo-text{font-weight:800;font-size:.9rem;color:var(--purple-deep)}
+
+.confetti-bar{background:linear-gradient(90deg,var(--purple-deep),#7B2A8F);padding:12px 20px;text-align:center;color:#fff;font-size:.85rem;font-weight:700}
+.confetti-bar .gold{color:var(--gold)}
+
+.hero{flex:1;padding:56px 24px 48px;text-align:center;background:linear-gradient(160deg,#F3E8FF 0%,#EDE0FF 50%,#F3E8FF 100%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(123,63,158,.12),transparent 65%);pointer-events:none}
+.hero-inner{max-width:660px;margin:0 auto;position:relative;z-index:1}
+
+.success-ring{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#4C1D95,#7B2A8F);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 12px 36px rgba(76,29,149,.35)}
+.success-ring svg{width:44px;height:44px}
+
+.hero-eyebrow{display:inline-block;background:var(--gold-soft);border:1.5px solid var(--gold);color:#3A2800;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 16px;border-radius:999px;margin-bottom:18px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--purple-deep);line-height:1.1;margin-bottom:10px}
+.hero h1 .script{font-family:'Dancing Script',cursive;color:#7B2A8F;display:block;font-size:1.05em}
+.hero-sub{font-size:1rem;color:var(--muted);line-height:1.8;margin-bottom:32px}
+
+.steps-card{background:#fff;border-radius:20px;border:2px solid #EDE0FF;padding:32px 28px;margin-bottom:28px;text-align:left;box-shadow:0 8px 32px rgba(76,29,149,.08)}
+.steps-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--purple-deep);margin-bottom:20px;text-align:center}
+.step{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.step:last-child{margin-bottom:0}
+.step-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4C1D95,#7B2A8F);color:#fff;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-weight:700;font-size:.92rem;color:var(--purple-deep);margin-bottom:3px}
+.step-desc{font-size:.83rem;color:var(--muted);line-height:1.65}
+
+.unlocked-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;text-align:left}
+.unlocked-item{background:linear-gradient(135deg,#F3E8FF,#EDE0FF);border-radius:12px;padding:14px 16px;border:1px solid rgba(76,29,149,.15)}
+.unlocked-icon{font-size:1.4rem;margin-bottom:6px}
+.unlocked-name{font-weight:700;font-size:.85rem;color:var(--purple-deep)}
+.unlocked-desc{font-size:.76rem;color:var(--muted);margin-top:2px;line-height:1.5}
+
+footer{background:var(--purple-deep);padding:20px 24px;text-align:center;color:rgba(255,255,255,.5);font-size:.75rem}
+footer a{color:rgba(255,255,255,.6);font-weight:600}
+
+@media(max-width:480px){.steps-card{padding:22px 18px}.unlocked-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="confetti-bar">
+  🎉 &nbsp;Payment confirmed! You now have <span class="gold">full access</span> to everything&nbsp; 🎉
+</div>
+
+<nav class="nav">
+  <div>
+    <div class="nav-logo-text">Kids Party Profit System™</div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <div class="hero-eyebrow">🔓 Full System Unlocked</div>
+    <h1>
+      You're fully in.
+      <span class="script">Everything is yours!</span>
+    </h1>
+    <p class="hero-sub">
+      Your payment went through and your full Kids Party Profit System™ access is activated. <strong>Here's exactly what happens next.</strong>
+    </p>
+
+    <!-- NEXT STEPS -->
+    <div class="steps-card">
+      <div class="steps-title">Your next 3 steps 👇</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <div class="step-title">Check your email — login link inside</div>
+          <div class="step-desc">We just sent you an email with your personal login link. It arrives in under 2 minutes. Check your inbox (and spam just in case).</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <div class="step-title">Click your link — full dashboard opens</div>
+          <div class="step-desc">No password needed. The link takes you straight to your dashboard where everything is unlocked and ready.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <div class="step-title">Explore your full system</div>
+          <div class="step-desc">Start with your digital store, then explore your quote builder, contracts, profit calculator, and more. It's all there.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT'S UNLOCKED -->
+    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--purple-deep);margin-bottom:16px;text-align:left">Everything unlocked for you:</div>
+    <div class="unlocked-grid">
+      <div class="unlocked-item"><div class="unlocked-icon">🛍️</div><div class="unlocked-name">Digital Store</div><div class="unlocked-desc">Sell party printables — instant download after purchase</div></div>
+      <div class="unlocked-item"><div class="unlocked-icon">📄</div><div class="unlocked-name">Quote Builder</div><div class="unlocked-desc">Professional quotes sent to clients in seconds</div></div>
+      <div class="unlocked-item"><div class="unlocked-icon">📝</div><div class="unlocked-name">Contracts</div><div class="unlocked-desc">Sign-ready party contracts — no lawyer needed</div></div>
+      <div class="unlocked-item"><div class="unlocked-icon">💰</div><div class="unlocked-name">Profit Calculator</div><div class="unlocked-desc">Know exactly what you make on every event</div></div>
+      <div class="unlocked-item"><div class="unlocked-icon">📋</div><div class="unlocked-name">Event Checklist</div><div class="unlocked-desc">Never miss a step on any party setup</div></div>
+      <div class="unlocked-item"><div class="unlocked-icon">🤖</div><div class="unlocked-name">PartyGenius AI</div><div class="unlocked-desc">AI assistant built for party business owners</div></div>
+    </div>
+
+    <p style="font-size:.78rem;color:var(--muted);line-height:1.7;text-align:center">
+      Questions? Email <a href="mailto:support@partybizhub.com" style="color:var(--purple);font-weight:600">support@partybizhub.com</a> — we respond within 24 hours.
+    </p>
+
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Kids Party Profit System™ &nbsp;·&nbsp; <a href="login.html">Member Login</a></p>
+</footer>
+
+</body>
+</html>

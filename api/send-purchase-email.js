@@ -61,18 +61,25 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   const session = event.data?.object || {};
 
-  // Map amount → tier. Only process known PPP prices; ignore everything else.
+  // Classify the purchase type by amount
   const amountTotal = session.amount_total || 0;
   const sessionMode = session.mode || 'payment';
-  const TIER_MAP = {
-    9700: sessionMode === 'payment' ? 'founding' : 'unlimited', // $97 one-time = founding; $97/mo = unlimited
-    2700: 'tier1',   // $27/mo = Basic (15 templates)
-    4700: 'tier2',   // $47/mo = Pro (30 templates)
-    6700: 'tier3',   // $67/mo = Advanced (45 templates)
+
+  // KPPS purchases — unlock full system
+  const KPPS_AMOUNTS = { 40000: true, 49700: true }; // $400 upgrade or $497 full price
+  const isKPPS = !!KPPS_AMOUNTS[amountTotal];
+
+  // PPP tier map — template library access level
+  const PPP_TIER_MAP = {
+    9700: sessionMode === 'payment' ? 'founding' : 'unlimited',
+    2700: 'tier1',
+    4700: 'tier2',
+    6700: 'tier3',
   };
-  const assignedTier = TIER_MAP[amountTotal];
+  const assignedTier = isKPPS ? 'founding' : PPP_TIER_MAP[amountTotal];
+
   if (!assignedTier) {
-    return res.json({ received: true, note: 'Not a recognized PPP purchase — skipped' });
+    return res.json({ received: true, note: 'Not a recognized purchase — skipped' });
   }
 
   const customerEmail = session.customer_details?.email || session.customer_email || '';
@@ -109,55 +116,76 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   if (!userId) return res.json({ received: true, note: 'Could not create or find user' });
 
-  // Set profile access
+  // Set profile access — KPPS unlocks everything; PPP unlocks printables only
+  const profilePayload = {
+    id: userId, email: customerEmail, full_name: customerName,
+    has_paid: true, has_printables_access: true, library_tier: assignedTier,
+  };
+  if (isKPPS) profilePayload.has_kpps_access = true;
+
   await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
     method: 'POST',
     headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify({
-      id: userId, email: customerEmail, full_name: customerName,
-      has_paid: true, has_printables_access: true, library_tier: assignedTier,
-    }),
+    body: JSON.stringify(profilePayload),
   }).catch(() => {});
 
-  // Generate magic login link
-  let loginUrl = 'https://app.partybizhub.com/login.html';
+  // Generate magic login link — KPPS goes to dashboard, PPP goes to welcome guide
+  const redirectPage = isKPPS ? 'dashboard.html' : 'welcome.html';
+  let loginUrl = `https://app.partybizhub.com/${redirectPage}`;
   try {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
       method: 'POST',
       headers: adminHeaders,
-      body: JSON.stringify({ type: 'magiclink', email: customerEmail, options: { redirect_to: 'https://app.partybizhub.com/welcome.html' } }),
+      body: JSON.stringify({ type: 'magiclink', email: customerEmail, options: { redirect_to: `https://app.partybizhub.com/${redirectPage}` } }),
     });
     const linkData = await linkRes.json();
     if (linkData.action_link) loginUrl = linkData.action_link;
   } catch (_) {}
 
-  // Send welcome email
+  // Send welcome email — different copy for KPPS vs PPP
   if (RESEND_KEY) {
     const firstName = (customerName || '').split(' ')[0] || 'there';
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
-.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-.top{background:linear-gradient(135deg,#4C1D95,#6D28D9,#D115AE);padding:28px 32px 24px;color:#fff;text-align:center}
-.logo{height:38px;width:auto;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto}
-.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}
-.top p{margin:0;font-size:.88rem;opacity:.85}
-.body{padding:28px 32px}
-.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}
-.btn{display:block;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}
-.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}
-.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}
-.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}
-.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}
-</style></head><body>
+    const emailStyles = `body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}.top{padding:28px 32px 24px;color:#fff;text-align:center}.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}.top p{margin:0;font-size:.88rem;opacity:.85}.body{padding:28px 32px}.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}.btn{display:block;color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}`;
+
+    let subject, html;
+    if (isKPPS) {
+      subject = 'Your Kids Party Profit System™ full access is ready!';
+      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
 <div class="wrap">
-<div class="top">
+<div class="top" style="background:linear-gradient(135deg,#1a0040,#4C1D95,#7B2A8F)">
+  <h1>You're fully unlocked! 🎉</h1>
+  <p>Kids Party Profit System™ — complete access is ready</p>
+</div>
+<div class="body">
+<p>Hi ${firstName},</p>
+<p>Your full <strong>Kids Party Profit System™</strong> access is activated. Everything is unlocked and waiting for you — click below to log in and explore your dashboard:</p>
+<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#4C1D95,#7B2A8F)">Log In to My Dashboard →</a>
+<div class="steps">
+<p>You now have access to:</p>
+<ol>
+<li>Your digital store (Party Profit Printables)</li>
+<li>Quote builder and client contracts</li>
+<li>Profit calculator and event checklist</li>
+<li>Vendor directory and content studio</li>
+<li>PartyGenius AI assistant</li>
+</ol>
+</div>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+</div>
+<div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
+</div></body></html>`;
+    } else {
+      subject = 'Your Party Profit Printables access is ready!';
+      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
+<div class="wrap">
+<div class="top" style="background:linear-gradient(135deg,#4C1D95,#6D28D9,#D115AE)">
   <h1>You're in! Welcome to Party Profit Printables</h1>
   <p>Your account is ready — let's get your store set up</p>
 </div>
 <div class="body">
 <p>Hi ${firstName},</p>
 <p>You now have access to <strong>Party Profit Printables</strong> on Party Biz Hub. Click the button below to log in and set up your store:</p>
-<a href="${loginUrl}" class="btn">Log In to My Store →</a>
+<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#D115AE,#7559D4)">Log In to My Store →</a>
 <div class="steps">
 <p>Here is what to do first:</p>
 <ol>
@@ -168,15 +196,16 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
 <li>Share your store link and start selling!</li>
 </ol>
 </div>
-<p style="font-size:.82rem;color:#888">If the button does not work, copy this link into your browser:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div>
 <div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
 </div></body></html>`;
+    }
 
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject: 'Your Party Profit Printables access is ready!', html }),
+      body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject, html }),
     }).catch(() => {});
   }
 
