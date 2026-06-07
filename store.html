@@ -965,7 +965,7 @@ function openModal(id){
     document.getElementById('pTheme').value='';
     document.getElementById('pActive').value='true';
     document.getElementById('pStripeLink').value='';
-    document.getElementById('qfType').value='';
+    const _qft=document.getElementById('qfType');if(_qft)_qft.value='';
     document.getElementById('qfTheme').value='';
     resetImgZone('');
     resetFileZone('');
