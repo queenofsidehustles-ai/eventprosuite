@@ -61,10 +61,17 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   const session = event.data?.object || {};
 
-  // Only process PPP purchases ($97 = 9700 cents). Ignore PBH subscriptions and other payments.
+  // Map amount → tier. Only process known PPP prices; ignore everything else.
   const amountTotal = session.amount_total || 0;
-  if (amountTotal !== 9700) {
-    return res.json({ received: true, note: 'Not a PPP purchase — skipped' });
+  const sessionMode = session.mode || 'payment';
+  const TIER_MAP = {
+    9700: sessionMode === 'payment' ? 'founding' : 'unlimited', // $97 one-time = founding; $97/mo = unlimited
+    2700: 'tier1',   // $27/mo = Basic (15 templates)
+    4700: 'tier2',   // $47/mo = Pro (30 templates)
+  };
+  const assignedTier = TIER_MAP[amountTotal];
+  if (!assignedTier) {
+    return res.json({ received: true, note: 'Not a recognized PPP purchase — skipped' });
   }
 
   const customerEmail = session.customer_details?.email || session.customer_email || '';
@@ -107,7 +114,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
     body: JSON.stringify({
       id: userId, email: customerEmail, full_name: customerName,
-      has_paid: true, has_printables_access: true, library_tier: 'tier1',
+      has_paid: true, has_printables_access: true, library_tier: assignedTier,
     }),
   }).catch(() => {});
 

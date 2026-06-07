@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Marketing Your Printables — Party Biz Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F8F0FF;color:#1A1A1A;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+
+/* Layout with sidebar */
+.layout{display:flex;min-height:100vh}
+.sidebar-wrap{width:240px;flex-shrink:0}
+.main{flex:1;min-width:0;padding:32px 40px 80px;max-width:860px}
+
+/* Header */
+.page-header{margin-bottom:36px}
+.page-eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#D115AE;margin-bottom:8px}
+.page-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:#1A1A1A;margin-bottom:8px;line-height:1.2}
+.page-sub{font-size:.95rem;color:#6C6473;line-height:1.75}
+
+/* Progress bar */
+.progress-bar{background:#E8D5F5;border-radius:999px;height:8px;margin-bottom:36px;overflow:hidden}
+.progress-fill{background:linear-gradient(90deg,#D115AE,#7559D4);height:100%;border-radius:999px;transition:width .5s}
+
+/* Module card */
+.module{background:#fff;border-radius:20px;padding:28px 32px;margin-bottom:20px;border:1px solid rgba(117,89,212,.1);box-shadow:0 2px 12px rgba(117,89,212,.06)}
+.module-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;cursor:pointer}
+.module-num{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;font-weight:800;font-size:.95rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.module-num.done{background:linear-gradient(135deg,#1a9e5a,#15864a)}
+.module-title{font-family:'Playfair Display',serif;font-size:1.08rem;font-weight:700;color:#1A1A1A;flex:1}
+.module-chevron{color:#9988aa;font-size:.85rem;transition:transform .2s;flex-shrink:0}
+.module.open .module-chevron{transform:rotate(180deg)}
+.module-body{display:none}
+.module.open .module-body{display:block}
+
+/* Content inside modules */
+.lesson-intro{font-size:.92rem;color:#6C6473;line-height:1.8;margin-bottom:20px}
+.lesson-intro strong{color:#1A1A1A}
+
+.tip-block{background:linear-gradient(135deg,#F8F0FF,#FFF0FB);border-radius:12px;padding:18px 20px;margin-bottom:16px;border-left:4px solid #D115AE}
+.tip-label{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#D115AE;margin-bottom:6px}
+.tip-text{font-size:.88rem;color:#1A1A1A;line-height:1.75}
+
+.script-block{background:#1A1A1A;border-radius:12px;padding:18px 22px;margin-bottom:16px}
+.script-label{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#D115AE;margin-bottom:8px}
+.script-text{font-size:.88rem;color:#E8D5F5;line-height:1.85;font-style:italic}
+.script-text strong{color:#D4A840;font-style:normal}
+
+.checklist{margin-bottom:20px}
+.check-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #F0EBF5}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{width:18px;height:18px;margin-top:2px;accent-color:#D115AE;flex-shrink:0}
+.check-item label{font-size:.88rem;color:#1A1A1A;line-height:1.7;cursor:pointer}
+
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.platform-card{background:#F8F0FF;border-radius:12px;padding:14px 16px;border:1.5px solid rgba(117,89,212,.15)}
+.platform-name{font-weight:800;font-size:.88rem;color:#4C1D95;margin-bottom:4px}
+.platform-note{font-size:.78rem;color:#6C6473;line-height:1.6}
+.platform-badge{display:inline-block;font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:999px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.badge-hot{background:#ff4444;color:#fff}
+.badge-free{background:#1a9e5a;color:#fff}
+.badge-easy{background:#7559D4;color:#fff}
+
+.stat-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.stat-box{background:linear-gradient(135deg,#4C1D95,#6D28D9);border-radius:12px;padding:14px 20px;color:#fff;flex:1;min-width:120px;text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:#D4A840}
+.stat-label{font-size:.72rem;color:rgba(255,255,255,.75);margin-top:2px}
+
+.action-btn{display:inline-block;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;font-weight:700;font-size:.88rem;padding:12px 24px;border-radius:10px;margin-top:16px;box-shadow:0 4px 14px rgba(209,21,174,.3)}
+.action-btn:hover{opacity:.9}
+
+/* Done bar */
+.done-bar{background:#fff;border-top:1px solid #F0EBF5;padding:16px 40px;position:fixed;bottom:0;right:0;left:240px;display:flex;align-items:center;justify-content:space-between}
+.done-text{font-size:.82rem;color:#6C6473}
+.done-pct{font-weight:800;color:#D115AE}
+
+@media(max-width:768px){
+  .sidebar-wrap{display:none}
+  .main{padding:24px 20px 100px}
+  .done-bar{left:0}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="sidebar-wrap" id="sidebarWrap"></div>
+
+  <div class="main">
+    <div class="page-header">
+      <div class="page-eyebrow">Module 6 — Business Skills</div>
+      <h1 class="page-title">How to Market Your Printables</h1>
+      <p class="page-sub">You have the store. You have the templates. Now let's get customers. This guide walks you through exactly how to market your digital printables business — step by step, with real scripts and strategies you can use today.</p>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <!-- MODULE 1 -->
+    <div class="module open" id="mod1">
+      <div class="module-header" onclick="toggleModule('mod1')">
+        <div class="module-num" id="num1">1</div>
+        <div class="module-title">Know Exactly Who You're Selling To</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">Before you post a single thing, you need to know who your customer is. <strong>Party printables sell to parents, mostly moms, planning kids' birthday parties.</strong> They want something cute, personalized, and fast. They do not want to spend hours designing — they want to download, print, and be done.</p>
+
+        <div class="tip-block">
+          <div class="tip-label">Your Target Customer in One Sentence</div>
+          <div class="tip-text">A mom planning her child's 5th birthday party who needs chip bags, water bottle labels, and cupcake toppers by Friday, doesn't know Canva, and is willing to pay $15–25 to not have to figure it out herself.</div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">What She's Searching For</div>
+          <div class="tip-text">
+            • "Unicorn birthday party chip bags"<br>
+            • "Spiderman birthday printable bundle"<br>
+            • "Princess party labels Canva template"<br>
+            • "Birthday chip bags near me" (she wants it now)<br>
+            • "Editable party printables download"
+          </div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c1a" onchange="updateProgress()"><label for="c1a">I can describe my ideal customer in one sentence</label></div>
+          <div class="check-item"><input type="checkbox" id="c1b" onchange="updateProgress()"><label for="c1b">I know what she searches for when she needs party supplies</label></div>
+          <div class="check-item"><input type="checkbox" id="c1c" onchange="updateProgress()"><label for="c1c">I understand she wants it fast, cute, and personalized</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 2 -->
+    <div class="module" id="mod2">
+      <div class="module-header" onclick="toggleModule('mod2')">
+        <div class="module-num" id="num2">2</div>
+        <div class="module-title">Where to Find Your First Customers</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">You don't need thousands of followers to make sales. You need to be in the right places. <strong>These are the highest-converting channels for party printables</strong> — ranked by how fast they produce sales.</p>
+
+        <div class="platform-grid">
+          <div class="platform-card">
+            <div class="platform-badge badge-hot">🔥 Fastest Sales</div>
+            <div class="platform-name">Facebook Groups</div>
+            <div class="platform-note">Search "Orlando moms" or "[your city] moms group." Post party photos with your store link. Biggest free sales channel.</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-badge badge-hot">🔥 High Intent</div>
+            <div class="platform-name">Facebook Marketplace</div>
+            <div class="platform-note">List individual printable packs as digital products. People searching here are ready to buy. Free to list.</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-badge badge-easy">Easy Start</div>
+            <div class="platform-name">Instagram</div>
+            <div class="platform-note">Post party photos. Tag the theme. Use hashtags like #partyprintables #unicornparty #birthdaychipbags. Link store in bio.</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-badge badge-easy">Easy Start</div>
+            <div class="platform-name">TikTok</div>
+            <div class="platform-note">Film a 30-second "how it works" video — show the printable, show the chip bag done. Add your store link. One viral video = hundreds of sales.</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-badge badge-free">Long-term</div>
+            <div class="platform-name">Pinterest</div>
+            <div class="platform-note">Create pins for each theme with your store link. Pinterest drives traffic for months. Great for SEO and passive traffic.</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-badge badge-free">Long-term</div>
+            <div class="platform-name">Etsy</div>
+            <div class="platform-note">People already shopping for party printables. Listing fee is small. Create a separate Etsy shop and link to your store for custom orders.</div>
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">Start With Just One Platform</div>
+          <div class="tip-text">Don't try to be everywhere. Pick Facebook Groups first — it's free, the audience is warm, and you can start today without any followers. Master one, then add another.</div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c2a" onchange="updateProgress()"><label for="c2a">I've joined at least 3 local mom / parent Facebook groups</label></div>
+          <div class="check-item"><input type="checkbox" id="c2b" onchange="updateProgress()"><label for="c2b">I've chosen my primary platform to focus on first</label></div>
+          <div class="check-item"><input type="checkbox" id="c2c" onchange="updateProgress()"><label for="c2c">I have my store link ready to paste in posts</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 3 -->
+    <div class="module" id="mod3">
+      <div class="module-header" onclick="toggleModule('mod3')">
+        <div class="module-num" id="num3">3</div>
+        <div class="module-title">What to Say — Scripts That Actually Work</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">Most people overthink this. You don't need to be a copywriter. Use these real scripts as starting points — they work because they sound like a person, not an ad.</p>
+
+        <div class="script-block">
+          <div class="script-label">Facebook Group Post (Soft Intro)</div>
+          <div class="script-text">
+            "Hey [group name] mamas! 👋 I just launched my party printables shop and I'm SO excited. I make chip bags, water bottle labels, cupcake toppers, and more — all fully customized with your child's name. <strong>Completely digital — you download, edit, and print!</strong> Unicorn, Princess, Spiderman, Dinosaur, and more themes available. Check out my shop here → [YOUR STORE LINK] 🎉"
+          </div>
+        </div>
+
+        <div class="script-block">
+          <div class="script-label">Facebook Group Post (Value First)</div>
+          <div class="script-text">
+            "Planning a birthday party? Here's a tip that will save you so much stress: <strong>digital printable chip bags.</strong> You download them, add the name in Canva (it's free!), and print them at Walgreens or at home. Done in 20 minutes. I have tons of themes — drop your child's birthday theme below and I'll send you the link 💕 [YOUR STORE LINK]"
+          </div>
+        </div>
+
+        <div class="script-block">
+          <div class="script-label">DM When Someone Comments</div>
+          <div class="script-text">
+            "Hey [name]! I saw your comment — I have a [theme] printable pack that might be perfect. It includes chip bags, water bottle labels, cupcake toppers, and more — all customizable in Canva with your child's name. Here's the link: [YOUR STORE LINK]. If you have any questions just reply here! 🎈"
+          </div>
+        </div>
+
+        <div class="script-block">
+          <div class="script-label">Instagram Caption</div>
+          <div class="script-text">
+            "Unicorn party, but make it EASY 🦄✨ These chip bags are fully customizable — add any name, change any color, print at home. Digital download means you get it <strong>instantly</strong>. No shipping. No waiting. Link in bio → [YOUR STORE LINK] #unicornparty #partyprintables #birthdaychipbags #kidsbirthday #partyfavors"
+          </div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c3a" onchange="updateProgress()"><label for="c3a">I've written my first post (even just as a draft)</label></div>
+          <div class="check-item"><input type="checkbox" id="c3b" onchange="updateProgress()"><label for="c3b">I've posted in at least one Facebook group</label></div>
+          <div class="check-item"><input type="checkbox" id="c3c" onchange="updateProgress()"><label for="c3c">I have a DM script ready when someone asks me about products</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 4 -->
+    <div class="module" id="mod4">
+      <div class="module-header" onclick="toggleModule('mod4')">
+        <div class="module-num" id="num4">4</div>
+        <div class="module-title">Content That Creates Sales (Photos + Videos)</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">You don't need a ring light or a professional camera. The best-performing content for party printables is <strong>simple, real, and relatable.</strong></p>
+
+        <div class="tip-block">
+          <div class="tip-label">Top 5 Content Ideas (Start Here)</div>
+          <div class="tip-text">
+            1. <strong>Flat lay photo:</strong> Print the chip bags, lay them flat with party decorations around them. Take a photo from above. Caption: "New [theme] bundle is live!"<br><br>
+            2. <strong>Before/after:</strong> Plain chip bag → branded chip bag. Takes 10 seconds in Canva. Shows how easy it is.<br><br>
+            3. <strong>"Party prep" video:</strong> Film yourself setting up a party table with your printables displayed. 30 seconds. No talking needed.<br><br>
+            4. <strong>Customer results:</strong> If someone bought and sent a photo, share it (with permission). Social proof sells.<br><br>
+            5. <strong>Price breakdown:</strong> "This chip bag printable costs $4. You get 12 bags. That's $0.33 per bag vs. $3+ at a party store." Simple math = instant value.
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">Photo Tips (No Camera Skills Needed)</div>
+          <div class="tip-text">
+            • Use natural light (next to a window)<br>
+            • Add a white foam board as a background — $2 at Dollar Tree<br>
+            • Use a balloon and a tablecloth to add color to the scene<br>
+            • iPhone photos are completely fine — don't overthink it
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-box"><div class="stat-num">3x</div><div class="stat-label">More saves on posts<br>with product photos</div></div>
+          <div class="stat-box"><div class="stat-num">67%</div><div class="stat-label">Of buyers search<br>Instagram before buying</div></div>
+          <div class="stat-box"><div class="stat-num">30s</div><div class="stat-label">Ideal TikTok video<br>length for products</div></div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c4a" onchange="updateProgress()"><label for="c4a">I've taken at least one product photo to use in posts</label></div>
+          <div class="check-item"><input type="checkbox" id="c4b" onchange="updateProgress()"><label for="c4b">I've created or planned my first content post</label></div>
+          <div class="check-item"><input type="checkbox" id="c4c" onchange="updateProgress()"><label for="c4c">I've posted consistently at least 3x this week</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 5 -->
+    <div class="module" id="mod5">
+      <div class="module-header" onclick="toggleModule('mod5')">
+        <div class="module-num" id="num5">5</div>
+        <div class="module-title">Pricing Your Printables to Actually Sell</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">Pricing wrong is one of the fastest ways to kill your sales. <strong>Too cheap looks low quality. Too expensive loses first-time buyers.</strong> Here's the sweet spot.</p>
+
+        <div class="tip-block">
+          <div class="tip-label">Recommended Pricing (Proven Price Points)</div>
+          <div class="tip-text">
+            • <strong>Individual item</strong> (1 design — e.g., chip bag only): <strong>$4–$7</strong><br>
+            • <strong>Mini bundle</strong> (3–4 items): <strong>$9–$12</strong><br>
+            • <strong>Full party bundle</strong> (8–11 items): <strong>$15–$22</strong><br>
+            • <strong>Custom order</strong> (you edit for them): <strong>$25–$35</strong><br><br>
+            Start at the middle of each range. You can raise prices once you have reviews.
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">The Custom Order Upsell</div>
+          <div class="tip-text">Offer to edit the template for customers who don't want to do it themselves. Charge $10–$15 extra. This requires no extra product — just 15 minutes in Canva. High-margin, high-value. Mention it in your posts: "Don't want to edit it yourself? I'll do it for you for $15 — DM me!"</div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c5a" onchange="updateProgress()"><label for="c5a">I've set prices for all my products</label></div>
+          <div class="check-item"><input type="checkbox" id="c5b" onchange="updateProgress()"><label for="c5b">I offer a custom editing service for an extra fee</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 6 -->
+    <div class="module" id="mod6">
+      <div class="module-header" onclick="toggleModule('mod6')">
+        <div class="module-num" id="num6">6</div>
+        <div class="module-title">Your First 10 Customers — The Fast Track Plan</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">Your first 10 customers are the hardest — and the most important. Once you have 10, you have proof, you have reviews (hopefully), and your confidence is through the roof. Here's the exact plan.</p>
+
+        <div class="tip-block">
+          <div class="tip-label">Days 1–3: Tell Your Network</div>
+          <div class="tip-text">
+            Text 20 people you know and say: <em>"Hey! I just launched a digital printables shop for kids' birthday parties. Would you be willing to share my store link? Here it is: [LINK]"</em><br><br>
+            Post on your personal Facebook page: <em>"I just started something new! Party printables for kids — fully customized chip bags, labels, toppers and more. Here's my shop: [LINK] 🎉"</em>
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">Days 4–7: Post in 5 Facebook Groups Daily</div>
+          <div class="tip-text">Find mom groups, local community groups, and party planning groups. Post a value-first message (not a sales pitch). Rotate the scripts from Module 3 so you're not posting the same thing twice.
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">Launch Week Offer (Optional but Powerful)</div>
+          <div class="tip-text">For your first week only, offer 20% off. Put it in your post: <em>"Grand opening week — 20% off all bundles! Use code WELCOME at checkout."</em> This creates urgency without devaluing your work permanently.</div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c6a" onchange="updateProgress()"><label for="c6a">I've told my personal network about my store</label></div>
+          <div class="check-item"><input type="checkbox" id="c6b" onchange="updateProgress()"><label for="c6b">I've posted in at least 5 Facebook groups this week</label></div>
+          <div class="check-item"><input type="checkbox" id="c6c" onchange="updateProgress()"><label for="c6c">I've made my first sale (or I'm actively working toward it)</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 7 -->
+    <div class="module" id="mod7">
+      <div class="module-header" onclick="toggleModule('mod7')">
+        <div class="module-num" id="num7">7</div>
+        <div class="module-title">Making It Repeat — How to Get Customers to Come Back</div>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-body">
+        <p class="lesson-intro">A customer who comes back once is worth 3x a new customer. <strong>Repeat business is where the real money is.</strong> Here's how to make it happen automatically.</p>
+
+        <div class="tip-block">
+          <div class="tip-label">After Every Sale</div>
+          <div class="tip-text">
+            Send a follow-up message (if you have their contact): <em>"Thanks so much for your order! How did the party go? I'd love to see a photo if you have one 🎉 And whenever the next party is coming up, I've got tons more themes ready for you!"</em>
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">Seasonal Planning Posts</div>
+          <div class="tip-text">
+            Post ahead of high-party seasons: Back-to-School August, Halloween October, Christmas December, Spring/Easter March–April. Say: <em>"Party season is coming! Get your printables ready now — [theme] bundles are live in my shop."</em>
+          </div>
+        </div>
+
+        <div class="tip-block">
+          <div class="tip-label">The Sibling Reminder</div>
+          <div class="tip-text">
+            Most families have multiple kids. After a sale, say: <em>"When the next birthday rolls around for a sibling or friend, come back! I'm adding new themes every month."</em>
+          </div>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item"><input type="checkbox" id="c7a" onchange="updateProgress()"><label for="c7a">I have a follow-up message ready after every sale</label></div>
+          <div class="check-item"><input type="checkbox" id="c7b" onchange="updateProgress()"><label for="c7b">I know which seasons are busiest for party planning</label></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:80px"></div>
+  </div>
+</div>
+
+<!-- Sticky progress bar -->
+<div class="done-bar">
+  <div class="done-text">Your progress: <span class="done-pct" id="donePct">0%</span> complete</div>
+  <a href="store.html" style="font-size:.82rem;font-weight:700;color:#D115AE">← Back to My Store</a>
+</div>
+
+<script src="nav.js?v=6"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const TOTAL_CHECKS=20;
+
+function toggleModule(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function updateProgress(){
+  const checked=document.querySelectorAll('.check-item input[type=checkbox]:checked').length;
+  const pct=Math.round((checked/TOTAL_CHECKS)*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('donePct').textContent=pct+'%';
+  // Save to localStorage
+  const state={};
+  document.querySelectorAll('.check-item input[type=checkbox]').forEach(cb=>{state[cb.id]=cb.checked;});
+  localStorage.setItem('pbh_marketing_progress',JSON.stringify(state));
+}
+
+function loadProgress(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('pbh_marketing_progress')||'{}');
+    Object.keys(saved).forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.checked=saved[id];
+    });
+    updateProgress();
+  }catch(_){}
+}
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return;}
+  window.setNavUser&&window.setNavUser(session.user.email);
+  loadProgress();
+})();
+</script>
+</body>
+</html>
