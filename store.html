@@ -750,7 +750,7 @@ async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
   currentUser=session.user;
-  const{data:p}=await sb.from('profiles').select('full_name,profile_data,has_kpps_access,store_slug,library_tier').eq('id',currentUser.id).single();
+  const{data:p}=await sb.from('profiles').select('full_name,profile_data,has_kpps_access,has_printables_access,store_slug,library_tier').eq('id',currentUser.id).single();
   const name=(p?.profile_data?.businessName)||p?.full_name||currentUser.email.split('@')[0];
   setNavUser(name,name.charAt(0));
   initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html';});
@@ -759,7 +759,7 @@ async function init(){
 
   userLibraryTier=p?.library_tier||'tier1';
   if(currentUser.email==='ggkidsspa@gmail.com'&&typeof setNavAdmin==='function')setNavAdmin();
-  const hasAccess=p?.has_kpps_access===true;
+  const hasAccess=p?.has_kpps_access===true||p?.has_printables_access===true;
   if(!hasAccess){
     document.getElementById('upgradeGate').style.display='block';
     return;
