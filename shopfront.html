@@ -311,6 +311,24 @@ img{max-width:100%;display:block}
 .next-steps ol{padding-left:14px;font-size:.77rem;color:#6C6473;line-height:2}
 .back-link{color:#D115AE;font-size:.8rem;font-weight:600;cursor:pointer;display:inline-block;margin-top:4px}
 
+/* ── Pre-checkout Modal ─────────────────────── */
+.checkout-overlay{display:none;position:fixed;inset:0;background:rgba(10,4,24,.7);z-index:600;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.checkout-overlay.open{display:flex}
+.checkout-box{background:#fff;border-radius:20px;padding:28px 28px 22px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.3)}
+.checkout-box h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:#1A1A1A;margin-bottom:3px}
+.checkout-product-name{font-size:.82rem;color:#D115AE;font-weight:700;margin-bottom:18px;line-height:1.4}
+.checkout-field-label{display:block;font-size:.78rem;font-weight:700;color:#1A1A1A;margin-bottom:5px}
+.checkout-email-input{width:100%;padding:.65rem .85rem;border:1.5px solid #d8ccf0;border-radius:10px;font-size:.9rem;font-family:inherit;color:#1A1A1A;margin-bottom:14px;box-sizing:border-box}
+.checkout-email-input:focus{outline:none;border-color:#D115AE}
+.checkout-refund-box{display:flex;gap:10px;align-items:flex-start;background:#fffbf2;border:1.5px solid #f0d080;border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer}
+.checkout-refund-box input[type=checkbox]{margin-top:2px;accent-color:#D115AE;flex-shrink:0;width:16px;height:16px;cursor:pointer}
+.checkout-refund-text{font-size:.73rem;color:#5a3800;line-height:1.65}
+.checkout-refund-text strong{display:block;margin-bottom:2px;font-size:.76rem}
+.checkout-error{color:#cc0000;font-size:.74rem;margin-bottom:10px;min-height:14px}
+.checkout-submit-btn{display:block;width:100%;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;border:none;border-radius:12px;padding:14px;font-size:.93rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 16px rgba(209,21,174,.35)}
+.checkout-submit-btn:disabled{opacity:.6;cursor:not-allowed}
+.checkout-cancel{display:block;text-align:center;color:#9988aa;font-size:.78rem;margin-top:12px;cursor:pointer;font-weight:600}
+
 /* ── About Section ─────────────────────────── */
 .about-section{padding:32px 24px;max-width:760px;margin:0 auto}
 .about-inner{display:flex;gap:22px;align-items:flex-start}
@@ -390,6 +408,26 @@ img{max-width:100%;display:block}
 
 <div class="shop-root" id="shopRoot"></div>
 
+<!-- Pre-checkout: email capture + no-refund agreement -->
+<div class="checkout-overlay" id="checkoutOverlay">
+  <div class="checkout-box">
+    <h3>Almost there!</h3>
+    <div class="checkout-product-name" id="checkoutProductName"></div>
+    <label class="checkout-field-label">Where should we send your download link?</label>
+    <input type="email" id="checkoutEmailInput" class="checkout-email-input" placeholder="your@email.com" autocomplete="email"/>
+    <div class="checkout-refund-box" onclick="document.getElementById('checkoutNoRefund').click()">
+      <input type="checkbox" id="checkoutNoRefund" onclick="event.stopPropagation()"/>
+      <div class="checkout-refund-text">
+        <strong>All sales are final — no refunds.</strong>
+        This is an instant digital download. Because access is granted immediately upon purchase, all sales are final and no refunds, returns, or exchanges can be issued under any circumstances. By checking this box you confirm that you have read, understand, and agree to this no-refund policy.
+      </div>
+    </div>
+    <div class="checkout-error" id="checkoutError"></div>
+    <button class="checkout-submit-btn" id="checkoutSubmitBtn" onclick="submitCheckout()">Continue to Checkout →</button>
+    <span class="checkout-cancel" onclick="document.getElementById('checkoutOverlay').classList.remove('open')">← Back to store</span>
+  </div>
+</div>
+
 <div class="success-overlay" id="successOverlay">
   <div class="success-box">
     <div class="success-icon">
@@ -401,14 +439,9 @@ img{max-width:100%;display:block}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
       Download Your Printable
     </a>
-    <!-- Email delivery capture -->
-    <div id="emailCaptureBox" style="margin:14px 0;padding:14px 16px;background:#f8f0ff;border-radius:10px;border:1px solid rgba(117,89,212,.18);text-align:left">
-      <div style="font-size:.78rem;font-weight:700;color:#7559D4;margin-bottom:8px">📧 Send a copy to your inbox</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="email" id="customerEmailInput" placeholder="your@email.com" style="flex:1;padding:.5rem .75rem;border:1.5px solid #d8ccf0;border-radius:8px;font-size:.82rem;font-family:inherit;color:#1F1A24;background:#fff;min-width:0"/>
-        <button onclick="sendPurchaseEmail()" id="sendEmailBtn" style="padding:.5rem 1rem;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">Send</button>
-      </div>
-      <div id="emailSentMsg" style="font-size:.72rem;color:#666;margin-top:6px;min-height:14px"></div>
+    <!-- Auto email status -->
+    <div id="emailStatusMsg" style="margin:10px 0 14px;padding:10px 14px;background:#f0faf5;border-radius:8px;border:1px solid #b0e8cc;font-size:.78rem;color:#1a6640;font-weight:600;display:none">
+      ✓ Download link sent to your email!
     </div>
     <div class="next-steps">
       <div class="ns-title">What to do next:</div>
@@ -420,6 +453,7 @@ img{max-width:100%;display:block}
       </ol>
     </div>
     <a class="back-link" onclick="closeSuccess()">← Back to the shop</a>
+    <p style="font-size:.68rem;color:#bbb;margin-top:12px;line-height:1.6">This purchase is final. Digital products cannot be refunded once access is granted.</p>
   </div>
 </div>
 
@@ -654,12 +688,12 @@ function renderProducts(){
       : '#';
 
     let btn;
-    if(p.price>0 && effectiveLink) btn=`<a href="${esc(buyUrl)}" class="${pfx}-buy" target="_blank">Buy Now</a>`;
-    else if(p.price===0&&(p.file_url||effectiveLink)) btn=`<a href="${esc(p.file_url||'#')}" class="${pfx}-buy free" target="_blank">Get Free</a>`;
+    if(p.price>0 && effectiveLink) btn=`<button class="${pfx}-buy" onclick="event.stopPropagation();startCheckout('${p.id}')">Buy Now</button>`;
+    else if(p.price===0&&p.file_url) btn=`<button class="${pfx}-buy free" onclick="event.stopPropagation();startCheckout('${p.id}')">Get Free</button>`;
     else btn=`<span class="${pfx}-buy soon">Coming Soon</span>`;
 
-    const clickTarget=buyUrl!=='#'?buyUrl:(p.file_url||null);
-    const cardClick=clickTarget?`onclick="window.open('${clickTarget.replace(/'/g,"\\'")}','_blank')" style="cursor:pointer"`:'';
+    const hasAction=(p.price>0&&effectiveLink)||(p.price===0&&p.file_url);
+    const cardClick=hasAction?`onclick="startCheckout('${p.id}')" style="cursor:pointer"`:'';
     return `<div class="${pfx}-card" ${cardClick}>
       <div class="${pfx}-card-img">
         ${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.name)} party printable" loading="lazy">`:`<div class="no-img"><span class="e">🎉</span><span class="l">${esc(p.theme||'Printable')}</span></div>`}
@@ -683,6 +717,60 @@ function renderProducts(){
   area.innerHTML=`<div class="${pfx}-grid" id="products">${cards}</div>`;
 }
 
+/* ── Pre-checkout flow ── */
+let checkoutProductId=null;
+
+function startCheckout(productId){
+  const p=products.find(x=>x.id===productId);
+  if(!p)return;
+  checkoutProductId=productId;
+  document.getElementById('checkoutProductName').textContent=p.name+(p.price>0?' — $'+Number(p.price).toFixed(2):' (Free)');
+  document.getElementById('checkoutEmailInput').value=localStorage.getItem('pbh_checkout_email')||'';
+  document.getElementById('checkoutNoRefund').checked=false;
+  document.getElementById('checkoutError').textContent='';
+  const btn=document.getElementById('checkoutSubmitBtn');
+  btn.disabled=false;
+  btn.textContent=p.price===0?'Get My Free Download →':'Continue to Checkout →';
+  document.getElementById('checkoutOverlay').classList.add('open');
+}
+
+async function submitCheckout(){
+  const email=(document.getElementById('checkoutEmailInput').value||'').trim();
+  const agreed=document.getElementById('checkoutNoRefund').checked;
+  const errEl=document.getElementById('checkoutError');
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errEl.textContent='Please enter a valid email address.';return;}
+  if(!agreed){errEl.textContent='Please confirm you understand all sales are final before continuing.';return;}
+  const p=products.find(x=>x.id===checkoutProductId);
+  if(!p)return;
+  const btn=document.getElementById('checkoutSubmitBtn');
+  btn.disabled=true;btn.textContent='Please wait…';
+  localStorage.setItem('pbh_checkout_email',email);
+  localStorage.setItem('pbh_checkout_product',checkoutProductId);
+  const effectiveLink=p.stripe_link||window.storePaymentLink||'';
+  if(p.price===0&&p.file_url){
+    document.getElementById('checkoutOverlay').classList.remove('open');
+    await autoSendEmail(email,p);
+    await showSuccess(checkoutProductId);
+  }else if(effectiveLink){
+    const storeBase=encodeURIComponent(location.href.split('?')[0]+'?uid='+ownerId+'&success=1&product=');
+    const buyUrl=effectiveLink+(effectiveLink.includes('?')?'&':'?')+'success_url='+storeBase+p.id;
+    window.location.href=buyUrl+'&prefilled_email='+encodeURIComponent(email);
+  }else{
+    btn.disabled=false;btn.textContent='Continue to Checkout →';
+    errEl.textContent='No payment link set for this product yet.';
+  }
+}
+
+async function autoSendEmail(email,p){
+  if(!email||!p?.file_url)return;
+  try{
+    await fetch('/api/send-purchase-email',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({customerEmail:email,customerName:'',productName:p.name,downloadUrl:p.file_url,instructions:p.instructions||null,sellerName:sellerBizName}),
+    });
+  }catch(_){}
+}
+
 async function showSuccess(productId){
   if(!products.length){
     const{data}=await sb.from('products').select('*').eq('user_id',ownerId).eq('active',true);
@@ -693,11 +781,20 @@ async function showSuccess(productId){
   const btn=document.getElementById('downloadBtn');
   if(p?.file_url){btn.href=p.file_url;btn.style.display='flex';}
   else btn.style.display='none';
-  // Reset email capture
-  document.getElementById('customerEmailInput').value='';
-  document.getElementById('emailSentMsg').textContent='';
-  const sendBtn=document.getElementById('sendEmailBtn');
-  sendBtn.disabled=false;sendBtn.textContent='Send';
+
+  // Auto-send email from pre-checkout capture
+  const statusMsg=document.getElementById('emailStatusMsg');
+  const savedEmail=localStorage.getItem('pbh_checkout_email');
+  const savedProduct=localStorage.getItem('pbh_checkout_product');
+  if(savedEmail&&p?.file_url&&(!savedProduct||savedProduct===productId)){
+    localStorage.removeItem('pbh_checkout_email');
+    localStorage.removeItem('pbh_checkout_product');
+    autoSendEmail(savedEmail,p);
+    if(statusMsg){statusMsg.style.display='block';statusMsg.textContent='✓ Download link sent to '+savedEmail+'!';}
+  }else{
+    if(statusMsg)statusMsg.style.display='none';
+  }
+
   document.getElementById('successOverlay').classList.add('open');
 
   // Auto-record the sale in Supabase so seller can see it in their Sales tab
@@ -724,41 +821,6 @@ function closeSuccess(){
   history.replaceState({},'',location.pathname+'?uid='+ownerId);
 }
 
-async function sendPurchaseEmail(){
-  const email=(document.getElementById('customerEmailInput').value||'').trim();
-  const msgEl=document.getElementById('emailSentMsg');
-  if(!email){msgEl.textContent='Please enter your email address';return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msgEl.textContent='Please enter a valid email';return;}
-  if(!successProduct?.file_url){msgEl.textContent='No download link found for this product.';return;}
-
-  const btn=document.getElementById('sendEmailBtn');
-  btn.disabled=true;btn.textContent='Sending…';msgEl.textContent='';
-
-  try{
-    const res=await fetch('/api/send-purchase-email',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        customerEmail:email,
-        productName:successProduct?.name,
-        downloadUrl:successProduct?.file_url,
-        instructions:successProduct?.instructions||null,
-        sellerName:sellerBizName,
-      }),
-    });
-    const data=await res.json().catch(()=>({}));
-    if(data.sent){
-      msgEl.textContent='✓ Sent! Check your inbox (and spam folder just in case).';
-      btn.textContent='✓ Sent';
-    }else{
-      msgEl.textContent=data.note||'Could not send. Try again.';
-      btn.disabled=false;btn.textContent='Send';
-    }
-  }catch(e){
-    msgEl.textContent='Error: '+e.message;
-    btn.disabled=false;btn.textContent='Send';
-  }
-}
 
 init();
 </script>
