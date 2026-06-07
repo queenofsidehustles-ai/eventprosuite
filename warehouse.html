@@ -378,10 +378,17 @@ async function grantAccess() {
     });
     const data = await res.json();
     if (data.success) {
-      statusEl.style.color = '#1a7a40';
-      statusEl.textContent = '✓ Access granted and welcome email sent to ' + email;
       document.getElementById('grantEmail').value = '';
       document.getElementById('grantName').value = '';
+      if (data.emailSent) {
+        statusEl.style.color = '#1a7a40';
+        statusEl.innerHTML = '✓ Access granted and welcome email sent to ' + email;
+      } else {
+        statusEl.style.color = '#7a5a00';
+        statusEl.innerHTML = '✓ Access granted — but email did NOT send (' + (data.emailError || 'unknown reason') + ').<br/>'
+          + '<strong>Send this login link to your customer manually:</strong><br/>'
+          + '<a href="' + data.loginUrl + '" target="_blank" style="color:#4C1D95;word-break:break-all;font-size:.8rem">' + data.loginUrl + '</a>';
+      }
     } else {
       statusEl.style.color = '#c00';
       statusEl.textContent = 'Error: ' + (data.error || 'Something went wrong');

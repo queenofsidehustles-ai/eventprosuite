@@ -149,29 +149,33 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     const emailStyles = `body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}.top{padding:28px 32px 24px;color:#fff;text-align:center}.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}.top p{margin:0;font-size:.88rem;opacity:.85}.body{padding:28px 32px}.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}.btn{display:block;color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}`;
 
     let subject, html;
+    const SKOOL_LINK = 'https://www.skool.com/queen-of-side-hustles-academy-5720/about';
     if (isKPPS) {
-      subject = 'Your Kids Party Profit System™ full access is ready!';
-      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
+      subject = 'You\'re in! Your Kids Party Profit System™ access is ready';
+      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}
+.skool-btn{display:block;background:linear-gradient(135deg,#1a0040,#4C1D95);color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}
+.pbh-box{background:#f5f0ff;border-radius:12px;padding:16px 20px;margin:16px 0;border:1.5px solid rgba(76,29,149,.15)}
+.pbh-box p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}
+.pbh-link{display:block;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;text-decoration:none;text-align:center;padding:12px 20px;border-radius:10px;font-weight:700;font-size:.9rem;margin-top:10px}
+</style></head><body>
 <div class="wrap">
 <div class="top" style="background:linear-gradient(135deg,#1a0040,#4C1D95,#7B2A8F)">
-  <h1>You're fully unlocked! 🎉</h1>
-  <p>Kids Party Profit System™ — complete access is ready</p>
+  <h1>Welcome to the Family! 🎉</h1>
+  <p>Kids Party Profit System™ — your access is confirmed</p>
 </div>
 <div class="body">
 <p>Hi ${firstName},</p>
-<p>Your full <strong>Kids Party Profit System™</strong> access is activated. Everything is unlocked and waiting for you — click below to log in and explore your dashboard:</p>
-<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#4C1D95,#7B2A8F)">Log In to My Dashboard →</a>
-<div class="steps">
-<p>You now have access to:</p>
-<ol>
-<li>Your digital store (Party Profit Printables)</li>
-<li>Quote builder and client contracts</li>
-<li>Profit calculator and event checklist</li>
-<li>Vendor directory and content studio</li>
-<li>PartyGenius AI assistant</li>
-</ol>
+<p>You are officially in! Here is everything you have access to and exactly how to get started:</p>
+<p style="font-weight:700;color:#1a0040;font-size:.95rem">Step 1 — Join your Skool community (your course lives here)</p>
+<a href="${SKOOL_LINK}" class="skool-btn">Join the Kids Party Profit System™ Community →</a>
+<p style="font-size:.82rem;color:#888;margin-top:-10px">This is where your training, resources, and community are. Click above to join.</p>
+<div class="pbh-box">
+<p>Step 2 — Log in to Party Biz Hub (your business tools)</p>
+<p style="font-size:.83rem;color:#333;font-weight:400;margin:0 0 4px">Party Biz Hub is your all-in-one business dashboard — digital store, quote builder, contracts, profit calculator, and more. It is included with your KPPS membership.</p>
+<a href="${loginUrl}" class="pbh-link">Log In to Party Biz Hub →</a>
+<p style="font-size:.78rem;color:#888;margin-top:8px;margin-bottom:0">Link expired? Go to <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a> to request a new one.</p>
 </div>
-<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+<p style="font-size:.82rem;color:#888">If the Party Biz Hub button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div>
 <div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
 </div></body></html>`;
@@ -197,7 +201,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 <li>Share your store link and start selling!</li>
 </ol>
 </div>
-<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a><br/><br/>Link expired? Request a new one at <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a></p>
 </div>
 <div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
 </div></body></html>`;
@@ -350,14 +354,21 @@ async function handleGrantAccess(res, body) {
 </div><div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
 </div></body></html>`;
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM_EMAIL, to: email, subject: `Your ${accessLabel} access is ready!`, html }),
-    }).catch(() => {});
+    let emailSent = false, emailError = '';
+    try {
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: FROM_EMAIL, to: email, subject: `Your ${accessLabel} access is ready!`, html }),
+      });
+      const emailData = await emailRes.json().catch(() => ({}));
+      if (emailRes.ok) emailSent = true;
+      else emailError = emailData.message || emailData.error || `Resend HTTP ${emailRes.status}`;
+    } catch (e) { emailError = e.message; }
+    return res.json({ success: true, loginUrl, emailSent, emailError: emailError || null });
   }
 
-  return res.json({ success: true, loginUrl });
+  return res.json({ success: true, loginUrl, emailSent: false, emailError: 'RESEND_API_KEY not set in Vercel env vars' });
 }
 
 async function handleSendEmail(res, body) {
