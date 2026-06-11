@@ -1542,6 +1542,7 @@ async function loadExistingBuild(){
         t.classList.toggle('selected',t.dataset.niche===data.niche_type);
       });
       $('step1NextBtn').disabled=false;
+      markStepDone(1);
       unlockStep(2);
     }
 
@@ -1686,6 +1687,11 @@ async function loadExistingBuild(){
       $('publishedBadge').style.display='inline-flex';
       $('publishedAt').textContent=new Date(data.last_published_at).toLocaleString();
     }
+
+    // Drop returning user on the furthest unlocked step
+    if(allDone){goToStep(4);}
+    else if(data.brand_data&&data.brand_data.businessName){goToStep(3);}
+    else if(data.niche_type){goToStep(2);}
   }catch(e){console.error('Load exception:',e)}
 }
 
