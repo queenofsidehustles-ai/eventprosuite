@@ -36,6 +36,20 @@
 </div>
 
 <script>
+// Simple admin gate — keeps this page private
+(function() {
+  const PASS = 'pbhsupport2026';
+  const key  = 'pbh_support_auth';
+  if (sessionStorage.getItem(key) !== PASS) {
+    const entered = prompt('Enter support password:');
+    if (entered !== PASS) {
+      document.body.innerHTML = '<p style="font-family:sans-serif;text-align:center;padding:60px;color:#888">Access denied.</p>';
+      return;
+    }
+    sessionStorage.setItem(key, PASS);
+  }
+})();
+
 async function grantAccess() {
   const email = document.getElementById('email').value.trim();
   const name  = document.getElementById('name').value.trim();

@@ -341,8 +341,12 @@ async function boot() {
     setNavUser(display);
     initNavSignout(async () => { sessionStorage.removeItem('pbh_auth'); await sb.auth.signOut(); window.location.href = 'login.html'; });
 
+    // Set nav lock state based on plan
+    const isPPPOnly = profile?.has_printables_access === true && !profile?.has_kpps_access;
+    if (typeof window.setNavPlan === 'function') window.setNavPlan(isPPPOnly ? 'printables' : 'kpps');
+
     // First-time welcome redirect for new printables users
-    if(profile?.has_printables_access===true&&!profile?.has_kpps_access&&!localStorage.getItem('pbh_welcome_seen_'+currentUser.id)){
+    if(isPPPOnly&&!localStorage.getItem('pbh_welcome_seen_'+currentUser.id)){
       window.location.href='welcome.html';return;
     }
 
