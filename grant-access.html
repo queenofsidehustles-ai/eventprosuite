@@ -71,8 +71,12 @@ async function grantAccess() {
     const data = await resp.json();
 
     if (data.success) {
+      const profileWarn = data.profileWritten === false
+        ? `<br/><br/>⚠️ <strong>Access flag could not be saved</strong> (${data.profileError || 'unknown error'}). The customer will still see a "purchase" prompt. Fix: go to your Supabase dashboard → Table Editor → profiles → find the row for <strong>${email}</strong> and manually set <code>has_printables_access = true</code>.`
+        : '';
+      const emailWarn = data.emailSent ? '' : `<br/><br/>⚠️ Email could not be sent automatically — send the login link manually: <a href="${data.loginUrl}" target="_blank">Click here for their login link</a>`;
       result.className = 'result success';
-      result.innerHTML = `✅ <strong>Done!</strong> Account created and login email sent to <strong>${email}</strong>.${data.emailSent ? '' : '<br/><br/>⚠️ Email could not be sent automatically — please send the login link manually: <a href="' + data.loginUrl + '" target="_blank">Click here for their login link</a>'}`;
+      result.innerHTML = `✅ <strong>Done!</strong> Account set up for <strong>${email}</strong>.${profileWarn}${emailWarn}`;
     } else {
       result.className = 'result error';
       result.innerHTML = `❌ Something went wrong: ${data.error || JSON.stringify(data)}`;

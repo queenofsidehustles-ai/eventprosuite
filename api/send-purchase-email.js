@@ -124,14 +124,24 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   };
   if (isKPPS) profilePayload.has_kpps_access = true;
 
-  const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
-    method: 'POST',
-    headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify(profilePayload),
-  }).catch(e => ({ ok: false, _err: e.message }));
-  if (profileRes && !profileRes.ok) {
-    const profileErr = await profileRes.json?.().catch(() => ({})) || {};
-    console.error('Profile upsert failed:', profileErr);
+  try {
+    const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
+      method: 'POST',
+      headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(profilePayload),
+    });
+    if (!profileRes.ok) {
+      const profileErr = await profileRes.json().catch(() => ({}));
+      console.error('Profile upsert failed:', profileErr);
+      // Fallback: PATCH the existing row directly
+      await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
+        method: 'PATCH',
+        headers: { ...adminHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(profilePayload),
+      }).catch(e => console.error('Profile PATCH fallback failed:', e.message));
+    }
+  } catch (e) {
+    console.error('Profile write exception:', e.message);
   }
 
   // Generate magic login link — KPPS goes to dashboard, PPP goes to welcome guide
@@ -318,7 +328,8 @@ async function handleGrantAccess(res, body) {
     const created = await createRes.json();
     if (created.id) {
       userId = created.id;
-    } else if (created.msg && created.msg.includes('already')) {
+    } else {
+      // User already exists or creation failed — always look them up
       const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, { headers: adminHeaders });
       const list = await listRes.json();
       userId = list?.users?.[0]?.id || null;
@@ -337,11 +348,39 @@ async function handleGrantAccess(res, body) {
   };
   if (customerName) profilePayload.full_name = customerName;
 
-  await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
-    method: 'POST',
-    headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify(profilePayload),
-  }).catch(() => {});
+  // Upsert profile — POST with on_conflict, then PATCH as fallback
+  let profileWritten = false;
+  let profileError = null;
+  try {
+    const upsertRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
+      method: 'POST',
+      headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(profilePayload),
+    });
+    if (upsertRes.ok) {
+      profileWritten = true;
+    } else {
+      const errBody = await upsertRes.json().catch(() => ({}));
+      profileError = errBody.message || errBody.hint || errBody.details || `HTTP ${upsertRes.status}`;
+      // Fallback: PATCH the existing row
+      const patchPayload = { has_paid: true, library_tier: 'founding', email };
+      if (isPPP)  patchPayload.has_printables_access = true;
+      if (isKPPS) patchPayload.has_kpps_access = true;
+      if (customerName) patchPayload.full_name = customerName;
+      const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
+        method: 'PATCH',
+        headers: { ...adminHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(patchPayload),
+      });
+      if (patchRes.ok) { profileWritten = true; profileError = null; }
+      else {
+        const patchErr = await patchRes.json().catch(() => ({}));
+        profileError = patchErr.message || patchErr.hint || `PATCH HTTP ${patchRes.status}`;
+      }
+    }
+  } catch (e) {
+    profileError = e.message;
+  }
 
   // Generate magic login link
   const redirectPage = isKPPS ? 'dashboard.html' : 'welcome.html';
@@ -383,10 +422,10 @@ async function handleGrantAccess(res, body) {
       if (emailRes.ok) emailSent = true;
       else emailError = emailData.message || emailData.error || `Resend HTTP ${emailRes.status}`;
     } catch (e) { emailError = e.message; }
-    return res.json({ success: true, loginUrl, emailSent, emailError: emailError || null });
+    return res.json({ success: true, loginUrl, profileWritten, profileError: profileError || null, emailSent, emailError: emailError || null });
   }
 
-  return res.json({ success: true, loginUrl, emailSent: false, emailError: 'RESEND_API_KEY not set in Vercel env vars' });
+  return res.json({ success: true, loginUrl, profileWritten, profileError: profileError || null, emailSent: false, emailError: 'RESEND_API_KEY not set in Vercel env vars' });
 }
 
 async function handleSendEmail(res, body) {
