@@ -124,11 +124,15 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   };
   if (isKPPS) profilePayload.has_kpps_access = true;
 
-  await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+  const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
     method: 'POST',
     headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates' },
     body: JSON.stringify(profilePayload),
-  }).catch(() => {});
+  }).catch(e => ({ ok: false, _err: e.message }));
+  if (profileRes && !profileRes.ok) {
+    const profileErr = await profileRes.json?.().catch(() => ({})) || {};
+    console.error('Profile upsert failed:', profileErr);
+  }
 
   // Generate magic login link — KPPS goes to dashboard, PPP goes to welcome guide
   const redirectPage = isKPPS ? 'dashboard.html' : 'welcome.html';
@@ -207,14 +211,28 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 </div></body></html>`;
     }
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject, html }),
-    }).catch(() => {});
+    let emailSent = false;
+    let emailError = null;
+    try {
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject, html }),
+      });
+      const emailData = await emailRes.json().catch(() => ({}));
+      if (emailRes.ok) {
+        emailSent = true;
+      } else {
+        emailError = emailData.message || emailData.error || `Resend HTTP ${emailRes.status}`;
+      }
+    } catch (e) {
+      emailError = e.message;
+    }
+
+    return res.json({ received: true, userId, tier: assignedTier, emailSent, emailError });
   }
 
-  return res.json({ received: true });
+  return res.json({ received: true, note: 'RESEND_API_KEY not set — account created but no email sent', userId, tier: assignedTier });
 }
 
 async function handleGenerateCopy(res, body) {
