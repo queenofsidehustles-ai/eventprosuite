@@ -272,7 +272,7 @@ Return ONLY this JSON with a string array for instructions:
         'HTTP-Referer': 'https://partybizhub.com',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3.5-haiku',
+        model: 'anthropic/claude-haiku-4.5',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 500,
       }),

@@ -97,7 +97,7 @@ module.exports = async function handler(req, res) {
         'X-Title': 'Party Biz Hub Help'
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3-haiku',
+        model: 'anthropic/claude-haiku-4.5',
         messages: [{ role: 'system', content: HELP_PROMPT }, ...messages.slice(-6)],
         max_tokens: 400,
         temperature: 0.4
