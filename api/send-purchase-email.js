@@ -35,7 +35,10 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  // Default to the VERIFIED partybizhub.com sender so emails work even if the env
+  // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
+  // delivers to the account owner — never use it for real customer email.
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
   // Verify Stripe signature
   if (STRIPE_SECRET) {
@@ -365,7 +368,10 @@ async function handleGrantAccess(res, body) {
   const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  // Default to the VERIFIED partybizhub.com sender so emails work even if the env
+  // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
+  // delivers to the account owner — never use it for real customer email.
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
   const { email, accessType, customerName } = body; // accessType: 'ppp' | 'kpps' | 'both'
   if (!email) return res.status(400).json({ error: 'email is required' });
@@ -490,7 +496,10 @@ async function handleGrantAccess(res, body) {
 
 async function handleSendEmail(res, body) {
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  // Default to the VERIFIED partybizhub.com sender so emails work even if the env
+  // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
+  // delivers to the account owner — never use it for real customer email.
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
   const { customerEmail, customerName, productName, downloadUrl, instructions, sellerName } = body;
 
   if (!customerEmail || !downloadUrl) {
