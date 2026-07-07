@@ -56,31 +56,58 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
 
+  // Subscription canceled or ended → revoke the CRM key so access stops
+  if (event.type === 'customer.subscription.deleted') {
+    const sub = event.data?.object || {};
+    const customerId = sub.customer;
+    if (customerId && SUPABASE_SERVICE_KEY) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles?stripe_customer_id=eq.${customerId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+            'apikey': SUPABASE_SERVICE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({ has_crm_access: false }),
+        });
+      } catch (_) {}
+    }
+    return res.json({ received: true, note: 'Subscription canceled — CRM access revoked' });
+  }
+
   if (event.type !== 'checkout.session.completed') {
     return res.json({ received: true });
   }
 
   const session = event.data?.object || {};
 
-  // Classify the purchase type by amount
+  // Classify the purchase type
   const amountTotal = session.amount_total || 0;
+  // amount_subtotal = the LIST price BEFORE any coupon/discount. Matching on this
+  // means a KPPS sale still delivers even when a coupon lowers what they actually pay.
+  const amountSubtotal = session.amount_subtotal || amountTotal;
   const sessionMode = session.mode || 'payment';
+  // Optional explicit tag on the checkout / payment link (most reliable when set)
+  const metaProduct = (session.metadata && session.metadata.product || '').toLowerCase();
 
-  // KPPS purchases — unlock full system
+  // Party Biz Hub CRM — a RECURRING subscription (the only subscription product is the $27/mo plan)
+  const isCRMSub = sessionMode === 'subscription';
+
+  // KPPS one-time purchases — unlock the full system for life.
+  // Check the pre-discount subtotal first so COUPON / discounted purchases still deliver.
   const KPPS_AMOUNTS = { 40000: true, 49700: true }; // $400 upgrade or $497 full price
-  const isKPPS = !!KPPS_AMOUNTS[amountTotal];
+  const isKPPS = !isCRMSub && (metaProduct === 'kpps' || !!KPPS_AMOUNTS[amountSubtotal] || !!KPPS_AMOUNTS[amountTotal]);
 
-  // PPP tier map — template library access level
-  const PPP_TIER_MAP = {
-    9700: sessionMode === 'payment' ? 'founding' : 'unlimited',
-    2700: 'tier1',
-    4700: 'tier2',
-    6700: 'tier3',
-  };
-  const assignedTier = isKPPS ? 'founding' : PPP_TIER_MAP[amountTotal];
+  // Party Printables — one-time $97 (unlimited template library)
+  const PPP_TIER_MAP = { 9700: 'founding' };
+  const assignedTier = isKPPS
+    ? 'founding'
+    : (isCRMSub ? null : (PPP_TIER_MAP[amountSubtotal] || PPP_TIER_MAP[amountTotal] || null));
 
-  if (!assignedTier) {
-    return res.json({ received: true, note: 'Not a recognized purchase — skipped' });
+  if (!isCRMSub && !isKPPS && !assignedTier) {
+    return res.json({ received: true, note: `Not a recognized purchase — skipped (subtotal=${amountSubtotal}, total=${amountTotal})` });
   }
 
   const customerEmail = session.customer_details?.email || session.customer_email || '';
@@ -117,12 +144,20 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   if (!userId) return res.json({ received: true, note: 'Could not create or find user' });
 
-  // Set profile access — KPPS unlocks everything; PPP unlocks printables only
+  // Set profile access — CRM sub gets the CRM key; KPPS unlocks everything; printables gets the store
   const profilePayload = {
-    id: userId, email: customerEmail, full_name: customerName,
-    has_paid: true, has_printables_access: true, library_tier: assignedTier,
+    id: userId, email: customerEmail, full_name: customerName, has_paid: true,
   };
-  if (isKPPS) profilePayload.has_kpps_access = true;
+  if (isCRMSub) {
+    // Monthly Party Biz Hub subscriber — full CRM (incl. website), NOT the printables store
+    profilePayload.has_crm_access = true;
+    if (session.customer) profilePayload.stripe_customer_id = session.customer;
+  } else {
+    // Printables buyer or KPPS member — both get the printables library
+    profilePayload.has_printables_access = true;
+    profilePayload.library_tier = assignedTier;
+    if (isKPPS) profilePayload.has_kpps_access = true;
+  }
 
   try {
     const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
@@ -144,8 +179,8 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     console.error('Profile write exception:', e.message);
   }
 
-  // Generate magic login link — KPPS goes to dashboard, PPP goes to welcome guide
-  const redirectPage = isKPPS ? 'dashboard.html' : 'welcome.html';
+  // Generate magic login link — KPPS & CRM subscribers go to dashboard, PPP goes to welcome guide
+  const redirectPage = (isKPPS || isCRMSub) ? 'dashboard.html' : 'welcome.html';
   let loginUrl = `https://app.partybizhub.com/${redirectPage}`;
   try {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
@@ -164,7 +199,32 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
     let subject, html;
     const SKOOL_LINK = 'https://www.skool.com/queen-of-side-hustles-academy-5720/about';
-    if (isKPPS) {
+    if (isCRMSub) {
+      subject = 'Welcome to Party Biz Hub — your subscription is active! 🎉';
+      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
+<div class="wrap">
+<div class="top" style="background:linear-gradient(135deg,#4C1D95,#6D28D9,#D115AE)">
+  <h1>You're in! Welcome to Party Biz Hub</h1>
+  <p>Your $27/month membership is active</p>
+</div>
+<div class="body">
+<p>Hi ${firstName},</p>
+<p>Your Party Biz Hub subscription is live — you now have the full toolkit: quote builder, contracts, profit calculator, event checklist, vendors, your own website, and the AI Content Studio. Click below to log in and get started:</p>
+<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#D115AE,#7559D4)">Log In to Party Biz Hub →</a>
+<div class="steps">
+<p>Here is what to do first:</p>
+<ol>
+<li>Click the button above to access your dashboard</li>
+<li>Set up your Business Profile (name, logo, colors)</li>
+<li>Build your first quote or website page</li>
+<li>Generate your first social post in the Content Studio</li>
+</ol>
+</div>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a><br/><br/>Link expired? Request a new one at <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a></p>
+</div>
+<div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
+</div></body></html>`;
+    } else if (isKPPS) {
       subject = 'You\'re in! Your Kids Party Profit System™ access is ready';
       html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}
 .skool-btn{display:block;background:linear-gradient(135deg,#1a0040,#4C1D95);color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}
