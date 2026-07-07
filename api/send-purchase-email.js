@@ -465,13 +465,21 @@ async function handleGrantAccess(res, body) {
   if (RESEND_KEY) {
     const firstName = (customerName || '').split(' ')[0] || 'there';
     const accessLabel = isKPPS ? 'Kids Party Profit System™ (full access)' : 'Party Profit Printables™';
+    const SKOOL_LINK = 'https://www.skool.com/queen-of-side-hustles-academy-5720/about';
     const steps = isKPPS
-      ? ['Click the button above to log into your dashboard','Explore your digital store, quote builder, contracts, and more','Check out the Party Profit Printables™ template library','Use the Quick Start guide inside your store to get set up','Reach out to support@partybizhub.com with any questions']
+      ? ['Join your Skool community using the button above — your course & training live there','Log into Party Biz Hub for your business tools (store, quote builder, contracts, printables)','Use the Quick Start guide inside your dashboard to get set up','Reach out to support@partybizhub.com with any questions']
       : ['Click the button above to access your account','Set your store name and payment link','Pick your store design','Add templates from the library','Share your store link and start selling!'];
+    // KPPS buyers also get their Skool community link — the course lives there
+    const skoolBlock = isKPPS
+      ? `<p style="font-weight:700;color:#1a0040;font-size:.95rem;margin:0 0 4px">Step 1 — Join your Kids Party Profit System™ community (your course lives here)</p>
+<a href="${SKOOL_LINK}" class="btn" style="background:linear-gradient(135deg,#1a0040,#4C1D95)">Join the Skool Community →</a>
+<p style="font-weight:700;color:#4C1D95;font-size:.95rem;margin:0 0 4px">Step 2 — Log into Party Biz Hub (your business tools)</p>`
+      : '';
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}.top{background:linear-gradient(135deg,${isKPPS?'#1a0040,#4C1D95,#7B2A8F':'#4C1D95,#6D28D9,#D115AE'});padding:28px 32px 24px;color:#fff;text-align:center}.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}.top p{margin:0;font-size:.88rem;opacity:.85}.body{padding:28px 32px}.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}.btn{display:block;background:linear-gradient(135deg,${isKPPS?'#4C1D95,#7B2A8F':'#D115AE,#7559D4'});color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}</style></head><body>
 <div class="wrap"><div class="top"><h1>Your access is ready!</h1><p>${accessLabel}</p></div>
-<div class="body"><p>Hi ${firstName},</p><p>Your access to <strong>${accessLabel}</strong> has been set up. Click below to log in:</p>
-<a href="${loginUrl}" class="btn">Log In Now →</a>
+<div class="body"><p>Hi ${firstName},</p><p>Your access to <strong>${accessLabel}</strong> has been set up. Here is how to get started:</p>
+${skoolBlock}
+<a href="${loginUrl}" class="btn">Log In to Party Biz Hub →</a>
 <div class="steps"><p>Here is what to do first:</p><ol>${steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
 <p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div><div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
