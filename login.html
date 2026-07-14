@@ -114,11 +114,11 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   #resetPanel{display:none}
   #resetPanel.show{display:block}
-  #resetPanel h3{
+  #resetPanel h3,#setPasswordPanel h3{
     font-family:'Playfair Display',serif;font-size:22px;color:var(--plum-900);
     margin-bottom:8px;letter-spacing:-.01em;
   }
-  #resetPanel p{font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+  #resetPanel p,#setPasswordPanel p{font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6}
   .signup-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
 </style>
 </head>
@@ -207,6 +207,22 @@
     </div>
   </div>
 
+  <!-- SET NEW PASSWORD PANEL (shown after clicking a reset / magic link) -->
+  <div id="setPasswordPanel" style="display:none">
+    <h3>Set your password</h3>
+    <p>Create a password so you can log in any time with your email and password — no email link needed.</p>
+    <div class="field">
+      <label>New Password</label>
+      <input type="password" id="newPassword" placeholder="Create a password (min 8 chars)" autocomplete="new-password"/>
+    </div>
+    <div class="field">
+      <label>Confirm Password</label>
+      <input type="password" id="newPasswordConfirm" placeholder="Confirm your password" autocomplete="new-password"
+        onkeydown="if(event.key==='Enter')handleSetPassword()"/>
+    </div>
+    <button class="btn-submit" onclick="handleSetPassword()" id="setPasswordBtn">Save Password & Continue →</button>
+  </div>
+
   <div class="auth-footer">
     Don't have access yet? <a href="index.html#pricing">Become a Founder →</a>
   </div>
@@ -217,6 +233,16 @@ const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const { createClient } = window.supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Detect a password-recovery / magic link (has a #type=recovery token in the URL)
+const hashParams = new URLSearchParams(window.location.hash.slice(1));
+const isRecovery = hashParams.get('type') === 'recovery';
+const hashError = hashParams.get('error_description') || hashParams.get('error');
+
+// When Supabase finishes processing the recovery link, show the "set password" form
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') showSetPassword();
+});
 
 // Detect invite code in URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -240,9 +266,16 @@ if (isKppsInvite) {
   switchTab('signup');
 }
 
+// If the recovery link failed (expired/already used), tell the user gently
+if (hashError) {
+  showMessage(decodeURIComponent(hashError).replace(/\+/g, ' ') + ' — please request a new reset link.', 'error');
+}
+// If arriving from a reset/magic link, show the "set password" form instead of redirecting
+if (isRecovery) showSetPassword();
+
 // Auto-redirect if already logged in
 sb.auth.getSession().then(async ({ data: { session } }) => {
-  if (!session) return;
+  if (!session || isRecovery) return;
   const invite = localStorage.getItem('pbh_invite');
   if (invite === 'KPPS') {
     await sb.from('profiles').upsert({ id: session.user.id, has_kpps_access: true, has_paid: true }, { onConflict: 'id' });
@@ -383,6 +416,48 @@ async function handleReset() {
     showMessage('Reset link sent! Check your inbox.', 'success');
     setTimeout(hideReset, 2800);
   }
+}
+
+function showSetPassword() {
+  document.getElementById('mainAuth').style.display = 'none';
+  document.getElementById('resetPanel').classList.remove('show');
+  document.getElementById('inviteBanner').style.display = 'none';
+  document.getElementById('printablesBanner').style.display = 'none';
+  document.getElementById('setPasswordPanel').style.display = 'block';
+  clearMessage();
+}
+
+async function handleSetPassword() {
+  const password = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('newPasswordConfirm').value;
+  if (!password) return showMessage('Please enter a new password.', 'error');
+  if (password.length < 8) return showMessage('Password must be at least 8 characters.', 'error');
+  if (password !== confirm) return showMessage('Passwords do not match.', 'error');
+
+  setLoading('setPasswordBtn', true, 'Save Password & Continue →');
+  clearMessage();
+
+  const { data, error } = await sb.auth.updateUser({ password });
+
+  if (error) {
+    setLoading('setPasswordBtn', false, 'Save Password & Continue →');
+    showMessage(error.message + ' — your link may have expired. Request a new reset link and try again.', 'error');
+    return;
+  }
+
+  showMessage('Password saved! Taking you to your dashboard...', 'success');
+
+  // Route the same way a normal login does
+  const uid = data.user.id;
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('profile_data')
+    .eq('id', uid)
+    .single();
+  const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
+  setTimeout(() => {
+    window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
+  }, 1200);
 }
 
 function showReset() {
