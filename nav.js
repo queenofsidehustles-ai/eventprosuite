@@ -67,6 +67,20 @@
     </div>`;
   }
 
+  // Always-visible sign-out pill (top-right) so users don't have to hunt in the menu
+  function addFloatingSignout() {
+    if (document.getElementById('pbhFloatingSignout')) return;
+    const btn = document.createElement('button');
+    btn.id = 'pbhFloatingSignout';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Sign out');
+    btn.innerHTML = '<span style="font-size:14px;line-height:1">⎋</span> Sign out';
+    btn.style.cssText = 'position:fixed;top:12px;right:12px;z-index:1200;display:inline-flex;align-items:center;gap:6px;background:#fff;color:#6D28D9;border:1.5px solid #DDD1E5;border-radius:999px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(90,52,118,.18)';
+    btn.addEventListener('mouseover', () => { btn.style.background = '#F7F1FB'; });
+    btn.addEventListener('mouseout',  () => { btn.style.background = '#fff'; });
+    document.body.appendChild(btn);
+  }
+
   function init() {
     const mount = document.getElementById('pbhSidebar');
     if (!mount) return;
@@ -82,6 +96,8 @@
     if (hamburger) hamburger.addEventListener('click', open);
     if (overlay)   overlay.addEventListener('click', close);
     if (closeBtn)  closeBtn.addEventListener('click', close);
+
+    addFloatingSignout();
   }
 
   /* Public API */
@@ -140,12 +156,16 @@
 
   window.initNavSignout = function (handler) {
     sessionStorage.setItem('pbh_auth', '1');
-    const btn = document.getElementById('sidebarSignout');
-    if (btn) btn.addEventListener('click', () => {
+    addFloatingSignout();
+    const doSignout = () => {
       sessionStorage.removeItem('pbh_auth');
       localStorage.removeItem('pbh_plan');
       handler();
-    });
+    };
+    const btn = document.getElementById('sidebarSignout');
+    if (btn) btn.addEventListener('click', doSignout);
+    const floating = document.getElementById('pbhFloatingSignout');
+    if (floating) floating.addEventListener('click', doSignout);
   };
 
   function autoDetectAdmin() {
