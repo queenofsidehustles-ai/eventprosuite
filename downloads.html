@@ -118,11 +118,6 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return;}
-  const{data:p}=await sb.from('profiles').select('has_printables_access,has_kpps_access').eq('id',session.user.id).single();
-  if(!p?.has_printables_access&&!p?.has_kpps_access){
-    window.location.href='dashboard.html';
-    return;
-  }
   loadTemplates();
 }
 

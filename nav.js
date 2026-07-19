@@ -6,7 +6,7 @@
   // PPP-only users see these items locked. KPPS users see everything.
   const PAGES = [
     { id: 'dashboard',  href: 'dashboard.html',  icon: '🏠', label: 'Home' },
-    { id: 'downloads',  href: 'downloads.html',  icon: '📥', label: 'My Downloads',     pppOnly: true },
+    { id: 'downloads',  href: 'downloads.html',  icon: '📥', label: 'My Downloads' },
     { id: 'store',      href: 'store.html',       icon: '🛍️', label: 'Party Profit Printables' },
     { id: 'mywebsite',  href: 'mywebsite.html',   icon: '🌐', label: 'My Website',       kppsOnly: true },
     { id: 'app',        href: 'app.html',          icon: '📄', label: 'Quote Builder',    kppsOnly: true },
@@ -29,8 +29,6 @@
   function build() {
     const locked = isPPPOnly();
     const items = PAGES.map(p => {
-      // pppOnly items only show for PPP users; hide for full KPPS (they use the full store instead)
-      if (p.pppOnly && !locked) return '';
       const active = filename === p.id ? ' active' : '';
       const isLocked = p.kppsOnly && locked;
       if (isLocked) {
