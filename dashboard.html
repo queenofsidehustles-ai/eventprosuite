@@ -345,9 +345,14 @@ async function boot() {
     const isPPPOnly = profile?.has_printables_access === true && !profile?.has_kpps_access;
     if (typeof window.setNavPlan === 'function') window.setNavPlan(isPPPOnly ? 'printables' : 'kpps');
 
-    // First-time welcome redirect for new printables users
-    if(isPPPOnly&&!localStorage.getItem('pbh_welcome_seen_'+currentUser.id)){
-      window.location.href='welcome.html';return;
+    // PPP-only users: first visit → welcome guide, after that → downloads page
+    if(isPPPOnly){
+      if(!localStorage.getItem('pbh_welcome_seen_'+currentUser.id)){
+        window.location.href='welcome.html';
+      } else {
+        window.location.href='downloads.html';
+      }
+      return;
     }
 
     // Build setup checklist
