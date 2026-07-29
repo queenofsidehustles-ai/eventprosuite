@@ -373,7 +373,7 @@ async function handleGrantAccess(res, body) {
   // delivers to the account owner — never use it for real customer email.
   const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
-  const { email, accessType, customerName } = body; // accessType: 'ppp' | 'kpps' | 'both'
+  const { email, accessType, customerName } = body; // accessType: 'ppp' | 'kpps' | 'both' | 'crm'
   if (!email) return res.status(400).json({ error: 'email is required' });
   if (!SUPABASE_SERVICE_KEY) return res.status(500).json({ error: 'Service key not configured' });
 
@@ -406,11 +406,16 @@ async function handleGrantAccess(res, body) {
 
   // Build profile payload based on access type
   const isKPPS = accessType === 'kpps' || accessType === 'both';
+  // 'crm' unlocks the CRM tools + website builder ONLY. It deliberately does not
+  // set has_kpps_access, which would also flip the isPPPOnly checks in
+  // dashboard.html / store.html and hand over KPPS course + store tiers.
+  const isCRM  = accessType === 'crm'  || isKPPS;
   const isPPP  = accessType === 'ppp'  || accessType === 'both' || isKPPS;
   const profilePayload = {
     id: userId, email, has_paid: true, library_tier: 'founding',
     ...(isPPP  && { has_printables_access: true }),
     ...(isKPPS && { has_kpps_access: true }),
+    ...(isCRM  && { has_crm_access: true }),
   };
   if (customerName) profilePayload.full_name = customerName;
 
@@ -432,6 +437,7 @@ async function handleGrantAccess(res, body) {
       const patchPayload = { has_paid: true, library_tier: 'founding', email };
       if (isPPP)  patchPayload.has_printables_access = true;
       if (isKPPS) patchPayload.has_kpps_access = true;
+      if (isCRM)  patchPayload.has_crm_access = true;
       if (customerName) patchPayload.full_name = customerName;
       const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
         method: 'PATCH',

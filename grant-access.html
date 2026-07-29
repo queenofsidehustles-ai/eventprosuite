@@ -33,6 +33,7 @@
   <label>What did they buy? *</label>
   <select id="accessType">
     <option value="kpps">Kids Party Profit System (full access)</option>
+    <option value="crm">CRM + Website Builder only ($27/mo subscriber)</option>
     <option value="ppp">Party Profit Printables only</option>
     <option value="both">Both (KPPS + Printables)</option>
   </select>
@@ -79,8 +80,9 @@ async function grantAccess() {
     const data = await resp.json();
 
     if (data.success) {
-      const flagHint = accessType === 'kpps' ? 'has_kpps_access = true'
-        : accessType === 'both' ? 'has_kpps_access = true and has_printables_access = true'
+      const flagHint = accessType === 'kpps' ? 'has_kpps_access = true and has_crm_access = true'
+        : accessType === 'both' ? 'has_kpps_access = true, has_crm_access = true and has_printables_access = true'
+        : accessType === 'crm' ? 'has_crm_access = true'
         : 'has_printables_access = true';
       const profileWarn = data.profileWritten === false
         ? `<br/><br/>⚠️ <strong>Access flag could not be saved</strong> (${data.profileError || 'unknown error'}). The customer will still see a "purchase" prompt. Fix: go to your Supabase dashboard → Table Editor → profiles → find the row for <strong>${email}</strong> and manually set <code>${flagHint}</code>.`
