@@ -2206,11 +2206,28 @@ const CONFIG = {
   document.getElementById('heroLead').textContent = c.business.heroLead;
   document.getElementById('heroPrice').textContent = '$' + c.business.startingPrice;
 
-  // Founding
-  if (c.foundingFamilies && c.foundingFamilies.enabled) {
-    document.getElementById('foundingDescription').innerHTML = c.foundingFamilies.description.replace(c.foundingFamilies.discount, '<strong>' + c.foundingFamilies.discount + '</strong>');
-    const remaining = c.foundingFamilies.spotsTotal - c.foundingFamilies.spotsClaimed;
-    document.getElementById('foundingSpots').textContent = remaining + ' of ' + c.foundingFamilies.spotsTotal + ' founding family spots remaining';
+  // Founding — accepts the demo `foundingFamilies` shape or the builder's `founding`
+  // shape ({enabled, discount, spots, headline}); either may be present.
+  const founding = c.foundingFamilies || c.founding;
+  if (founding && founding.enabled) {
+    const rawDiscount = String(founding.discount == null ? '' : founding.discount).trim();
+    // Builder stores a bare number ("25"); the demo config stores a full phrase.
+    const discountLabel = rawDiscount === '' ? ''
+      : (/[%a-z]/i.test(rawDiscount) ? rawDiscount : rawDiscount + '% off your first event');
+    const spotsTotal = parseInt(founding.spotsTotal != null ? founding.spotsTotal : founding.spots, 10) || 0;
+    const spotsClaimed = parseInt(founding.spotsClaimed, 10) || 0;
+    const description = founding.description || founding.headline ||
+      ("We're launching and looking for our first " + (spotsTotal || 'few') +
+       " families to experience the magic. Book as a Founding Family and receive " +
+       (discountLabel || 'a special discount') + " in exchange for photos and a review.");
+    document.getElementById('foundingDescription').innerHTML =
+      (discountLabel && description.indexOf(discountLabel) !== -1)
+        ? description.split(discountLabel).join('<strong>' + discountLabel + '</strong>')
+        : description;
+    const remaining = Math.max(0, spotsTotal - spotsClaimed);
+    document.getElementById('foundingSpots').textContent = spotsTotal
+      ? remaining + ' of ' + spotsTotal + ' founding family spots remaining'
+      : 'Founding family spots available';
   } else {
     document.getElementById('foundingSection').style.display = 'none';
   }
@@ -2239,10 +2256,18 @@ const CONFIG = {
     nicheSelect.appendChild(opt);
   });
 
-  // Add-ons
-  document.getElementById('addonsGrid').innerHTML = c.addons.map(a =>
-    '<div class="addon"><strong>' + a.name + '</strong><span>' + a.price + '</span></div>'
-  ).join('');
+  // Add-ons — hide the whole section when the owner offers none
+  const addonList = (c.addons || []).filter(a => a && String(a.name || '').trim());
+  if (addonList.length) {
+    document.getElementById('addonsGrid').innerHTML = addonList.map(a =>
+      '<div class="addon"><strong>' + a.name + '</strong>' +
+      (a.price ? '<span>' + a.price + '</span>' : '') + '</div>'
+    ).join('');
+  } else {
+    document.getElementById('addons').style.display = 'none';
+    const navAddon = navLinks.querySelector('a[href="#addons"]');
+    if (navAddon) navAddon.remove();
+  }
 
   // About
   document.getElementById('aboutEyebrow').textContent = c.about.eyebrow;

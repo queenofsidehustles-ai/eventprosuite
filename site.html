@@ -60,6 +60,49 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   function lightenHex(hex,amt){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);const r=Math.min(255,(n>>16)+amt);const g=Math.min(255,((n>>8)&0xff)+amt);const b=Math.min(255,(n&0xff)+amt);return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('')}
   function first(...vals){for(const v of vals){if(v!=null&&v!=='')return v}return null}
 
+  /* ── Builder → site normalizers ──
+     The builder writes gallery photos as plain data-URL strings, FAQ items as
+     {question,answer}, and package contents as a newline-separated `included`
+     string. Older/alternate shapes are tolerated so previously saved builds
+     keep rendering. ── */
+  function normGallery(gallery_data){
+    const raw=(gallery_data&&Array.isArray(gallery_data.photos))?gallery_data.photos:[];
+    return raw.map(p=>{
+      if(!p)return null;
+      if(typeof p==='string')return p;
+      return p.dataURL||p.url||p.src||null;
+    }).filter(Boolean);
+  }
+  function normFaqs(faq_data){
+    const raw=(faq_data&&Array.isArray(faq_data.items))?faq_data.items:[];
+    return raw.map(i=>({
+      q:String((i&&(i.question!=null?i.question:i.q))||'').trim(),
+      a:String((i&&(i.answer!=null?i.answer:i.a))||'').trim()
+    })).filter(i=>i.q||i.a);
+  }
+  function normAddons(addons_data){
+    const raw=Array.isArray(addons_data)?addons_data:[];
+    return raw.map(a=>{
+      const name=String((a&&a.name)||'').trim();
+      if(!name)return null;
+      const rawPrice=(a&&a.price!=null)?String(a.price).trim():'';
+      const price=rawPrice===''?'':(/^[0-9]+(\.[0-9]+)?$/.test(rawPrice)?'$'+rawPrice:rawPrice);
+      return{name:name,price:price};
+    }).filter(Boolean);
+  }
+  function pkgIncludes(pkg){
+    if(!pkg)return[];
+    const src=pkg.included!=null?pkg.included:pkg.includes;
+    if(Array.isArray(src))return src.map(l=>String(l).trim()).filter(Boolean);
+    return String(src||'').split('\n').map(l=>l.trim()).filter(Boolean);
+  }
+  /* Renders every line the owner typed — no truncation. */
+  function includesList(pkg,cls){
+    const lines=pkgIncludes(pkg);
+    if(!lines.length)return'';
+    return'<ul class="'+cls+'">'+lines.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul>';
+  }
+
   function showError(){
     document.getElementById('loading-gate').classList.add('fade-out');
     setTimeout(()=>{document.getElementById('loading-gate').style.display='none';document.getElementById('error-state').classList.add('visible')},350);
@@ -98,6 +141,12 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     const packages_data=(wb&&Array.isArray(wb.packages_data)&&wb.packages_data.length>0)?wb.packages_data:null;
     const reviews_data =(wb&&Array.isArray(wb.reviews_data)&&wb.reviews_data.length>0)?wb.reviews_data:null;
     const faq_data     =(wb&&wb.faq_data&&Array.isArray(wb.faq_data.items)&&wb.faq_data.items.length>0)?wb.faq_data:null;
+    const addons_data  =(wb&&Array.isArray(wb.addons_data))?wb.addons_data:[];
+
+    // Normalized, render-ready collections
+    const faqItems     = normFaqs(faq_data);
+    const photos       = normGallery(gallery_data);
+    const addons       = normAddons(addons_data);
 
     const rawBrand  = first(brand_data.customPrimary,pd.brandColor,'#6D28D9');
     const brand     = /^#[0-9A-Fa-f]{3,6}$/.test(rawBrand)?rawBrand:'#6D28D9';
@@ -145,7 +194,7 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     const ldEl=document.createElement('script');ldEl.type='application/ld+json';ldEl.textContent=JSON.stringify(ldData);document.head.appendChild(ldEl);
 
     const template=first(brand_data.template,'studio');
-    const data={bizName,tagline,logo,ownerName,ownerBio,ownerPhoto,heroPhoto,brand,brandDark,brandLight,bookURL,nicheLabel,packages_data,reviews_data,faq_data,gallery_data,about_data,phone,email,socialInstagram,socialFacebook,socialTiktok,socialYoutube,socialCustom,city};
+    const data={bizName,tagline,logo,ownerName,ownerBio,ownerPhoto,heroPhoto,brand,brandDark,brandLight,bookURL,nicheLabel,packages_data,reviews_data,faq_data,gallery_data,about_data,phone,email,socialInstagram,socialFacebook,socialTiktok,socialYoutube,socialCustom,city,faqItems,photos,addons};
 
     const root=document.getElementById('site-root');
     if(template==='luxe')buildLuxe(root,data);
@@ -224,6 +273,17 @@ img{max-width:100%;display:block}
 .lx-pkg-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:rgba(212,174,82,.25);line-height:1}
 .lx-pkg-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px}
 .lx-pkg-desc{font-size:13.5px;color:var(--muted);line-height:1.55}
+.lx-pkg-includes{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.lx-pkg-includes li{font-size:13.5px;color:var(--muted);line-height:1.5;padding-left:17px;position:relative}
+.lx-pkg-includes li::before{content:'✦';position:absolute;left:0;top:1px;font-size:10px;color:var(--gold)}
+
+/* ADD-ONS */
+.lx-addons-hd{margin:52px 0 20px;font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text)}
+.lx-addons{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2px}
+.lx-addon{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border:1px solid var(--line);border-radius:var(--radius);transition:background .2s,border-color .2s}
+.lx-addon:hover{background:var(--card);border-color:rgba(212,174,82,.3)}
+.lx-addon-name{font-size:14.5px;font-weight:600;color:var(--text)}
+.lx-addon-price{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--gold);white-space:nowrap}
 .lx-pkg-meta{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .lx-pkg-price{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold);white-space:nowrap}
 .lx-pkg-duration{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
@@ -310,7 +370,7 @@ details.lx-faq-item[open] summary.lx-faq-q::after{content:'－'}
         const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Inquire';
         pkgsHTML+=`<div class="lx-pkg">
           <div class="lx-pkg-num">0${i+1}</div>
-          <div><div class="lx-pkg-name">${esc(pkg.name||'Package')}</div><div class="lx-pkg-desc">${esc(pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,2).join(' · '):'')}</div></div>
+          <div><div class="lx-pkg-name">${esc(pkg.name||'Package')}</div>${includesList(pkg,'lx-pkg-includes')}</div>
           <div class="lx-pkg-meta"><div class="lx-pkg-price">${price}</div>${pkg.duration?`<div class="lx-pkg-duration">${esc(String(pkg.duration))}</div>`:''}</div>
           <a href="${esc(d.bookURL)}" class="lx-pkg-cta">Reserve</a>
         </div>`;
@@ -322,13 +382,20 @@ details.lx-faq-item[open] summary.lx-faq-q::after{content:'－'}
         });
     }
 
+    /* Add-ons */
+    let addonsHTML='';
+    if(d.addons.length>0){
+      addonsHTML=`<div class="lx-addons-hd">Add-Ons</div>
+        <div class="lx-addons">${d.addons.map(a=>`<div class="lx-addon"><span class="lx-addon-name">${esc(a.name)}</span>${a.price?`<span class="lx-addon-price">${esc(a.price)}</span>`:''}</div>`).join('')}</div>`;
+    }
+
     /* Gallery */
     let galleryHTML='';
-    const galleryPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
+    const galleryPhotos=d.photos;
     if(d.heroPhoto||galleryPhotos.length>0){
       const items=[];
       if(d.heroPhoto)items.push({src:d.heroPhoto,hero:true});
-      galleryPhotos.slice(0,d.heroPhoto?5:6).forEach(p=>items.push({src:p.dataURL,hero:false}));
+      galleryPhotos.slice(0,12).forEach(src=>items.push({src:src,hero:false}));
       if(items.length>0){
         galleryHTML=`<section class="lx-section lx-section-alt"><div class="lx-max">
           <div class="lx-divider"><div class="lx-divider-line"></div><div class="lx-divider-text">Gallery</div><div class="lx-divider-line"></div></div>
@@ -359,10 +426,10 @@ details.lx-faq-item[open] summary.lx-faq-q::after{content:'－'}
 
     /* FAQ */
     let faqHTML='';
-    if(d.faq_data&&d.faq_data.items.length>0){
+    if(d.faqItems.length>0){
       faqHTML=`<section class="lx-section lx-section-alt"><div class="lx-max">
         <div class="lx-divider"><div class="lx-divider-line"></div><div class="lx-divider-text">Questions</div><div class="lx-divider-line"></div></div>
-        <div class="lx-faq">${d.faq_data.items.map(q=>`<details class="lx-faq-item"><summary class="lx-faq-q">${esc(q.q||'')}</summary><div class="lx-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div>
+        <div class="lx-faq">${d.faqItems.map(q=>`<details class="lx-faq-item"><summary class="lx-faq-q">${esc(q.q)}</summary><div class="lx-faq-a">${esc(q.a)}</div></details>`).join('')}</div>
       </div></section>`;
     }
 
@@ -382,6 +449,7 @@ details.lx-faq-item[open] summary.lx-faq-q::after{content:'－'}
 <section class="lx-section" id="services"><div class="lx-max">
   <div class="lx-divider"><div class="lx-divider-line"></div><div class="lx-divider-text">Packages</div><div class="lx-divider-line"></div></div>
   <div class="lx-pkg-list">${pkgsHTML}</div>
+  ${addonsHTML}
 </div></section>
 
 ${galleryHTML}
@@ -444,7 +512,8 @@ img{max-width:100%;display:block}
 .pp-blob1{position:absolute;width:500px;height:500px;border-radius:70% 30% 60% 40% / 50% 60% 40% 50%;background:var(--brand-lt);top:-180px;left:-150px;z-index:0;opacity:.7}
 .pp-blob2{position:absolute;width:380px;height:380px;border-radius:40% 60% 30% 70% / 60% 40% 70% 30%;background:rgba(245,166,35,.12);bottom:-120px;right:-100px;z-index:0}
 .pp-hero-photo-wrap{position:relative;z-index:1;max-width:680px;margin:0 auto 32px;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg)}
-.pp-hero-photo-wrap img{width:100%;height:340px;object-fit:cover;display:block}
+.pp-hero-photo-wrap img{width:100%;height:auto;aspect-ratio:16/9;max-height:440px;object-fit:cover;object-position:center;display:block}
+@media(max-width:640px){.pp-hero-photo-wrap img{aspect-ratio:4/3}}
 .pp-hero-in{position:relative;z-index:1;max-width:720px;margin:0 auto}
 .pp-niche-tag{display:inline-block;background:var(--brand);color:#fff;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 18px;border-radius:999px;margin-bottom:20px}
 .pp-h1{font-family:'Dancing Script',cursive;font-size:clamp(52px,9vw,88px);font-weight:700;color:var(--text);line-height:1.05;margin-bottom:16px}
@@ -475,6 +544,17 @@ img{max-width:100%;display:block}
 .pp-card-price{font-size:28px;font-weight:800;color:var(--brand);margin:8px 0 2px}
 .pp-card-duration{display:inline-block;font-size:12px;font-weight:700;color:var(--muted);background:var(--cream);padding:3px 10px;border-radius:999px}
 .pp-card-desc{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:10px}
+.pp-card-includes{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
+.pp-card-includes li{font-size:13.5px;color:var(--muted);line-height:1.5;padding-left:21px;position:relative}
+.pp-card-includes li::before{content:'✓';position:absolute;left:0;top:0;color:var(--brand);font-weight:900}
+
+/* ADD-ONS */
+.pp-addons-hd{margin:48px 0 18px;text-align:center;font-size:22px;font-weight:900;color:var(--text);letter-spacing:-.01em}
+.pp-addons{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.pp-addon{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;background:var(--white);border:2px solid var(--line);border-radius:var(--radius);transition:border-color .18s,transform .18s}
+.pp-addon:hover{border-color:var(--brand);transform:translateY(-2px)}
+.pp-addon-name{font-size:14px;font-weight:700;color:var(--text)}
+.pp-addon-price{font-size:17px;font-weight:900;color:var(--brand);white-space:nowrap}
 .pp-card-cta{display:block;margin:0 24px 24px;background:var(--brand);color:#fff;padding:13px;border-radius:14px;font-size:14px;font-weight:800;text-align:center;transition:background .18s}
 .pp-card-cta:hover{background:var(--brand-dk)}
 .pp-card.featured{border-color:var(--brand);background:linear-gradient(135deg,var(--white) 0%,var(--brand-lt) 100%)}
@@ -485,7 +565,7 @@ img{max-width:100%;display:block}
 .pp-gallery-item:hover{transform:scale(1.03);box-shadow:var(--shadow-lg)}
 .pp-gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
 .pp-gallery-hero{border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-lg)}
-.pp-gallery-hero img{width:100%;max-height:400px;object-fit:cover}
+.pp-gallery-hero img{width:100%;height:auto;max-height:72vh;object-fit:contain;background:var(--brand-lt)}
 
 /* ABOUT */
 .pp-about-inner{display:flex;gap:48px;align-items:center;flex-wrap:wrap}
@@ -556,14 +636,13 @@ details.pp-faq-item[open] summary.pp-faq-q::after{content:'－'}
       d.packages_data.forEach((pkg,i)=>{
         const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Ask us!';
         const isFeature=i===1;
-        const desc=pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,3).join(' · '):'';
         pkgsHTML+=`<div class="pp-card${isFeature?' featured':''}">
           <div class="pp-card-top">
             <div class="pp-card-emoji">${EMOJIS[i%EMOJIS.length]}</div>
             <div class="pp-card-name">${esc(pkg.name||'Package')}</div>
             <div class="pp-card-price">${price}</div>
             ${pkg.duration?`<div class="pp-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}
-            ${desc?`<div class="pp-card-desc">${esc(desc)}</div>`:''}
+            ${includesList(pkg,'pp-card-includes')}
           </div>
           <a href="${esc(d.bookURL)}" class="pp-card-cta">Book This →</a>
         </div>`;
@@ -575,12 +654,19 @@ details.pp-faq-item[open] summary.pp-faq-q::after{content:'－'}
         });
     }
 
+    /* Add-ons */
+    let addonsHTML='';
+    if(d.addons.length>0){
+      addonsHTML=`<div class="pp-addons-hd">Make it extra ✨</div>
+        <div class="pp-addons">${d.addons.map(a=>`<div class="pp-addon"><span class="pp-addon-name">${esc(a.name)}</span>${a.price?`<span class="pp-addon-price">${esc(a.price)}</span>`:''}</div>`).join('')}</div>`;
+    }
+
     /* Gallery */
     let galleryHTML='';
-    const gPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
+    const gPhotos=d.photos;
     if(d.heroPhoto||gPhotos.length>0){
       const heroHTM=d.heroPhoto?`<div class="pp-gallery-hero"><img src="${esc(d.heroPhoto)}" alt="party photo" loading="lazy"/></div>`:'';
-      const thumbsHTM=gPhotos.slice(0,6).map(p=>`<div class="pp-gallery-item"><img src="${esc(p.dataURL)}" alt="party photo" loading="lazy"/></div>`).join('');
+      const thumbsHTM=gPhotos.slice(0,12).map(src=>`<div class="pp-gallery-item"><img src="${esc(src)}" alt="party photo" loading="lazy"/></div>`).join('');
       galleryHTML=`<section class="pp-section pp-section-cream" id="gallery"><div class="pp-max">
         <div class="pp-section-head"><div class="pp-badge">Gallery</div><div class="pp-section-title">A peek at the magic ✨</div></div>
         ${heroHTM}${thumbsHTM?`<div class="pp-gallery">${thumbsHTM}</div>`:''}
@@ -609,10 +695,10 @@ details.pp-faq-item[open] summary.pp-faq-q::after{content:'－'}
 
     /* FAQ */
     let faqHTML='';
-    if(d.faq_data&&d.faq_data.items.length>0){
+    if(d.faqItems.length>0){
       faqHTML=`<section class="pp-section pp-section-cream" id="faq"><div class="pp-max">
         <div class="pp-section-head"><div class="pp-badge">FAQ</div><div class="pp-section-title">Got questions? 🙋</div></div>
-        <div class="pp-faq">${d.faq_data.items.map(q=>`<details class="pp-faq-item"><summary class="pp-faq-q">${esc(q.q||'')}</summary><div class="pp-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div>
+        <div class="pp-faq">${d.faqItems.map(q=>`<details class="pp-faq-item"><summary class="pp-faq-q">${esc(q.q)}</summary><div class="pp-faq-a">${esc(q.a)}</div></details>`).join('')}</div>
       </div></section>`;
     }
 
@@ -637,6 +723,7 @@ details.pp-faq-item[open] summary.pp-faq-q::after{content:'－'}
 <section class="pp-section" id="services"><div class="pp-max">
   <div class="pp-section-head"><div class="pp-badge">Packages</div><div class="pp-section-title">Pick your party! 🎂</div><p class="pp-section-sub">Every package is packed with magic. Choose what fits your celebration.</p></div>
   <div class="pp-cards">${pkgsHTML}</div>
+  ${addonsHTML}
 </div></section>
 
 ${galleryHTML}
@@ -742,7 +829,17 @@ img{max-width:100%;display:block}
 .st-pkg-name{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.01em;margin-bottom:4px}
 .st-pkg-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 .st-pkg-pill{font-size:11px;font-weight:700;color:var(--muted);background:var(--cream);padding:3px 10px;border-radius:999px;border:1px solid var(--line)}
-.st-pkg-includes{font-size:13px;color:var(--muted);line-height:1.5}
+.st-pkg-includes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.st-pkg-includes li{font-size:13px;color:var(--muted);line-height:1.5;padding-left:19px;position:relative}
+.st-pkg-includes li::before{content:'✓';position:absolute;left:0;top:0;color:var(--brand);font-weight:800}
+
+/* ADD-ONS */
+.st-addons-hd{margin:40px 0 14px;font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.st-addons{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.st-addon{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);transition:box-shadow .2s,border-color .2s}
+.st-addon:hover{box-shadow:var(--shadow);border-color:var(--brand)}
+.st-addon-name{font-size:14px;font-weight:700;color:var(--text)}
+.st-addon-price{font-size:17px;font-weight:900;color:var(--brand);white-space:nowrap}
 .st-pkg-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
 .st-pkg-price{font-size:28px;font-weight:900;color:var(--brand);letter-spacing:-.02em;white-space:nowrap}
 .st-pkg-cta{background:var(--brand);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:700;transition:background .18s;white-space:nowrap;text-align:center}
@@ -752,7 +849,7 @@ img{max-width:100%;display:block}
 /* GALLERY */
 .st-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .st-gallery-hero{border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
-.st-gallery-hero img{width:100%;max-height:380px;object-fit:cover}
+.st-gallery-hero img{width:100%;height:auto;max-height:72vh;object-fit:contain;background:var(--cream)}
 .st-gallery-item{border-radius:var(--radius);overflow:hidden;aspect-ratio:1;transition:transform .2s}
 .st-gallery-item:hover{transform:scale(1.02)}
 .st-gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
@@ -828,12 +925,11 @@ details.st-faq-item[open] summary.st-faq-q::after{content:'−'}
     if(d.packages_data){
       d.packages_data.forEach(pkg=>{
         const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Contact for pricing';
-        const includes=pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,2).join(' · '):'';
         pkgsHTML+=`<div class="st-pkg">
           <div class="st-pkg-info">
             <div class="st-pkg-name">${esc(pkg.name||'Package')}</div>
             <div class="st-pkg-pills">${pkg.duration?`<span class="st-pkg-pill">⏱ ${esc(String(pkg.duration))}</span>`:''} ${pkg.kids?`<span class="st-pkg-pill">👧 Up to ${esc(String(pkg.kids))} kids</span>`:''}</div>
-            ${includes?`<div class="st-pkg-includes">${esc(includes)}</div>`:''}
+            ${includesList(pkg,'st-pkg-includes')}
           </div>
           <div class="st-pkg-right">
             <div class="st-pkg-price">${price}</div>
@@ -848,12 +944,19 @@ details.st-faq-item[open] summary.st-faq-q::after{content:'−'}
         });
     }
 
+    /* Add-ons */
+    let addonsHTML='';
+    if(d.addons.length>0){
+      addonsHTML=`<div class="st-addons-hd">Add-Ons</div>
+        <div class="st-addons">${d.addons.map(a=>`<div class="st-addon"><span class="st-addon-name">${esc(a.name)}</span>${a.price?`<span class="st-addon-price">${esc(a.price)}</span>`:''}</div>`).join('')}</div>`;
+    }
+
     /* Gallery */
     let galleryHTML='';
-    const gPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
+    const gPhotos=d.photos;
     if(d.heroPhoto||gPhotos.length>0){
       const heroHTM=d.heroPhoto?`<div class="st-gallery-hero"><img src="${esc(d.heroPhoto)}" alt="event photo" loading="lazy"/></div>`:'';
-      const thumbsHTM=gPhotos.slice(0,6).map(p=>`<div class="st-gallery-item"><img src="${esc(p.dataURL)}" alt="event photo" loading="lazy"/></div>`).join('');
+      const thumbsHTM=gPhotos.slice(0,12).map(src=>`<div class="st-gallery-item"><img src="${esc(src)}" alt="event photo" loading="lazy"/></div>`).join('');
       galleryHTML=`<section class="st-section" id="gallery"><div class="st-max">
         <div class="st-section-hd center"><div class="st-eyebrow">Gallery</div><div class="st-section-title">Our Work</div></div>
         ${heroHTM}${thumbsHTM?`<div class="st-gallery">${thumbsHTM}</div>`:''}
@@ -882,10 +985,10 @@ details.st-faq-item[open] summary.st-faq-q::after{content:'−'}
 
     /* FAQ */
     let faqHTML='';
-    if(d.faq_data&&d.faq_data.items.length>0){
+    if(d.faqItems.length>0){
       faqHTML=`<section class="st-section" id="faq"><div class="st-max">
         <div class="st-section-hd center"><div class="st-eyebrow">FAQ</div><div class="st-section-title">Common Questions</div></div>
-        <div class="st-faq">${d.faq_data.items.map(q=>`<details class="st-faq-item"><summary class="st-faq-q">${esc(q.q||'')}</summary><div class="st-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div>
+        <div class="st-faq">${d.faqItems.map(q=>`<details class="st-faq-item"><summary class="st-faq-q">${esc(q.q)}</summary><div class="st-faq-a">${esc(q.a)}</div></details>`).join('')}</div>
       </div></section>`;
     }
 
@@ -908,6 +1011,7 @@ details.st-faq-item[open] summary.st-faq-q::after{content:'−'}
 <section class="st-section st-section-alt" id="services"><div class="st-max">
   <div class="st-section-hd"><div class="st-eyebrow">Packages</div><div class="st-section-title">Party Packages</div><p class="st-section-sub">Choose the perfect package for your little one's special day.</p></div>
   <div class="st-pkg-list">${pkgsHTML}</div>
+  ${addonsHTML}
 </div></section>
 
 ${galleryHTML}
@@ -1000,12 +1104,23 @@ a{text-decoration:none}button{font:inherit;cursor:pointer;border:none;background
 .gd-card-price{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--brand);margin:10px 0 4px}
 .gd-card-duration{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .gd-card-desc{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:10px}
+.gd-card-includes{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.gd-card-includes li{font-size:13.5px;color:var(--muted);line-height:1.55;padding-left:18px;position:relative}
+.gd-card-includes li::before{content:'❧';position:absolute;left:0;top:0;font-size:11px;color:var(--gold)}
+
+/* ADD-ONS */
+.gd-addons-hd{margin:46px 0 18px;text-align:center;font-family:'Playfair Display',serif;font-size:24px;font-style:italic;font-weight:700;color:var(--text)}
+.gd-addons{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.gd-addon{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 22px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.gd-addon:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.gd-addon-name{font-size:14px;font-weight:600;color:var(--text)}
+.gd-addon-price{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--brand);white-space:nowrap}
 .gd-card-cta{display:block;margin:0 26px 26px;background:var(--cream);border:1.5px solid var(--brand);color:var(--brand);padding:12px;border-radius:var(--radius);font-size:14px;font-weight:700;text-align:center;transition:background .18s,color .18s}
 .gd-card-cta:hover{background:var(--brand);color:#fff}
 
 /* GALLERY — 4-col natural grid */
 .gd-gallery-hero{border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-lg)}
-.gd-gallery-hero img{width:100%;max-height:440px;object-fit:cover}
+.gd-gallery-hero img{width:100%;height:auto;max-height:72vh;object-fit:contain;background:var(--parchment)}
 .gd-gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .gd-gallery-item{border-radius:12px;overflow:hidden;aspect-ratio:1;transition:transform .2s}
 .gd-gallery-item:hover{transform:scale(1.03)}
@@ -1070,26 +1185,30 @@ details.gd-faq-item[open] summary.gd-faq-q::after{content:'－'}
 
     /* Packages */
     let pkgsHTML='';
-    if(d.packages_data){d.packages_data.forEach(pkg=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Inquire';const desc=pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,2).join(' · '):'';pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${esc(pkg.name||'Package')}</div><div class="gd-card-price">${price}</div>${pkg.duration?`<div class="gd-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''} ${desc?`<div class="gd-card-desc">${esc(desc)}</div>`:''}</div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`});}
+    if(d.packages_data){d.packages_data.forEach(pkg=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Inquire';pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${esc(pkg.name||'Package')}</div><div class="gd-card-price">${price}</div>${pkg.duration?`<div class="gd-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${includesList(pkg,'gd-card-includes')}</div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`});}
     else{[['The Signature Garden','$275','2 hours'],['Grand Garden Party','$450','3 hours'],['Petit Garden','$175','1.5 hours']].forEach(([n,p,dur])=>{pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${n}</div><div class="gd-card-price">${p}</div><div class="gd-card-duration">⏱ ${dur}</div></div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`})}
 
+    /* Add-ons */
+    let addonsHTML='';
+    if(d.addons.length>0){addonsHTML=`<div class="gd-addons-hd">Thoughtful extras</div><div class="gd-addons">${d.addons.map(a=>`<div class="gd-addon"><span class="gd-addon-name">${esc(a.name)}</span>${a.price?`<span class="gd-addon-price">${esc(a.price)}</span>`:''}</div>`).join('')}</div>`}
+
     /* Gallery */
-    let galleryHTML='';const gPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
-    if(d.heroPhoto||gPhotos.length>0){galleryHTML=`<section class="gd-section gd-section-parchment"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Gallery</div><div class="gd-section-title">A peek at the magic</div></div>${d.heroPhoto?`<div class="gd-gallery-hero"><img src="${esc(d.heroPhoto)}" alt="party" loading="lazy"/></div>`:''} ${gPhotos.length>0?`<div class="gd-gallery-grid">${gPhotos.slice(0,8).map(p=>`<div class="gd-gallery-item"><img src="${esc(p.dataURL)}" alt="event" loading="lazy"/></div>`).join('')}</div>`:''}</div></section>`}
+    let galleryHTML='';const gPhotos=d.photos;
+    if(d.heroPhoto||gPhotos.length>0){galleryHTML=`<section class="gd-section gd-section-parchment"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Gallery</div><div class="gd-section-title">A peek at the magic</div></div>${d.heroPhoto?`<div class="gd-gallery-hero"><img src="${esc(d.heroPhoto)}" alt="party" loading="lazy"/></div>`:''} ${gPhotos.length>0?`<div class="gd-gallery-grid">${gPhotos.slice(0,12).map(src=>`<div class="gd-gallery-item"><img src="${esc(src)}" alt="event" loading="lazy"/></div>`).join('')}</div>`:''}</div></section>`}
 
     /* About */
     const aImg=d.ownerPhoto||d.logo;const aImgHTML=aImg?`<img src="${esc(aImg)}" class="gd-about-img" alt="${esc(d.ownerName)}" loading="lazy"/>`:`<div class="gd-about-initial">${esc(d.ownerName.charAt(0).toUpperCase())}</div>`;
     const sinceHTML=d.about_data.yearStarted?`<div class="gd-since">In business since ${esc(String(d.about_data.yearStarted))}</div>`:'';
     const cItems=buildContactItems(d);const cHTML=cItems.length>0?`<div class="gd-contact"><div class="gd-contact-in">${cItems.map(c=>`<a href="${esc(c.href)}" class="gd-contact-item" target="_blank" rel="noopener">${c.icon} ${esc(c.label)}</a>`).join('')}</div></div>`:'';
     let revHTML='';if(d.reviews_data&&d.reviews_data.length>0){revHTML=`<section class="gd-section"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Reviews</div><div class="gd-section-title">From the families we love</div></div><div class="gd-reviews-grid">${d.reviews_data.slice(0,3).map(r=>{const s=Math.min(5,Math.max(1,parseInt(r.rating)||5));return`<div class="gd-review"><div class="gd-stars">${'★'.repeat(s)}</div><div class="gd-review-text">"${esc(r.text||'')}"</div><div class="gd-review-author">— ${esc(r.author||'Happy Family')}</div></div>`}).join('')}</div></div></section>`}
-    let faqHTML='';if(d.faq_data&&d.faq_data.items.length>0){faqHTML=`<section class="gd-section gd-section-parchment"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">FAQ</div><div class="gd-section-title">Questions answered</div></div><div class="gd-faq">${d.faq_data.items.map(q=>`<details class="gd-faq-item"><summary class="gd-faq-q">${esc(q.q||'')}</summary><div class="gd-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div></div></section>`}
+    let faqHTML='';if(d.faqItems.length>0){faqHTML=`<section class="gd-section gd-section-parchment"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">FAQ</div><div class="gd-section-title">Questions answered</div></div><div class="gd-faq">${d.faqItems.map(q=>`<details class="gd-faq-item"><summary class="gd-faq-q">${esc(q.q)}</summary><div class="gd-faq-a">${esc(q.a)}</div></details>`).join('')}</div></div></section>`}
 
     root.innerHTML=css+`
 <nav class="gd-nav"><div class="gd-nav-in"><div class="gd-brand">${logoHTML}<span class="gd-biz">${esc(d.bizName)}</span></div><a href="${esc(d.bookURL)}" class="gd-book-btn">Book Now</a></div></nav>
 <section class="gd-hero">${heroBgHTML}<div class="gd-leaf1">🍃</div><div class="gd-leaf2">🌿</div>
   <div class="gd-hero-in"><div class="gd-hero-eyebrow">${eyebrow}</div><h1 class="gd-h1">${esc(d.bizName)}</h1><p class="gd-tagline">${esc(d.tagline)}</p>
   <div class="gd-hero-btns"><a href="${esc(d.bookURL)}" class="gd-btn-gold">Book Your Party →</a><a href="#services" class="gd-btn-outline">View Packages</a></div></div></section>
-<section class="gd-section" id="services"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Packages</div><div class="gd-section-title">Crafted celebrations for every occasion</div><p class="gd-section-sub">Each package is thoughtfully designed to make your child's day absolutely magical.</p></div><div class="gd-cards">${pkgsHTML}</div></div></section>
+<section class="gd-section" id="services"><div class="gd-max"><div class="gd-section-hd"><div class="gd-label">Packages</div><div class="gd-section-title">Crafted celebrations for every occasion</div><p class="gd-section-sub">Each package is thoughtfully designed to make your child's day absolutely magical.</p></div><div class="gd-cards">${pkgsHTML}</div>${addonsHTML}</div></section>
 ${galleryHTML}
 <section class="gd-section gd-section-parchment" id="about"><div class="gd-max"><div class="gd-about-grid"><div>${aImgHTML}</div><div class="gd-about-copy"><div class="gd-label">About</div><div class="gd-about-name">${esc(d.ownerName)}</div><div class="gd-pull-quote">"Every child deserves a party as magical as they are."</div><p class="gd-about-bio">${esc(d.ownerBio)}</p>${sinceHTML}</div></div></div></section>
 ${cHTML}${revHTML}${faqHTML}
@@ -1126,7 +1245,8 @@ a{text-decoration:none}button{font:inherit;cursor:pointer;border:none;background
 .bl-hero-circle1{position:absolute;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,.06);top:-200px;right:-100px;pointer-events:none}
 .bl-hero-circle2{position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04);bottom:-100px;left:-50px;pointer-events:none}
 .bl-hero-photo-wrap{max-width:760px;margin:0 auto 40px;border-radius:var(--radius);overflow:hidden;box-shadow:0 24px 72px rgba(0,0,0,.35);position:relative;z-index:1}
-.bl-hero-photo-wrap img{width:100%;max-height:360px;object-fit:cover}
+.bl-hero-photo-wrap img{width:100%;height:auto;aspect-ratio:16/9;max-height:460px;object-fit:cover;object-position:center}
+@media(max-width:640px){.bl-hero-photo-wrap img{aspect-ratio:4/3}}
 .bl-hero-in{position:relative;z-index:1;max-width:700px;margin:0 auto}
 .bl-niche-tag{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 18px;border-radius:999px;margin-bottom:22px;backdrop-filter:blur(8px)}
 .bl-h1{font-size:clamp(40px,7vw,72px);font-weight:900;color:#fff;line-height:1.05;margin-bottom:18px;letter-spacing:-.025em}
@@ -1165,6 +1285,17 @@ a{text-decoration:none}button{font:inherit;cursor:pointer;border:none;background
 .bl-card-body{padding:18px 24px;flex:1}
 .bl-card-duration{font-size:12px;font-weight:700;color:var(--muted);background:var(--cream);padding:3px 10px;border-radius:999px;display:inline-block;margin-bottom:8px}
 .bl-card-desc{font-size:13.5px;color:var(--muted);line-height:1.6}
+.bl-card-includes{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bl-card-includes li{font-size:13.5px;color:var(--muted);line-height:1.55;padding-left:20px;position:relative}
+.bl-card-includes li::before{content:'✓';position:absolute;left:0;top:0;color:var(--brand);font-weight:900}
+
+/* ADD-ONS */
+.bl-addons-hd{margin:44px 0 16px;text-align:center;font-size:22px;font-weight:900;color:var(--text);letter-spacing:-.02em}
+.bl-addons{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.bl-addon{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius);transition:transform .2s,box-shadow .2s}
+.bl-addon:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.bl-addon-name{font-size:14px;font-weight:700;color:var(--text)}
+.bl-addon-price{font-size:17px;font-weight:900;color:var(--brand);white-space:nowrap}
 .bl-card-cta{display:block;margin:0 24px 24px;background:var(--brand);color:#fff;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:800;text-align:center;transition:background .18s}
 .bl-card-cta:hover{background:var(--brand-dk)}
 
@@ -1231,7 +1362,7 @@ details.bl-faq-item[open] summary.bl-faq-q::after{content:'−'}
 
     const ICONS=['💎','🎀','🎂','🎠','✨','🌟'];
     let pkgsHTML='';
-    if(d.packages_data){d.packages_data.forEach((pkg,i)=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Ask us!';const desc=pkg.included?String(pkg.included).split('\n').filter(Boolean).slice(0,2).join(' · '):'';pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${ICONS[i%ICONS.length]}</div><div class="bl-card-name">${esc(pkg.name||'Package')}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body">${pkg.duration?`<div class="bl-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${desc?`<div class="bl-card-desc">${esc(desc)}</div>`:''}</div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
+    if(d.packages_data){d.packages_data.forEach((pkg,i)=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Ask us!';pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${ICONS[i%ICONS.length]}</div><div class="bl-card-name">${esc(pkg.name||'Package')}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body">${pkg.duration?`<div class="bl-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${includesList(pkg,'bl-card-includes')}</div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
     else{[['💎','Signature Experience','$275','2 hrs'],['🎀','Grand Celebration','$450','3 hrs'],['✨','Starter Package','$175','1.5 hrs']].forEach(([icon,name,price,dur])=>{pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${icon}</div><div class="bl-card-name">${name}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body"><div class="bl-card-duration">⏱ ${dur}</div></div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
 
     /* Stats */
@@ -1240,15 +1371,19 @@ details.bl-faq-item[open] summary.bl-faq-q::after{content:'−'}
     const statsHTML=`<section class="bl-stats"><div class="bl-stats-grid"><div><div class="bl-stat-num">${yearsInBiz}</div><div class="bl-stat-label">Years Experience</div></div><div><div class="bl-stat-num">100%</div><div class="bl-stat-label">Happy Clients</div></div><div><div class="bl-stat-num">5★</div><div class="bl-stat-label">Average Rating</div></div></div></section>`;
 
     /* Gallery */
-    let galleryHTML='';const gPhotos=Array.isArray(d.gallery_data.photos)?d.gallery_data.photos.filter(p=>p&&p.dataURL):[];
-    if(gPhotos.length>0){galleryHTML=`<section class="bl-section bl-section-cream"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Gallery</div><div class="bl-section-title">A Peek at the Party</div></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">${gPhotos.slice(0,6).map(p=>`<div style="border-radius:var(--radius);overflow:hidden;aspect-ratio:1"><img src="${esc(p.dataURL)}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/></div>`).join('')}</div></div></section>`}
+    let galleryHTML='';const gPhotos=d.photos;
+    if(gPhotos.length>0){galleryHTML=`<section class="bl-section bl-section-cream"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Gallery</div><div class="bl-section-title">A Peek at the Party</div></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">${gPhotos.slice(0,12).map(src=>`<div style="border-radius:var(--radius);overflow:hidden;aspect-ratio:1"><img src="${esc(src)}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/></div>`).join('')}</div></div></section>`}
+
+    /* Add-ons */
+    let addonsHTML='';
+    if(d.addons.length>0){addonsHTML=`<div class="bl-addons-hd">Popular Add-Ons</div><div class="bl-addons">${d.addons.map(a=>`<div class="bl-addon"><span class="bl-addon-name">${esc(a.name)}</span>${a.price?`<span class="bl-addon-price">${esc(a.price)}</span>`:''}</div>`).join('')}</div>`}
 
     /* About */
     const aImg=d.ownerPhoto||d.logo;const aImgHTML=aImg?`<img src="${esc(aImg)}" class="bl-about-photo" alt="${esc(d.ownerName)}" loading="lazy"/>`:`<div class="bl-about-initial">${esc(d.ownerName.charAt(0).toUpperCase())}</div>`;
     const sinceHTML=d.about_data.yearStarted?`<div class="bl-since">In business since ${esc(String(d.about_data.yearStarted))}</div>`:'';
     const cItems=buildContactItems(d);const cHTML=cItems.length>0?`<div class="bl-contact"><div class="bl-contact-in">${cItems.map(c=>`<a href="${esc(c.href)}" class="bl-contact-item" target="_blank" rel="noopener">${c.icon} ${esc(c.label)}</a>`).join('')}</div></div>`:'';
     let revHTML='';if(d.reviews_data&&d.reviews_data.length>0){revHTML=`<section class="bl-section"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Reviews</div><div class="bl-section-title">What Families Are Saying</div></div><div class="bl-reviews-grid">${d.reviews_data.slice(0,3).map(r=>{const s=Math.min(5,Math.max(1,parseInt(r.rating)||5));return`<div class="bl-review"><div class="bl-stars">${'★'.repeat(s)}</div><div class="bl-review-text">"${esc(r.text||'')}"</div><div class="bl-review-author">— ${esc(r.author||'Happy Family')}</div></div>`}).join('')}</div></div></section>`}
-    let faqHTML='';if(d.faq_data&&d.faq_data.items.length>0){faqHTML=`<section class="bl-section bl-section-cream"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">FAQ</div><div class="bl-section-title">Common Questions</div></div><div class="bl-faq">${d.faq_data.items.map(q=>`<details class="bl-faq-item"><summary class="bl-faq-q">${esc(q.q||'')}</summary><div class="bl-faq-a">${esc(q.a||'')}</div></details>`).join('')}</div></div></section>`}
+    let faqHTML='';if(d.faqItems.length>0){faqHTML=`<section class="bl-section bl-section-cream"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">FAQ</div><div class="bl-section-title">Common Questions</div></div><div class="bl-faq">${d.faqItems.map(q=>`<details class="bl-faq-item"><summary class="bl-faq-q">${esc(q.q)}</summary><div class="bl-faq-a">${esc(q.a)}</div></details>`).join('')}</div></div></section>`}
 
     root.innerHTML=css+`
 <nav class="bl-nav"><div class="bl-nav-in"><div class="bl-brand">${logoHTML}<span class="bl-biz">${esc(d.bizName)}</span></div><a href="${esc(d.bookURL)}" class="bl-book-btn">Book Now</a></div></nav>
@@ -1256,7 +1391,7 @@ details.bl-faq-item[open] summary.bl-faq-q::after{content:'−'}
   <div class="bl-hero-in">${nicheTagHTML}${heroPhotoHTML}<h1 class="bl-h1">${esc(d.bizName)}</h1><p class="bl-tagline">${esc(d.tagline)}</p>
   <div class="bl-hero-btns"><a href="${esc(d.bookURL)}" class="bl-btn-white">Book Your Party →</a><a href="#services" class="bl-btn-outline">See Packages</a></div></div></section>
 <section class="bl-steps"><div class="bl-section-hd" style="margin-bottom:36px"><div class="bl-eyebrow">How It Works</div><div class="bl-section-title">Three easy steps to magic</div></div><div class="bl-steps-grid"><div><div class="bl-step-num">1</div><div class="bl-step-title">Pick your package</div><div class="bl-step-desc">Browse our packages and choose what fits your celebration perfectly.</div></div><div><div class="bl-step-num">2</div><div class="bl-step-title">Book your date</div><div class="bl-step-desc">Fill out our quick booking form and lock in your date with a deposit.</div></div><div><div class="bl-step-num">3</div><div class="bl-step-title">We handle the rest</div><div class="bl-step-desc">Show up and enjoy — we set up, run the fun, and clean up.</div></div></div></section>
-<section class="bl-section" id="services"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Packages</div><div class="bl-section-title">Pick Your Perfect Party</div><p class="bl-section-sub">Every package includes our signature setup and hands-on entertainment.</p></div><div class="bl-cards">${pkgsHTML}</div></div></section>
+<section class="bl-section" id="services"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">Packages</div><div class="bl-section-title">Pick Your Perfect Party</div><p class="bl-section-sub">Every package includes our signature setup and hands-on entertainment.</p></div><div class="bl-cards">${pkgsHTML}</div>${addonsHTML}</div></section>
 ${statsHTML}${galleryHTML}
 <section class="bl-section bl-section-cream" id="about"><div class="bl-max"><div class="bl-section-hd"><div class="bl-eyebrow">About</div><div class="bl-section-title">Meet Your Party Host</div></div><div class="bl-about-grid"><div>${aImgHTML}</div><div><div class="bl-about-name">${esc(d.ownerName)}</div><p class="bl-about-bio">${esc(d.ownerBio)}</p>${sinceHTML}</div></div></div></section>
 ${cHTML}${revHTML}${faqHTML}

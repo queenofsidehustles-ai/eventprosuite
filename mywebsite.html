@@ -1448,9 +1448,9 @@ async function init(){
   // Load profile to check KPPS access + populate user chip
   let isKppsMember=false;
   try{
-    const{data:p}=await sb.from('profiles').select('profile_data,full_name,has_kpps_access').eq('id',currentUser.id).maybeSingle();
+    const{data:p}=await sb.from('profiles').select('profile_data,full_name,has_kpps_access,has_crm_access').eq('id',currentUser.id).maybeSingle();
     if(p){
-      isKppsMember=p.has_kpps_access===true;
+      isKppsMember=p.has_kpps_access===true||p.has_crm_access===true;
       const display=(p.profile_data&&p.profile_data.businessName)||p.full_name||currentUser.email.split('@')[0];
       const uN=$('userChipText');if(uN)uN.textContent=display;
       const uA=$('userAvatar');if(uA)uA.textContent=display.charAt(0).toUpperCase();
@@ -1764,6 +1764,7 @@ function previewTemplate(tpl){
         photos:(galleryPhotos||[]).filter(p=>p)
       },
       packages_data:packagesData||[],
+      addons_data:addonsData||[],
       reviews_data:reviewsData||[],
       faq_data:{items:faqData||[]},
       niche_type:selectedNiche||''
@@ -1771,7 +1772,19 @@ function previewTemplate(tpl){
   };
   try{localStorage.setItem('pbh_preview_data',JSON.stringify(inlineData));}catch(e){console.warn('localStorage unavailable for preview:',e)}
   if(tpl==='classic'){
-    window.open('template.html?preview=1','_blank');
+    // Classic renders from template.html + an injected CONFIG — it does not read the
+    // Supabase-shaped preview payload above. Build the real config and merge it in,
+    // exactly like the download path, so the student previews their own site.
+    // The tab is opened synchronously so popup blockers don't kill it mid-fetch.
+    const w=window.open('','_blank');
+    if(w)w.document.write('<!doctype html><meta charset="utf-8"><title>Building preview…</title><body style="font-family:system-ui,sans-serif;padding:48px;color:#6C6473">Building your preview…</body>');
+    fetchTemplate().then(tplHTML=>{
+      const merged=mergeIntoTemplate(tplHTML,buildSiteConfig());
+      if(w){w.document.open();w.document.write(merged);w.document.close();}
+    }).catch(e=>{
+      if(w)w.close();
+      showToast('Classic preview failed: '+e.message);
+    });
   }else{
     window.open('site.html?preview=1','_blank');
   }
@@ -2467,11 +2480,14 @@ function buildSiteConfig(){
     };
   });
 
-  // Map add-ons
-  const addonsForCfg=(addonsData||[]).filter(a=>a.name).map(a=>({
-    name:a.name,
-    price:'$'+(a.price||'0')
-  }));
+  // Map add-ons — leave price blank rather than showing "$0" when none is set
+  const addonsForCfg=(addonsData||[]).filter(a=>a&&String(a.name||'').trim()).map(a=>{
+    const raw=a.price==null?'':String(a.price).trim();
+    return{
+      name:String(a.name).trim(),
+      price:raw===''?'':(/^[0-9]+(\.[0-9]+)?$/.test(raw)?'$'+raw:raw)
+    };
+  });
 
   // Map reviews — template expects stars/text/name/meta/initials
   const reviewsForCfg=(reviewsData||[]).filter(r=>r.text).map(r=>({
@@ -2532,6 +2548,7 @@ function buildSiteConfig(){
       heroLead:niche.description||'Tap a package below to start designing your celebration.',
       startingPrice:startingPrice
     },
+    orgId:(currentUser&&currentUser.id)||'',
     formEndpoint:'mailto:'+(bookingEmail||email||''),
     booking:{email:bookingEmail||email,area:bookingArea},
     policies:{
@@ -2850,6 +2867,7 @@ async function downloadSite(){
           photos:(galleryPhotos||[]).filter(p=>p)
         },
         packages_data:packagesData||[],
+        addons_data:addonsData||[],
         reviews_data:reviewsData||[],
         faq_data:{items:faqData||[]},
         niche_type:selectedNiche||''
