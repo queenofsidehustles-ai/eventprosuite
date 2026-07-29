@@ -22,10 +22,13 @@ create table if not exists profiles (
 );
 
 -- Add columns if they don't exist yet (safe to run on an existing table)
-alter table profiles add column if not exists has_paid         boolean default true;
-alter table profiles add column if not exists has_kpps_access  boolean default false;
-alter table profiles add column if not exists profile_data     jsonb   default '{}'::jsonb;
-alter table profiles add column if not exists full_name        text;
+alter table profiles add column if not exists has_paid              boolean default true;
+alter table profiles add column if not exists has_kpps_access       boolean default false;
+alter table profiles add column if not exists has_printables_access boolean default false;
+alter table profiles add column if not exists has_crm_access        boolean default false;
+alter table profiles add column if not exists stripe_customer_id    text;
+alter table profiles add column if not exists profile_data          jsonb   default '{}'::jsonb;
+alter table profiles add column if not exists full_name             text;
 
 -- Enable RLS
 alter table profiles enable row level security;
@@ -181,8 +184,20 @@ create table if not exists website_builds (
 );
 
 -- Add columns that may be missing from an earlier table creation
-alter table website_builds add column if not exists business_name text;
-alter table website_builds add column if not exists niche_type    text;
+alter table website_builds add column if not exists business_name     text;
+alter table website_builds add column if not exists niche_type        text;
+alter table website_builds add column if not exists brand_data        jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists niche_data        jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists packages_data     jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists about_data        jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists gallery_data      jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists reviews_data      jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists faq_data          jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists booking_data      jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists addons_data       jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists founding_data     jsonb default '{}'::jsonb;
+alter table website_builds add column if not exists last_published_at timestamptz;
+alter table website_builds add column if not exists updated_at        timestamptz default now();
 
 -- RLS disabled on website_builds — auth.uid() returns null for writes in this
 -- Supabase project (known bug). Reads are open anyway (site.html needs them).

@@ -2679,8 +2679,23 @@ async function regeneratePreview(){
   // Save first so site.html picks up the latest template + data
   await saveNow();
 
-  // Load the live site in the iframe
-  const previewSrc='site.html?uid='+encodeURIComponent(currentUser.id)+'&_v='+Date.now();
+  // Classic is rendered by template.html + an injected CONFIG — site.html has no
+  // 'classic' branch and would silently fall through to the Studio design, so the
+  // preview would not match the downloaded ZIP. Build it the same way downloadSite
+  // does instead.
+  let previewSrc;
+  if(selectedTemplate==='classic'){
+    try{
+      const merged=mergeIntoTemplate(await fetchTemplate(),buildSiteConfig());
+      if(previewBlobURL&&previewBlobURL.indexOf('blob:')===0)URL.revokeObjectURL(previewBlobURL);
+      previewSrc=URL.createObjectURL(new Blob([merged],{type:'text/html'}));
+    }catch(e){
+      $('previewStatus').innerHTML=`<strong>Preview failed</strong><p style="margin-top:6px;font-size:.82rem">${escapeHtml(e.message)}</p>`;
+      return;
+    }
+  }else{
+    previewSrc='site.html?uid='+encodeURIComponent(currentUser.id)+'&_v='+Date.now();
+  }
   $('previewFrame').src=previewSrc;
   $('previewFrame').onload=()=>{
     $('previewStatus').style.display='none';
@@ -2695,6 +2710,13 @@ async function regeneratePreview(){
 // Open live site in new tab
 function openLiveSite(){
   if(!currentUser){showToast('Please sign in first');return}
+  if(selectedTemplate==='classic'){
+    // site.html cannot render Classic — reuse the blob built for the preview,
+    // or build a fresh one if the preview has not run yet.
+    if(previewBlobURL&&previewBlobURL.indexOf('blob:')===0)window.open(previewBlobURL,'_blank');
+    else previewTemplate('classic');
+    return;
+  }
   window.open('site.html?uid='+encodeURIComponent(currentUser.id),'_blank');
 }
 
