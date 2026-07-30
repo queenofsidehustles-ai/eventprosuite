@@ -366,6 +366,20 @@ input,select,textarea{font:inherit}
       </label>
     </div>
 
+    <!-- Auto-contract toggle -->
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:1rem;background:linear-gradient(135deg,rgba(201,162,39,.08),rgba(246,229,166,.12));border:1px solid rgba(201,162,39,.25);border-radius:12px;margin-bottom:1.4rem">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.92rem;color:var(--plum-900);margin-bottom:3px">Email the contract automatically?</div>
+        <div style="font-size:.8rem;color:var(--muted);line-height:1.5">When <strong>ON</strong>, the contract is emailed the moment someone submits the booking form. When <strong>OFF</strong>, nothing is sent — you confirm the date first, then send it yourself from the <strong>Contract</strong> tool. Turn this OFF if you need to check availability before committing.</div>
+      </div>
+      <label style="position:relative;flex-shrink:0;cursor:pointer;margin-top:2px">
+        <input type="checkbox" id="autoContract" style="opacity:0;width:0;height:0;position:absolute"/>
+        <span id="contractToggleTrack" onclick="toggleAutoContract()" style="display:block;width:44px;height:24px;background:var(--line);border-radius:12px;transition:background .2s;position:relative">
+          <span id="contractToggleThumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+        </span>
+      </label>
+    </div>
+
     <!-- Contact phone for booking form -->
     <div class="field" style="margin-bottom:1.4rem">
       <label>Contact phone (shown on booking form)</label>
@@ -472,6 +486,9 @@ const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,logoDataURL=null,bookingServices=[],depositUpfrontEnabled=false;
+// Contract auto-send. Defaults to ON so existing accounts keep today's behaviour;
+// only an explicit false turns it off.
+let autoContractEnabled=true;
 const $=id=>document.getElementById(id);
 
 async function init(){
@@ -498,6 +515,8 @@ async function init(){
     if(pd.contactPhone)$('contactPhone').value=pd.contactPhone;
     if(pd.bookingServices)bookingServices=[...pd.bookingServices];
     if(pd.depositUpfront){depositUpfrontEnabled=true;applyToggleUI(true)}
+    autoContractEnabled=pd.autoContract!==false; // undefined = ON (existing behaviour)
+    applyContractToggleUI(autoContractEnabled);
     if(pd.zernioKey){$('zernioKey').value=pd.zernioKey;loadSocialAccounts(pd.zernioKey)}
 
     const display=pd.businessName||(p&&p.full_name)||currentUser.email.split('@')[0];
@@ -545,6 +564,16 @@ function toggleDeposit(){
 function applyToggleUI(on){
   $('toggleTrack').style.background=on?'var(--brand)':'var(--line)';
   $('toggleThumb').style.left=on?'23px':'3px';
+}
+function toggleAutoContract(){
+  autoContractEnabled=!autoContractEnabled;
+  applyContractToggleUI(autoContractEnabled);
+}
+function applyContractToggleUI(on){
+  if(!$('contractToggleTrack'))return;
+  $('contractToggleTrack').style.background=on?'var(--brand)':'var(--line)';
+  $('contractToggleThumb').style.left=on?'23px':'3px';
+  if($('autoContract'))$('autoContract').checked=on;
 }
 
 /* ── Services ── */
@@ -702,6 +731,7 @@ async function saveProfile(){
       stripe1000:$('stripe1000').value,
       logoDataURL:logoDataURL,
       depositUpfront:depositUpfrontEnabled,
+      autoContract:autoContractEnabled,
       contactPhone:$('contactPhone').value,
       bookingServices:bookingServices,
       zernioKey:$('zernioKey').value.trim()

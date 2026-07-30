@@ -988,9 +988,14 @@ async function submitBooking() {
 
     bookingId = newBookingId;
 
-    // Auto-generate and email contract
+    // Auto-generate and email contract.
+    // Opt-out via Business Profile → "Email the contract automatically?". When
+    // OFF, nothing is sent here: the owner confirms the date first, then sends
+    // the contract herself from the Contract tool. The client-facing notice
+    // below already covers the not-sent case.
     let contractSent = false;
-    try {
+    const autoContract = profileData.autoContract !== false; // undefined = ON
+    if (autoContract) try {
       const contractRes = await fetch('/api/auto-contract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
