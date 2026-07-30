@@ -391,10 +391,12 @@
         <div class="helper-actions">
           <button type="button" class="tiny-btn" id="expandOffersBtn">Expand offers</button>
           <button type="button" class="tiny-btn" id="collapseOffersBtn">Collapse offers</button>
+          <button type="button" class="tiny-btn" id="importOwnPackagesBtn">↓ Import my packages</button>
           <button type="button" class="tiny-btn" id="saveOffersBtn">Save offers</button>
           <button type="button" class="tiny-btn" id="useActiveOfferBtn">Use active offer in quote</button>
         </div>
       </div>
+      <div id="importNotice" style="display:none;margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(30,140,90,.08);border:1px solid rgba(30,140,90,.25);font-size:.84rem;line-height:1.55;color:#166534"></div>
       <div class="package-grid" id="packageGrid"></div>
     </section>
 
@@ -563,6 +565,24 @@ async function checkAuth() {
 
     currentProfile = profile || { id: currentUser.id, email: currentUser.email };
 
+    if (profile && profile.has_crm_access !== true && profile.has_kpps_access !== true) {
+      window.location.href = 'store.html';
+      return;
+    }
+
+    // Load her website build so her real packages can seed the offers below
+    try {
+      const { data: wb } = await sb.from('website_builds')
+        .select('packages_data')
+        .eq('user_id', currentUser.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      ownerBuildRow = wb || null;
+    } catch (e) {
+      console.warn('Could not load website packages for import:', e);
+    }
+
     if (profile && profile.profile_data) {
       const pd = profile.profile_data;
       if (pd.businessName && $('businessName')) $('businessName').value = pd.businessName;
@@ -578,6 +598,17 @@ async function checkAuth() {
       if (pd.currency && $('currency')) $('currency').value = pd.currency;
       if (pd.depositProfile && $('depositProfile')) $('depositProfile').value = pd.depositProfile;
       if (pd.packages) state.packages = pd.packages;
+
+      // Seed from her real packages, but only while these offers are still the
+      // untouched defaults, so we never clobber offers she has actually built.
+      if (!pd.packages || packagesAreUntouchedDefaults(state.packages)) {
+        const own = buildPackagesFromOwnerData(pd, ownerBuildRow);
+        if (own) {
+          state.packages = own;
+          state.activePackageId = own[0].id;
+          ownerPackagesImported = true;
+        }
+      }
     }
 
     const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
@@ -607,6 +638,13 @@ async function checkAuth() {
   const xd = new Date(today); xd.setDate(today.getDate() + 7);
   if ($('eventDate') && !$('eventDate').value) $('eventDate').value = ed.toISOString().slice(0, 10);
   if ($('expiryDate') && !$('expiryDate').value) $('expiryDate').value = xd.toISOString().slice(0, 10);
+
+  // Keep the active offer pointing at a package that exists. Saved offers do not
+  // have to use the default basic/mid/premium ids, and pkg() returning undefined
+  // makes "Use active offer in quote" throw.
+  if (!state.packages.some(p => p.id === state.activePackageId)) {
+    state.activePackageId = (state.packages[0] || {}).id || 'mid';
+  }
 
   refreshAll();
 }
@@ -877,6 +915,75 @@ function defaultPackages() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// IMPORT THE OWNER'S REAL PACKAGES
+// The Quote Builder keeps its offers in profile_data.packages. The owner's
+// actual packages live in two other places she has already filled in:
+//   website_builds.packages_data  — the website builder ({name,price,kids,duration,included})
+//   profile_data.bookingServices  — the booking form  ({name,price,duration,description})
+// Neither ever reached this page, so the Quote Builder showed the empty
+// Basic/Mid/Premium defaults instead of her packages.
+// ─────────────────────────────────────────────────────────────
+let ownerBuildRow = null;          // latest website_builds row, for importing
+let ownerPackagesImported = false; // true when the offers below were seeded from her data
+
+// True only while the three offers are still exactly the shipped defaults with
+// no line items — so auto-seeding can never overwrite real work.
+function packagesAreUntouchedDefaults(list) {
+  if (!Array.isArray(list) || list.length !== 3) return false;
+  const d = defaultPackages();
+  return list.every((p, i) =>
+    p && p.id === d[i].id && p.name === d[i].name && (!p.items || p.items.length === 0));
+}
+
+// Normalise both sources into Quote Builder offers. Returns null if she has
+// not entered packages anywhere yet.
+function buildPackagesFromOwnerData(pd, build) {
+  const svc = (pd && Array.isArray(pd.bookingServices)) ? pd.bookingServices : [];
+  const wb  = (build && Array.isArray(build.packages_data)) ? build.packages_data : [];
+
+  // Match booking-form descriptions onto website packages by name
+  const byName = {};
+  svc.forEach(s => { if (s && s.name) byName[String(s.name).trim().toLowerCase()] = s; });
+
+  const rows = wb.length
+    ? wb.filter(p => p && String(p.name || '').trim()).map(p => {
+        const match = byName[String(p.name).trim().toLowerCase()];
+        const lines = String(p.included || '').split('\n').map(l => l.trim()).filter(Boolean);
+        return {
+          name: String(p.name).trim(), price: p.price, duration: p.duration, kids: p.kids,
+          detail: lines.length ? lines.join(' · ') : ((match && match.description) || '')
+        };
+      })
+    : svc.filter(s => s && String(s.name || '').trim()).map(s => ({
+        name: String(s.name).trim(), price: s.price, duration: s.duration, kids: '',
+        detail: s.description || ''
+      }));
+
+  if (!rows.length) return null;
+
+  const TIERS = ['Basic', 'Mid', 'Premium'];
+  return rows.slice(0, 6).map((r, i) => {
+    const price = parseFloat(String(r.price == null ? '' : r.price).replace(/[^0-9.]/g, '')) || 0;
+    const meta = [
+      r.duration ? String(r.duration) : '',
+      r.kids ? ('up to ' + r.kids + ' guests') : ''
+    ].filter(Boolean).join(' · ');
+    return {
+      id: 'own-' + i,
+      tier: TIERS[i] || ('Tier ' + (i + 1)),
+      name: r.name,
+      description: [meta, r.detail].filter(Boolean).join(' — '),
+      notes: '',
+      // One line item carrying the package price so quote totals are correct.
+      // She can still add catalog services on top.
+      items: price > 0
+        ? [{ category: 'Package', name: r.name + (meta ? ' (' + meta + ')' : ''), qty: 1, price: price, taxable: true }]
+        : []
+    };
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -941,6 +1048,15 @@ function toast(msg) {
 // RENDER
 // ─────────────────────────────────────────────────────────────
 function renderPackages() {
+  const notice = $('importNotice');
+  if (notice) {
+    if (ownerPackagesImported) {
+      notice.style.display = 'block';
+      notice.innerHTML = '<strong>✓ These are your real packages</strong><br/>Pulled in from your website and business profile, with each package price already added as a line item. Edit anything here, add extras from the catalog below, then hit <strong>Save offers</strong>.';
+    } else {
+      notice.style.display = 'none';
+    }
+  }
   $('packageGrid').innerHTML = state.packages.map(p => `
     <div class="package-card ${p.id === state.activePackageId ? 'active' : ''}">
       <div class="package-tier"><span class="dot"></span>${p.tier}</div>
@@ -1113,7 +1229,29 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'expandOffersBtn') { $('packagePanel').classList.remove('collapsed'); return; }
   if (t.id === 'collapseOffersBtn') { $('packagePanel').classList.add('collapsed'); return; }
   if (t.id === 'saveOffersBtn') { await savePackages(); return; }
-  if (t.id === 'useActiveOfferBtn') { const p = pkg(state.activePackageId); p.items.forEach(i => state.quoteItems.push({...i})); refreshAll(); toast(`✓ ${p.name} added to quote`); return; }
+  if (t.id === 'importOwnPackagesBtn') {
+    const pd = (currentProfile && currentProfile.profile_data) || {};
+    const own = buildPackagesFromOwnerData(pd, ownerBuildRow);
+    if (!own) {
+      toast('No packages found yet — add them in My Website or your business profile first');
+      return;
+    }
+    state.packages = own;
+    state.activePackageId = own[0].id;
+    ownerPackagesImported = true;
+    await savePackages();
+    refreshAll();
+    toast(`✓ Imported ${own.length} package${own.length === 1 ? '' : 's'}`);
+    return;
+  }
+  if (t.id === 'useActiveOfferBtn') {
+    const p = pkg(state.activePackageId);
+    if (!p) { toast('Pick an offer first'); return; }
+    p.items.forEach(i => state.quoteItems.push({...i}));
+    refreshAll();
+    toast(`✓ ${p.name} added to quote`);
+    return;
+  }
   if (t.id === 'expandCatsBtn') { state.catalog.forEach(c => c.open = true); renderCatalog(); return; }
   if (t.id === 'collapseCatsBtn') { state.catalog.forEach(c => c.open = false); renderCatalog(); return; }
   if (t.id === 'customQuoteBtn') { const item = customItem(); if (item) { state.quoteItems.push(item); clearCustom(); refreshAll(); } return; }
