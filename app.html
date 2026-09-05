@@ -349,7 +349,8 @@
 
       <div class="form-grid">
         <div class="field"><label>Client name</label><input id="clientName" placeholder="e.g. Sarah Johnson"/></div>
-        <div class="field"><label>Client email <span style="font-weight:400;color:var(--text-muted)">(for sending quote)</span></label><input id="clientEmail" type="email" placeholder="sarah@example.com"/></div>
+        <div class="field"><label>Client email <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label><input id="clientEmail" type="email" placeholder="sarah@example.com"/></div>
+        <div class="field"><label>Client phone <span style="font-weight:400;color:var(--text-muted)">(to text the quote)</span></label><input id="clientPhone" type="tel" placeholder="(407) 555-0123"/></div>
         <div class="field"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
         <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
         <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
@@ -730,6 +731,7 @@ async function saveQuote() {
       businessName: $('businessName').value,
       clientName: $('clientName').value,
       clientEmail: $('clientEmail').value.trim(),
+      clientPhone: $('clientPhone').value.trim(),
       eventType: $('eventType').value,
       eventDate: $('eventDate').value,
       expiryDate: $('expiryDate').value,
@@ -750,13 +752,19 @@ async function saveQuote() {
     if (linkErr) console.warn('Could not link quote to booking:', linkErr);
   }
   const shareBtn = $('shareQuoteBtn');
+  const hasEmail = !!$('clientEmail').value.trim();
+  const hasPhone = !!$('clientPhone').value.trim();
   if (shareBtn) {
-    const hasEmail = !!$('clientEmail').value.trim();
-    shareBtn.textContent = hasEmail ? '📧 Email to Client' : '📤 Send to Client';
+    shareBtn.textContent = hasEmail && hasPhone ? '📨 Email + Text to Client'
+                         : hasPhone            ? '📱 Text to Client'
+                         : hasEmail            ? '📧 Email to Client'
+                         :                       '📤 Copy Link';
     shareBtn.style.opacity = '1';
     shareBtn.style.pointerEvents = 'auto';
   }
-  toast('✓ Quote saved — click ' + ($('clientEmail').value.trim() ? '"Email to Client"' : '"Send to Client"') + ' to share');
+  toast(hasEmail || hasPhone
+    ? '✓ Quote saved — now click "' + shareBtn.textContent.replace(/^\S+\s/, '') + '"'
+    : '✓ Quote saved — add an email or phone, or click Copy Link');
 }
 
 async function shareQuote() {
@@ -789,32 +797,52 @@ async function shareQuote() {
     bizName
   );
 
-  if (clientEmail) {
-    // Send via Resend API
-    toast('📧 Sending quote…');
-    try {
-      const r = await fetch('/api/send-quote-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientEmail, clientName, bizName, eventType, eventDate, grand, quoteLink: link, expiryDate })
-      });
-      const d = await r.json();
-      if (d.sent) {
-        toast('✅ Quote emailed to ' + clientEmail);
-      } else {
-        // Fallback to mailto if API not set up
-        toast(d.note || 'Could not send — opening email app');
-        setTimeout(() => { window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body; }, 1200);
-      }
-    } catch (e) {
-      window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body;
-    }
-  } else {
-    // No email on file — copy link to clipboard instead
+  const clientPhone = $('clientPhone').value.trim();
+
+  // Nothing to send to — hand her the link to paste wherever she likes.
+  if (!clientEmail && !clientPhone) {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(link).then(() => toast('✓ Link copied — paste into a text or email!'));
+      navigator.clipboard.writeText(link).then(() => toast('✓ Link copied — paste it into a text or email'));
     } else {
       prompt('Copy this link and send to your client:', link);
+    }
+    return;
+  }
+
+  toast(clientPhone && clientEmail ? '📨 Sending…' : clientPhone ? '📱 Texting…' : '📧 Sending…');
+
+  try {
+    const r = await fetch('/api/send-quote-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientEmail: clientEmail || undefined,
+        clientPhone, alsoText: !!clientPhone,
+        clientName, bizName, eventType, eventDate, grand,
+        quoteLink: link, expiryDate,
+      })
+    });
+    const d = await r.json();
+
+    // Report each channel on its own. A quote that texted but did not email
+    // looks like success to the customer and like nothing to her, so the two
+    // must never be collapsed into one vague message.
+    const bits = [];
+    if (clientEmail) bits.push(d.sent ? '✅ Emailed to ' + clientEmail : '⚠️ Email failed: ' + (d.note || 'unknown'));
+    if (clientPhone) bits.push(d.texted ? '✅ Texted to ' + clientPhone : '⚠️ Text failed: ' + (d.textNote || 'unknown'));
+    toast(bits.join('  ·  '));
+
+    // Email is the only channel with a manual fallback worth offering.
+    if (clientEmail && !d.sent && !d.texted) {
+      setTimeout(() => { window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body; }, 1600);
+    }
+  } catch (e) {
+    console.error(e);
+    if (clientEmail) {
+      window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body;
+    } else {
+      navigator.clipboard && navigator.clipboard.writeText(link);
+      toast('⚠️ Could not send — link copied instead');
     }
   }
 }

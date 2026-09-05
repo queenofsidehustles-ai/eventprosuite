@@ -101,14 +101,102 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
       }),
     });
     const body = await emailRes.json().catch(() => ({}));
-    if (!emailRes.ok) {
-      return res.status(200).json({ sent: false, note: 'Email delivery failed: ' + (body.message || emailRes.status) });
+    const emailOK = emailRes.ok;
+    const emailNote = emailOK ? null : 'Email delivery failed: ' + (body.message || emailRes.status);
+
+    // Each channel reports separately. One vague "couldn't send" would hide the
+    // case that actually matters — the email silently not going while the text
+    // did, which looks like success to the customer and like nothing to her.
+    const sms = await maybeTextQuote(req.body || {});
+
+    if (!emailOK && !sms.attempted) {
+      return res.status(200).json({ sent: false, note: emailNote });
     }
-    return res.json({ sent: true });
+    return res.json({
+      sent: emailOK, note: emailNote,
+      texted: sms.sent, textNote: sms.note, textAttempted: sms.attempted,
+    });
   } catch (e) {
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
 };
+
+
+// ── Text the quote ──────────────────────────────────────────────────────
+// Email is the right place for a price and a list of what's included, but it
+// is also the thing that quietly lands in spam with the customer none the
+// wiser. A text is short, arrives, and carries the same link.
+//
+// Party Biz Hub is multi-tenant and the Twilio account is the OWNER's, so
+// texts are only sent for businesses explicitly switched on
+// (profile_data.smsEnabled). Otherwise every tenant would be texting from her
+// number, on her bill, with the TCPA liability landing on her.
+async function maybeTextQuote(b) {
+  const off = { attempted: false, sent: false, note: null };
+  if (!b.alsoText) return off;
+
+  const SID   = process.env.TWILIO_ACCOUNT_SID || '';
+  const TOKEN = process.env.TWILIO_AUTH_TOKEN  || '';
+  const FROM  = process.env.TWILIO_PHONE       || '';
+  if (!SID || !TOKEN || !FROM) {
+    return { attempted: true, sent: false,
+             note: 'Texting is not set up yet — add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_PHONE in Vercel.' };
+  }
+
+  const to = normalisePhone(b.clientPhone);
+  if (!to) {
+    return { attempted: true, sent: false, note: 'No usable phone number on this quote.' };
+  }
+
+  const first = (b.clientName || 'there').trim().split(/\s+/)[0] || 'there';
+  const biz   = b.bizName || 'us';
+  const price = b.grand != null
+    ? '$' + parseFloat(b.grand).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '';
+
+  // Kept short on purpose: one segment where possible, and the link last so
+  // it stays tappable in every messaging app.
+  const body =
+    `Hi ${first}, it's ${biz} — here's your quote` +
+    (b.eventType ? ` for the ${String(b.eventType).toLowerCase()}` : '') +
+    (price ? `: ${price}` : '') +
+    `. Everything included, and you can book right here: ${b.quoteLink}` +
+    ` Reply STOP to opt out.`;
+
+  try {
+    const auth = Buffer.from(`${SID}:${TOKEN}`).toString('base64');
+    const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${SID}/Messages.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + auth,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ To: to, From: FROM, Body: body }).toString(),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      // 21610 is Twilio's "this number replied STOP". Say that plainly rather
+      // than as an error code — it is a choice the customer made, not a fault.
+      const note = d.code === 21610
+        ? 'Not sent — this number has asked us to stop texting.'
+        : 'The text did not send: ' + (d.message || `Twilio ${r.status}`);
+      return { attempted: true, sent: false, note };
+    }
+    return { attempted: true, sent: true, note: null };
+  } catch (e) {
+    return { attempted: true, sent: false, note: 'The text did not send: ' + e.message };
+  }
+}
+
+// Twilio wants E.164. Accept whatever she typed on the phone.
+function normalisePhone(raw) {
+  const d = String(raw || '').replace(/[^\d+]/g, '');
+  if (!d) return null;
+  if (d.startsWith('+')) return d.length >= 12 ? d : null;
+  if (d.length === 10) return '+1' + d;
+  if (d.length === 11 && d.startsWith('1')) return '+' + d;
+  return null;
+}
 
 
 // ── Booking confirmation ────────────────────────────────────────────────
