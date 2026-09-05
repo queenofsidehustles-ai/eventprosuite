@@ -621,6 +621,8 @@ async function checkAuth() {
     if ($('userChipText')) $('userChipText').textContent = displayName;
     if ($('userAvatar')) $('userAvatar').textContent = displayName.charAt(0).toUpperCase();
     setNavUser(displayName);
+
+    await prefillFromBooking();
   } catch (e) {
     console.error('Profile setup error (non-fatal):', e);
     if (!currentProfile) currentProfile = { id: currentUser.id, email: currentUser.email };
@@ -708,6 +710,9 @@ async function savePackages() {
 }
 
 let _lastSavedQuoteId = null;
+// Set when this quote was started from an incoming booking (app.html?booking=…),
+// so saving the quote can move that inquiry along the pipeline.
+let _sourceBookingId = null;
 
 async function saveQuote() {
   if (!currentUser) return;
@@ -736,6 +741,14 @@ async function saveQuote() {
   const { data, error } = await sb.from('saved_quotes').insert(payload).select('id').single();
   if (error) { console.error(error); toast('Save failed'); return; }
   _lastSavedQuoteId = data.id;
+
+  // This quote answers an inquiry, so that booking is no longer unanswered.
+  if (_sourceBookingId) {
+    const { error: linkErr } = await sb.from('bookings')
+      .update({ status: 'quote-sent', quote_id: data.id })
+      .eq('id', _sourceBookingId);
+    if (linkErr) console.warn('Could not link quote to booking:', linkErr);
+  }
   const shareBtn = $('shareQuoteBtn');
   if (shareBtn) {
     const hasEmail = !!$('clientEmail').value.trim();
@@ -1433,6 +1446,64 @@ function closeQuotesModal(e) {
   if (e && e.target !== e.currentTarget) return;
   $('quotesModal').classList.remove('open');
 }
+/* ── PREFILL FROM AN INCOMING BOOKING ────────────────────────────────
+   The dashboard's "Send Quote →" on an inquiry links here as
+   app.html?booking=<id>. Everything the customer already told us — name,
+   email, date, package, price — is carried across so this starts as a
+   draft to adjust rather than a blank form to retype.
+
+   The website quotes starting prices ("$700+"), excluding travel and extra
+   guests, so the imported line is a starting point the owner edits. */
+async function prefillFromBooking() {
+  const bookingId = new URLSearchParams(location.search).get('booking');
+  if (!bookingId || !currentUser) return;
+  _sourceBookingId = bookingId;
+
+  const { data: b, error } = await sb.from('bookings')
+    .select('*').eq('id', bookingId).eq('owner_id', currentUser.id).maybeSingle();
+
+  if (error || !b) {
+    console.warn('Could not load booking for prefill:', error);
+    toast('Could not load that booking — starting a blank quote');
+    return;
+  }
+
+  if ($('clientName')  && b.client_name)   $('clientName').value  = b.client_name;
+  if ($('clientEmail') && b.client_email)  $('clientEmail').value = b.client_email;
+  if ($('eventType')   && b.service_name)  $('eventType').value   = b.service_name;
+  if ($('eventDate')   && b.event_date)    $('eventDate').value   = b.event_date;
+
+  // Quotes expire in 7 days by default — the countdown on the quote page is
+  // what nudges the customer to book.
+  if ($('expiryDate') && !$('expiryDate').value) {
+    const d = new Date(); d.setDate(d.getDate() + 7);
+    $('expiryDate').value = d.toISOString().split('T')[0];
+  }
+
+  const notes = [
+    b.event_time    && `Preferred time: ${b.event_time}`,
+    b.event_address && `Location: ${b.event_address}`,
+    b.num_kids      && `Guests: ${b.num_kids}`,
+    b.honoree_name  && `For: ${b.honoree_name}${b.honoree_age ? ` (turning ${b.honoree_age})` : ''}`,
+    b.notes,
+  ].filter(Boolean).join('\n');
+  if ($('eventNotes') && notes && !$('eventNotes').value) $('eventNotes').value = notes;
+
+  const price = parseFloat(String(b.service_price || '').replace(/[^0-9.]/g, ''));
+  if (Number.isFinite(price) && price > 0) {
+    state.quoteItems.push({
+      category: 'From website booking',
+      name: b.service_name || 'Requested package',
+      qty: 1,
+      price,
+      taxable: true,
+    });
+  }
+
+  refreshAll();
+  toast(`✓ Loaded ${b.client_name || 'booking'} — adjust for travel and extras, then save`);
+}
+
 function loadQuote(data) {
   state.quoteItems = data.items || [];
   if (data.businessName) $('businessName').value = data.businessName;

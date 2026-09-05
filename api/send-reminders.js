@@ -9,7 +9,15 @@
  */
 
 const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+
+// This cron reads and updates OTHER people's bookings, which the anon key can
+// never do — row-level security only lets a logged-in owner see their own rows,
+// and gives anon no read or update at all. Running on the anon key is why this
+// job has silently processed zero bookings on every run.
+//
+// The service-role key bypasses RLS. It lives only in Vercel's env (server
+// side) and must never appear in browser code.
+const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 async function supabaseGet(path) {
   const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
@@ -81,6 +89,14 @@ module.exports = async function handler(req, res) {
   const provided = req.headers['x-cron-secret'] || req.query.secret;
   if (provided !== secret) return res.status(401).json({ error: 'Unauthorized' });
 
+  if (!SUPA_KEY) {
+    return res.status(500).json({
+      error: 'SUPABASE_SERVICE_ROLE_KEY is not set. Add it in Vercel → Settings → ' +
+             'Environment Variables (Supabase → Project Settings → API → service_role). ' +
+             'Without it this job cannot read bookings and silently does nothing.'
+    });
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -138,5 +154,141 @@ module.exports = async function handler(req, res) {
     results.push({ booking_id: booking.id, client: booking.client_email, daysUntil, emailSent: result.ok });
   }
 
-  return res.json({ processed: results.length, results });
+  // ── Deposit hold: nudge at 24h, release at 48h ──────────────────────
+  // A booking made from a quote page is 'awaiting-deposit' with a
+  // deposit_due_at 48 hours out. The customer was told plainly that the date
+  // is not held until the deposit lands, so releasing it here is not a
+  // surprise — but we always nudge first.
+  const deposits = await runDepositHold(today);
+
+  return res.json({
+    processed: results.length,
+    results,
+    deposits
+  });
 };
+
+
+async function runDepositHold(today) {
+  const nowISO = new Date().toISOString();
+
+  const pending = await supabaseGet(
+    `bookings?status=eq.awaiting-deposit&deposit_due_at=not.is.null&select=*`
+  );
+  if (!Array.isArray(pending)) return { error: 'could not fetch pending deposits', detail: pending };
+
+  const nudged = [];
+  const released = [];
+
+  for (const b of pending) {
+    const due = new Date(b.deposit_due_at);
+    if (isNaN(due)) continue;
+
+    // Past the deadline. Nobody loses a date without a warning first — if the
+    // nudge never went out (cron outage, deploy gap, booking made between
+    // runs), send it now and give them a fresh 24 hours instead of releasing.
+    if (due <= new Date()) {
+      if (!b.deposit_reminder_sent) {
+        const profiles = await supabaseGet(`profiles?id=eq.${b.owner_id}&select=profile_data&limit=1`);
+        const pd = (profiles[0] && profiles[0].profile_data) || {};
+        const newDue = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const sent = await sendDepositNudge(b, pd, newDue);
+        await supabasePatch('bookings', b.id, {
+          deposit_due_at: newDue.toISOString(),
+          deposit_reminder_sent: sent ? nowISO : null,
+        });
+        nudged.push({ booking_id: b.id, client: b.client_email, note: 'grace period — never warned' });
+        continue;
+      }
+      await supabasePatch('bookings', b.id, { status: 'expired' });
+      released.push({ booking_id: b.id, client: b.client_email });
+      continue;
+    }
+
+    // Inside the final 24 hours and not yet nudged.
+    const hoursLeft = (due - new Date()) / (1000 * 60 * 60);
+    if (hoursLeft <= 24 && !b.deposit_reminder_sent) {
+      const profiles = await supabaseGet(`profiles?id=eq.${b.owner_id}&select=profile_data&limit=1`);
+      const pd = (profiles[0] && profiles[0].profile_data) || {};
+      const sent = await sendDepositNudge(b, pd, due);
+      if (sent) {
+        await supabasePatch('bookings', b.id, { deposit_reminder_sent: nowISO });
+        nudged.push({ booking_id: b.id, client: b.client_email });
+      }
+    }
+  }
+
+  return { checked: pending.length, nudged, released };
+}
+
+
+async function sendDepositNudge(booking, pd, due) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || !booking.client_email) return false;
+
+  const bizName = pd.bizName || pd.businessName || 'Your Party Business';
+  const brand = /^#[0-9a-fA-F]{6}$/.test(pd.brandPrimary || '') ? pd.brandPrimary
+              : /^#[0-9a-fA-F]{6}$/.test(pd.brandColor || '')   ? pd.brandColor
+              : '#6D28D9';
+  const first = (booking.client_name || 'there').trim().split(/\s+/)[0];
+
+  const price = parseFloat(String(booking.service_price || '0').replace(/[^0-9.]/g, '')) || 0;
+  let link = '';
+  if (price >= 1000) link = pd.stripe1000 || pd.stripe500 || '';
+  else if (price >= 500) link = pd.stripe500 || pd.stripe250 || '';
+  else if (price >= 250) link = pd.stripe250 || pd.stripe100 || '';
+  else link = pd.stripe100 || '';
+
+  const when = new Date(booking.event_date + 'T00:00:00');
+  const eventTxt = isNaN(when) ? 'your event'
+    : when.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const dueTxt = due.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    + ' at ' + due.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  const html = `<!DOCTYPE html><html><body style="margin:0;background:#f4f2f8;font-family:-apple-system,Segoe UI,Inter,Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:28px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border-radius:16px;overflow:hidden">
+<tr><td style="background:${brand};padding:26px 30px;text-align:center">
+  <p style="margin:0;font-size:18px;font-weight:800;color:#fff">${bizName}</p>
+  <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,.85)">Your date is still on hold</p>
+</td></tr>
+<tr><td style="padding:28px 30px">
+  <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#3a2a4a">
+    Hi ${first}, just a quick reminder — we're holding <strong>${eventTxt}</strong> for you,
+    but the deposit hasn't come through yet.
+  </p>
+  <table role="presentation" width="100%" style="background:#fff8e6;border:1px solid #f5d97a;border-radius:12px;margin:0 0 20px">
+    <tr><td style="padding:16px 18px">
+      <p style="margin:0;font-size:14px;line-height:1.65;color:#78350f">
+        We can hold your date until <strong>${dueTxt}</strong>. After that it goes
+        back on our calendar for someone else.
+      </p>
+    </td></tr>
+  </table>
+  ${link ? `<table role="presentation" width="100%" style="margin:0 0 18px"><tr><td align="center">
+    <a href="${link}" style="display:inline-block;background:${brand};color:#fff;text-decoration:none;padding:14px 36px;border-radius:10px;font-weight:800;font-size:15px">Pay my deposit &rarr;</a>
+  </td></tr></table>` : ''}
+  <p style="margin:0;font-size:14px;line-height:1.7;color:#3a2a4a">
+    Already paid? Ignore this — and reply if anything looks wrong.
+  </p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM_EMAIL || 'noreply@partybizhub.com',
+        to: booking.client_email,
+        reply_to: pd.bizEmail || pd.contactEmail || undefined,
+        subject: `Your date is still on hold — ${bizName}`,
+        html,
+      }),
+    });
+    return r.ok;
+  } catch (e) {
+    console.error('Deposit nudge failed:', e.message);
+    return false;
+  }
+}

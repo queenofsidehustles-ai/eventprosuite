@@ -961,7 +961,10 @@ async function submitBooking() {
     service_price: selectedService.price || null,
     referral: document.getElementById('referral').value || null,
     notes: document.getElementById('notes').value.trim() || null,
-    status: 'new',
+    // A website booking hasn't been quoted yet — starting prices don't include
+    // travel or extras — so it enters the pipeline as an inquiry for the owner
+    // to price up, not as a held date.
+    status: 'inquiry',
     created_at: new Date().toISOString(),
   };
 
@@ -988,38 +991,31 @@ async function submitBooking() {
 
     bookingId = newBookingId;
 
-    // Auto-generate and email contract.
-    // Opt-out via Business Profile → "Email the contract automatically?". When
-    // OFF, nothing is sent here: the owner confirms the date first, then sends
-    // the contract herself from the Contract tool. The client-facing notice
-    // below already covers the not-sent case.
-    let contractSent = false;
-    const autoContract = profileData.autoContract !== false; // undefined = ON
-    if (autoContract) try {
-      const contractRes = await fetch('/api/auto-contract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ownerUID,
-          clientName: payload.client_name,
-          clientEmail: payload.client_email,
-          clientPhone: payload.client_phone,
-          eventDate: payload.event_date,
-          eventTime: payload.event_time,
-          eventAddress: payload.event_address,
-          serviceName: payload.service_name,
-          servicePrice: payload.service_price,
-          numKids: payload.num_kids,
-          duration: payload.duration,
-          bizName: profileData.bizName || profileData.businessName || '',
-          bizEmail: profileData.contactEmail || profileData.bizEmail || '',
-          bizPhone: profileData.contactPhone || profileData.bizPhone || '',
-          depositUpfront: profileData.depositUpfront === true,
-        }),
-      });
-      const contractData = await contractRes.json();
-      contractSent = contractData.email_sent || false;
-    } catch (_) { /* non-fatal — booking still succeeded */ }
+    // The contract no longer fires here. It goes out when the owner marks the
+    // deposit paid (dashboard.html → maybeSendContract), so nobody is asked to
+    // sign before any money has changed hands, and the owner isn't chasing
+    // signatures from people who never pay.
+    //
+    // What the customer gets now is a plain acknowledgement: this is a
+    // request, not a held date, and a real quote follows within 24 hours.
+    const contractSent = false;
+    fetch('/api/send-booking-confirmation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'received',
+        clientEmail:  payload.client_email,
+        clientName:   payload.client_name,
+        bizName:      profileData.bizName || profileData.businessName || '',
+        bizEmail:     profileData.contactEmail || profileData.bizEmail || '',
+        bizPhone:     profileData.contactPhone || profileData.bizPhone || '',
+        brandColor:   profileData.brandPrimary || profileData.brandColor || '',
+        serviceName:  payload.service_name,
+        eventDate:    payload.event_date,
+        eventTime:    payload.event_time,
+        eventAddress: payload.event_address,
+      }),
+    }).catch(e => console.error('Confirmation email failed:', e));
 
     showConfirmation(clientEmail, bookingId, contractSent);
 

@@ -424,6 +424,7 @@ async function loadData() {
   renderStats();
   renderBookings();
   renderFinancials(profitRes.data || []);
+  migrateLegacyStatuses();
 
   // Update checklist progress after data loads
   if(!localStorage.getItem('pbh_checklist_dismissed')){
@@ -455,13 +456,76 @@ function markCheckDone(id){
   if(icon){icon.textContent='✅';}
 }
 
-function getStatuses() {
+/* ── STATUS ──────────────────────────────────────────────────────────
+   Status used to live only in localStorage, so it vanished on any other
+   device and the nightly reminder cron — which queries the database for
+   'deposit-paid'/'confirmed' — never found a single row. It now lives on
+   the row itself. The old localStorage map is read once, pushed up, and
+   then ignored. */
+
+function legacyStatuses() {
   try { return JSON.parse(localStorage.getItem('pbh_statuses') || '{}'); } catch { return {}; }
 }
-function saveStatuses(o) { localStorage.setItem('pbh_statuses', JSON.stringify(o)); }
+
 function statusOf(q) {
-  if (q._source === 'booking') return getStatuses()[q.id] || 'inquiry';
-  return getStatuses()[q.id] || 'quote-sent';
+  const stored = q._source === 'booking' ? (q._raw && q._raw.status) : q.status;
+  if (stored && stored !== 'new') return stored;
+  const legacy = legacyStatuses()[q.id];
+  if (legacy) return legacy;
+  return q._source === 'booking' ? 'inquiry' : 'quote-sent';
+}
+
+// Write through to the row this item came from, then keep the in-memory
+// copy in step so the table re-renders correctly without a refetch.
+async function persistStatus(id, status) {
+  const item = allQuotes.find(x => x.id === id);
+  if (!item) return { ok: false, error: 'not found' };
+
+  const table = item._source === 'booking' ? 'bookings' : 'saved_quotes';
+  const patch = { status };
+
+  // Leaving 'awaiting-deposit' means the hold no longer applies, so clear the
+  // deadline and let the cron stop chasing it.
+  if (item._source === 'booking' && status !== 'awaiting-deposit') {
+    patch.deposit_due_at = null;
+    patch.deposit_reminder_sent = null;
+  }
+
+  const { error } = await sb.from(table).update(patch).eq('id', id);
+  if (error) {
+    console.error('Status save failed:', error);
+    showToast('⚠️ Could not save status — check your connection');
+    return { ok: false, error };
+  }
+
+  if (item._source === 'booking' && item._raw) item._raw.status = status;
+  else item.status = status;
+  return { ok: true };
+}
+
+// One-time lift of any browser-held statuses into the database. Runs after
+// data loads; only touches rows whose stored status is still the default.
+async function migrateLegacyStatuses() {
+  if (localStorage.getItem('pbh_statuses_migrated')) return;
+  const legacy = legacyStatuses();
+  const ids = Object.keys(legacy);
+  if (!ids.length) { localStorage.setItem('pbh_statuses_migrated', '1'); return; }
+
+  let moved = 0;
+  for (const id of ids) {
+    const item = allQuotes.find(x => x.id === id);
+    if (!item) continue;
+    const current = item._source === 'booking' ? (item._raw && item._raw.status) : item.status;
+    if (current && current !== 'new' && current !== 'inquiry' && current !== 'quote-sent') continue;
+    if (await persistStatus(id, legacy[id]).then(r => r.ok)) moved++;
+  }
+
+  localStorage.setItem('pbh_statuses_migrated', '1');
+  if (moved) {
+    showToast(`✓ Moved ${moved} booking status${moved === 1 ? '' : 'es'} into your account`);
+    renderStats();
+    renderBookings();
+  }
 }
 
 /* ── STATS ── */
@@ -469,13 +533,13 @@ function renderStats() {
   const now   = new Date();
   const month = new Date(now.getFullYear(), now.getMonth(), 1);
   const in90  = new Date(now); in90.setDate(now.getDate() + 90);
-  const s     = getStatuses();
 
   const thisMonth = allQuotes.filter(q => new Date(q.created_at) >= month).length;
   const upcoming  = allQuotes.filter(q => q.event_date && new Date(q.event_date+'T00:00:00') >= now && new Date(q.event_date+'T00:00:00') <= in90).length;
+  // A date whose hold lapsed isn't live pipeline any more, so 'expired' is out.
   const pipeline  = allQuotes
-    .filter(q => ['inquiry','quote-sent','deposit-paid','confirmed'].includes(s[q.id]||'quote-sent'))
-    .reduce((t, q) => t + (q.total_amount || 0), 0);
+    .filter(q => ['inquiry','quote-sent','awaiting-deposit','deposit-paid','confirmed'].includes(statusOf(q)))
+    .reduce((t, q) => t + (parseFloat(q.total_amount) || 0), 0);
 
   $('statMonth').textContent    = thisMonth;
   $('statPipeline').textContent = '$' + pipeline.toLocaleString('en-US', { minimumFractionDigits: 0 });
@@ -507,11 +571,13 @@ function renderFinancials(records) {
 
 /* ── BOOKINGS TABLE ── */
 const STATUS_LABELS = {
-  'inquiry':      'Inquiry',
-  'quote-sent':   'Quote Sent',
-  'deposit-paid': 'Deposit Paid',
-  'confirmed':    'Confirmed ✓',
-  'complete':     'Complete',
+  'inquiry':          'Inquiry',
+  'quote-sent':       'Quote Sent',
+  'awaiting-deposit': 'Deposit Due',
+  'deposit-paid':     'Deposit Paid',
+  'confirmed':        'Confirmed ✓',
+  'complete':         'Complete',
+  'expired':          'Hold Expired',
 };
 
 function renderBookings() {
@@ -550,11 +616,15 @@ function renderBookings() {
     const isNew  = q._source === 'booking' && status === 'inquiry';
     const newBadge = isNew ? ' <span style="display:inline-block;background:#DC2626;color:#fff;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:999px;letter-spacing:.04em;vertical-align:middle">NEW</span>' : '';
     const nextAction = {
-      'inquiry':      {label:'Send Quote →', href:`app.html`},
-      'quote-sent':   {label:'Mark Deposit Paid', fn:`quickStatus('${q.id}','deposit-paid')`},
-      'deposit-paid': {label:'Confirm Booking', fn:`quickStatus('${q.id}','confirmed')`},
-      'confirmed':    {label:'Mark Complete ✓', fn:`quickStatus('${q.id}','complete')`},
-      'complete':     null,
+      // Inquiries carry their booking id across, so the Quote Builder opens
+      // prefilled instead of blank — no retyping what the customer already gave us.
+      'inquiry':          {label:'Send Quote →', href:`app.html?booking=${encodeURIComponent(q.id)}`},
+      'quote-sent':       {label:'Mark Deposit Paid', fn:`quickStatus('${q.id}','deposit-paid')`},
+      'awaiting-deposit': {label:'Mark Deposit Paid', fn:`quickStatus('${q.id}','deposit-paid')`},
+      'deposit-paid':     {label:'Confirm Booking', fn:`quickStatus('${q.id}','confirmed')`},
+      'confirmed':        {label:'Mark Complete ✓', fn:`quickStatus('${q.id}','complete')`},
+      'complete':         null,
+      'expired':          {label:'Send Quote →', href:`app.html?booking=${encodeURIComponent(q.id)}`},
     }[status];
     const quickBtn = nextAction
       ? nextAction.href
@@ -598,12 +668,16 @@ function openModal(id) {
 }
 
 async function quickStatus(id, status) {
-  const st = getStatuses();
-  const prev = st[id];
-  st[id] = status;
-  saveStatuses(st);
+  const item = allQuotes.find(x => x.id === id);
+  const prev = item ? statusOf(item) : null;
+
+  const { ok } = await persistStatus(id, status);
+  if (!ok) return;
+
   renderStats();
   renderBookings();
+
+  if (status === 'deposit-paid' && prev !== 'deposit-paid') await maybeSendContract(id);
   if (status === 'confirmed' && prev !== 'confirmed') {
     await maybeCreateProfitRecord(id);
   } else {
@@ -613,19 +687,66 @@ async function quickStatus(id, status) {
 
 async function applyStatus(status) {
   if (!activeId) return;
-  const st = getStatuses();
-  const prev = st[activeId];
-  st[activeId] = status;
-  saveStatuses(st);
+  const id = activeId;
+  const item = allQuotes.find(x => x.id === id);
+  const prev = item ? statusOf(item) : null;
+
+  const { ok } = await persistStatus(id, status);
+  if (!ok) return;
+
   closeModal();
   renderStats();
   renderBookings();
 
+  if (status === 'deposit-paid' && prev !== 'deposit-paid') await maybeSendContract(id);
+
   // Auto-create a profit record the first time a booking becomes confirmed
   if (status === 'confirmed' && prev !== 'confirmed') {
-    await maybeCreateProfitRecord(activeId);
+    await maybeCreateProfitRecord(id);
   } else {
     showToast('✓ Status updated');
+  }
+}
+
+/* Contract goes out once the deposit lands — not at booking. Chasing a
+   signature from someone who never paid wastes everyone's time, and it keeps
+   the moment of saying yes down to a single step. */
+async function maybeSendContract(id) {
+  const item = allQuotes.find(x => x.id === id);
+  const b = item && item._raw;
+  if (!b || !b.client_email) { showToast('✓ Deposit marked paid'); return; }
+  if (!currentUser) { showToast('✓ Deposit marked paid'); return; }
+
+  showToast('✓ Deposit paid — sending contract…');
+  try {
+    const { data: prof } = await sb.from('profiles')
+      .select('profile_data').eq('id', currentUser.id).maybeSingle();
+    const pd = (prof && prof.profile_data) || {};
+
+    // Owners can switch the automatic contract off in Business Profile.
+    if (pd.autoContract === false) { showToast('✓ Deposit marked paid'); return; }
+
+    const r = await fetch('/api/auto-contract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ownerUID: currentUser.id,
+        clientName: b.client_name, clientEmail: b.client_email, clientPhone: b.client_phone,
+        eventDate: b.event_date, eventTime: b.event_time, eventAddress: b.event_address,
+        serviceName: b.service_name, servicePrice: b.service_price,
+        numKids: b.num_kids, duration: b.duration,
+        bizName:  pd.bizName || pd.businessName || '',
+        bizEmail: pd.contactEmail || pd.bizEmail || '',
+        bizPhone: pd.contactPhone || pd.bizPhone || '',
+        depositUpfront: false,
+      }),
+    });
+    const d = await r.json().catch(() => ({}));
+    showToast(d.email_sent ? '✓ Contract emailed to ' + b.client_email
+                           : '✓ Deposit marked paid (contract not sent — check Business Profile)');
+  } catch (e) {
+    console.error('Contract send failed:', e);
+    showToast('✓ Deposit marked paid (contract could not be sent)');
   }
 }
 

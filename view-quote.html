@@ -14,7 +14,6 @@ a{text-decoration:none}
 button{font:inherit;cursor:pointer;border:none;background:none}
 img{max-width:100%;display:block}
 
-/* Loading / error */
 #loadingState{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 24px}
 .spinner{width:44px;height:44px;border:3px solid rgba(106,63,138,.15);border-top-color:#6D28D9;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -23,56 +22,80 @@ img{max-width:100%;display:block}
 #quoteRoot{display:none}
 #quoteRoot.show{display:block}
 
-/* Header */
-.qv-header{background:linear-gradient(135deg,#4C1D95,#6D28D9 60%,#8B5CF6);padding:2.4rem 1.5rem;color:#fff;text-align:center}
+.qv-header{padding:2.4rem 1.5rem;text-align:center}
 .qv-logo{width:56px;height:56px;border-radius:12px;margin:0 auto 14px;object-fit:cover}
-.qv-logo-initial{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.25);color:#fff;font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.qv-biz{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:4px}
-.qv-for{font-size:.85rem;color:rgba(255,255,255,.75);margin-bottom:2px}
-.qv-client{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.95)}
+.qv-logo-initial{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.25);font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.qv-biz{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:6px}
+.qv-kicker{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;opacity:.72}
 
-/* Body */
 .qv-body{max-width:680px;margin:0 auto;padding:2rem 1.25rem 4rem}
+.card{background:#fff;border-radius:18px;border:1px solid #EDE5F5;padding:1.5rem 1.4rem;margin-bottom:1.3rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
+.card-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:1.1rem}
 
-/* Info band */
-.qv-info{background:#fff;border-radius:16px;border:1px solid #EDE5F5;padding:1.2rem 1.4rem;margin-bottom:1.4rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem 1.2rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
-.qv-info-item{}
-.qv-info-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9B89A8;margin-bottom:2px}
-.qv-info-val{font-size:.92rem;font-weight:600;color:#1A1020}
+/* Price hero */
+.price-box{border-radius:14px;padding:1.5rem 1.2rem;text-align:center;margin-bottom:1.3rem}
+.price-label{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;opacity:.7;margin-bottom:.35rem}
+.price-amt{font-size:2.7rem;font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.price-split{font-size:.85rem;opacity:.75;margin-top:.5rem}
 
-/* Line items */
-.qv-section{background:#fff;border-radius:16px;border:1px solid #EDE5F5;overflow:hidden;margin-bottom:1.4rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
-.qv-section-head{padding:.9rem 1.4rem;border-bottom:1px solid #EDE5F5;font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9B89A8;background:#FBFAFF}
-.qv-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:.85rem 1.4rem;border-bottom:1px solid #F5F0FB;align-items:start}
-.qv-row:last-child{border-bottom:none}
-.qv-row-name{font-size:.92rem;font-weight:600;color:#1A1020}
-.qv-row-desc{font-size:.8rem;color:#9B89A8;margin-top:2px}
-.qv-row-price{font-size:.92rem;font-weight:700;color:#1A1020;text-align:right;white-space:nowrap}
+.spec{border:1px solid #EDE5F5;border-radius:14px;overflow:hidden;margin-bottom:1.1rem}
+.spec-row{display:flex;justify-content:space-between;gap:16px;padding:.8rem 1.1rem;border-bottom:1px solid #F5F0FB;font-size:.92rem}
+.spec-row:last-child{border-bottom:none}
+.spec-k{color:#8A7A96;font-weight:500;flex-shrink:0}
+.spec-v{font-weight:700;text-align:right}
 
-/* Totals */
-.qv-totals{background:#fff;border-radius:16px;border:1px solid #EDE5F5;overflow:hidden;margin-bottom:1.4rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
-.qv-total-row{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.4rem;border-bottom:1px solid #F5F0FB;font-size:.9rem}
-.qv-total-row:last-child{border-bottom:none}
-.qv-total-row.subtotal{color:#6B5B73}
-.qv-total-row.tax{color:#6B5B73}
-.qv-total-row.grand{font-size:1.1rem;font-weight:800;color:#1A1020;padding:1rem 1.4rem;background:#FBFAFF}
-.qv-total-row.deposit{font-weight:700;color:#6D28D9;background:#F5F0FF}
-.qv-total-label{font-weight:600}
+.locked-note{font-size:.95rem;color:#3A2A4A;line-height:1.65;margin-bottom:1.1rem}
+.terms{border-left:3px solid #D9B96A;background:#FDFAF3;border-radius:0 10px 10px 0;padding:.9rem 1.1rem;font-size:.88rem;color:#4A3A28;line-height:1.65}
+.terms p+p{margin-top:.7rem}
 
-/* Expiry + notes */
-.qv-notice{background:#FFF8E6;border:1px solid #F5D97A;border-radius:12px;padding:.9rem 1.1rem;font-size:.84rem;color:#7A5A00;margin-bottom:1.4rem;display:flex;gap:10px;align-items:flex-start}
-.qv-notice-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
-.qv-notes{background:#fff;border-radius:16px;border:1px solid #EDE5F5;padding:1.2rem 1.4rem;margin-bottom:1.4rem;box-shadow:0 2px 12px rgba(26,16,32,.05)}
-.qv-notes-label{font-size:.75rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9B89A8;margin-bottom:.5rem}
-.qv-notes-text{font-size:.9rem;color:#3A2A4A;line-height:1.7;white-space:pre-wrap}
+/* Included list */
+.inc-row{display:grid;grid-template-columns:22px 1fr auto;gap:10px;padding:.8rem 0;border-bottom:1px solid #F5F0FB;align-items:start}
+.inc-row:last-child{border-bottom:none}
+.inc-check{font-weight:800;line-height:1.4}
+.inc-name{font-size:.93rem;font-weight:600}
+.inc-desc{font-size:.82rem;color:#9B89A8;margin-top:2px;line-height:1.5}
+.inc-price{font-size:.9rem;font-weight:700;white-space:nowrap;text-align:right}
 
-/* CTA */
-.qv-cta{background:linear-gradient(135deg,#4C1D95,#6D28D9);border-radius:20px;padding:2rem 1.5rem;text-align:center;color:#fff;margin-bottom:1.4rem}
-.qv-cta h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
-.qv-cta p{font-size:.88rem;color:rgba(255,255,255,.82);margin-bottom:1.2rem;line-height:1.6}
-.qv-cta-btn{display:inline-block;background:#fff;color:#4C1D95;font-size:1rem;font-weight:800;padding:14px 36px;border-radius:999px;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 24px rgba(0,0,0,.2)}
-.qv-cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.28)}
-.qv-footer{text-align:center;font-size:.78rem;color:#B0A0BC;padding-bottom:2rem}
+.tot-row{display:flex;justify-content:space-between;padding:.7rem 0;font-size:.92rem;color:#6B5B73;border-top:1px solid #F5F0FB}
+.tot-row.grand{font-size:1.1rem;font-weight:800;color:#1A1020}
+
+/* Form */
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1rem}
+.f-full{grid-column:1/-1}
+label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8A7A96;margin-bottom:.4rem}
+input,textarea{width:100%;font:inherit;font-size:.95rem;color:#1A1020;background:#fff;border:1px solid #E2D8EE;border-radius:10px;padding:.78rem .85rem;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus{outline:none;border-color:#6D28D9;box-shadow:0 0 0 3px rgba(109,40,217,.12)}
+textarea{resize:vertical;min-height:92px}
+input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+.req::after{content:" *";color:#DC2626}
+.btn-book{width:100%;border-radius:12px;padding:1.05rem;font-size:1.05rem;font-weight:800;margin-top:1.3rem;transition:transform .15s,filter .15s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-book:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06)}
+.btn-book:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.pay-note{font-size:.85rem;color:#9B89A8;text-align:center;margin-top:.9rem;line-height:1.6}
+.form-err{display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;border-radius:10px;padding:.8rem 1rem;font-size:.88rem;margin-top:1rem;line-height:1.55}
+.form-err.show{display:block}
+
+/* Confirmation */
+#confirmCard{display:none;text-align:center}
+#confirmCard.show{display:block}
+.conf-emoji{font-size:52px;margin-bottom:.6rem}
+.conf-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:.5rem}
+.conf-sub{font-size:.95rem;color:#6B5B73;line-height:1.7;margin-bottom:1.2rem}
+.dep-box{background:#FFF8E6;border:1px solid #F5D97A;border-radius:12px;padding:1.1rem;text-align:left}
+.dep-box h3{font-size:.95rem;font-weight:800;color:#7A5A00;margin-bottom:.4rem}
+.dep-box p{font-size:.85rem;color:#78350F;line-height:1.6;margin-bottom:.9rem}
+.btn-stripe{display:block;background:#635BFF;color:#fff;text-align:center;padding:.85rem;border-radius:10px;font-weight:700;font-size:.95rem}
+.btn-stripe:hover{background:#4E47CC}
+
+.qv-notice{background:#FFF8E6;border:1px solid #F5D97A;border-radius:12px;padding:.9rem 1.1rem;font-size:.86rem;color:#7A5A00;margin-bottom:1.3rem;display:flex;gap:10px;align-items:flex-start;line-height:1.55}
+.qv-notice-icon{font-size:1.1rem;flex-shrink:0}
+.qv-footer{text-align:center;font-size:.8rem;color:#A899B4;padding-bottom:2rem;line-height:1.7}
+
+@media(max-width:520px){
+  .f-grid{grid-template-columns:1fr}
+  .price-amt{font-size:2.3rem}
+  .card{padding:1.3rem 1.1rem}
+}
 </style>
 </head>
 <body>
@@ -85,7 +108,7 @@ img{max-width:100%;display:block}
 <div id="errorState">
   <div style="font-size:52px">🎈</div>
   <div style="font-size:1.2rem;font-weight:800;color:#1A1020">Quote not found</div>
-  <div style="font-size:.9rem;color:#9B89A8;max-width:300px">This link may have expired or the quote was deleted. Ask your party host for an updated link.</div>
+  <div style="font-size:.9rem;color:#9B89A8;max-width:320px" id="errDetail">This link may have expired or the quote was deleted. Ask your party host for an updated link.</div>
 </div>
 
 <div id="quoteRoot"></div>
@@ -96,128 +119,362 @@ img{max-width:100%;display:block}
   const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
   const sb = window.supabase.createClient(SUPA_URL, SUPA_ANON);
 
-  function esc(s){return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-  function fmt(n){return '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-  function fmtDate(d){if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})}
+  const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmt = n => '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtDate = d => {if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})};
 
-  function showError(){
-    document.getElementById('loadingState').style.display='none';
-    document.getElementById('errorState').classList.add('show');
+  // Pale brand colors (Bear Hug's is #adf0ec) make white header text unreadable.
+  // Pick the text color from the background's luminance instead of assuming white.
+  function readableOn(hex){
+    const h=(hex||'').replace('#','');
+    if(h.length!==6) return '#FFFFFF';
+    const [r,g,b]=[0,2,4].map(i=>parseInt(h.substr(i,2),16)/255)
+      .map(c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4));
+    return (.2126*r+.7152*g+.0722*b) > .45 ? '#1A1020' : '#FFFFFF';
   }
-  function showQuote(){
+  function shade(hex,pct){
+    const h=(hex||'').replace('#','');
+    if(h.length!==6) return hex;
+    const n=[0,2,4].map(i=>{
+      const v=Math.round(parseInt(h.substr(i,2),16)*(1+pct));
+      return Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0');
+    });
+    return '#'+n.join('');
+  }
+
+  function showError(msg){
     document.getElementById('loadingState').style.display='none';
-    document.getElementById('quoteRoot').classList.add('show');
+    if(msg) document.getElementById('errDetail').textContent = msg;
+    document.getElementById('errorState').classList.add('show');
   }
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  if(!id){showError();return}
+  if(!id){ showError(); return; }
 
-  Promise.all([
-    sb.from('saved_quotes').select('*').eq('id',id).single(),
-  ]).then(([qRes])=>{
-    if(qRes.error||!qRes.data){showError();return}
-    const q = qRes.data;
+  // saved_quotes is owner-only under RLS, so a logged-out customer cannot
+  // read it directly. get_public_quote() is a security-definer function that
+  // returns this one quote by UUID. See fix-quote-public-access-2026-09-04.sql
+  sb.rpc('get_public_quote',{quote_id:id}).then(({data,error})=>{
+    if(error){
+      console.error('Quote lookup failed:',error);
+      showError(error.message && /function/i.test(error.message)
+        ? 'This quote link is not set up yet. Please contact the business — they need to run the quote-access fix.'
+        : null);
+      return;
+    }
+    const q = Array.isArray(data)?data[0]:data;
+    if(!q){ showError(); return; }
+    return sb.from('profiles').select('profile_data,full_name').eq('id',q.user_id).maybeSingle()
+      .then(({data:p})=>render(q,(p&&p.profile_data)||{},p));
+  }).catch(e=>{ console.error(e); showError(); });
+
+
+  function render(q, pd, p){
     const qd = q.quote_data || {};
+    const bizName = pd.bizName || pd.businessName || (p&&p.full_name) || 'Party Business';
+    const logo    = pd.logoDataURL || pd.logo || null;
+    const brand   = /^#[0-9a-f]{6}$/i.test(pd.brandPrimary||'') ? pd.brandPrimary
+                  : /^#[0-9a-f]{6}$/i.test(pd.brandColor||'')   ? pd.brandColor
+                  : '#6D28D9';
+    const onBrand = readableOn(brand);
 
-    // Fetch business profile for branding
-    sb.from('profiles').select('profile_data,full_name').eq('id',q.user_id).single().then(({data:p})=>{
-      const pd = (p&&p.profile_data)||{};
-      const bizName = pd.businessName || (p&&p.full_name) || 'Party Business';
-      const logo = pd.logo || null;
-      const initial = bizName.charAt(0).toUpperCase();
-      const brandColor = pd.brandColor || '#6D28D9';
-      const bookURL = 'book.html?uid='+encodeURIComponent(q.user_id);
+    const items    = qd.items || [];
+    const subtotal = qd.subtotal || 0;
+    const tax      = qd.tax || 0;
+    const grand    = qd.grand != null ? qd.grand : (q.total_amount || 0);
+    // selectedDepositTier is a flat DOLLAR amount, not a percent — the Quote
+    // Builder renders it with money() and its tier buttons are $ values
+    // (app.html:1140, 1196). The old page divided it by 100 and called it a
+    // percentage, so a $250 deposit on a $388.80 quote displayed as "250%" =
+    // $972 due up front, with a negative balance. Treat it as dollars, and
+    // never let the deposit exceed the total.
+    const depRaw   = parseFloat(qd.selectedDepositTier);
+    const depAmt   = Math.min(Number.isFinite(depRaw) && depRaw > 0 ? depRaw : grand * 0.5, grand);
+    const balance  = Math.max(grand - depAmt, 0);
 
-      // Expiry notice
-      const expiryDate = qd.expiryDate;
-      const today = new Date(); today.setHours(0,0,0,0);
-      const expiry = expiryDate ? new Date(expiryDate+'T00:00:00') : null;
-      const expired = expiry && expiry < today;
-      const daysLeft = expiry ? Math.ceil((expiry-today)/(1000*60*60*24)) : null;
+    const expiryDate = qd.expiryDate;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const expiry = expiryDate ? new Date(expiryDate+'T00:00:00') : null;
+    const expired = expiry && expiry < today;
+    const daysLeft = expiry ? Math.ceil((expiry-today)/(1000*60*60*24)) : null;
 
-      // Line items
-      const items = qd.items || [];
-      const subtotal = qd.subtotal || 0;
-      const tax = qd.tax || 0;
-      const grand = qd.grand || q.total_amount || 0;
-      const depositTier = qd.selectedDepositTier || 50;
-      const depositAmt = grand * depositTier / 100;
+    const firstName = (q.client_name||'').trim().split(/\s+/)[0] || '';
+    document.title = 'Quote for ' + (q.client_name||'You') + ' — ' + bizName;
 
-      // Info grid fields
-      const infoItems = [
-        {label:'Prepared for', val:q.client_name||'—'},
-        {label:'Event type', val:q.event_type||'—'},
-        {label:'Event date', val:q.event_date?fmtDate(q.event_date):'—'},
-        {label:'Prepared by', val:bizName},
-        expiryDate?{label:'Quote valid until', val:fmtDate(expiryDate)+(expired?' (EXPIRED)':daysLeft&&daysLeft<=7?' ('+daysLeft+' days left!)':'')}:null
-      ].filter(Boolean);
+    const specs = [
+      {k:'Service',    v:q.event_type||qd.eventType||'Party package'},
+      {k:'Event date', v:q.event_date?fmtDate(q.event_date):'To be confirmed'},
+      {k:'Prepared by',v:bizName},
+      expiryDate?{k:'Quote valid until', v:fmtDate(expiryDate)}:null
+    ].filter(Boolean);
 
-      document.title = 'Quote for ' + (q.client_name||'You') + ' — ' + bizName;
-
-      const root = document.getElementById('quoteRoot');
-      root.innerHTML = `
-<div class="qv-header" style="background:linear-gradient(135deg,${brandColor}CC,${brandColor})">
-  ${logo
-    ? `<img class="qv-logo" src="${esc(logo)}" alt="${esc(bizName)}"/>`
-    : `<div class="qv-logo-initial">${esc(initial)}</div>`}
+    document.getElementById('quoteRoot').innerHTML = `
+<div class="qv-header" style="background:linear-gradient(135deg,${shade(brand,-.25)},${brand});color:${onBrand}">
+  ${logo ? `<img class="qv-logo" src="${esc(logo)}" alt="${esc(bizName)}"/>`
+         : `<div class="qv-logo-initial" style="color:${onBrand}">${esc(bizName.charAt(0).toUpperCase())}</div>`}
   <div class="qv-biz">${esc(bizName)}</div>
-  <div class="qv-for">Quote prepared for</div>
-  <div class="qv-client">${esc(q.client_name||'You')}</div>
+  <div class="qv-kicker">Your party quote</div>
 </div>
 
 <div class="qv-body">
 
-  ${expired?`<div class="qv-notice"><div class="qv-notice-icon">⚠️</div><div>This quote has <strong>expired</strong>. Please contact ${esc(bizName)} for an updated quote.</div></div>`:''}
-  ${!expired&&daysLeft!==null&&daysLeft<=7?`<div class="qv-notice"><div class="qv-notice-icon">⏰</div><div>This quote expires in <strong>${daysLeft} day${daysLeft!==1?'s':''}</strong>. Book now to lock in your price!</div></div>`:''}
+  ${expired?`<div class="qv-notice"><div class="qv-notice-icon">⚠️</div><div>This quote <strong>expired</strong> on ${esc(fmtDate(expiryDate))}. Please contact ${esc(bizName)} for an updated quote.</div></div>`:''}
+  ${!expired&&daysLeft!==null&&daysLeft<=7?`<div class="qv-notice"><div class="qv-notice-icon">⏰</div><div>This quote expires in <strong>${daysLeft} day${daysLeft!==1?'s':''}</strong>. Book now to lock in your price.</div></div>`:''}
 
-  <div class="qv-info">
-    ${infoItems.map(i=>`<div class="qv-info-item"><div class="qv-info-label">${esc(i.label)}</div><div class="qv-info-val">${esc(i.val)}</div></div>`).join('')}
+  <div class="card">
+    <div class="card-title">Here's your quote${firstName?', '+esc(firstName):''}</div>
+
+    <div class="price-box" style="background:${shade(brand,-.45)};color:${readableOn(shade(brand,-.45))}">
+      <div class="price-label">Your price</div>
+      <div class="price-amt">${fmt(grand)}</div>
+      <div class="price-split">${fmt(depAmt)} deposit to book · ${fmt(balance)} on the day</div>
+    </div>
+
+    <div class="spec">
+      ${specs.map(s=>`<div class="spec-row"><span class="spec-k">${esc(s.k)}</span><span class="spec-v">${esc(s.v)}</span></div>`).join('')}
+    </div>
+
+    <p class="locked-note">This is the price we quoted you — <strong>it doesn't change when you book here.</strong></p>
+
+    ${(qd.eventNotes||pd.termsText)?`<div class="terms">
+      ${qd.eventNotes?`<p>${esc(qd.eventNotes)}</p>`:''}
+      ${pd.termsText?`<p>${esc(pd.termsText)}</p>`:''}
+    </div>`:''}
   </div>
 
   ${items.length?`
-  <div class="qv-section">
-    <div class="qv-section-head">What's included</div>
+  <div class="card">
+    <div class="card-title">What's included</div>
     ${items.map(it=>`
-    <div class="qv-row">
+    <div class="inc-row">
+      <div class="inc-check" style="color:${brand}">✓</div>
       <div>
-        <div class="qv-row-name">${esc(it.name||it.label||'Item')}</div>
-        ${it.description||it.desc?`<div class="qv-row-desc">${esc(it.description||it.desc)}</div>`:''}
+        <div class="inc-name">${esc(it.name||it.label||'Item')}</div>
+        ${(it.description||it.desc)?`<div class="inc-desc">${esc(it.description||it.desc)}</div>`:''}
       </div>
-      <div class="qv-row-price">${fmt(it.price||it.amount||0)}</div>
+      <div class="inc-price">${fmt(it.price||it.amount||0)}</div>
     </div>`).join('')}
+    ${subtotal&&subtotal!==grand?`<div class="tot-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>`:''}
+    ${tax>0?`<div class="tot-row"><span>${esc(pd.taxLabel||'Tax')}</span><span>${fmt(tax)}</span></div>`:''}
+    <div class="tot-row grand"><span>Total</span><span>${fmt(grand)}</span></div>
   </div>`:''}
 
-  <div class="qv-totals">
-    ${subtotal!==grand?`<div class="qv-total-row subtotal"><span class="qv-total-label">Subtotal</span><span>${fmt(subtotal)}</span></div>`:''}
-    ${tax>0?`<div class="qv-total-row tax"><span class="qv-total-label">Tax</span><span>${fmt(tax)}</span></div>`:''}
-    <div class="qv-total-row grand"><span class="qv-total-label">Total</span><span>${fmt(grand)}</span></div>
-    <div class="qv-total-row deposit" style="color:${brandColor}"><span class="qv-total-label">Deposit to hold your date (${depositTier}%)</span><span>${fmt(depositAmt)}</span></div>
+  ${expired?`
+  <div class="card" style="text-align:center">
+    <div class="card-title">Questions about this quote?</div>
+    <p style="font-size:.95rem;color:#6B5B73;line-height:1.7">Reach out to ${esc(bizName)} for an updated quote and availability.
+    ${pd.bizEmail?`<br><a href="mailto:${esc(pd.bizEmail)}" style="color:${brand};font-weight:700">${esc(pd.bizEmail)}</a>`:''}</p>
+  </div>`:`
+  <div class="card" id="bookCard">
+    <div class="card-title">Pick your date</div>
+    <div class="f-grid">
+      <div><label for="fDate" class="req">Date</label><input type="date" id="fDate" value="${esc(q.event_date||'')}"/></div>
+      <div><label for="fTime">Preferred time</label><input type="time" id="fTime"/></div>
+      <div class="f-full"><label for="fAddr" class="req">Address</label><input type="text" id="fAddr" autocomplete="street-address" placeholder="Street address"/></div>
+      <div><label for="fCity" class="req">City</label><input type="text" id="fCity" autocomplete="address-level2"/></div>
+      <div><label for="fZip">Zip</label><input type="text" id="fZip" inputmode="numeric" autocomplete="postal-code"/></div>
+      <div><label for="fName" class="req">Your name</label><input type="text" id="fName" value="${esc(q.client_name||'')}" autocomplete="name"/></div>
+      <div><label for="fPhone" class="req">Phone</label><input type="tel" id="fPhone" autocomplete="tel"/></div>
+      <div class="f-full"><label for="fEmail" class="req">Email</label><input type="email" id="fEmail" value="${esc(qd.clientEmail||'')}" autocomplete="email"/></div>
+      <div class="f-full"><label for="fNotes">Anything we should know?</label><textarea id="fNotes" placeholder="Allergies, parking, theme, where to set up…"></textarea></div>
+    </div>
+
+    <div class="form-err" id="formErr"></div>
+
+    <button class="btn-book" id="bookBtn" style="background:${brand};color:${onBrand}">
+      Book this party <span>&rarr;</span>
+    </button>
+    <p class="pay-note">Next step is a ${fmt(depAmt)} deposit to hold your spot.<br>The remaining ${fmt(balance)} is due ${esc(pd.paymentTerms||'before your event')}.</p>
   </div>
 
-  ${qd.eventNotes?`
-  <div class="qv-notes">
-    <div class="qv-notes-label">Notes</div>
-    <div class="qv-notes-text">${esc(qd.eventNotes)}</div>
-  </div>`:''}
-
-  ${!expired?`
-  <div class="qv-cta">
-    <h2>Ready to book? 🎉</h2>
-    <p>This quote is reserved just for you. Click below to submit your booking request and we'll confirm your date.</p>
-    <a href="${esc(bookURL)}" class="qv-cta-btn">Book My Party →</a>
-  </div>`:`
-  <div class="qv-cta">
-    <h2>Questions about this quote?</h2>
-    <p>Reach out to ${esc(bizName)} for an updated quote and availability.</p>
+  <div class="card" id="confirmCard">
+    <div class="conf-emoji">🎉</div>
+    <div class="conf-title">You're on the calendar${firstName?', '+esc(firstName):''}!</div>
+    <div class="conf-sub" id="confSub">Your booking request has been received. We can't wait to make your party amazing.</div>
+    <div id="depSlot"></div>
   </div>`}
 
-  <div class="qv-footer">Powered by Party Biz Hub · Quote #${esc(id.slice(0,8).toUpperCase())}</div>
+  <div class="qv-footer">
+    ${esc(bizName)}${pd.bizCity?' · '+esc(pd.bizCity):''}<br>
+    ${pd.bizEmail?`Questions? Email <a href="mailto:${esc(pd.bizEmail)}" style="color:${brand}">${esc(pd.bizEmail)}</a>`:'Questions? Just reply to our email and we\'ll help.'}
+    <div style="margin-top:.8rem;opacity:.6">Quote #${esc(String(q.id).slice(0,8).toUpperCase())}</div>
+  </div>
 
 </div>`;
-      showQuote();
-    }).catch(showError);
-  }).catch(showError);
+
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('quoteRoot').classList.add('show');
+
+    if(!expired) wireBooking(q, pd, {grand, depAmt, balance, bizName, brand});
+  }
+
+
+  function wireBooking(q, pd, ctx){
+    const $ = i => document.getElementById(i);
+    const btn = $('bookBtn'), errBox = $('formErr');
+
+    btn.addEventListener('click', async ()=>{
+      const required = [
+        ['fDate','your event date'], ['fAddr','the address'], ['fCity','your city'],
+        ['fName','your name'], ['fPhone','a phone number'], ['fEmail','your email']
+      ];
+      let missing = [];
+      required.forEach(([f,lbl])=>{
+        const el=$(f), empty=!el.value.trim();
+        el.classList.toggle('invalid', empty);
+        if(empty) missing.push(lbl);
+      });
+      const email = $('fEmail').value.trim();
+      if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){
+        $('fEmail').classList.add('invalid');
+        missing.push('a valid email address');
+      }
+      if(missing.length){
+        errBox.textContent = 'Please add ' + missing.join(', ') + '.';
+        errBox.classList.add('show');
+        document.querySelector('.invalid').focus();
+        return;
+      }
+      errBox.classList.remove('show');
+
+      btn.disabled = true;
+      btn.innerHTML = 'Booking…';
+
+      const addr = [$('fAddr').value.trim(), $('fCity').value.trim(), $('fZip').value.trim()]
+        .filter(Boolean).join(', ');
+
+      // service_price carries the QUOTED total, so what she quoted on the phone
+      // is what lands in the CRM. The customer never re-picks a package here.
+      const payload = {
+        id: crypto.randomUUID(),
+        owner_id:      q.user_id,
+        client_name:   $('fName').value.trim(),
+        client_email:  email,
+        client_phone:  $('fPhone').value.trim(),
+        event_date:    $('fDate').value,
+        event_time:    $('fTime').value || null,
+        event_address: addr,
+        service_name:  (q.event_type || (q.quote_data||{}).eventType || 'Quoted package')
+                         + ' (quote #' + String(q.id).slice(0,8).toUpperCase() + ')',
+        service_price: String(ctx.grand),
+        notes:         $('fNotes').value.trim() || null,
+        // They picked a date off an agreed price, so the date is held
+        // provisionally. The deposit has 48 hours to arrive; the cron nudges
+        // at 24h and releases the date at 48h.
+        status:        'awaiting-deposit',
+        deposit_due_at: new Date(Date.now() + 48*60*60*1000).toISOString(),
+        quote_id:      q.id,
+        created_at:    new Date().toISOString()
+      };
+
+      try{
+        const res = await fetch(SUPA_URL+'/rest/v1/bookings',{
+          method:'POST',
+          headers:{
+            'apikey':SUPA_ANON,
+            'Authorization':'Bearer '+SUPA_ANON,
+            'Content-Type':'application/json',
+            'Prefer':'return=minimal'
+          },
+          body:JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const detail = await res.text().catch(()=> '');
+          console.error('Booking insert failed:',res.status,detail);
+          errBox.textContent = 'Something went wrong saving your booking. Please try again, or call '
+            + (pd.bizPhone||'the business') + ' and we\'ll book you in directly.';
+          errBox.classList.add('show');
+          btn.disabled = false;
+          btn.innerHTML = 'Book this party <span>&rarr;</span>';
+          return;
+        }
+      }catch(e){
+        console.error(e);
+        errBox.textContent = 'A network error occurred. Please check your connection and try again.';
+        errBox.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = 'Book this party <span>&rarr;</span>';
+        return;
+      }
+
+      const depositLink = pickStripe(pd, ctx.depAmt);
+
+      // Fire-and-forget: a booking that saved but didn't email is
+      // recoverable, so this must never block the confirmation.
+      fetch('/api/send-booking-confirmation',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          mode:'pencilled',
+          clientEmail:  email,
+          clientName:   payload.client_name,
+          bizName:      ctx.bizName,
+          bizEmail:     pd.bizEmail || pd.contactEmail || '',
+          bizPhone:     pd.bizPhone || '',
+          brandColor:   ctx.brand,
+          serviceName:  payload.service_name,
+          eventDate:    payload.event_date,
+          eventTime:    payload.event_time,
+          eventAddress: payload.event_address,
+          total:        ctx.grand,
+          depositAmount:ctx.depAmt,
+          balance:      ctx.balance,
+          depositLink:  depositLink,
+          depositDueAt: payload.deposit_due_at,
+          paymentTerms: pd.paymentTerms || ''
+        })
+      }).catch(e => console.error('Confirmation email failed:', e));
+
+      showConfirmed(pd, ctx, email, depositLink, payload.deposit_due_at);
+    });
+  }
+
+
+  function showConfirmed(pd, ctx, email, depositLink, dueAt){
+    document.getElementById('bookCard').style.display = 'none';
+    const card = document.getElementById('confirmCard');
+    const slot = document.getElementById('depSlot');
+
+    const due = new Date(dueAt);
+    const dueTxt = isNaN(due) ? 'in 48 hours'
+      : due.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})
+        + ' at ' + due.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+
+    document.getElementById('confSub').innerHTML =
+      `We've emailed the details to <strong>${esc(email)}</strong>. One last step to lock in your date.`;
+
+    // The date is always provisional until the deposit lands — say so plainly,
+    // whether or not a Stripe link is configured.
+    slot.innerHTML = `
+      <div class="dep-box">
+        <h3>Your date isn't held yet</h3>
+        <p>We'll hold it for you until <strong>${esc(dueTxt)}</strong>. If the
+           ${'$'+ctx.depAmt.toFixed(2)} deposit isn't paid by then, the date goes back
+           on our calendar. The remaining $${ctx.balance.toFixed(2)} is due
+           ${esc(pd.paymentTerms||'before your event')}.</p>
+        ${depositLink
+          ? `<a href="${esc(depositLink)}" target="_blank" rel="noopener" class="btn-stripe">Pay $${ctx.depAmt.toFixed(2)} deposit &rarr;</a>`
+          : `<p style="margin:0;font-weight:700;color:#7a5a00">We'll email your deposit instructions shortly — check ${esc(email)}.</p>`}
+      </div>`;
+
+    card.classList.add('show');
+    card.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function pickStripe(pd, amt){
+    const l = {
+      stripe100:  pd.stripe100  || (pd.stripeLinks||{}).stripe100,
+      stripe250:  pd.stripe250  || (pd.stripeLinks||{}).stripe250,
+      stripe500:  pd.stripe500  || (pd.stripeLinks||{}).stripe500,
+      stripe1000: pd.stripe1000 || (pd.stripeLinks||{}).stripe1000
+    };
+    if(amt <= 150) return l.stripe100 || l.stripe250 || l.stripe500 || l.stripe1000 || null;
+    if(amt <= 375) return l.stripe250 || l.stripe500 || l.stripe1000 || null;
+    if(amt <= 750) return l.stripe500 || l.stripe1000 || null;
+    return l.stripe1000 || l.stripe500 || null;
+  }
+
 })();
 </script>
 </body>
