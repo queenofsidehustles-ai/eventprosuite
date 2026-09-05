@@ -402,11 +402,11 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
 
       // Fire-and-forget: a booking that saved but didn't email is
       // recoverable, so this must never block the confirmation.
-      fetch('/api/send-booking-confirmation',{
+      fetch('/api/send-quote-email',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          mode:'pencilled',
+          kind:'booking-confirmation', mode:'pencilled',
           clientEmail:  email,
           clientName:   payload.client_name,
           bizName:      ctx.bizName,

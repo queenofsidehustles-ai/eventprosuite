@@ -999,11 +999,11 @@ async function submitBooking() {
     // What the customer gets now is a plain acknowledgement: this is a
     // request, not a held date, and a real quote follows within 24 hours.
     const contractSent = false;
-    fetch('/api/send-booking-confirmation', {
+    fetch('/api/send-quote-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        mode: 'received',
+        kind: 'booking-confirmation', mode: 'received',
         clientEmail:  payload.client_email,
         clientName:   payload.client_name,
         bizName:      profileData.bizName || profileData.businessName || '',
