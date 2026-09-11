@@ -16,19 +16,26 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Stripe webhook — needs raw body for signature verification
+  // Body parsing is disabled below so Stripe signatures can be verified against
+  // the exact bytes Stripe sent. Parse non-webhook JSON requests ourselves.
+  const rawBody = await readRawBody(req);
+
   if (req.headers['stripe-signature']) {
-    const rawBody = await readRawBody(req);
     return handleStripeWebhook(res, rawBody, req.headers['stripe-signature']);
   }
 
-  const body = req.body || {};
+  let body = {};
+  try {
+    body = rawBody.length ? JSON.parse(rawBody.toString('utf8')) : {};
+  } catch (_) {
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
   if (body.action === 'generate-copy') return handleGenerateCopy(res, body);
   if (body.action === 'grant-access') return handleGrantAccess(res, body);
   return handleSendEmail(res, body);
 };
 
-module.exports.config = { api: { bodyParser: true } };
+module.exports.config = { api: { bodyParser: false } };
 
 async function handleStripeWebhook(res, rawBody, sigHeader) {
   const STRIPE_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -40,18 +47,36 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // delivers to the account owner — never use it for real customer email.
   const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
-  // Verify Stripe signature
-  if (STRIPE_SECRET) {
-    try {
-      const parts = sigHeader.split(',');
-      const ts = (parts.find(p => p.startsWith('t=')) || '').slice(2);
-      const sig = (parts.find(p => p.startsWith('v1=')) || '').slice(3);
-      const expected = crypto.createHmac('sha256', STRIPE_SECRET).update(`${ts}.${rawBody}`).digest('hex');
-      const valid = crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(sig, 'hex'));
-      if (!valid) return res.status(400).json({ error: 'Invalid signature' });
-    } catch (_) {
-      return res.status(400).json({ error: 'Signature check failed' });
+  // Never accept an unsigned/unverified Stripe event. STRIPE_WEBHOOK_SECRET is
+  // the endpoint signing secret (whsec_...), not a Stripe API secret key.
+  if (!STRIPE_SECRET) {
+    console.error('STRIPE_WEBHOOK_SECRET is not configured');
+    return res.status(500).json({ error: 'Webhook is not configured' });
+  }
+
+  try {
+    const parts = sigHeader.split(',');
+    const ts = (parts.find(p => p.startsWith('t=')) || '').slice(2);
+    const signatures = parts.filter(p => p.startsWith('v1=')).map(p => p.slice(3));
+    const timestamp = Number(ts);
+    if (!Number.isFinite(timestamp) || signatures.length === 0) {
+      return res.status(400).json({ error: 'Invalid signature header' });
     }
+
+    // Reject replayed events outside Stripe's standard five-minute tolerance.
+    if (Math.abs(Math.floor(Date.now() / 1000) - timestamp) > 300) {
+      return res.status(400).json({ error: 'Expired signature' });
+    }
+
+    const expected = crypto.createHmac('sha256', STRIPE_SECRET).update(`${ts}.${rawBody}`).digest();
+    const valid = signatures.some(candidate => {
+      if (!/^[a-f0-9]{64}$/i.test(candidate)) return false;
+      const received = Buffer.from(candidate, 'hex');
+      return received.length === expected.length && crypto.timingSafeEqual(expected, received);
+    });
+    if (!valid) return res.status(400).json({ error: 'Invalid signature' });
+  } catch (_) {
+    return res.status(400).json({ error: 'Signature check failed' });
   }
 
   let event;
@@ -100,7 +125,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   // KPPS one-time purchases — unlock the full system for life.
   // Check the pre-discount subtotal first so COUPON / discounted purchases still deliver.
-  const KPPS_AMOUNTS = { 40000: true, 49700: true }; // $400 upgrade or $497 full price
+  const KPPS_AMOUNTS = { 19700: true, 40000: true, 49700: true }; // current $197 offer + legacy purchases
   const isKPPS = !isCRMSub && (metaProduct === 'kpps' || !!KPPS_AMOUNTS[amountSubtotal] || !!KPPS_AMOUNTS[amountTotal]);
 
   // Party Printables — one-time $97 (unlimited template library)
@@ -248,7 +273,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 <p style="font-size:.82rem;color:#888;margin-top:-10px">This is where your training, resources, and community are. Click above to join.</p>
 <div class="pbh-box">
 <p>Step 2 — Log in to Party Biz Hub (your business tools)</p>
-<p style="font-size:.83rem;color:#333;font-weight:400;margin:0 0 4px">Party Biz Hub is your all-in-one business dashboard — digital store, quote builder, contracts, profit calculator, and more. It is included with your KPPS membership.</p>
+<p style="font-size:.83rem;color:#333;font-weight:400;margin:0 0 4px">Party Biz Hub is your all-in-one business dashboard — digital store, quote builder, contracts, profit calculator, and more. Your first year is included with KPPS.</p>
 <a href="${loginUrl}" class="pbh-link">Log In to Party Biz Hub →</a>
 <p style="font-size:.78rem;color:#888;margin-top:8px;margin-bottom:0">Link expired? Go to <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a> to request a new one.</p>
 </div>
