@@ -38,7 +38,12 @@ module.exports = async function handler(req, res) {
 module.exports.config = { api: { bodyParser: false } };
 
 async function handleStripeWebhook(res, rawBody, sigHeader) {
-  const STRIPE_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+  // Keep the original account connected while allowing KPPS purchases from its
+  // dedicated Stripe account. Each Stripe account issues its own endpoint secret.
+  const STRIPE_SECRETS = [
+    process.env.STRIPE_WEBHOOK_SECRET || '',
+    process.env.KPPS_STRIPE_WEBHOOK_SECRET || '',
+  ].filter(Boolean);
   const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
@@ -47,10 +52,10 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // delivers to the account owner — never use it for real customer email.
   const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
-  // Never accept an unsigned/unverified Stripe event. STRIPE_WEBHOOK_SECRET is
-  // the endpoint signing secret (whsec_...), not a Stripe API secret key.
-  if (!STRIPE_SECRET) {
-    console.error('STRIPE_WEBHOOK_SECRET is not configured');
+  // Never accept an unsigned/unverified Stripe event. These are endpoint signing
+  // secrets (whsec_...), not Stripe API secret keys.
+  if (STRIPE_SECRETS.length === 0) {
+    console.error('No Stripe webhook signing secret is configured');
     return res.status(500).json({ error: 'Webhook is not configured' });
   }
 
@@ -68,11 +73,13 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
       return res.status(400).json({ error: 'Expired signature' });
     }
 
-    const expected = crypto.createHmac('sha256', STRIPE_SECRET).update(`${ts}.${rawBody}`).digest();
-    const valid = signatures.some(candidate => {
-      if (!/^[a-f0-9]{64}$/i.test(candidate)) return false;
-      const received = Buffer.from(candidate, 'hex');
-      return received.length === expected.length && crypto.timingSafeEqual(expected, received);
+    const valid = STRIPE_SECRETS.some(secret => {
+      const expected = crypto.createHmac('sha256', secret).update(`${ts}.${rawBody}`).digest();
+      return signatures.some(candidate => {
+        if (!/^[a-f0-9]{64}$/i.test(candidate)) return false;
+        const received = Buffer.from(candidate, 'hex');
+        return received.length === expected.length && crypto.timingSafeEqual(expected, received);
+      });
     });
     if (!valid) return res.status(400).json({ error: 'Invalid signature' });
   } catch (_) {
