@@ -14,7 +14,7 @@ create table if not exists profiles (
   id          uuid references auth.users on delete cascade primary key,
   email       text,
   full_name   text,
-  has_paid    boolean default true,
+  has_paid    boolean default false,
   has_kpps_access boolean default false,
   profile_data jsonb  default '{}'::jsonb,
   created_at  timestamptz default now(),
@@ -22,7 +22,8 @@ create table if not exists profiles (
 );
 
 -- Add columns if they don't exist yet (safe to run on an existing table)
-alter table profiles add column if not exists has_paid              boolean default true;
+alter table profiles add column if not exists has_paid              boolean default false;
+alter table profiles alter column has_paid set default false;
 alter table profiles add column if not exists has_kpps_access       boolean default false;
 alter table profiles add column if not exists has_printables_access boolean default false;
 alter table profiles add column if not exists has_crm_access        boolean default false;
@@ -351,6 +352,41 @@ alter table library_claims disable row level security;
 -- ── ADDITIONS TO EXISTING TABLES ─────────────────────────────────
 -- library_tier: 'founding' = unlimited, 'tier1' = 15 max, 'tier2' = 30 max, 'unlimited'
 alter table profiles add column if not exists library_tier text default 'tier1';
+
+-- Paid access is granted only by trusted server-side code (Stripe webhook or
+-- admin grant). Authenticated browser users may edit their business profile,
+-- but cannot promote themselves into paid products.
+create or replace function protect_profile_entitlements()
+returns trigger
+language plpgsql
+security invoker
+as $$
+begin
+  if auth.role() = 'authenticated' then
+    if tg_op = 'INSERT' then
+      new.has_paid := false;
+      new.has_kpps_access := false;
+      new.has_printables_access := false;
+      new.has_crm_access := false;
+      new.stripe_customer_id := null;
+      new.library_tier := 'tier1';
+    else
+      new.has_paid := old.has_paid;
+      new.has_kpps_access := old.has_kpps_access;
+      new.has_printables_access := old.has_printables_access;
+      new.has_crm_access := old.has_crm_access;
+      new.stripe_customer_id := old.stripe_customer_id;
+      new.library_tier := old.library_tier;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_protect_entitlements on profiles;
+create trigger profiles_protect_entitlements
+  before insert or update on profiles
+  for each row execute function protect_profile_entitlements();
 
 -- instructions: step-by-step guide shown to customer after purchase (email + success page)
 alter table products add column if not exists instructions text;
