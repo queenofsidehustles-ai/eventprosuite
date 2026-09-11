@@ -90,6 +90,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   try { event = JSON.parse(rawBody.toString()); } catch (_) {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
+  const eventId = event.id || 'unknown-event';
 
   // Subscription canceled or ended → revoke the CRM key so access stops
   if (event.type === 'customer.subscription.deleted') {
@@ -148,8 +149,13 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const customerEmail = session.customer_details?.email || session.customer_email || '';
   const customerName = session.customer_details?.name || '';
 
-  if (!customerEmail || !SUPABASE_SERVICE_KEY) {
-    return res.json({ received: true, note: 'Missing email or service key' });
+  if (!customerEmail) {
+    console.error('KPPS delivery failed: checkout session has no customer email', { eventId, sessionId: session.id });
+    return res.status(422).json({ received: false, error: 'Checkout session has no customer email', eventId });
+  }
+  if (!SUPABASE_SERVICE_KEY) {
+    console.error('KPPS delivery failed: SUPABASE_SERVICE_KEY is not configured', { eventId });
+    return res.status(500).json({ received: false, error: 'Customer access service is not configured', eventId });
   }
 
   const adminHeaders = {
@@ -169,15 +175,19 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     const created = await createRes.json();
     if (created.id) {
       userId = created.id;
-    } else if (created.msg && created.msg.includes('already')) {
-      // User exists — find them
+    } else {
+      // The user may already exist, or creation may have failed for another
+      // recoverable reason. Always try the authoritative lookup before failing.
       const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(customerEmail)}`, { headers: adminHeaders });
       const list = await listRes.json();
       userId = list?.users?.[0]?.id || null;
     }
   } catch (_) {}
 
-  if (!userId) return res.json({ received: true, note: 'Could not create or find user' });
+  if (!userId) {
+    console.error('KPPS delivery failed: could not create or find Supabase user', { eventId, customerEmail });
+    return res.status(502).json({ received: false, error: 'Could not create or find customer account', eventId });
+  }
 
   // Set profile access — CRM sub gets the CRM key; KPPS unlocks everything; printables gets the store
   const profilePayload = {
@@ -191,32 +201,53 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     // Printables buyer or KPPS member — both get the printables library
     profilePayload.has_printables_access = true;
     profilePayload.library_tier = assignedTier;
-    if (isKPPS) profilePayload.has_kpps_access = true;
+    if (isKPPS) {
+      profilePayload.has_kpps_access = true;
+      // KPPS includes the Party Biz Hub business tools for the first year.
+      profilePayload.has_crm_access = true;
+    }
   }
 
+  let profileWritten = false;
+  let profileError = null;
   try {
     const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?on_conflict=id`, {
       method: 'POST',
       headers: { ...adminHeaders, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(profilePayload),
     });
-    if (!profileRes.ok) {
+    if (profileRes.ok) {
+      profileWritten = true;
+    } else {
       const profileErr = await profileRes.json().catch(() => ({}));
+      profileError = profileErr.message || profileErr.hint || profileErr.details || `HTTP ${profileRes.status}`;
       console.error('Profile upsert failed:', profileErr);
-      // Fallback: PATCH the existing row directly
-      await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
+      // Fallback: PATCH the existing row directly and verify the result.
+      const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
         method: 'PATCH',
         headers: { ...adminHeaders, 'Prefer': 'return=minimal' },
         body: JSON.stringify(profilePayload),
-      }).catch(e => console.error('Profile PATCH fallback failed:', e.message));
+      });
+      if (patchRes.ok) {
+        profileWritten = true;
+        profileError = null;
+      } else {
+        const patchErr = await patchRes.json().catch(() => ({}));
+        profileError = patchErr.message || patchErr.hint || patchErr.details || `HTTP ${patchRes.status}`;
+      }
     }
   } catch (e) {
-    console.error('Profile write exception:', e.message);
+    profileError = e.message;
+  }
+
+  if (!profileWritten) {
+    console.error('KPPS delivery failed: customer profile access was not written', { eventId, userId, profileError });
+    return res.status(502).json({ received: false, error: 'Customer access could not be granted', eventId, userId });
   }
 
   // Generate magic login link — KPPS & CRM subscribers go to dashboard, PPP goes to welcome guide
   const redirectPage = (isKPPS || isCRMSub) ? 'dashboard.html' : 'welcome.html';
-  let loginUrl = `https://app.partybizhub.com/${redirectPage}`;
+  let loginUrl = '';
   try {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
       method: 'POST',
@@ -224,8 +255,15 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
       body: JSON.stringify({ type: 'magiclink', email: customerEmail, options: { redirect_to: `https://app.partybizhub.com/${redirectPage}` } }),
     });
     const linkData = await linkRes.json();
-    if (linkData.action_link) loginUrl = linkData.action_link;
-  } catch (_) {}
+    if (linkRes.ok && linkData.action_link) loginUrl = linkData.action_link;
+  } catch (e) {
+    console.error('Magic-link generation exception:', e.message);
+  }
+
+  if (!loginUrl) {
+    console.error('KPPS delivery failed: Party Biz Hub magic link was not generated', { eventId, userId });
+    return res.status(502).json({ received: false, error: 'Customer login link could not be generated', eventId, userId });
+  }
 
   // Send welcome email — different copy for KPPS vs PPP
   if (RESEND_KEY) {
@@ -321,7 +359,13 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     try {
       const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${RESEND_KEY}`,
+          'Content-Type': 'application/json',
+          // Stripe retries failed webhooks. This prevents a retry or manual replay
+          // from sending the same welcome email more than once within 24 hours.
+          'Idempotency-Key': `purchase-delivery/${eventId}`,
+        },
         body: JSON.stringify({ from: FROM_EMAIL, to: customerEmail, subject, html }),
       });
       const emailData = await emailRes.json().catch(() => ({}));
@@ -334,10 +378,32 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
       emailError = e.message;
     }
 
-    return res.json({ received: true, userId, tier: assignedTier, emailSent, emailError });
+    if (!emailSent) {
+      console.error('KPPS delivery failed: Resend did not accept the welcome email', { eventId, userId, emailError });
+      return res.status(502).json({
+        received: false,
+        error: 'Welcome email could not be sent',
+        eventId,
+        userId,
+        tier: assignedTier,
+        emailSent: false,
+        emailError,
+      });
+    }
+
+    return res.json({ received: true, eventId, userId, tier: assignedTier, profileWritten, emailSent: true });
   }
 
-  return res.json({ received: true, note: 'RESEND_API_KEY not set — account created but no email sent', userId, tier: assignedTier });
+  console.error('KPPS delivery failed: RESEND_API_KEY is not configured', { eventId, userId });
+  return res.status(500).json({
+    received: false,
+    error: 'Welcome email service is not configured',
+    eventId,
+    userId,
+    tier: assignedTier,
+    profileWritten,
+    emailSent: false,
+  });
 }
 
 async function handleGenerateCopy(res, body) {
