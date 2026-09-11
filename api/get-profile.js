@@ -1,5 +1,6 @@
 const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+const { mergePublishedWebsiteIntoProfile } = require('./_profile-compat');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,9 +15,7 @@ module.exports = async function handler(req, res) {
   const timer = setTimeout(() => controller.abort(), 8000);
 
   try {
-    const response = await fetch(
-      `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(uid)}&select=id,profile_data&limit=1`,
-      {
+    const requestOptions = {
         signal: controller.signal,
         headers: {
           'apikey': SUPA_KEY,
@@ -24,21 +23,28 @@ module.exports = async function handler(req, res) {
           'Content-Type': 'application/json',
           'Prefer': 'return=representation'
         }
-      }
-    );
+      };
+    const [profileResponse, websiteResponse] = await Promise.all([
+      fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(uid)}&select=id,profile_data&limit=1`, requestOptions),
+      // Only published website data may feed a public booking page. This also
+      // gives existing students a seamless fallback when their website has
+      // packages but Business Profile booking services are still empty.
+      fetch(`${SUPA_URL}/rest/v1/website_builds?user_id=eq.${encodeURIComponent(uid)}&last_published_at=not.is.null&select=brand_data,packages_data,booking_data,last_published_at&order=updated_at.desc&limit=1`, requestOptions)
+    ]);
     clearTimeout(timer);
 
-    const rows = await response.json();
+    const rows = await profileResponse.json();
+    const websiteRows = websiteResponse.ok ? await websiteResponse.json() : [];
 
-    if (!response.ok) {
-      return res.status(500).json({ error: `Database error ${response.status}`, detail: rows });
+    if (!profileResponse.ok) {
+      return res.status(500).json({ error: `Database error ${profileResponse.status}`, detail: rows });
     }
 
     if (!rows || rows.length === 0) {
       return res.status(404).json({ error: 'No profile found for this booking link. The business owner needs to save their Business Profile.' });
     }
 
-    return res.json(rows[0]);
+    return res.json(mergePublishedWebsiteIntoProfile(rows[0], websiteRows && websiteRows[0]));
   } catch (e) {
     clearTimeout(timer);
     if (e.name === 'AbortError') {

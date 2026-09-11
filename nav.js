@@ -136,8 +136,8 @@
       <div style="font-size:2.2rem;margin-bottom:10px">🔒</div>
       <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:#1F1A24;margin-bottom:8px">Kids Party Profit System™ Feature</h3>
       <p style="font-size:.88rem;color:#6C6473;line-height:1.75;margin-bottom:6px">This tool is part of the full <strong style="color:#1F1A24">Kids Party Profit System™</strong> — quote builder, contracts, profit calculator, event checklist, vendor directory, content studio, and AI assistant.</p>
-      <p style="font-size:.85rem;color:#7B3F9E;font-weight:700;background:#F5EAFF;border-radius:10px;padding:10px 14px;margin-bottom:20px">👑 Already have Party Profit Printables? Your $97 applies — upgrade for just <strong>$400 more</strong>.</p>
-      <a href="https://buy.stripe.com/dRm8wPe8d70XgN0c4X7bW09" target="_blank" style="display:block;background:linear-gradient(135deg,#7B3F9E,#E8178A);color:#fff;font-weight:800;padding:14px;border-radius:12px;text-decoration:none;font-size:.92rem;margin-bottom:10px;box-shadow:0 6px 16px rgba(123,63,158,.35)">Upgrade to Full System — $400 →</a>
+      <p style="font-size:.85rem;color:#7B3F9E;font-weight:700;background:#F5EAFF;border-radius:10px;padding:10px 14px;margin-bottom:20px">Build your offer, website, booking process, and back office with the complete business-in-a-box system.</p>
+      <a href="https://partybusinesscoach.com" target="_blank" rel="noopener" style="display:block;background:linear-gradient(135deg,#7B3F9E,#E8178A);color:#fff;font-weight:800;padding:14px;border-radius:12px;text-decoration:none;font-size:.92rem;margin-bottom:10px;box-shadow:0 6px 16px rgba(123,63,158,.35)">See the Full System — $197 →</a>
       <button onclick="document.getElementById('upgradeModal').remove()" style="background:none;border:none;color:#9990aa;font-size:.82rem;cursor:pointer;font-family:inherit">Not right now</button>
     </div>`;
     document.body.appendChild(modal);

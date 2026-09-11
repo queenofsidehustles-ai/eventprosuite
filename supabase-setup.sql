@@ -200,13 +200,27 @@ alter table website_builds add column if not exists founding_data     jsonb defa
 alter table website_builds add column if not exists last_published_at timestamptz;
 alter table website_builds add column if not exists updated_at        timestamptz default now();
 
--- RLS disabled on website_builds — auth.uid() returns null for writes in this
--- Supabase project (known bug). Reads are open anyway (site.html needs them).
--- Security is enforced by filtering user_id in every query.
-alter table website_builds disable row level security;
+-- Draft website data is private to its owner. Public visitors may read only a
+-- build the owner has explicitly published. Client-side user_id filters are not
+-- a security boundary, so fresh environments must keep RLS enabled.
+alter table website_builds enable row level security;
 
 drop policy if exists "website_builds: owner can do all" on website_builds;
+drop policy if exists "website_builds: public can read published" on website_builds;
 drop policy if exists "website_builds: anon can read" on website_builds;
+
+create policy "website_builds: owner can do all"
+on website_builds
+for all
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "website_builds: public can read published"
+on website_builds
+for select
+to anon, authenticated
+using (last_published_at is not null);
 
 
 -- ── 7. DIGITAL PRODUCTS TABLE ────────────────────────────────

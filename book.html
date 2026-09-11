@@ -670,10 +670,7 @@ let currentStep = 1;
 let bookingId = null;
 
 const DEFAULT_SERVICES = [
-  { name: 'Princess / Character Party', description: 'Bring your child\'s favorite character to life! Full costume, activities, and magic.', price: '', duration: '' },
-  { name: 'Balloon Twisting', description: 'Colorful balloon animals and creations that kids absolutely love.', price: '', duration: '' },
-  { name: 'Face Painting', description: 'Professional face painting with glitter, themes, and custom designs.', price: '', duration: '' },
-  { name: 'Custom Package', description: 'Mix and match services for a totally unique party experience.', price: '', duration: '' },
+  { name: 'Custom party inquiry', description: 'Tell us what you are planning and we will help you choose the right party experience.', price: '', duration: '' },
 ];
 
 // ──────────────────────────────────────────────
@@ -694,7 +691,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // Show the form immediately with defaults — never block on profile load
+  // Show a safe custom-inquiry option immediately. Never advertise services the
+  // owner may not offer while her saved profile is loading.
   applyBranding();
   renderServices();
   showMain();
@@ -711,8 +709,9 @@ window.addEventListener('DOMContentLoaded', async () => {
       renderServices();
     }
   } catch (e) {
-    // Silently continue — form already visible with defaults
-    console.warn('Profile load failed, using defaults:', e.message);
+    // Continue with the safe custom-inquiry option so a temporary loading issue
+    // cannot publish incorrect packages on the owner's behalf.
+    console.warn('Profile load failed, using safe inquiry option:', e.message);
   }
 });
 

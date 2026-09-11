@@ -392,7 +392,7 @@ input,select,textarea{font:inherit}
       <div style="font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">Your Services (shown on booking form)</div>
       <div id="servicesList" style="margin-bottom:.8rem"></div>
       <button class="btn btn-outline" onclick="openServiceModal()" style="font-size:.82rem">+ Add a Service</button>
-      <div class="field-help" style="margin-top:.4rem">If left empty, clients see 4 generic options. Add your real packages here so clients pick the right one and you capture the right price.</div>
+      <div class="field-help" style="margin-top:.4rem">Add your real packages so clients can choose the right offer. If this is empty, the booking page will show one safe custom-inquiry option instead of services you do not offer.</div>
     </div>
 
     <!-- Add Service Modal -->
@@ -579,7 +579,7 @@ function applyContractToggleUI(on){
 /* ── Services ── */
 function renderServices(){
   const list=$('servicesList');
-  if(!bookingServices.length){list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No services added yet — clients will see 4 generic options.</div>';return}
+  if(!bookingServices.length){list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No services added yet. Your booking page will accept a custom inquiry without advertising the wrong services.</div>';return}
   list.innerHTML=bookingServices.map((s,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:.7rem;background:var(--cream);border-radius:10px;margin-bottom:.5rem;border:1px solid var(--line)">
       <div style="flex:1;min-width:0">

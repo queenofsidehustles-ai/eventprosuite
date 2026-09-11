@@ -663,10 +663,26 @@ async function handleLogout() {
 // ─────────────────────────────────────────────────────────────
 async function saveBrandProfile() {
   if (!currentUser) return;
+  // Always merge into the latest saved profile. Other Party Biz Hub tools also
+  // store settings in profile_data, so replacing the whole object here could
+  // silently erase booking, automation, contact, or entitlement information.
+  const { data: latestProfile, error: loadError } = await sb
+    .from('profiles')
+    .select('profile_data')
+    .eq('id', currentUser.id)
+    .maybeSingle();
+
+  if (loadError) {
+    console.error('Profile load error:', loadError);
+    toast('Could not verify your current settings. Nothing was changed.');
+    return;
+  }
+
   const pd = {
+    ...((latestProfile && latestProfile.profile_data) || {}),
     businessName: $('businessName').value,
     brandColor: $('brandColor').value,
-    logoDataURL: window._logoDataURL || null,
+    logoDataURL: window._logoDataURL || ((latestProfile && latestProfile.profile_data && latestProfile.profile_data.logoDataURL) || null),
     stripe100: $('stripe100').value,
     stripe250: $('stripe250').value,
     stripe500: $('stripe500').value,
@@ -690,6 +706,7 @@ async function saveBrandProfile() {
     console.error('Save error:', error);
     toast('Could not save. Try again.');
   } else {
+    currentProfile = { ...(currentProfile || {}), profile_data: pd };
     toast('✓ Brand profile saved');
     const name = pd.businessName || currentUser.email.split('@')[0];
     if ($('userChipText')) $('userChipText').textContent = name;
