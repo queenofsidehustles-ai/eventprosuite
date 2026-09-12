@@ -80,6 +80,20 @@ input,select,textarea{font:inherit}
 .wrap{max-width:1100px;margin:0 auto;padding:1.8rem 1.5rem 4rem}
 .panel{display:none}
 .panel.active{display:block}
+.advanced-site-section{display:none!important}
+body.show-advanced .advanced-site-section{display:block!important}
+body.show-advanced .section-group-label.advanced-site-section{display:flex!important}
+.ready-made-note{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;margin:0 0 1rem;border:1px solid rgba(109,40,217,.18);border-radius:14px;background:linear-gradient(135deg,rgba(109,40,217,.06),rgba(230,162,190,.09));color:var(--muted);font-size:.86rem;line-height:1.55}
+.ready-made-note strong{display:block;color:var(--plum-900);margin-bottom:2px}
+.advanced-toggle{margin-top:1rem;padding:.62rem 1rem;border:1px solid rgba(255,255,255,.38);border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:.78rem}
+.advanced-toggle:hover{background:rgba(255,255,255,.2)}
+.publish-card{margin-top:1.2rem;padding:1.5rem;border-radius:18px;background:linear-gradient(135deg,var(--plum-900),var(--brand));color:#fff;display:flex;align-items:center;justify-content:space-between;gap:1.2rem;flex-wrap:wrap}
+.publish-card h3{font-family:'Playfair Display',serif;font-size:1.35rem;margin-bottom:.35rem}
+.publish-card p{font-size:.86rem;line-height:1.55;color:rgba(255,255,255,.82);max-width:610px}
+.publish-link-box{display:none;margin-top:1rem;padding:1rem;border:1px solid rgba(30,140,90,.25);border-radius:14px;background:#f3fbf7}
+.publish-link-row{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}
+.publish-link-row input{flex:1;min-width:230px;padding:.72rem .85rem;border:1px solid #b8dfca;border-radius:10px;background:#fff;color:var(--ink)}
+body:not(.show-advanced) .essential-wide{grid-column:1/-1}
 
 /* CARDS */
 .card{background:#fff;border-radius:20px;border:1px solid var(--line);padding:1.8rem;margin-bottom:1.2rem;box-shadow:var(--shadow-sm)}
@@ -504,21 +518,22 @@ input,select,textarea{font:inherit}
 <div class="page-header" id="pageHeader" style="display:none">
   <div class="page-header-inner">
     <div class="page-eyebrow">🌐 Website Builder · KPPS</div>
-    <h1 class="page-title">Build your party business <span class="script">website</span> in minutes.</h1>
-    <p class="page-sub">No coding. No drag-drop puzzles. Pick your niche, add your brand, fill in your packages — done. Your finished site is yours to download and deploy.</p>
+    <h1 class="page-title">Launch your ready-made party business <span class="script">website</span>.</h1>
+    <p class="page-sub">Choose your service, add your business details, confirm your packages, and publish. Your design and starter wording are already prepared.</p>
+    <button type="button" class="advanced-toggle" id="advancedToggle" onclick="toggleAdvancedWebsite()">Customize more</button>
   </div>
 </div>
 
 <!-- STEPS BAR -->
 <div class="steps-bar" id="stepsBar" style="display:none">
   <div class="steps-inner">
-    <button class="step-pill active" data-step="1" onclick="goToStep(1)"><span class="num">1</span>Pick your niche</button>
+    <button class="step-pill active" data-step="1" onclick="goToStep(1)"><span class="num">1</span>Choose your service</button>
     <span class="step-divider">→</span>
-    <button class="step-pill locked" data-step="2" onclick="goToStep(2)"><span class="num">2</span>Your brand</button>
+    <button class="step-pill locked" data-step="2" onclick="goToStep(2)"><span class="num">2</span>Business details</button>
     <span class="step-divider">→</span>
-    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Your content</button>
+    <button class="step-pill locked" data-step="3" onclick="goToStep(3)"><span class="num">3</span>Confirm your offer</button>
     <span class="step-divider">→</span>
-    <button class="step-pill locked" data-step="4" onclick="goToStep(4)"><span class="num">4</span>Preview &amp; download</button>
+    <button class="step-pill locked" data-step="4" onclick="goToStep(4)"><span class="num">4</span>Preview &amp; publish</button>
     <span class="autosave-badge saved" id="autosaveBadge" style="margin-left:auto;display:none"><span class="dot"></span>Saved</span>
   </div>
 </div>
@@ -530,7 +545,7 @@ input,select,textarea{font:inherit}
   <div class="panel active" id="panelStep1">
 
     <!-- TEMPLATE PICKER -->
-    <div class="card" style="margin-bottom:1.2rem">
+    <div class="card advanced-site-section" style="margin-bottom:1.2rem">
       <div class="card-header">
         <h2>Choose your design style</h2>
         <p>Pick the look that fits your brand vibe. Each template has a completely different layout and feel — you can always preview before you decide.</p>
@@ -685,9 +700,10 @@ input,select,textarea{font:inherit}
 
     <!-- NICHE PICKER -->
     <div class="card">
+      <div class="ready-made-note"><span>✨</span><div><strong>Your recommended design is already selected.</strong>You only need to choose the service you want to sell. Design styles, colors, photos, and extra sections remain available under <em>Customize more</em>.</div></div>
       <div class="card-header">
-        <h2>Pick your niche</h2>
-        <p>Choose the visual treatment that matches YOUR business. Each niche has its own dimensional color story baked in. You can change it later — no commitment.</p>
+        <h2>Choose your first service</h2>
+        <p>Pick the party service you want to launch first. We will load ready-made wording and starter packages that you can adjust.</p>
       </div>
       <div class="niche-grid" id="nicheGrid"></div>
 
@@ -706,8 +722,8 @@ input,select,textarea{font:inherit}
   <div class="panel" id="panelStep2">
     <div class="card">
       <div class="card-header">
-        <h2>Your brand</h2>
-        <p>This is how your client will see your business — on every page, every booking form, every detail. We'll keep this dead simple.</p>
+        <h2>Add your business details</h2>
+        <p>These essentials connect your website, booking page, and Party Biz Hub back office.</p>
       </div>
 
       <!-- Live logo preview -->
@@ -722,12 +738,12 @@ input,select,textarea{font:inherit}
       </div>
 
       <div class="grid-2">
-        <div class="field">
+        <div class="field essential-wide">
           <label>Business name</label>
           <input type="text" id="businessName" placeholder="e.g. Bear Hug Events"/>
           <div class="field-help">Appears at the top of every page on your site.</div>
         </div>
-        <div class="field">
+        <div class="field advanced-site-section">
           <label>Tagline</label>
           <input type="text" id="tagline" placeholder="e.g. Luxury kids party experiences"/>
           <div class="field-help">A one-line description under your business name.</div>
@@ -758,7 +774,7 @@ input,select,textarea{font:inherit}
       </div>
 
       <!-- Social Media Handles — collapsible -->
-      <div style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px dashed var(--line)">
+      <div class="advanced-site-section" style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px dashed var(--line)">
         <button type="button" onclick="toggleSocial()" id="socialToggleBtn"
                 style="display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;width:100%;text-align:left;">
           <span style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;">Social media</span>
@@ -796,7 +812,7 @@ input,select,textarea{font:inherit}
       </div>
 
       <!-- Color palette presets -->
-      <div style="margin-top:1.4rem">
+      <div class="advanced-site-section" style="margin-top:1.4rem">
         <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Brand color palette</div>
         <div style="font-size:.84rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6">Pick a palette OR a custom color below. Your site will style itself with these colors.</div>
         <div class="palette-grid" id="paletteGrid"></div>
@@ -831,25 +847,25 @@ input,select,textarea{font:inherit}
   <div class="panel" id="panelStep3">
     <div class="card">
       <div class="card-header">
-        <h2>Build your website content</h2>
-        <p>Fill in the <strong>4 required sections</strong> below — that's all you need to launch. The optional sections at the bottom are bonuses you can add anytime.</p>
+        <h2>Confirm your offer</h2>
+        <p>Your starter packages and booking details are already prepared. Review them, make any needed changes, then continue.</p>
       </div>
 
       <div class="completion-banner" id="completionBanner" style="display:none">
         <div class="icon">🎉</div>
         <div>
-          <h4>All sections complete!</h4>
-          <p>Your website is ready to generate. Step 4 (download your site) ships next.</p>
+          <h4>Your offer is ready!</h4>
+          <p>Your website has everything it needs for a customer to view your packages and inquire.</p>
         </div>
       </div>
 
       <div class="accordion-list">
 
         <!-- ── REQUIRED SECTIONS ─────────────────── -->
-        <div class="section-group-label">Required — fill these in to launch</div>
+        <div class="section-group-label">Review these before publishing</div>
 
         <!-- Section 1: Niche Details -->
-        <div class="acc-section open" data-section="niche">
+        <div class="acc-section open advanced-site-section" data-section="niche">
           <button class="acc-head" onclick="toggleSection('niche')">
             <div class="acc-num req"><span>1</span></div>
             <div class="acc-title">
@@ -897,7 +913,7 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- Section 3: About You -->
-        <div class="acc-section open" data-section="about">
+        <div class="acc-section open advanced-site-section" data-section="about">
           <button class="acc-head" onclick="toggleSection('about')">
             <div class="acc-num req"><span>3</span></div>
             <div class="acc-title">
@@ -973,10 +989,10 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- ── OPTIONAL SECTIONS ─────────────────── -->
-        <div class="section-group-label optional">Boost your site — add when ready</div>
+        <div class="section-group-label optional advanced-site-section">Boost your site — add when ready</div>
 
         <!-- Section: Photos & Gallery — FIRST, most impactful -->
-        <div class="acc-section" data-section="gallery">
+        <div class="acc-section advanced-site-section" data-section="gallery">
           <button class="acc-head" onclick="toggleSection('gallery')">
             <div class="acc-num opt" style="font-size:1rem"><span>📸</span></div>
             <div class="acc-title">
@@ -1012,7 +1028,7 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- Section: Reviews -->
-        <div class="acc-section" data-section="reviews">
+        <div class="acc-section advanced-site-section" data-section="reviews">
           <button class="acc-head" onclick="toggleSection('reviews')">
             <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
@@ -1029,7 +1045,7 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- Section: Add-ons -->
-        <div class="acc-section" data-section="addons">
+        <div class="acc-section advanced-site-section" data-section="addons">
           <button class="acc-head" onclick="toggleSection('addons')">
             <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
@@ -1046,7 +1062,7 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- Section: Founding Families -->
-        <div class="acc-section" data-section="founding">
+        <div class="acc-section advanced-site-section" data-section="founding">
           <button class="acc-head" onclick="toggleSection('founding')">
             <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
@@ -1083,7 +1099,7 @@ input,select,textarea{font:inherit}
         </div>
 
         <!-- Section: FAQ -->
-        <div class="acc-section" data-section="faq">
+        <div class="acc-section advanced-site-section" data-section="faq">
           <button class="acc-head" onclick="toggleSection('faq')">
             <div class="acc-num opt"><span>+</span></div>
             <div class="acc-title">
@@ -1107,22 +1123,22 @@ input,select,textarea{font:inherit}
         </div>
         <div class="wizard-nav-right">
           <button class="btn btn-primary" id="finishStep3Btn" onclick="finishStep3()">
-            Save All Sections ✓
+            Preview My Website →
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- STEP 4 — PREVIEW & DOWNLOAD -->
+  <!-- STEP 4 — PREVIEW & PUBLISH -->
   <div class="panel" id="panelStep4">
     <div class="card">
       <div class="card-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
         <div>
-          <h2>Preview &amp; download</h2>
-          <p>Here's your finished website. Switch device sizes to see how it looks on phone, tablet, or desktop. When you're ready, hit download — your site lands in your Downloads folder as a ZIP.</p>
+          <h2>Preview &amp; publish</h2>
+          <p>Check your website on phone or desktop. When it looks right, publish it with one click.</p>
         </div>
-        <span class="published-badge" id="publishedBadge" style="display:none">✓ Last generated <span id="publishedAt">just now</span></span>
+        <span class="published-badge" id="publishedBadge" style="display:none">✓ Last published <span id="publishedAt">just now</span></span>
       </div>
 
       <!-- LIVE PREVIEW -->
@@ -1150,21 +1166,17 @@ input,select,textarea{font:inherit}
         </div>
       </div>
 
-      <!-- DOWNLOAD CARD -->
-      <div class="download-card">
-        <div class="download-card-inner">
-          <div>
-            <h3>Ready to <span class="script">launch</span>?</h3>
-            <p>Click below — we bundle your finished <code style="background:rgba(255,255,255,.12);padding:2px 6px;border-radius:4px;font-size:.85em">index.html</code> with a step-by-step deployment guide into a ZIP. Drag-drop into Netlify and you're live in 60 seconds.</p>
-          </div>
-          <button class="btn-download" id="downloadBtn" onclick="downloadSite()">
-            ⬇ Download My Site
-          </button>
-        </div>
+      <div class="publish-card">
+        <div><h3>Ready to launch?</h3><p>We will save your latest changes and create one shareable website link. There is no separate hosting account or file upload to manage.</p></div>
+        <button class="btn-download" id="publishBtn" onclick="publishWebsite()">Publish My Website →</button>
+      </div>
+      <div class="publish-link-box" id="publishedLinkBox">
+        <strong style="display:block;color:var(--success);margin-bottom:.55rem">✓ Your website is live</strong>
+        <div class="publish-link-row"><input id="publishedLink" readonly/><button class="btn btn-outline" onclick="copyPublishedLink()">Copy link</button><button class="btn btn-primary" onclick="openPublishedWebsite()">Open website ↗</button></div>
       </div>
 
       <!-- DEPLOY GUIDE -->
-      <div class="deploy-card">
+      <div class="deploy-card advanced-site-section">
         <h3>How to publish your site (60 seconds)</h3>
         <p>Once you download the ZIP, here's how to take it live. No coding. No CLI. Just drag and drop.</p>
         <div class="deploy-steps">
@@ -1204,7 +1216,7 @@ input,select,textarea{font:inherit}
           <button class="btn btn-outline" onclick="goToStep(3)">← Back to packages</button>
         </div>
         <div class="wizard-nav-right">
-          <button class="btn btn-gold" onclick="downloadSite()">⬇ Download My Site</button>
+          <button class="btn btn-gold advanced-site-section" id="downloadBtn" onclick="downloadSite()">⬇ Download Website ZIP</button>
         </div>
       </div>
     </div>
@@ -1220,6 +1232,41 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,currentBuild=null,logoDataURL=null;
 const $=id=>document.getElementById(id);
+
+function toggleAdvancedWebsite(force){
+  const show=typeof force==='boolean'?force:!document.body.classList.contains('show-advanced');
+  document.body.classList.toggle('show-advanced',show);
+  const btn=$('advancedToggle');
+  if(btn)btn.textContent=show?'Use simple setup':'Customize more';
+  try{localStorage.setItem('pbh_website_advanced',show?'1':'0')}catch(e){}
+}
+
+function applyReadyMadeDefaults(){
+  const defaults=selectedNiche&&NICHE_DEFAULTS[selectedNiche]?NICHE_DEFAULTS[selectedNiche]:null;
+  const brandName=$('businessName')?.value.trim()||'Your party business';
+  const city=$('city')?.value.trim()||'';
+  const brandEmail=$('email')?.value.trim()||'';
+  if(defaults){
+    if($('tagline')&&!$('tagline').value.trim())$('tagline').value=defaults.tagline||'';
+    if($('nicheIcon')&&!$('nicheIcon').value.trim())$('nicheIcon').value=defaults.icon||'✨';
+    if($('nicheName')&&!$('nicheName').value.trim())$('nicheName').value=defaults.name||'';
+    if($('nicheTagline')&&!$('nicheTagline').value.trim())$('nicheTagline').value=defaults.tagline||'';
+    if($('nicheDescription')&&!$('nicheDescription').value.trim())$('nicheDescription').value=defaults.description||'';
+    if((!packagesData||!packagesData.length)&&Array.isArray(defaults.packages)){
+      packagesData=defaults.packages.map(p=>({...p}));
+      renderPackages();
+    }
+  }
+  if($('bookingEmail')&&!$('bookingEmail').value.trim())$('bookingEmail').value=brandEmail;
+  if($('bookingArea')&&!$('bookingArea').value.trim())$('bookingArea').value=city;
+  if($('bookingDepositPct')&&!$('bookingDepositPct').value)$('bookingDepositPct').value='50';
+  if($('bookingBalanceDays')&&!$('bookingBalanceDays').value)$('bookingBalanceDays').value='7';
+  if($('aboutBio')&&!$('aboutBio').value.trim()&&defaults){
+    const area=city?` in ${city}`:' in your local area';
+    $('aboutBio').value=`${brandName} creates ${defaults.name.toLowerCase()}${area}. We make celebrations easier with thoughtfully prepared packages, clear communication, and a smooth booking experience.`;
+  }
+  ['niche','packages','about','booking'].forEach(evaluateSection);
+}
 
 // ─── 16 NICHE TYPES (matches template.html) ───────────────────────
 const NICHES=[
@@ -1478,6 +1525,7 @@ async function init(){
   $('pageHeader').style.display='block';
   $('stepsBar').style.display='block';
   $('mainContent').style.display='block';
+  try{if(localStorage.getItem('pbh_website_advanced')==='1')toggleAdvancedWebsite(true)}catch(e){}
 
   // Render niche picker
   renderNicheGrid();
@@ -1672,7 +1720,7 @@ async function loadExistingBuild(){
     }
 
     // If all required Step 3 sections complete, unlock step 4
-    const required=['niche','packages','about','booking'];
+    const required=['packages','booking'];
     const allDone=required.every(s=>{
       const sec=document.querySelector(`.acc-section[data-section="${s}"]`);
       return sec&&sec.classList.contains('complete');
@@ -1686,6 +1734,7 @@ async function loadExistingBuild(){
     if(data.last_published_at){
       $('publishedBadge').style.display='inline-flex';
       $('publishedAt').textContent=new Date(data.last_published_at).toLocaleString();
+      if(selectedTemplate!=='classic')showPublishedLink();
     }
 
     // Drop returning user on the furthest unlocked step
@@ -1992,6 +2041,9 @@ function toggleSocial(){
 function continueFromStep2(){
   const name=$('businessName').value.trim();
   if(!name){showToast('Add your business name first');return}
+  const email=$('email').value.trim();
+  if(!email){showToast('Add the email where you want booking inquiries sent');return}
+  applyReadyMadeDefaults();
   markStepDone(2);
   unlockStep(3);
   goToStep(3);
@@ -2009,10 +2061,10 @@ function debouncedSave(){
 }
 
 async function saveNow(){
-  if(!currentUser)return;
+  if(!currentUser)return false;
   // Refresh session token — prevents "Save failed" when token expires mid-session
   const{data:{session:fresh}}=await sb.auth.getSession();
-  if(!fresh){$('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Session expired — please sign in again';return;}
+  if(!fresh){$('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Session expired — please sign in again';return false;}
   const payload={
     user_id:currentUser.id,
     business_name:$('businessName').value||null,
@@ -2087,12 +2139,14 @@ async function saveNow(){
     currentBuild=result.data;
     $('autosaveBadge').classList.add('saved');
     $('autosaveBadge').innerHTML='<span class="dot"></span>Saved';
+    return true;
   }catch(e){
     const msg=e.message||e.code||'';
     console.error('Save error:',msg,e);
     const fk=msg.includes('foreign key')||msg.includes('violates')||msg.includes('profiles');
     $('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>'+(fk?'Save failed — run SQL fix':'Save failed');
     $('autosaveBadge').title=msg;
+    return false;
   }
 }
 
@@ -2177,13 +2231,12 @@ function evaluateSection(name){
 }
 
 function updateCompletionBanner(){
-  const required=['niche','packages','about','booking'];
+  const required=['packages','booking'];
   const allDone=required.every(s=>{
     const sec=document.querySelector(`.acc-section[data-section="${s}"]`);
     return sec&&sec.classList.contains('complete');
   });
   $('completionBanner').style.display=allDone?'flex':'none';
-  if(allDone)markStepDone(3);
 }
 
 // ─── STEP 3: PACKAGES ────────────────────────────────────────────
@@ -2404,8 +2457,9 @@ function toggleFounding(){
 }
 
 // ─── STEP 3: FINISH BUTTON ──────────────────────────────────────
-function finishStep3(){
-  const required=['niche','packages','about','booking'];
+async function finishStep3(){
+  applyReadyMadeDefaults();
+  const required=['packages','booking'];
   const missing=required.filter(s=>!evaluateSection(s));
   if(missing.length){
     const labels={niche:'Your service',packages:'Your packages',about:'About you',booking:'Booking contact'};
@@ -2416,12 +2470,11 @@ function finishStep3(){
     if(sec)sec.classList.add('open');
     return;
   }
-  saveNow();
+  const saved=await saveNow();
+  if(!saved){showToast('Please fix the save error before previewing');return}
   markStepDone(3);
   unlockStep(4);
   goToStep(4);
-  // Trigger preview generation when entering step 4
-  setTimeout(()=>regeneratePreview(),400);
 }
 
 // ─── Helper: HTML escape ────────────────────────────────────────
@@ -2677,7 +2730,11 @@ async function regeneratePreview(){
   $('previewFrame').style.display='none';
 
   // Save first so site.html picks up the latest template + data
-  await saveNow();
+  const saved=await saveNow();
+  if(!saved){
+    $('previewStatus').innerHTML='<strong>Preview paused</strong><p style="margin-top:6px;font-size:.82rem">Please fix the save error, then try again.</p>';
+    return;
+  }
 
   // Classic is rendered by template.html + an injected CONFIG — site.html has no
   // 'classic' branch and would silently fall through to the Studio design, so the
@@ -2703,7 +2760,7 @@ async function regeneratePreview(){
   };
 
   const slug=($('businessName')?.value||'your-business').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'your-business';
-  $('previewUrl').textContent=slug+'.com';
+  $('previewUrl').textContent=location.host+'/site.html';
   previewBlobURL=previewSrc; // re-use variable so "open in new tab" link still works
 }
 
@@ -2718,6 +2775,64 @@ function openLiveSite(){
     return;
   }
   window.open('site.html?uid='+encodeURIComponent(currentUser.id),'_blank');
+}
+
+function getPublishedWebsiteUrl(){
+  if(!currentUser)return '';
+  const path=location.pathname.replace(/mywebsite\.html$/,'site.html');
+  return location.origin+path+'?uid='+encodeURIComponent(currentUser.id);
+}
+
+function showPublishedLink(){
+  const url=getPublishedWebsiteUrl();
+  if(!url)return;
+  if($('publishedLink'))$('publishedLink').value=url;
+  if($('publishedLinkBox'))$('publishedLinkBox').style.display='block';
+  if($('publishBtn'))$('publishBtn').textContent='Update Live Website →';
+}
+
+async function copyPublishedLink(){
+  const url=getPublishedWebsiteUrl();
+  if(!url)return;
+  try{await navigator.clipboard.writeText(url);showToast('Website link copied ✓')}
+  catch(e){if($('publishedLink')){$('publishedLink').select();document.execCommand('copy');showToast('Website link copied ✓')}}
+}
+
+function openPublishedWebsite(){
+  const url=getPublishedWebsiteUrl();
+  if(url)window.open(url,'_blank','noopener');
+}
+
+async function publishWebsite(){
+  if(!currentUser){showToast('Please sign in first');return}
+  if(selectedTemplate==='classic'){
+    toggleAdvancedWebsite(true);
+    showToast('Classic uses the downloadable website. Choose another design for one-click publishing.');
+    return;
+  }
+  applyReadyMadeDefaults();
+  const name=$('businessName').value.trim();
+  const email=$('email').value.trim();
+  const bookingEmail=$('bookingEmail').value.trim();
+  if(!selectedNiche){showToast('Choose your party service first');goToStep(1);return}
+  if(!name||!email){showToast('Add your business name and email first');goToStep(2);return}
+  if(!packagesData.length||packagesData.some(p=>!p.name||!p.price)){showToast('Check that every package has a name and price');goToStep(3);return}
+  if(!bookingEmail){showToast('Add the email for booking inquiries');goToStep(3);return}
+  const btn=$('publishBtn');
+  const original=btn.textContent;
+  btn.disabled=true;btn.textContent='Publishing...';
+  const saved=await saveNow();
+  if(!saved||!currentBuild?.id){btn.disabled=false;btn.textContent=original;showToast('Publishing paused because your changes did not save');return}
+  const ts=new Date().toISOString();
+  const{error}=await sb.from('website_builds').update({last_published_at:ts,updated_at:ts}).eq('id',currentBuild.id);
+  btn.disabled=false;
+  if(error){console.error('Publish error:',error);btn.textContent=original;showToast('Could not publish yet. Please try again.');return}
+  currentBuild.last_published_at=ts;
+  $('publishedBadge').style.display='inline-flex';
+  $('publishedAt').textContent=new Date(ts).toLocaleString();
+  showPublishedLink();
+  markStepDone(4);
+  showToast('Your website is live! 🎉');
 }
 
 // Preview device-mode buttons
@@ -2916,17 +3031,6 @@ async function downloadSite(){
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
-
-    // Update last_published_at in Supabase (non-fatal)
-    if(currentBuild&&currentBuild.id){
-      const ts=new Date().toISOString();
-      const{error:ue}=await sb.from('website_builds').update({last_published_at:ts}).eq('id',currentBuild.id);
-      if(!ue){
-        currentBuild.last_published_at=ts;
-        if($('publishedBadge'))$('publishedBadge').style.display='inline-flex';
-        if($('publishedAt'))$('publishedAt').textContent=new Date(ts).toLocaleString();
-      }
-    }
 
     showToast('🎉 Downloaded! Check your Downloads folder');
   }catch(e){
