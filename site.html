@@ -59,6 +59,10 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   function hexToRgba(hex,a){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'}
   function lightenHex(hex,amt){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);const r=Math.min(255,(n>>16)+amt);const g=Math.min(255,((n>>8)&0xff)+amt);const b=Math.min(255,(n&0xff)+amt);return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('')}
   function first(...vals){for(const v of vals){if(v!=null&&v!=='')return v}return null}
+  function packageBookURL(base,pkg){
+    if(!base||base.charAt(0)==='#'||!pkg||!pkg.name)return base;
+    return base+(base.includes('?')?'&':'?')+'service='+encodeURIComponent(String(pkg.name));
+  }
 
   /* ── Builder → site normalizers ──
      The builder writes gallery photos as plain data-URL strings, FAQ items as
@@ -133,7 +137,11 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     if(pRes.error||!pRes.data){showError();return}
     const pd   = pRes.data.profile_data||{};
     const full = pRes.data.full_name||'';
-    const wb   = bRes.data||null;
+    const rawBuild=bRes.data||null;
+    // Preview data always uses the current draft. Public sites use the last
+    // published snapshot so autosave can never change a live site early.
+    const snapshot=rawBuild&&rawBuild.booking_data&&rawBuild.booking_data._publishedSnapshot;
+    const wb=(!_inline&&snapshot&&typeof snapshot==='object')?snapshot:rawBuild;
     const brand_data   =(wb&&wb.brand_data)||{};
     const niche_data   =(wb&&wb.niche_data)||{};
     const about_data   =(wb&&wb.about_data)||{};
@@ -372,7 +380,7 @@ details.lx-faq-item[open] summary.lx-faq-q::after{content:'－'}
           <div class="lx-pkg-num">0${i+1}</div>
           <div><div class="lx-pkg-name">${esc(pkg.name||'Package')}</div>${includesList(pkg,'lx-pkg-includes')}</div>
           <div class="lx-pkg-meta"><div class="lx-pkg-price">${price}</div>${pkg.duration?`<div class="lx-pkg-duration">${esc(String(pkg.duration))}</div>`:''}</div>
-          <a href="${esc(d.bookURL)}" class="lx-pkg-cta">Reserve</a>
+          <a href="${esc(packageBookURL(d.bookURL,pkg))}" class="lx-pkg-cta">Reserve</a>
         </div>`;
       });
     }else{
@@ -644,7 +652,7 @@ details.pp-faq-item[open] summary.pp-faq-q::after{content:'－'}
             ${pkg.duration?`<div class="pp-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}
             ${includesList(pkg,'pp-card-includes')}
           </div>
-          <a href="${esc(d.bookURL)}" class="pp-card-cta">Book This →</a>
+          <a href="${esc(packageBookURL(d.bookURL,pkg))}" class="pp-card-cta">Book This →</a>
         </div>`;
       });
     }else{
@@ -933,7 +941,7 @@ details.st-faq-item[open] summary.st-faq-q::after{content:'−'}
           </div>
           <div class="st-pkg-right">
             <div class="st-pkg-price">${price}</div>
-            <a href="${esc(d.bookURL)}" class="st-pkg-cta">Book Now</a>
+            <a href="${esc(packageBookURL(d.bookURL,pkg))}" class="st-pkg-cta">Book Now</a>
           </div>
         </div>`;
       });
@@ -1185,7 +1193,7 @@ details.gd-faq-item[open] summary.gd-faq-q::after{content:'－'}
 
     /* Packages */
     let pkgsHTML='';
-    if(d.packages_data){d.packages_data.forEach(pkg=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Inquire';pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${esc(pkg.name||'Package')}</div><div class="gd-card-price">${price}</div>${pkg.duration?`<div class="gd-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${includesList(pkg,'gd-card-includes')}</div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`});}
+    if(d.packages_data){d.packages_data.forEach(pkg=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Inquire';pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${esc(pkg.name||'Package')}</div><div class="gd-card-price">${price}</div>${pkg.duration?`<div class="gd-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${includesList(pkg,'gd-card-includes')}</div><a href="${esc(packageBookURL(d.bookURL,pkg))}" class="gd-card-cta">Book This Package</a></div>`});}
     else{[['The Signature Garden','$275','2 hours'],['Grand Garden Party','$450','3 hours'],['Petit Garden','$175','1.5 hours']].forEach(([n,p,dur])=>{pkgsHTML+=`<div class="gd-card"><div class="gd-card-bar"></div><div class="gd-card-body"><div class="gd-card-name">${n}</div><div class="gd-card-price">${p}</div><div class="gd-card-duration">⏱ ${dur}</div></div><a href="${esc(d.bookURL)}" class="gd-card-cta">Book This Package</a></div>`})}
 
     /* Add-ons */
@@ -1362,7 +1370,7 @@ details.bl-faq-item[open] summary.bl-faq-q::after{content:'−'}
 
     const ICONS=['💎','🎀','🎂','🎠','✨','🌟'];
     let pkgsHTML='';
-    if(d.packages_data){d.packages_data.forEach((pkg,i)=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Ask us!';pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${ICONS[i%ICONS.length]}</div><div class="bl-card-name">${esc(pkg.name||'Package')}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body">${pkg.duration?`<div class="bl-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${includesList(pkg,'bl-card-includes')}</div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
+    if(d.packages_data){d.packages_data.forEach((pkg,i)=>{const price=pkg.price!=null?(typeof pkg.price==='number'?'$'+pkg.price:esc(String(pkg.price))):'Ask us!';pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${ICONS[i%ICONS.length]}</div><div class="bl-card-name">${esc(pkg.name||'Package')}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body">${pkg.duration?`<div class="bl-card-duration">⏱ ${esc(String(pkg.duration))}</div>`:''}${includesList(pkg,'bl-card-includes')}</div><a href="${esc(packageBookURL(d.bookURL,pkg))}" class="bl-card-cta">Book This Package</a></div>`})}
     else{[['💎','Signature Experience','$275','2 hrs'],['🎀','Grand Celebration','$450','3 hrs'],['✨','Starter Package','$175','1.5 hrs']].forEach(([icon,name,price,dur])=>{pkgsHTML+=`<div class="bl-card"><div class="bl-card-header"><div class="bl-card-icon">${icon}</div><div class="bl-card-name">${name}</div><div class="bl-card-price">${price}</div></div><div class="bl-card-body"><div class="bl-card-duration">⏱ ${dur}</div></div><a href="${esc(d.bookURL)}" class="bl-card-cta">Book This Package</a></div>`})}
 
     /* Stats */

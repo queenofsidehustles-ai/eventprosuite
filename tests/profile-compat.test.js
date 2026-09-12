@@ -3,6 +3,7 @@
 const assert = require('node:assert/strict');
 const {
   mergePublishedWebsiteIntoProfile,
+  publishedWebsiteData,
   websitePackagesToBookingServices
 } = require('../api/_profile-compat');
 
@@ -44,5 +45,21 @@ const filled = mergePublishedWebsiteIntoProfile({ id: 'student-2', profile_data:
 assert.equal(filled.profile_data.businessName, 'Website Name');
 assert.equal(filled.profile_data.bookingServices[0].name, 'Sleepover for Six');
 assert.equal(filled.profile_data.contactPhone, '4075550100');
+
+const snapshotted = {
+  brand_data: { businessName: 'Unpublished Draft' },
+  packages_data: [{ name: 'Draft Package', price: '999' }],
+  booking_data: {
+    _publishedSnapshot: {
+      brand_data: { businessName: 'Live Business' },
+      packages_data: [{ name: 'Live Package', price: '495' }],
+      booking_data: { area: 'Orlando' }
+    }
+  }
+};
+assert.equal(publishedWebsiteData(snapshotted).brand_data.businessName, 'Live Business');
+const live = mergePublishedWebsiteIntoProfile({ id: 'student-3', profile_data: {} }, snapshotted);
+assert.equal(live.profile_data.businessName, 'Live Business');
+assert.equal(live.profile_data.bookingServices[0].name, 'Live Package');
 
 console.log('profile compatibility tests passed');

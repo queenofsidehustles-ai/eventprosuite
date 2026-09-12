@@ -666,6 +666,8 @@ let profileData = {};
 let selectedService = null;
 let currentStep = 1;
 let bookingId = null;
+let requestedService = '';
+let requestedServiceApplied = false;
 
 const DEFAULT_SERVICES = [
   { name: 'Custom party inquiry', description: 'Tell us what you are planning and we will help you choose the right party experience.', price: '', duration: '' },
@@ -683,6 +685,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Get uid from URL
   const params = new URLSearchParams(window.location.search);
   ownerUID = params.get('uid');
+  requestedService = params.get('service') || '';
 
   if (!ownerUID) {
     showError('No booking link ID found. Please ask the business for their correct booking link.');
@@ -794,6 +797,20 @@ function renderServices() {
     card.addEventListener('click', () => selectService(i, svc, card));
     grid.appendChild(card);
   });
+
+  // "Book This Package" on the website opens the booking form with the same
+  // package already selected. The customer starts with event details instead
+  // of hunting for the offer they just chose.
+  if(requestedService&&!requestedServiceApplied){
+    const wanted=requestedService.trim().toLowerCase();
+    const index=services.findIndex(s=>String(s.name||'').trim().toLowerCase()===wanted);
+    if(index>=0){
+      const card=grid.children[index];
+      selectService(index,services[index],card);
+      requestedServiceApplied=true;
+      if(currentStep===1)goTo(2);
+    }
+  }
 }
 
 function selectService(index, svc, cardEl) {
