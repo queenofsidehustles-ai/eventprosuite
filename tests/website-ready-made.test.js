@@ -12,6 +12,9 @@ assert.match(html, /function publishWebsite\(\)/);
 assert.match(html, /last_published_at:ts/);
 assert.match(html, /const required=\['packages','booking'\]/);
 assert.doesNotMatch(html, /const required=\['niche','packages','about','booking'\]/);
+assert.match(html, /function packagesForBookingPage\(\)/);
+assert.match(html, /await syncPublishedPackagesToBookingPage\(\)/);
+assert.match(html, /profile_data:profileData/);
 
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
