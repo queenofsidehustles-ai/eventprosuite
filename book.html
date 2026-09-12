@@ -603,7 +603,7 @@ textarea.form-input{resize:vertical;min-height:90px}
         <div class="nav-row">
           <button class="btn btn-ghost" onclick="goTo(3)">← Back</button>
           <button class="btn btn-primary" id="bookNowBtn" onclick="submitBooking()">
-            🎊 Book Now
+            🎊 Submit Request
           </button>
         </div>
       </div>
@@ -613,8 +613,8 @@ textarea.form-input{resize:vertical;min-height:90px}
     <!-- Confirmation Screen -->
     <div class="confirm-wrap" id="confirmWrap">
       <div class="confirm-icon">✅</div>
-      <div class="confirm-heading">You're booked! 🎉</div>
-      <div class="confirm-sub" id="confirmSub">Your booking request has been received. We can't wait to make your party amazing!</div>
+      <div class="confirm-heading">Request received! 🎉</div>
+      <div class="confirm-sub" id="confirmSub">Thank you! This is a request, not a confirmed booking. Your date is not reserved until the business reviews your details and confirms the next steps.</div>
 
       <div class="confirm-ref">
         Booking Reference
@@ -633,15 +633,13 @@ textarea.form-input{resize:vertical;min-height:90px}
       <!-- No deposit message (shown if depositUpfront = false or not set) -->
       <div id="noDepositMsg" class="hidden">
         <div style="background:#F0FAF5;border:1.5px solid #A3E6C5;border-radius:12px;padding:14px 18px;font-size:.83rem;color:#0D6E3E;line-height:1.6;margin-bottom:16px;">
-          We'll contact you at <strong id="confirmEmailDisplay">your email</strong> within 24 hours with deposit instructions.
+          We'll contact you at <strong id="confirmEmailDisplay">your email</strong> within 24 hours with a quote and next steps.
         </div>
       </div>
 
       <div class="contact-phone-note hidden" id="confirmPhoneNote">
-        Questions? Call <a href="#" id="confirmPhoneLink"></a>
+        <span id="confirmContactLabel">Questions? Call</span> <a href="#" id="confirmPhoneLink"></a>
       </div>
-
-      <div id="contractNotice" class="hidden" style="background:#F5F0FB;border:1.5px solid #C4B5FD;border-radius:12px;padding:14px 18px;font-size:.83rem;color:#4C1D95;line-height:1.6;margin-top:14px;font-weight:600;text-align:center;"></div>
     </div>
     <!-- /confirm -->
 
@@ -984,7 +982,7 @@ async function submitBooking() {
       console.error('Booking insert error:', insertRes.status, detail);
       alert('Something went wrong submitting your booking. Please try again or reach out to the business directly by phone.');
       btn.disabled = false;
-      btn.textContent = '🎊 Book Now';
+      btn.textContent = '🎊 Submit Request';
       return;
     }
 
@@ -997,7 +995,6 @@ async function submitBooking() {
     //
     // What the customer gets now is a plain acknowledgement: this is a
     // request, not a held date, and a real quote follows within 24 hours.
-    const contractSent = false;
     fetch('/api/send-quote-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1016,20 +1013,20 @@ async function submitBooking() {
       }),
     }).catch(e => console.error('Confirmation email failed:', e));
 
-    showConfirmation(clientEmail, bookingId, contractSent);
+    showConfirmation(clientEmail, bookingId);
 
   } catch (e) {
     console.error(e);
     alert('A network error occurred. Please check your connection and try again.');
     btn.disabled = false;
-    btn.textContent = '🎊 Book Now';
+    btn.textContent = '🎊 Submit Request';
   }
 }
 
 // ──────────────────────────────────────────────
 // Confirmation Screen
 // ──────────────────────────────────────────────
-function showConfirmation(clientEmail, id, contractSent) {
+function showConfirmation(clientEmail, id) {
   // Hide wizard steps + progress
   document.getElementById('progressBar').classList.add('hidden');
 
@@ -1077,22 +1074,26 @@ function showConfirmation(clientEmail, id, contractSent) {
     document.getElementById('confirmEmailDisplay').textContent = clientEmail;
   }
 
-  // Contact phone
-  if (profileData.contactPhone) {
+  // Use a phone only when it is actually a phone number. Older student
+  // profiles sometimes contain an email address in the phone field.
+  const rawPhone = String(profileData.contactPhone || '').trim();
+  const fallbackEmail = String(profileData.contactEmail || profileData.bizEmail || '').trim();
+  const phoneDigits = rawPhone.replace(/\D/g, '');
+  const contactEmail = rawPhone.includes('@') ? rawPhone : fallbackEmail;
+  if (rawPhone && !rawPhone.includes('@') && phoneDigits.length >= 7) {
     const phoneNote = document.getElementById('confirmPhoneNote');
     const phoneLink = document.getElementById('confirmPhoneLink');
+    document.getElementById('confirmContactLabel').textContent = 'Questions? Call';
     phoneNote.classList.remove('hidden');
-    phoneLink.href = `tel:${profileData.contactPhone.replace(/\D/g, '')}`;
-    phoneLink.textContent = profileData.contactPhone;
-  }
-
-  // Contract notice
-  const contractNote = document.getElementById('contractNotice');
-  if (contractNote) {
-    contractNote.classList.remove('hidden');
-    contractNote.textContent = contractSent
-      ? `📄 A contract has been sent to ${clientEmail} — please check your inbox to sign!`
-      : `📄 Your contract is being prepared. The business will send it to you shortly.`;
+    phoneLink.href = `tel:${phoneDigits}`;
+    phoneLink.textContent = rawPhone;
+  } else if (contactEmail && contactEmail.includes('@')) {
+    const phoneNote = document.getElementById('confirmPhoneNote');
+    const phoneLink = document.getElementById('confirmPhoneLink');
+    document.getElementById('confirmContactLabel').textContent = 'Questions? Email';
+    phoneNote.classList.remove('hidden');
+    phoneLink.href = `mailto:${contactEmail}`;
+    phoneLink.textContent = contactEmail;
   }
 }
 
