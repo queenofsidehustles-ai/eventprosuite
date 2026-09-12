@@ -369,16 +369,30 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       };
 
       try{
-        const res = await fetch(SUPA_URL+'/rest/v1/bookings',{
-          method:'POST',
-          headers:{
-            'apikey':SUPA_ANON,
-            'Authorization':'Bearer '+SUPA_ANON,
-            'Content-Type':'application/json',
-            'Prefer':'return=minimal'
-          },
-          body:JSON.stringify(payload)
-        });
+        // Quotes created from an existing inquiry must advance that same CRM
+        // record. Inserting another row here used to leave owners with two
+        // records for one customer: the original inquiry plus a second
+        // awaiting-deposit booking.
+        const sourceBookingId = (q.quote_data||{}).sourceBookingId;
+        const res = sourceBookingId
+          ? await fetch('/api/send-quote-email',{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({
+                kind:'accept-quote', quoteId:q.id, sourceBookingId,
+                booking:payload
+              })
+            })
+          : await fetch(SUPA_URL+'/rest/v1/bookings',{
+              method:'POST',
+              headers:{
+                'apikey':SUPA_ANON,
+                'Authorization':'Bearer '+SUPA_ANON,
+                'Content-Type':'application/json',
+                'Prefer':'return=minimal'
+              },
+              body:JSON.stringify(payload)
+            });
         if(!res.ok){
           const detail = await res.text().catch(()=> '');
           console.error('Booking insert failed:',res.status,detail);
@@ -469,10 +483,11 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       stripe500:  pd.stripe500  || (pd.stripeLinks||{}).stripe500,
       stripe1000: pd.stripe1000 || (pd.stripeLinks||{}).stripe1000
     };
-    if(amt <= 150) return l.stripe100 || l.stripe250 || l.stripe500 || l.stripe1000 || null;
-    if(amt <= 375) return l.stripe250 || l.stripe500 || l.stripe1000 || null;
-    if(amt <= 750) return l.stripe500 || l.stripe1000 || null;
-    return l.stripe1000 || l.stripe500 || null;
+    // These are fixed-price Stripe links. Never fall back to a different
+    // tier while displaying the original amount, because that can charge the
+    // customer more or less than the confirmation page promises.
+    const exact = Math.round(Number(amt || 0) * 100) / 100;
+    return ({100:l.stripe100,250:l.stripe250,500:l.stripe500,1000:l.stripe1000})[exact] || null;
   }
 
 })();

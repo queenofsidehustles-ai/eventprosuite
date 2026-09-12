@@ -1416,9 +1416,9 @@ const NICHE_DEFAULTS={
     tagline:'Where toddlers play safe and stylish',
     description:'Curated soft play installations designed for ages 0-5. Coordinated colors, sanitized between events, sized for any space. Includes ball pits, slides, mats, and bouncers.',
     packages:[
-      {tier:'Signature',name:'Mini Wonderland',price:'325',kids:'6',duration:'4 hrs',included:'Coordinated soft play set\nBall pit\n2-3 climbing pieces\nSanitized + setup\nSafety check'},
-      {tier:'Creative',name:'Rainbow Rumpus',price:'525',kids:'10',duration:'4 hrs',included:'Premium soft play set\nLarge ball pit\n4-5 pieces\nCoordinated colors\nThemed entrance\nSetup + breakdown'},
-      {tier:'Luxury',name:'Toddler Kingdom',price:'795',kids:'15',duration:'4 hrs',included:'Designer soft play install\nGrand ball pit\n6+ pieces\nFull color story\nThemed entrance + signage\nSetup + monitor + breakdown'}
+      {tier:'Signature',name:'Mini Wonderland',price:'325',kids:'6',duration:'4 hrs',included:'Coordinated soft play setup\nBall pit\n2–3 toddler climbing pieces\nSanitized equipment\nProfessional setup and safety check'},
+      {tier:'Creative',name:'Rainbow Rumpus',price:'525',kids:'10',duration:'4 hrs',included:'Premium coordinated soft play setup\nLarge ball pit\n4–5 play and climbing pieces\nStyled color palette\nThemed welcome entrance\nProfessional setup and breakdown'},
+      {tier:'Luxury',name:'Toddler Kingdom',price:'795',kids:'15',duration:'4 hrs',included:'Luxury designer soft play installation\nGrand ball pit\n6+ play and climbing pieces\nCustom color styling\nThemed entrance and signage\nSetup, event monitor, and breakdown'}
     ]
   },
   bounce:{
@@ -2851,11 +2851,20 @@ async function publishWebsite(){
   applyReadyMadeDefaults();
   const name=$('businessName').value.trim();
   const email=$('email').value.trim();
+  const phone=$('phone').value.trim();
   const bookingEmail=$('bookingEmail').value.trim();
+  const validEmail=value=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
   if(!selectedNiche){showToast('Choose your party service first');goToStep(1);return}
   if(!name||!email){showToast('Add your business name and email first');goToStep(2);return}
+  if(!validEmail(email)){showToast('Check your business email address');goToStep(2);return}
+  if(phone&&(phone.includes('@')||phone.replace(/\D/g,'').length<10)){
+    showToast('Add a complete phone number, or leave the phone field blank');
+    goToStep(2);
+    return;
+  }
   if(!packagesData.length||packagesData.some(p=>!p.name||!p.price)){showToast('Check that every package has a name and price');goToStep(3);return}
   if(!bookingEmail){showToast('Add the email for booking inquiries');goToStep(3);return}
+  if(!validEmail(bookingEmail)){showToast('Check the booking inquiry email address');goToStep(3);return}
   const btn=$('publishBtn');
   const original=btn.textContent;
   btn.disabled=true;btn.textContent='Publishing...';

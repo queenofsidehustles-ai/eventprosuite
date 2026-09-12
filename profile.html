@@ -384,7 +384,7 @@ input,select,textarea{font:inherit}
     <div class="field" style="margin-bottom:1.4rem">
       <label>Contact phone (shown on booking form)</label>
       <input type="tel" id="contactPhone" placeholder="e.g. (555) 123-4567"/>
-      <div class="field-help">Optional. If set, clients see a "Questions? Call us" link on the booking confirmation page.</div>
+      <div class="field-help">Optional. Enter a phone number here, not an email address. Clients see a "Questions? Call us" link on the booking confirmation page.</div>
     </div>
 
     <!-- Services list -->
@@ -707,6 +707,15 @@ function handleLogoUpload(e){
 
 async function saveProfile(){
   if(!currentUser)return;
+  const contactPhone=$('contactPhone').value.trim();
+  const phoneDigits=contactPhone.replace(/\D/g,'');
+  if(contactPhone&&(contactPhone.includes('@')||phoneDigits.length<10)){
+    showToast(contactPhone.includes('@')
+      ? 'Use a phone number here, not an email address'
+      : 'Add a complete phone number, or leave this field blank');
+    $('contactPhone').focus();
+    return;
+  }
   const btn=$('saveBtn');
   btn.disabled=true;
   btn.textContent='Saving...';
@@ -732,7 +741,7 @@ async function saveProfile(){
       logoDataURL:logoDataURL,
       depositUpfront:depositUpfrontEnabled,
       autoContract:autoContractEnabled,
-      contactPhone:$('contactPhone').value,
+      contactPhone,
       bookingServices:bookingServices,
       zernioKey:$('zernioKey').value.trim()
     };

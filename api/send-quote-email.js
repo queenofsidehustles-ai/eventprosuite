@@ -24,21 +24,36 @@ module.exports = async function handler(req, res) {
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
   const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
+  if ((req.body || {}).kind === 'accept-quote') {
+    return acceptQuote(req, res);
+  }
   if ((req.body || {}).kind === 'booking-confirmation') {
     return sendBookingConfirmation(req, res, RESEND_KEY, FROM_EMAIL);
   }
 
   const {
-    clientEmail, clientName, bizName,
+    clientEmail, clientPhone, clientName, bizName,
     eventType, eventDate, grand,
     quoteLink, expiryDate,
   } = req.body || {};
 
-  if (!clientEmail || !quoteLink) {
-    return res.status(400).json({ error: 'clientEmail and quoteLink are required' });
+  if (!quoteLink || (!clientEmail && !clientPhone)) {
+    return res.status(400).json({ error: 'quoteLink and a client email or phone are required' });
   }
   if (!RESEND_KEY) {
-    return res.status(200).json({ sent: false, note: 'Add RESEND_API_KEY to Vercel env vars to send emails automatically.' });
+    const sms = await maybeTextQuote(req.body || {});
+    return res.status(200).json({
+      sent: false,
+      note: clientEmail ? 'Add RESEND_API_KEY to Vercel env vars to send emails automatically.' : null,
+      texted: sms.sent, textNote: sms.note, textAttempted: sms.attempted,
+    });
+  }
+  if (!clientEmail) {
+    const sms = await maybeTextQuote(req.body || {});
+    return res.status(200).json({
+      sent: false, note: null,
+      texted: sms.sent, textNote: sms.note, textAttempted: sms.attempted,
+    });
   }
 
   const clientFirst = (clientName || 'there').split(' ')[0];
@@ -120,6 +135,76 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
 };
+
+
+// Advance the original inquiry when a customer accepts a quote. This route
+// uses the server-side key because the public quote page should not have broad
+// update permission on every owner's bookings table. The quote must explicitly
+// point at the same source booking before anything is changed.
+async function acceptQuote(req, res) {
+  const { quoteId, sourceBookingId, booking = {} } = req.body || {};
+  if (!quoteId || !sourceBookingId) {
+    return res.status(400).json({ error: 'quoteId and sourceBookingId are required' });
+  }
+
+  const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+  if (!SERVICE_KEY) {
+    return res.status(500).json({ error: 'Secure booking updates are not configured' });
+  }
+  const headers = {
+    apikey: SERVICE_KEY,
+    Authorization: 'Bearer ' + SERVICE_KEY,
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const quoteRes = await fetch(
+      `${SUPA_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}` +
+      '&select=id,user_id,quote_data&limit=1',
+      { headers }
+    );
+    const quotes = await quoteRes.json().catch(() => []);
+    const quote = Array.isArray(quotes) ? quotes[0] : null;
+    const linkedId = quote && quote.quote_data && quote.quote_data.sourceBookingId;
+    if (!quoteRes.ok || !quote || String(linkedId || '') !== String(sourceBookingId)) {
+      return res.status(403).json({ error: 'This quote is not linked to that inquiry' });
+    }
+
+    const patch = {
+      client_name: booking.client_name || '',
+      client_email: booking.client_email || '',
+      client_phone: booking.client_phone || '',
+      event_date: booking.event_date || null,
+      event_time: booking.event_time || null,
+      event_address: booking.event_address || '',
+      service_name: booking.service_name || 'Quoted package',
+      service_price: booking.service_price || '',
+      notes: booking.notes || null,
+      status: 'awaiting-deposit',
+      deposit_due_at: booking.deposit_due_at || null,
+      deposit_reminder_sent: null,
+      quote_id: quoteId,
+    };
+    const updateRes = await fetch(
+      `${SUPA_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(sourceBookingId)}` +
+      `&owner_id=eq.${encodeURIComponent(quote.user_id)}`,
+      {
+        method: 'PATCH',
+        headers: { ...headers, Prefer: 'return=representation' },
+        body: JSON.stringify(patch),
+      }
+    );
+    const updated = await updateRes.json().catch(() => []);
+    if (!updateRes.ok || !Array.isArray(updated) || !updated.length) {
+      return res.status(409).json({ error: 'The original inquiry could not be updated' });
+    }
+    return res.json({ saved: true, bookingId: sourceBookingId });
+  } catch (e) {
+    console.error('Quote acceptance failed:', e);
+    return res.status(500).json({ error: 'Could not accept this quote' });
+  }
+}
 
 
 // ── Text the quote ──────────────────────────────────────────────────────

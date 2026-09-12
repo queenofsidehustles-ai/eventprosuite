@@ -574,7 +574,7 @@ async function checkAuth() {
     // Load her website build so her real packages can seed the offers below
     try {
       const { data: wb } = await sb.from('website_builds')
-        .select('packages_data')
+        .select('packages_data,booking_data')
         .eq('user_id', currentUser.id)
         .order('updated_at', { ascending: false })
         .limit(1)
@@ -753,7 +753,8 @@ async function saveQuote() {
       eventDate: $('eventDate').value,
       expiryDate: $('expiryDate').value,
       eventNotes: $('eventNotes').value,
-      selectedDepositTier: state.selectedDepositTier
+      selectedDepositTier: state.selectedDepositTier,
+      sourceBookingId: _sourceBookingId
     },
     created_at: new Date().toISOString()
   };
@@ -1059,6 +1060,22 @@ function depositLink() {
   const map = { 100: $('stripe100').value.trim(), 250: $('stripe250').value.trim(), 500: $('stripe500').value.trim(), 1000: $('stripe1000').value.trim() };
   return map[state.selectedDepositTier] || '';
 }
+function depositRecommendation(total) {
+  const rawPct = ownerBuildRow && ownerBuildRow.booking_data
+    ? parseFloat(ownerBuildRow.booking_data.depositPct)
+    : NaN;
+  const pct = Number.isFinite(rawPct) && rawPct > 0 && rawPct <= 100 ? rawPct : 50;
+  const target = Math.round(Number(total || 0) * pct) / 100;
+  const links = {
+    100: $('stripe100').value.trim(), 250: $('stripe250').value.trim(),
+    500: $('stripe500').value.trim(), 1000: $('stripe1000').value.trim()
+  };
+  const configured = depositOptions.filter(v => links[v]);
+  const choices = configured.length ? configured : depositOptions;
+  const tier = choices.reduce((best, value) =>
+    Math.abs(value - target) < Math.abs(best - target) ? value : best, choices[0]);
+  return { pct, target, tier, exact: Math.abs(tier - target) < 0.01, hasConfiguredLink: !!links[tier] };
+}
 function totals() {
   const items = state.quoteItems.map(i => ({ ...i, total: i.qty * i.price }));
   const subtotal = items.reduce((s, i) => s + i.total, 0);
@@ -1186,6 +1203,7 @@ function renderCatalog() {
 
 function renderLive() {
   const { items, subtotal, tax, grand, t } = totals();
+  const recommendation = depositRecommendation(grand);
   $('quoteStatus').textContent = items.length ? 'In progress' : 'Draft';
   $('subtotalVal').textContent = money(subtotal);
   $('taxVal').textContent = money(tax);
@@ -1199,7 +1217,11 @@ function renderLive() {
   ).join('');
   $('tierHelp').textContent = $('depositProfile').value === 'manual'
     ? 'Manual follow-up invoice. No Stripe button will show.'
-    : 'Stripe deposit button appears on invoice when a link is set.';
+    : grand <= 0
+      ? 'Add quote items to see the recommended deposit.'
+      : recommendation.exact
+        ? `${recommendation.pct}% of this quote is ${money(recommendation.target)}. The matching deposit tier is selected.`
+        : `${recommendation.pct}% would be ${money(recommendation.target)}. Your fixed Stripe links cannot charge that exact amount, so confirm the deposit tier before sending.`;
 }
 
 function renderPreview() {
@@ -1515,6 +1537,7 @@ async function prefillFromBooking() {
 
   if ($('clientName')  && b.client_name)   $('clientName').value  = b.client_name;
   if ($('clientEmail') && b.client_email)  $('clientEmail').value = b.client_email;
+  if ($('clientPhone') && b.client_phone)  $('clientPhone').value = b.client_phone;
   if ($('eventType')   && b.service_name)  $('eventType').value   = b.service_name;
   if ($('eventDate')   && b.event_date)    $('eventDate').value   = b.event_date;
 
@@ -1543,6 +1566,9 @@ async function prefillFromBooking() {
       price,
       taxable: true,
     });
+    if ($('depositProfile').value !== 'manual') {
+      state.selectedDepositTier = depositRecommendation(price).tier;
+    }
   }
 
   refreshAll();
@@ -1551,9 +1577,11 @@ async function prefillFromBooking() {
 
 function loadQuote(data) {
   state.quoteItems = data.items || [];
+  _sourceBookingId = data.sourceBookingId || null;
   if (data.businessName) $('businessName').value = data.businessName;
   if (data.clientName) $('clientName').value = data.clientName;
   if (data.clientEmail) $('clientEmail').value = data.clientEmail;
+  if (data.clientPhone) $('clientPhone').value = data.clientPhone;
   if (data.eventType) $('eventType').value = data.eventType;
   if (data.eventDate) $('eventDate').value = data.eventDate;
   if (data.expiryDate) $('expiryDate').value = data.expiryDate;

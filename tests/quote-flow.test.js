@@ -1,0 +1,44 @@
+'use strict';
+
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
+const app = read('app.html');
+const view = read('view-quote.html');
+const profile = read('profile.html');
+const api = read('api/send-quote-email.js');
+
+// An inquiry carries every useful contact field into the quote and keeps its
+// source id so customer acceptance advances one CRM record instead of adding
+// a duplicate booking.
+assert.match(app, /b\.client_phone[\s\S]{0,100}clientPhone/);
+assert.match(app, /sourceBookingId:\s*_sourceBookingId/);
+assert.match(view, /kind:'accept-quote'/);
+assert.match(api, /String\(linkedId \|\| ''\) !== String\(sourceBookingId\)/);
+assert.match(api, /status:\s*'awaiting-deposit'/);
+
+// Website deposit settings inform the recommendation, but only an exact
+// fixed-price Stripe link can be shown to a customer.
+assert.match(app, /booking_data/);
+assert.match(app, /depositRecommendation/);
+assert.match(view, /Never fall back to a different/);
+assert.doesNotMatch(view, /if\(amt <= 150\)/);
+
+// Text-only quotes are valid, and email accidentally pasted into the phone
+// setting is blocked before profile data is saved.
+assert.match(api, /\(!clientEmail && !clientPhone\)/);
+assert.match(api, /if \(!clientEmail\)/);
+assert.match(profile, /contactPhone\.includes\('@'\)/);
+
+// All inline browser scripts must still parse.
+for (const html of [app, view, profile]) {
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+    .map(match => match[1])
+    .filter(Boolean);
+  scripts.forEach(source => new Function(source));
+}
+new Function(api);
+
+console.log('quote flow tests passed');

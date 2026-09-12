@@ -15,6 +15,10 @@ assert.doesNotMatch(html, /const required=\['niche','packages','about','booking'
 assert.match(html, /function packagesForBookingPage\(\)/);
 assert.match(html, /await syncPublishedPackagesToBookingPage\(\)/);
 assert.match(html, /profile_data:profileData/);
+assert.match(html, /phone\.includes\('@'\)/);
+assert.match(html, /Check the booking inquiry email address/);
+assert.match(html, /Professional setup and safety check/);
+assert.match(html, /Custom color styling/);
 
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
