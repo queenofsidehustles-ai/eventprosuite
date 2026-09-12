@@ -6,16 +6,21 @@
   // PPP-only users see these items locked. KPPS users see everything.
   const PAGES = [
     { id: 'dashboard',  href: 'dashboard.html',  icon: '🏠', label: 'Home' },
+    { section: 'Start Here' },
     { id: 'downloads',  href: 'downloads.html',  icon: '📥', label: 'My Downloads' },
+    { id: 'profile',    href: 'profile.html',    icon: '⚙',  label: 'Business Profile' },
+    { section: 'Build & Book', kppsOnly: true },
+    { id: 'mywebsite',  href: 'mywebsite.html',  icon: '🌐', label: 'My Website',       kppsOnly: true },
+    { id: 'app',        href: 'app.html',         icon: '📄', label: 'Quote Builder',    kppsOnly: true },
+    { id: 'contract',   href: 'contract.html',    icon: '📝', label: 'Contract',         kppsOnly: true },
+    { section: 'Run Your Events', kppsOnly: true },
+    { id: 'prep',       href: 'prep.html',        icon: '📋', label: 'Event Checklist',  kppsOnly: true },
+    { id: 'profit',     href: 'profit.html',      icon: '💰', label: 'Profit Calc',      kppsOnly: true },
+    { id: 'vendors',    href: 'vendors.html',     icon: '🤝', label: 'Vendors',          kppsOnly: true },
+    { section: 'Market & Sell' },
+    { id: 'content',    href: 'content.html',     icon: '📱', label: 'Content Studio',   kppsOnly: true },
     { id: 'store',      href: 'store.html',       icon: '🛍️', label: 'Party Profit Printables' },
-    { id: 'mywebsite',  href: 'mywebsite.html',   icon: '🌐', label: 'My Website',       kppsOnly: true },
-    { id: 'app',        href: 'app.html',          icon: '📄', label: 'Quote Builder',    kppsOnly: true },
-    { id: 'contract',   href: 'contract.html',     icon: '📝', label: 'Contract',         kppsOnly: true },
-    { id: 'profit',     href: 'profit.html',       icon: '💰', label: 'Profit Calc',      kppsOnly: true },
-    { id: 'prep',       href: 'prep.html',         icon: '📋', label: 'Event Checklist',  kppsOnly: true },
-    { id: 'vendors',    href: 'vendors.html',      icon: '🤝', label: 'Vendors',          kppsOnly: true },
-    { id: 'assistant',  href: 'assistant.html',    icon: '🤖', label: 'PartyGenius AI',   kppsOnly: true },
-    { id: 'content',    href: 'content.html',      icon: '📱', label: 'Content Studio',   kppsOnly: true },
+    { id: 'assistant',  href: 'assistant.html',   icon: '🤖', label: 'PartyGenius AI',   kppsOnly: true },
   ];
   // Quick Start Guide and Marketing Guide live inside the Party Profit Printables tabs — not in the sidebar
 
@@ -28,21 +33,17 @@
 
   function build() {
     const locked = isPPPOnly();
-    const items = PAGES.map(p => {
+    const visiblePages = locked ? PAGES.filter(p => !p.kppsOnly) : PAGES;
+    const items = visiblePages.map(p => {
+      if (p.section) return `<div class="snav-section">${p.section}</div>`;
       const active = filename === p.id ? ' active' : '';
-      const isLocked = p.kppsOnly && locked;
-      if (isLocked) {
-        return `<span class="snav-item snav-locked" title="Upgrade to Kids Party Profit System™" onclick="showUpgradePrompt()">
-          <span class="snav-icon" style="opacity:.4">${p.icon}</span>
-          <span class="snav-label" style="opacity:.4">${p.label}</span>
-          <span class="snav-lock">🔒</span>
-        </span>`;
-      }
       return `<a href="${p.href}" class="snav-item${active}">
         <span class="snav-icon">${p.icon}</span>
         <span class="snav-label">${p.label}</span>
       </a>`;
-    }).join('');
+    }).join('') + (locked ? `<button class="snav-item snav-upgrade" onclick="showUpgradePrompt()">
+      <span class="snav-icon">✨</span><span class="snav-label">Unlock Full System</span>
+    </button>` : '');
 
     return `<div class="sidebar-inner">
       <div class="sidebar-brand">
@@ -53,10 +54,6 @@
       </div>
       <nav class="sidebar-nav">${items}</nav>
       <div class="sidebar-footer">
-        <a href="profile.html" class="snav-item snav-settings">
-          <span class="snav-icon">⚙</span>
-          <span class="snav-label">Business Profile</span>
-        </a>
         <div class="sidebar-user">
           <div class="sidebar-avatar" id="sidebarAvatar">?</div>
           <div class="sidebar-user-info">
@@ -148,10 +145,14 @@
     const nav = document.querySelector('.sidebar-nav');
     if (!nav || nav.querySelector('.snav-admin')) return;
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+    const section = document.createElement('div');
+    section.className = 'snav-section snav-admin';
+    section.textContent = 'Admin';
     const link = document.createElement('a');
     link.href = 'warehouse.html';
     link.className = 'snav-item snav-admin' + (currentPage === 'warehouse' ? ' active' : '');
     link.innerHTML = '<span class="snav-icon">📦</span><span class="snav-label">Template Warehouse</span>';
+    nav.appendChild(section);
     nav.appendChild(link);
   };
 

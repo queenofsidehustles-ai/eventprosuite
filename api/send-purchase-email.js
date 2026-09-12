@@ -43,6 +43,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const STRIPE_SECRETS = [
     process.env.STRIPE_WEBHOOK_SECRET || '',
     process.env.KPPS_STRIPE_WEBHOOK_SECRET || '',
+    process.env.STRIPE_CONNECT_WEBHOOK_SECRET || '',
   ].filter(Boolean);
   const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
@@ -59,6 +60,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     return res.status(500).json({ error: 'Webhook is not configured' });
   }
 
+  let reqStripeSecret = '';
   try {
     const parts = sigHeader.split(',');
     const ts = (parts.find(p => p.startsWith('t=')) || '').slice(2);
@@ -75,11 +77,13 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
     const valid = STRIPE_SECRETS.some(secret => {
       const expected = crypto.createHmac('sha256', secret).update(`${ts}.${rawBody}`).digest();
-      return signatures.some(candidate => {
+      const matches = signatures.some(candidate => {
         if (!/^[a-f0-9]{64}$/i.test(candidate)) return false;
         const received = Buffer.from(candidate, 'hex');
         return received.length === expected.length && crypto.timingSafeEqual(expected, received);
       });
+      if (matches) reqStripeSecret = secret;
+      return matches;
     });
     if (!valid) return res.status(400).json({ error: 'Invalid signature' });
   } catch (_) {
@@ -93,7 +97,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const eventId = event.id || 'unknown-event';
 
   // Subscription canceled or ended → revoke the CRM key so access stops
-  if (event.type === 'customer.subscription.deleted') {
+  if (event.type === 'customer.subscription.deleted' && !event.account) {
     const sub = event.data?.object || {};
     const customerId = sub.customer;
     if (customerId && SUPABASE_SERVICE_KEY) {
@@ -118,6 +122,19 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   }
 
   const session = event.data?.object || {};
+
+  // A party client's deposit belongs to one of our students, not to Party Biz
+  // Hub. Connected-account Checkout Sessions carry the booking identity in
+  // metadata, and Connect events identify the student's Stripe account at the
+  // top level. Handle these before classifying Party Biz Hub product sales.
+  if (event.type === 'checkout.session.completed' && session.metadata?.kind === 'booking_deposit') {
+    if (!process.env.STRIPE_CONNECT_WEBHOOK_SECRET || reqStripeSecret !== process.env.STRIPE_CONNECT_WEBHOOK_SECRET) {
+      return res.status(400).json({ error: 'Deposit event did not come through the Connect webhook' });
+    }
+    return handleBookingDeposit(res, event, session, {
+      SUPABASE_URL, SUPABASE_SERVICE_KEY, eventId,
+    });
+  }
 
   // Classify the purchase type
   const amountTotal = session.amount_total || 0;
@@ -404,6 +421,118 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     profileWritten,
     emailSent: false,
   });
+}
+
+async function handleBookingDeposit(res, event, session, config) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, eventId } = config;
+  const bookingId = session.metadata?.booking_id || session.client_reference_id || '';
+  const ownerId = session.metadata?.owner_id || '';
+  const quoteId = session.metadata?.quote_id || '';
+  const connectedAccount = event.account || '';
+  if (!bookingId || !ownerId || !connectedAccount) {
+    return res.status(422).json({ received: false, error: 'Deposit event is missing its booking identity', eventId });
+  }
+  if (!SUPABASE_SERVICE_KEY) {
+    return res.status(500).json({ received: false, error: 'Deposit automation is not configured', eventId });
+  }
+  const headers = {
+    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+    apikey: SUPABASE_SERVICE_KEY,
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const bookingRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingId)}` +
+      `&owner_id=eq.${encodeURIComponent(ownerId)}&select=*&limit=1`, { headers }
+    );
+    const bookings = await bookingRes.json().catch(() => []);
+    const booking = Array.isArray(bookings) ? bookings[0] : null;
+    if (!bookingRes.ok || !booking) {
+      return res.status(404).json({ received: false, error: 'Matching booking was not found', eventId });
+    }
+
+    const profileRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}` +
+      '&select=id,profile_data&limit=1', { headers }
+    );
+    const profiles = await profileRes.json().catch(() => []);
+    const profile = Array.isArray(profiles) ? profiles[0] : null;
+    const pd = profile?.profile_data || {};
+    if (!profileRes.ok || !profile || pd.stripeConnectAccountId !== connectedAccount) {
+      return res.status(403).json({ received: false, error: 'Stripe account does not match this business', eventId });
+    }
+
+    const expectedCents = Number(session.metadata?.deposit_amount_cents || session.amount_total || 0);
+    if (session.payment_status !== 'paid' || Number(session.amount_total || 0) !== expectedCents || expectedCents <= 0) {
+      return res.status(409).json({ received: false, error: 'Deposit payment is not complete', eventId });
+    }
+
+    const updateRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingId)}` +
+      `&owner_id=eq.${encodeURIComponent(ownerId)}`,
+      {
+        method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+        body: JSON.stringify({ status: 'deposit-paid', deposit_due_at: null, deposit_reminder_sent: null }),
+      }
+    );
+    if (!updateRes.ok) throw new Error('Booking payment status could not be updated');
+
+    if (quoteId) {
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}` +
+        `&user_id=eq.${encodeURIComponent(ownerId)}`,
+        {
+          method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+          body: JSON.stringify({ status: 'deposit-paid' }),
+        }
+      ).catch(() => {});
+    }
+
+    let contractSent = false;
+    let contractExisting = false;
+    if (pd.autoContract !== false && booking.client_email && booking.event_date) {
+      const existingRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/contracts?user_id=eq.${encodeURIComponent(ownerId)}` +
+        `&client_email=eq.${encodeURIComponent(booking.client_email)}` +
+        `&event_date=eq.${encodeURIComponent(booking.event_date)}&select=id&limit=1`, { headers }
+      );
+      const existing = await existingRes.json().catch(() => []);
+      contractExisting = existingRes.ok && Array.isArray(existing) && existing.length > 0;
+      if (!contractExisting) {
+        const contractRes = await fetch('https://partybizhub.com/api/auto-contract', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-pbh-internal': SUPABASE_SERVICE_KEY,
+          },
+          body: JSON.stringify({
+            ownerUID: ownerId,
+            clientName: booking.client_name, clientEmail: booking.client_email,
+            clientPhone: booking.client_phone, eventDate: booking.event_date,
+            eventTime: booking.event_time, eventAddress: booking.event_address,
+            serviceName: booking.service_name, servicePrice: booking.service_price,
+            numKids: booking.num_kids, duration: booking.duration,
+            bizName: pd.bizName || pd.businessName || '',
+            bizEmail: pd.contactEmail || pd.bizEmail || '',
+            bizPhone: pd.contactPhone || pd.bizPhone || '',
+            depositAmountPaid: expectedCents / 100,
+          }),
+        });
+        const contract = await contractRes.json().catch(() => ({}));
+        contractSent = contractRes.ok && contract.email_sent === true;
+        if (!contractRes.ok) console.error('Automatic contract failed after deposit', { eventId, bookingId, error: contract.error });
+      }
+    }
+
+    return res.json({
+      received: true, eventId, bookingId, status: 'deposit-paid',
+      contractSent, contractExisting,
+    });
+  } catch (e) {
+    console.error('Deposit automation failed', { eventId, bookingId, error: e.message });
+    return res.status(500).json({ received: false, error: e.message, eventId, bookingId });
+  }
 }
 
 async function handleGenerateCopy(res, body) {

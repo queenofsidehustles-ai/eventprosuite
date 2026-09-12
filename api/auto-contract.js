@@ -1,7 +1,9 @@
+const crypto = require('crypto');
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-pbh-internal');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -12,7 +14,7 @@ module.exports = async function handler(req, res) {
     serviceName, servicePrice,
     numKids, duration,
     bizName, bizEmail, bizPhone,
-    depositUpfront,
+    depositUpfront, depositAmountPaid,
   } = req.body || {};
 
   if (!ownerUID || !clientEmail || !eventDate) {
@@ -21,8 +23,41 @@ module.exports = async function handler(req, res) {
 
   const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
   const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+  const internal = SERVICE_KEY && req.headers?.['x-pbh-internal'] === SERVICE_KEY;
+  if (!internal) {
+    const token = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!token) return res.status(401).json({ error: 'Please sign in again' });
+    const authRes = await fetch(`${SUPA_URL}/auth/v1/user`, {
+      headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + token },
+    });
+    const authUser = authRes.ok ? await authRes.json().catch(() => null) : null;
+    if (!authUser || authUser.id !== ownerUID) {
+      return res.status(403).json({ error: 'Not authorized for this business' });
+    }
+  }
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+
+  const adminKey = SERVICE_KEY || SUPA_KEY;
+  const adminHeaders = {
+    apikey: adminKey,
+    Authorization: 'Bearer ' + adminKey,
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    const existingRes = await fetch(
+      `${SUPA_URL}/rest/v1/contracts?user_id=eq.${encodeURIComponent(ownerUID)}` +
+      `&client_email=eq.${encodeURIComponent(clientEmail)}` +
+      `&event_date=eq.${encodeURIComponent(eventDate)}&select=id&limit=1`,
+      { headers: adminHeaders }
+    );
+    const existing = await existingRes.json().catch(() => []);
+    if (existingRes.ok && Array.isArray(existing) && existing[0]) {
+      return res.json({ success: true, existing: true, email_sent: false });
+    }
+  } catch (_) {}
 
   const signToken = crypto.randomUUID();
   const signingUrl = `https://app.partybizhub.com/sign-contract.html?t=${signToken}`;
@@ -35,7 +70,10 @@ module.exports = async function handler(req, res) {
 
   // Payment amounts
   const totalPrice = parseFloat((servicePrice || '0').toString().replace(/[^0-9.]/g, '')) || 0;
-  const depositAmt = depositUpfront && totalPrice > 0 ? Math.round(totalPrice * 0.5 * 100) / 100 : 0;
+  const paidDeposit = parseFloat(String(depositAmountPaid || '0').replace(/[^0-9.]/g, '')) || 0;
+  const depositAmt = paidDeposit > 0
+    ? Math.min(paidDeposit, totalPrice || paidDeposit)
+    : (depositUpfront && totalPrice > 0 ? Math.round(totalPrice * 0.5 * 100) / 100 : 0);
 
   // Due dates
   const today = new Date().toISOString().split('T')[0];
@@ -45,7 +83,7 @@ module.exports = async function handler(req, res) {
   // Standard kids party clauses
   const clauses = {
     paymentText: depositAmt > 0
-      ? `A deposit of $${depositAmt.toFixed(2)} (50% of the total) is due upon signing to reserve your event date. The remaining balance of $${(totalPrice - depositAmt).toFixed(2)} is due on the event date.`
+      ? `A deposit of $${depositAmt.toFixed(2)} has been paid to reserve your event date. The remaining balance of $${Math.max(totalPrice - depositAmt, 0).toFixed(2)} is due on the event date.`
       : `Full payment of $${totalPrice.toFixed(2)} is due on the event date. We accept cash, Zelle, CashApp, and credit/debit card.`,
     depositText: 'Deposits are non-refundable. If you need to reschedule, please contact us at least 14 days before your event and your deposit will be applied to a future booking within 12 months.',
     cancellationText: 'Cancellations made 14+ days before the event receive a full refund minus the deposit. Cancellations made fewer than 14 days before the event forfeit the deposit. Cancellations within 72 hours of the event forfeit all payments made.',
@@ -84,12 +122,7 @@ module.exports = async function handler(req, res) {
   try {
     const insertRes = await fetch(`${SUPA_URL}/rest/v1/contracts`, {
       method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
+      headers: { ...adminHeaders, 'Prefer': 'return=minimal' },
       body: JSON.stringify(contractPayload),
     });
     if (!insertRes.ok) {
@@ -136,7 +169,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
       ${eventAddress ? `<p><strong>Location:</strong> ${eventAddress}</p>` : ''}
       <p><strong>Services:</strong> ${eventServices}</p>
       ${totalPrice > 0 ? `<p><strong>Total:</strong> $${totalPrice.toFixed(2)}</p>` : ''}
-      ${depositAmt > 0 ? `<p><strong>Deposit Due:</strong> $${depositAmt.toFixed(2)}</p>` : ''}
+      ${depositAmt > 0 ? `<p><strong>Deposit Paid:</strong> $${depositAmt.toFixed(2)}</p>` : ''}
     </div>
     <p>Click the button below to review your contract and sign digitally. It only takes about 2 minutes!</p>
     <a href="${signingUrl}" class="btn">✍️ Review & Sign My Contract</a>

@@ -7,8 +7,11 @@ const path = require('node:path');
 const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
 const dashboard = read('dashboard.html');
 const profile = read('profile.html');
+const quote = read('view-quote.html');
 const store = read('store.html');
 const shopfront = read('shopfront.html');
+const autoContract = read('api/auto-contract.js');
+const nav = read('nav.js');
 
 // Dashboard reads the pieces needed to guide both service and printable
 // students without writing to any existing records.
@@ -22,6 +25,24 @@ assert.match(dashboard, /aria-valuemax',String\(progress\.total\)/);
 assert.match(profile, /id="paymentSetup"/);
 assert.match(profile, /focus'\)==='payments'/);
 assert.match(profile, /contract is emailed after you mark the customer's deposit paid/);
+assert.match(profile, /stripe-connect-config/);
+assert.match(profile, /stripeConnectBox/);
+assert.match(profile, /stripe-connect-complete/);
+assert.match(quote, /create-deposit-checkout/);
+assert.match(dashboard, /'Authorization': 'Bearer ' \+ currentAccessToken/);
+assert.match(autoContract, /x-pbh-internal/);
+assert.match(autoContract, /depositAmountPaid/);
+
+// The sidebar follows the student's real workflow instead of mixing setup,
+// operations, and marketing tools together.
+for (const section of ['Start Here', 'Build & Book', 'Run Your Events', 'Market & Sell']) {
+  assert.match(nav, new RegExp(section.replace('&', '\\&')));
+}
+const navOrder = ['downloads', 'profile', 'mywebsite', 'app', 'contract', 'prep', 'profit', 'vendors', 'content', 'store', 'assistant'];
+for (let i = 1; i < navOrder.length; i++) {
+  assert.ok(nav.indexOf(`id: '${navOrder[i - 1]}'`) < nav.indexOf(`id: '${navOrder[i]}'`), 'sidebar order follows the student journey');
+}
+assert.match(nav, /Unlock Full System/);
 
 // One click from the library creates a private, paid draft and opens it for
 // review. Existing products are never migrated or rewritten.
@@ -35,7 +56,7 @@ assert.match(store, /requestedTab/);
 assert.match(shopfront, /d\.logoUrl\|\|d\.logoDataURL/);
 assert.match(shopfront, /primary:d\.brandColor\|\|''/);
 
-for (const html of [dashboard, profile, store, shopfront]) {
+for (const html of [dashboard, profile, quote, store, shopfront]) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
     .map(match => match[1])
     .filter(Boolean);

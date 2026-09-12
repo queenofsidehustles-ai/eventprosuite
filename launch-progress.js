@@ -88,6 +88,7 @@
     );
     const hasPricedPackage = allPackages.some(hasPositivePrice);
     const hasPayment = pd.depositProfile === 'manual' ||
+      (pd.depositProfile === 'connected' && pd.stripeConnectReady === true && !!pd.stripeConnectAccountId) ||
       ['stripe100', 'stripe250', 'stripe500', 'stripe1000'].some(key => containsPaymentLink(pd[key])) ||
       containsPaymentLink(pd.stripeLinks);
     const hasPublishedSite = Boolean(build.last_published_at);
