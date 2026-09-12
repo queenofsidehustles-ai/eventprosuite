@@ -21,11 +21,17 @@ function websitePackagesToBookingServices(packages) {
     }));
 }
 
+function publishedWebsiteData(websiteBuild) {
+  const snapshot = websiteBuild && websiteBuild.booking_data && websiteBuild.booking_data._publishedSnapshot;
+  return snapshot && typeof snapshot === 'object' ? snapshot : (websiteBuild || {});
+}
+
 function mergePublishedWebsiteIntoProfile(profileRow, websiteBuild) {
   const original = (profileRow && profileRow.profile_data) || {};
   const profileData = { ...original };
-  const brand = (websiteBuild && websiteBuild.brand_data) || {};
-  const booking = (websiteBuild && websiteBuild.booking_data) || {};
+  const liveBuild = publishedWebsiteData(websiteBuild);
+  const brand = liveBuild.brand_data || {};
+  const booking = liveBuild.booking_data || {};
 
   // Existing Business Profile choices always win. Website data is a
   // compatibility fallback for students who built their site first.
@@ -38,7 +44,7 @@ function mergePublishedWebsiteIntoProfile(profileRow, websiteBuild) {
   if (!clean(profileData.bookingArea) && clean(booking.area)) profileData.bookingArea = clean(booking.area);
 
   if (!Array.isArray(profileData.bookingServices) || profileData.bookingServices.length === 0) {
-    const services = websitePackagesToBookingServices(websiteBuild && websiteBuild.packages_data);
+    const services = websitePackagesToBookingServices(liveBuild.packages_data);
     if (services.length) profileData.bookingServices = services;
   }
 
@@ -50,5 +56,6 @@ function mergePublishedWebsiteIntoProfile(profileRow, websiteBuild) {
 
 module.exports = {
   mergePublishedWebsiteIntoProfile,
+  publishedWebsiteData,
   websitePackagesToBookingServices
 };
