@@ -47,6 +47,17 @@
 @media(max-width:760px){.launch-steps{grid-template-columns:1fr 1fr}.launch-action{align-items:flex-start;flex-direction:column}.launch-action .btn{width:100%;justify-content:center}}
 @media(max-width:480px){.launch-card{padding:17px}.launch-head{flex-direction:column;gap:10px}.launch-steps{grid-template-columns:1fr}}
 
+/* Operational next actions */
+.next-panel{margin-bottom:24px;border:1.5px solid rgba(109,40,217,.18);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 8px 28px rgba(76,29,149,.05)}
+.next-panel-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:18px 20px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(199,99,153,.04))}
+.next-panel-head h2{font-size:1.05rem;color:var(--plum-900);margin:0 0 4px}.next-panel-head p{font-size:.78rem;color:var(--text-muted);margin:0;line-height:1.45}.next-count{font-size:.72rem;font-weight:800;color:var(--brand);background:#fff;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.next-list{display:grid;gap:0}.next-card{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border)}.next-card:last-child{border-bottom:0}.next-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--brand-tint);color:var(--brand);font-size:.76rem;font-weight:800}.next-copy strong{display:block;color:var(--text-primary);font-size:.84rem}.next-copy span{display:block;color:var(--text-muted);font-size:.73rem;line-height:1.4;margin-top:2px}.next-card .bq-quick{white-space:nowrap}
+.next-empty{padding:22px;text-align:center;color:var(--text-muted);font-size:.84rem}
+
+/* One-customer lifecycle shown inside the booking modal */
+.lifecycle{margin:4px 0 18px;padding:14px;background:var(--bg-hover);border-radius:12px}.life-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--text-muted);margin-bottom:10px}.life-row{display:grid;grid-template-columns:18px 1fr;gap:9px;position:relative;padding-bottom:10px}.life-row:last-child{padding-bottom:0}.life-row:not(:last-child):before{content:"";position:absolute;left:8px;top:17px;bottom:0;width:2px;background:var(--border)}.life-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid var(--border);font-size:.6rem;font-weight:800;color:transparent;z-index:1}.life-row.done .life-dot{background:var(--success);border-color:var(--success);color:#fff}.life-row.current .life-dot{border-color:var(--brand);box-shadow:0 0 0 3px rgba(109,40,217,.1)}.life-copy strong{display:block;font-size:.76rem;color:var(--text-primary)}.life-copy span{display:block;font-size:.68rem;color:var(--text-muted);margin-top:1px}
+@media(max-width:620px){.next-card{grid-template-columns:30px 1fr}.next-card .bq-quick{grid-column:2;justify-self:start}.next-panel-head{flex-direction:column}.next-count{align-self:flex-start}}
+
 /* Bookings table */
 .bookings-table{width:100%;border-collapse:collapse}
 .bookings-table th{
@@ -93,7 +104,7 @@
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{
   background:#fff;border-radius:var(--radius-2xl);padding:28px;
-  box-shadow:var(--shadow-xl);width:100%;max-width:380px;
+  box-shadow:var(--shadow-xl);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;
   transform:translateY(8px);transition:transform .18s
 }
 .modal-overlay.open .modal{transform:translateY(0)}
@@ -209,6 +220,17 @@
         <div class="launch-action" id="launchAction"></div>
       </section>
 
+      <section class="next-panel" id="nextPanel" aria-labelledby="nextTitle">
+        <div class="next-panel-head">
+          <div>
+            <h2 id="nextTitle">What needs your attention</h2>
+            <p>Party Biz Hub puts the next customer step here, so you do not have to remember what comes next.</p>
+          </div>
+          <div class="next-count" id="nextCount">Checking…</div>
+        </div>
+        <div class="next-list" id="nextList"></div>
+      </section>
+
       <!-- Stats -->
       <div class="stats-row">
         <div class="stat-card">
@@ -282,6 +304,8 @@
   <div class="modal">
     <div class="modal-title" id="modalClient">Update Booking</div>
     <div class="modal-sub" id="modalMeta"> </div>
+    <div class="lifecycle" id="modalTimeline"></div>
+    <div class="life-title">Update this booking</div>
     <button class="status-opt" onclick="applyStatus('inquiry')"><span class="sdot inquiry"></span>Inquiry — just asking around</button>
     <button class="status-opt" onclick="goToQuoteBuilder()"><span class="sdot quote-sent"></span>Send a Quote → open Quote Builder</button>
     <button class="status-opt" onclick="applyStatus('deposit-paid')"><span class="sdot deposit-paid"></span>Deposit Paid — it's happening!</button>
@@ -306,6 +330,9 @@ let allQuotes   = [];
 let activeId    = null;
 let currentUser = null;
 let currentProfileData = {};
+let lifecycleContracts = [];
+let lifecyclePrep = [];
+let lifecycleProfit = [];
 const $ = id => document.getElementById(id);
 
 /* ── AUTH ── */
@@ -372,18 +399,29 @@ async function loadData() {
   const ny = mon === 12 ? yr + 1 : yr;
   const nextFirst = `${ny}-${String(nm).padStart(2,'0')}-01`;
 
-  const [quotesRes, bookingsRes, profitRes, webRes] = await Promise.all([
+  const [quotesRes, bookingsRes, profitRes, webRes, contractsRes, prepRes, lifecycleProfitRes] = await Promise.all([
     sb.from('saved_quotes').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }),
     sb.from('bookings').select('*').eq('owner_id', session.user.id).order('created_at', { ascending: false }),
-    sb.from('profit_records').select('revenue,total_expenses,record_type,record_month,record_year,record_date')
+    sb.from('profit_records').select('id,revenue,total_expenses,record_type,record_month,record_year,record_date,income_json')
       .eq('user_id', session.user.id).gte('record_date', firstDay).lt('record_date', nextFirst),
     sb.from('website_builds')
       .select('business_name,niche_type,brand_data,packages_data,booking_data,last_published_at,updated_at')
-      .eq('user_id', session.user.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+      .eq('user_id', session.user.id).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+    sb.from('contracts').select('id,client_name,client_email,event_date,status,created_at')
+      .eq('user_id', session.user.id).order('created_at', { ascending: false }),
+    sb.from('prep_events').select('id,title,event_date,client,event_data')
+      .eq('user_id', session.user.id).order('event_date', { ascending: true }),
+    sb.from('profit_records').select('id,record_date,income_json')
+      .eq('user_id', session.user.id).order('record_date', { ascending: false })
   ]);
 
-  const quotes = (quotesRes.data || []).map(q => ({ ...q, _source: 'quote' }));
-  const incoming = (bookingsRes.data || []).map(b => ({
+  const bookingRows = bookingsRes.data || [];
+  const linkedQuoteIds = new Set(bookingRows.map(b => String(b.quote_id || '')).filter(Boolean));
+  // A quote linked to a booking is one customer journey, not a second row.
+  const quotes = (quotesRes.data || [])
+    .filter(q => !linkedQuoteIds.has(String(q.id)))
+    .map(q => ({ ...q, _source: 'quote' }));
+  const incoming = bookingRows.map(b => ({
     id: b.id,
     client_name: b.client_name,
     event_type: b.service_name || 'Booking Request',
@@ -395,7 +433,11 @@ async function loadData() {
   }));
 
   allQuotes = [...incoming, ...quotes];
+  lifecycleContracts = contractsRes.data || [];
+  lifecyclePrep = prepRes.data || [];
+  lifecycleProfit = lifecycleProfitRes.data || [];
   renderStats();
+  renderNextActions();
   renderBookings();
   renderFinancials(profitRes.data || []);
   migrateLegacyStatuses();
@@ -504,6 +546,7 @@ async function migrateLegacyStatuses() {
   if (moved) {
     showToast(`✓ Moved ${moved} booking status${moved === 1 ? '' : 'es'} into your account`);
     renderStats();
+    renderNextActions();
     renderBookings();
   }
 }
@@ -524,6 +567,119 @@ function renderStats() {
   $('statMonth').textContent    = thisMonth;
   $('statPipeline').textContent = '$' + pipeline.toLocaleString('en-US', { minimumFractionDigits: 0 });
   $('statUpcoming').textContent = upcoming;
+}
+
+/* ── NEXT ACTIONS + CUSTOMER JOURNEY ── */
+function norm(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function rawBooking(q) {
+  return q && q._source === 'booking' ? (q._raw || {}) : (q || {});
+}
+
+function contractFor(q) {
+  const raw = rawBooking(q);
+  const email = norm(raw.client_email || q.client_email);
+  const name = norm(q.client_name);
+  const date = String(q.event_date || '');
+  return lifecycleContracts.find(c => {
+    const sameDate = !date || !c.event_date || String(c.event_date) === date;
+    return sameDate && ((email && norm(c.client_email) === email) || (name && norm(c.client_name) === name));
+  }) || null;
+}
+
+function prepFor(q) {
+  const name = norm(q.client_name);
+  const date = String(q.event_date || '');
+  return lifecyclePrep.find(p => {
+    if (String((p.event_data || {}).booking_id || '') === String(q.id || '')) return true;
+    const sameDate = !date || !p.event_date || String(p.event_date) === date;
+    return sameDate && name && norm(p.client) === name;
+  }) || null;
+}
+
+function profitFor(q) {
+  const id = String(q.id || '');
+  const name = norm(q.client_name);
+  const date = String(q.event_date || '');
+  return lifecycleProfit.find(record => {
+    const entries = Array.isArray(record.income_json) ? record.income_json : [];
+    if (entries.some(entry => String(entry.booking_id || '') === id)) return true;
+    return date && String(record.record_date || '') === date && entries.some(entry => norm(entry.label).includes(name));
+  }) || null;
+}
+
+function nextActionFor(q) {
+  const status = statusOf(q);
+  const raw = rawBooking(q);
+  const quoteId = q._source === 'quote' ? q.id : raw.quote_id;
+  const prep = prepFor(q);
+  const encodedId = encodeURIComponent(q.id);
+  const actions = {
+    'inquiry': { priority: 1, label: 'Send Quote →', note: 'A customer is waiting for your offer.', href: `app.html?booking=${encodedId}` },
+    'expired': { priority: 2, label: 'Refresh Quote →', note: 'Their previous date hold expired. Follow up with a fresh offer.', href: `app.html?booking=${encodedId}` },
+    'quote-sent': { priority: 3, label: 'Review Quote →', note: 'Follow up and move this customer toward their deposit.', href: quoteId ? `view-quote.html?id=${encodeURIComponent(quoteId)}` : 'app.html' },
+    'awaiting-deposit': { priority: 1, label: 'Deposit Paid', note: 'Confirm payment to send the contract automatically.', fn: `quickStatus('${q.id}','deposit-paid')` },
+    'deposit-paid': { priority: 2, label: 'Review Contract →', note: contractFor(q) ? 'The contract is ready in Contract Center.' : 'The deposit is paid. Check that the contract was sent.', href: 'contract.html' },
+    'confirmed': { priority: 2, label: prep ? 'Open Event Prep →' : 'Start Event Prep →', note: prep ? 'Keep the event checklist moving.' : 'Turn this booking into a ready-to-use event checklist.', href: prep ? 'prep.html' : `prep.html?booking=${encodedId}` },
+    'complete': profitFor(q)
+      ? null
+      : { priority: 4, label: 'Record Profit →', note: 'Close the loop by reviewing revenue and expenses.', href: 'profit.html' }
+  };
+  return actions[status] || null;
+}
+
+function renderNextActions() {
+  const list = $('nextList');
+  const actions = allQuotes
+    .map(q => ({ q, action: nextActionFor(q) }))
+    .filter(item => item.action)
+    .sort((a, b) => a.action.priority - b.action.priority || new Date(a.q.event_date || a.q.created_at || 0) - new Date(b.q.event_date || b.q.created_at || 0))
+    .slice(0, 5);
+
+  $('nextCount').textContent = actions.length ? `${actions.length} next step${actions.length === 1 ? '' : 's'}` : 'All caught up';
+  if (!actions.length) {
+    list.innerHTML = '<div class="next-empty">You are caught up. New customer steps will appear here automatically.</div>';
+    return;
+  }
+
+  list.innerHTML = actions.map(({ q, action }, index) => {
+    const control = action.href
+      ? `<a class="bq-quick" href="${action.href}">${action.label}</a>`
+      : `<button class="bq-quick" onclick="${action.fn}">${action.label}</button>`;
+    const event = [q.event_type, q.event_date && fmtDate(q.event_date)].filter(Boolean).join(' · ');
+    return `<div class="next-card">
+      <span class="next-num">${index + 1}</span>
+      <div class="next-copy"><strong>${esc(q.client_name || 'Unnamed customer')} · ${esc(STATUS_LABELS[statusOf(q)] || 'Booking')}</strong><span>${esc(action.note)}${event ? ' ' + esc(event) : ''}</span></div>
+      ${control}
+    </div>`;
+  }).join('');
+}
+
+function renderLifecycle(q) {
+  const status = statusOf(q);
+  const ranks = { inquiry: 0, expired: 1, 'quote-sent': 1, 'awaiting-deposit': 1, 'deposit-paid': 2, confirmed: 4, complete: 5 };
+  const rank = ranks[status] ?? 0;
+  const contract = contractFor(q);
+  const prep = prepFor(q);
+  const profit = profitFor(q);
+  const signed = contract && /signed|complete/i.test(contract.status || '');
+  const stages = [
+    { title: 'Inquiry received', done: rank >= 0, note: 'Customer details saved' },
+    { title: 'Quote sent', done: rank >= 1, note: status === 'expired' ? 'Date hold expired' : 'Offer shared with customer' },
+    { title: 'Deposit paid', done: rank >= 2, note: rank >= 2 ? 'Payment confirmed' : 'Waiting for payment' },
+    { title: 'Contract', done: !!contract, note: contract ? (signed ? 'Signed' : (contract.status || 'Sent to client')) : (rank >= 2 ? 'Needs attention' : 'Created after deposit') },
+    { title: 'Event prep', done: !!prep, note: prep ? 'Checklist started' : (rank >= 4 ? 'Ready to start' : 'Starts after confirmation') },
+    { title: 'Event complete', done: rank >= 5, note: rank >= 5 ? 'Marked complete' : 'Upcoming' },
+    { title: 'Profit recorded', done: !!profit, note: profit ? 'Revenue record found' : (rank >= 5 ? 'Ready to review' : 'Created during confirmation') }
+  ];
+  let currentSet = false;
+  return `<div class="life-title">Customer journey</div>${stages.map(stage => {
+    const current = !stage.done && !currentSet;
+    if (current) currentSet = true;
+    return `<div class="life-row ${stage.done ? 'done' : current ? 'current' : ''}"><span class="life-dot">✓</span><span class="life-copy"><strong>${esc(stage.title)}</strong><span>${esc(stage.note)}</span></span></div>`;
+  }).join('')}`;
 }
 
 /* ── FINANCIAL SNAPSHOT ── */
@@ -623,6 +779,7 @@ function openModal(id) {
   if (!q) return;
   $('modalClient').textContent = q.client_name || 'Unnamed';
   $('modalMeta').textContent   = [q.event_type, q.event_date && fmtDate(q.event_date), q.total_amount && '$' + Number(q.total_amount).toLocaleString()].filter(Boolean).join(' · ');
+  $('modalTimeline').innerHTML = renderLifecycle(q);
   const cur = statusOf(q);
   document.querySelectorAll('.status-opt').forEach(b => {
     const s = b.getAttribute('onclick').match(/applyStatus\('(.+)'\)/)?.[1];
@@ -639,6 +796,7 @@ async function quickStatus(id, status) {
   if (!ok) return;
 
   renderStats();
+  renderNextActions();
   renderBookings();
 
   if (status === 'deposit-paid' && prev !== 'deposit-paid') await maybeSendContract(id);
@@ -660,6 +818,7 @@ async function applyStatus(status) {
 
   closeModal();
   renderStats();
+  renderNextActions();
   renderBookings();
 
   if (status === 'deposit-paid' && prev !== 'deposit-paid') await maybeSendContract(id);
@@ -770,7 +929,9 @@ async function maybeCreateProfitRecord(itemId) {
 function goToQuoteBuilder() {
   const q = allQuotes.find(x => String(x.id) === String(activeId));
   closeModal();
-  if (q) {
+  if (q && q._source === 'booking') {
+    window.location.href = 'app.html?booking=' + encodeURIComponent(q.id);
+  } else if (q) {
     const params = new URLSearchParams();
     if (q.client_name) params.set('client', q.client_name);
     if (q.event_type) params.set('event', q.event_type);
