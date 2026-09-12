@@ -1167,7 +1167,7 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
       </div>
 
       <div class="publish-card">
-        <div><h3>Ready to launch?</h3><p>We will save your latest changes and create one shareable website link. There is no separate hosting account or file upload to manage.</p></div>
+        <div><h3>Ready to launch?</h3><p>One click updates your live website and booking page together. Your packages, prices, business name, logo, colors, and service area stay matched automatically.</p></div>
         <button class="btn-download" id="publishBtn" onclick="publishWebsite()">Publish My Website →</button>
       </div>
       <div class="publish-link-box" id="publishedLinkBox">
@@ -2111,7 +2111,10 @@ async function saveNow(){
       email:$('bookingEmail')?$('bookingEmail').value:'',
       area:$('bookingArea')?$('bookingArea').value:'',
       depositPct:$('bookingDepositPct')?$('bookingDepositPct').value:'',
-      balanceDays:$('bookingBalanceDays')?$('bookingBalanceDays').value:''
+      balanceDays:$('bookingBalanceDays')?$('bookingBalanceDays').value:'',
+      // Preserve the live snapshot while the student keeps editing her draft.
+      // It is replaced only when she intentionally publishes again.
+      _publishedSnapshot:currentBuild&&currentBuild.booking_data&&currentBuild.booking_data._publishedSnapshot||null
     },
     gallery_data:{
       heroPhotoDataURL:heroPhotoDataURL,
@@ -2721,7 +2724,8 @@ function shadeColor(hex,percent){
   return '#'+[r,g,b].map(c=>c.toString(16).padStart(2,'0')).join('');
 }
 
-// Generate the preview iframe — loads the live site.html with real saved data
+// Generate the preview iframe from the current draft. The public site keeps
+// using its last published snapshot until the student presses Publish.
 async function regeneratePreview(){
   if(!currentUser){showToast('Please sign in first');return}
 
@@ -2751,7 +2755,20 @@ async function regeneratePreview(){
       return;
     }
   }else{
-    previewSrc='site.html?uid='+encodeURIComponent(currentUser.id)+'&_v='+Date.now();
+    const draftPreview={
+      profile:{
+        profile_data:{
+          brandColor:$('customPrimary').value,
+          city:$('city').value,
+          contactPhone:$('phone').value,
+          contactEmail:$('email').value
+        },
+        full_name:($('ownerName').value||$('businessName').value||'Party Business')
+      },
+      build:currentBuild
+    };
+    try{localStorage.setItem('pbh_preview_data',JSON.stringify(draftPreview));}catch(e){console.warn('Preview bridge unavailable:',e)}
+    previewSrc='site.html?preview=1&_v='+Date.now();
   }
   $('previewFrame').src=previewSrc;
   $('previewFrame').onload=()=>{
@@ -2818,7 +2835,7 @@ function packagesForBookingPage(){
     }));
 }
 
-async function syncPublishedPackagesToBookingPage(){
+async function syncPublishedWebsiteToBookingPage(){
   const bookingServices=packagesForBookingPage();
   if(!bookingServices.length)throw new Error('No packages are ready to sync');
 
@@ -2831,7 +2848,18 @@ async function syncPublishedPackagesToBookingPage(){
     .maybeSingle();
   if(loadError)throw loadError;
 
-  const profileData={...((existing&&existing.profile_data)||{}),bookingServices};
+  const original=(existing&&existing.profile_data)||{};
+  const profileData={
+    ...original,
+    // These are the shared fields customers see on both pages. Publishing is
+    // the owner's clear instruction to make this version live everywhere.
+    businessName:$('businessName').value.trim(),
+    brandColor:$('customPrimary').value,
+    logoDataURL:logoDataURL||original.logoDataURL||null,
+    city:$('city').value.trim(),
+    bookingArea:$('bookingArea').value.trim(),
+    bookingServices
+  };
   const{error:saveError}=await sb.from('profiles').upsert({
     id:currentUser.id,
     email:(existing&&existing.email)||currentUser.email,
@@ -2839,6 +2867,27 @@ async function syncPublishedPackagesToBookingPage(){
     updated_at:new Date().toISOString()
   },{onConflict:'id'});
   if(saveError)throw saveError;
+}
+
+function createPublishedSnapshot(){
+  if(!currentBuild)return null;
+  const booking={...(currentBuild.booking_data||{})};
+  delete booking._publishedSnapshot;
+  return {
+    business_name:currentBuild.business_name||null,
+    niche_type:currentBuild.niche_type||null,
+    brand_data:currentBuild.brand_data||{},
+    niche_data:currentBuild.niche_data||{},
+    packages_data:currentBuild.packages_data||[],
+    addons_data:currentBuild.addons_data||[],
+    reviews_data:currentBuild.reviews_data||[],
+    about_data:currentBuild.about_data||{},
+    founding_data:currentBuild.founding_data||{},
+    booking_data:booking,
+    gallery_data:currentBuild.gallery_data||{},
+    faq_data:currentBuild.faq_data||{items:[]},
+    published_at:new Date().toISOString()
+  };
 }
 
 async function publishWebsite(){
@@ -2871,7 +2920,7 @@ async function publishWebsite(){
   const saved=await saveNow();
   if(!saved||!currentBuild?.id){btn.disabled=false;btn.textContent=original;showToast('Publishing paused because your changes did not save');return}
   try{
-    await syncPublishedPackagesToBookingPage();
+    await syncPublishedWebsiteToBookingPage();
   }catch(syncError){
     console.error('Booking package sync error:',syncError);
     btn.disabled=false;btn.textContent=original;
@@ -2879,15 +2928,18 @@ async function publishWebsite(){
     return;
   }
   const ts=new Date().toISOString();
-  const{error}=await sb.from('website_builds').update({last_published_at:ts,updated_at:ts}).eq('id',currentBuild.id);
+  const snapshot=createPublishedSnapshot();
+  const bookingData={...(currentBuild.booking_data||{}),_publishedSnapshot:snapshot};
+  const{error}=await sb.from('website_builds').update({booking_data:bookingData,last_published_at:ts,updated_at:ts}).eq('id',currentBuild.id);
   btn.disabled=false;
   if(error){console.error('Publish error:',error);btn.textContent=original;showToast('Could not publish yet. Please try again.');return}
   currentBuild.last_published_at=ts;
+  currentBuild.booking_data=bookingData;
   $('publishedBadge').style.display='inline-flex';
   $('publishedAt').textContent=new Date(ts).toLocaleString();
   showPublishedLink();
   markStepDone(4);
-  showToast('Your website is live! 🎉');
+  showToast('Your website and booking page are synced and live! 🎉');
 }
 
 // Preview device-mode buttons
