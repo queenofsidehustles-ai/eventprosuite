@@ -333,6 +333,8 @@ let currentProfileData = {};
 let lifecycleContracts = [];
 let lifecyclePrep = [];
 let lifecycleProfit = [];
+let currentEntitlements = {};
+let currentStoreSlug = '';
 const $ = id => document.getElementById(id);
 
 /* ── AUTH ── */
@@ -347,6 +349,10 @@ async function boot() {
 
     const pd      = (profile && profile.profile_data) || {};
     currentProfileData = pd;
+    currentEntitlements = {
+      hasPrintables: profile?.has_kpps_access === true || profile?.has_printables_access === true
+    };
+    currentStoreSlug = profile?.store_slug || '';
     const bizName = pd.businessName || '';
     const display = bizName || session.user.email.split('@')[0];
 
@@ -399,7 +405,7 @@ async function loadData() {
   const ny = mon === 12 ? yr + 1 : yr;
   const nextFirst = `${ny}-${String(nm).padStart(2,'0')}-01`;
 
-  const [quotesRes, bookingsRes, profitRes, webRes, contractsRes, prepRes, lifecycleProfitRes] = await Promise.all([
+  const [quotesRes, bookingsRes, profitRes, webRes, contractsRes, prepRes, lifecycleProfitRes, productsRes] = await Promise.all([
     sb.from('saved_quotes').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }),
     sb.from('bookings').select('*').eq('owner_id', session.user.id).order('created_at', { ascending: false }),
     sb.from('profit_records').select('id,revenue,total_expenses,record_type,record_month,record_year,record_date,income_json')
@@ -412,7 +418,9 @@ async function loadData() {
     sb.from('prep_events').select('id,title,event_date,client,event_data')
       .eq('user_id', session.user.id).order('event_date', { ascending: true }),
     sb.from('profit_records').select('id,record_date,income_json')
-      .eq('user_id', session.user.id).order('record_date', { ascending: false })
+      .eq('user_id', session.user.id).order('record_date', { ascending: false }),
+    sb.from('products').select('id,name,price,active,file_url,stripe_link,library_template_id')
+      .eq('user_id', session.user.id).order('created_at', { ascending: false })
   ]);
 
   const bookingRows = bookingsRes.data || [];
@@ -446,6 +454,9 @@ async function loadData() {
     websiteBuild: webRes.data || null,
     bookings: bookingsRes.data || [],
     quotes: quotesRes.data || [],
+    products: productsRes.data || [],
+    storeSlug: currentStoreSlug,
+    entitlements: currentEntitlements,
     userId: session.user.id
   });
 }
@@ -457,6 +468,7 @@ function renderLaunchProgress(data){
   const card=$('launchCard');
   $('launchCount').textContent=`${progress.completed} of ${progress.total} ready`;
   $('launchBar').style.width=`${progress.percent}%`;
+  $('launchTrack').setAttribute('aria-valuemax',String(progress.total));
   $('launchTrack').setAttribute('aria-valuenow',String(progress.completed));
   $('launchSteps').innerHTML=progress.steps.map((step,index)=>{
     const state=step.done?'done':(progress.nextStep&&step.id===progress.nextStep.id?'next':'');
