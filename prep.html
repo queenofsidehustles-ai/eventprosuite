@@ -470,6 +470,7 @@ async function init(){
   });
 
   await loadEvents();
+  await openBookingDraft();
 }
 
 function toggleUserMenu(e){
@@ -491,6 +492,42 @@ async function loadEvents(){
     const{data}=await sb.from('prep_events').select('*').eq('user_id',currentUser.id).order('event_date',{ascending:true});
     events=data||[];renderList();
   }catch(e){events=[];renderList()}
+}
+
+// A confirmed booking can hand its saved customer details directly to Event
+// Prep. Nothing is written until the owner reviews the draft and taps Save.
+async function openBookingDraft(){
+  const bookingId=new URLSearchParams(window.location.search).get('booking');
+  if(!bookingId||!currentUser)return;
+
+  const existing=events.find(e=>String((e.event_data||{}).booking_id||'')===String(bookingId));
+  if(existing){openEvent(existing.id);return}
+
+  try{
+    const{data:b,error}=await sb.from('bookings').select('*').eq('id',bookingId).eq('owner_id',currentUser.id).maybeSingle();
+    if(error||!b)return;
+    const match=events.find(e=>e.event_date===b.event_date&&String(e.client||'').trim().toLowerCase()===String(b.client_name||'').trim().toLowerCase());
+    if(match){openEvent(match.id);return}
+
+    currentEvent={
+      id:null,
+      title:[b.service_name,b.client_name].filter(Boolean).join(' - ')||'New Event',
+      event_date:b.event_date||'',
+      client:b.client_name||'',
+      event_data:{
+        booking_id:b.id,
+        time:b.event_time||'',
+        venue:b.event_address||'',
+        notes:b.notes||'',
+        pre:[],day:[],post:[],shopping:[],supplies:[]
+      }
+    };
+    showDetail();
+    document.getElementById('tmplPicker').style.display='block';
+    dirty=true;
+    document.getElementById('saveBtn').textContent='💾 Save Event Prep';
+    showToast('Booking details added. Choose a checklist template, then save.');
+  }catch(e){console.error('Could not open booking in Event Prep:',e)}
 }
 
 function renderList(){
