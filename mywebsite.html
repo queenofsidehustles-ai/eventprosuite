@@ -2803,6 +2803,44 @@ function openPublishedWebsite(){
   if(url)window.open(url,'_blank','noopener');
 }
 
+function packagesForBookingPage(){
+  return (packagesData||[])
+    .filter(pkg=>pkg&&String(pkg.name||'').trim())
+    .map(pkg=>({
+      name:String(pkg.name||'').trim(),
+      price:String(pkg.price||'').trim(),
+      duration:String(pkg.duration||'').trim(),
+      description:String(pkg.included||'')
+        .split('\n')
+        .map(line=>line.trim())
+        .filter(Boolean)
+        .join(' · ')
+    }));
+}
+
+async function syncPublishedPackagesToBookingPage(){
+  const bookingServices=packagesForBookingPage();
+  if(!bookingServices.length)throw new Error('No packages are ready to sync');
+
+  // Merge into the existing profile so publishing never erases a student's
+  // brand, payment links, automation settings, or other back-office data.
+  const{data:existing,error:loadError}=await sb
+    .from('profiles')
+    .select('email,profile_data')
+    .eq('id',currentUser.id)
+    .maybeSingle();
+  if(loadError)throw loadError;
+
+  const profileData={...((existing&&existing.profile_data)||{}),bookingServices};
+  const{error:saveError}=await sb.from('profiles').upsert({
+    id:currentUser.id,
+    email:(existing&&existing.email)||currentUser.email,
+    profile_data:profileData,
+    updated_at:new Date().toISOString()
+  },{onConflict:'id'});
+  if(saveError)throw saveError;
+}
+
 async function publishWebsite(){
   if(!currentUser){showToast('Please sign in first');return}
   if(selectedTemplate==='classic'){
@@ -2823,6 +2861,14 @@ async function publishWebsite(){
   btn.disabled=true;btn.textContent='Publishing...';
   const saved=await saveNow();
   if(!saved||!currentBuild?.id){btn.disabled=false;btn.textContent=original;showToast('Publishing paused because your changes did not save');return}
+  try{
+    await syncPublishedPackagesToBookingPage();
+  }catch(syncError){
+    console.error('Booking package sync error:',syncError);
+    btn.disabled=false;btn.textContent=original;
+    showToast('Publishing paused because the booking packages did not sync. Please try again.');
+    return;
+  }
   const ts=new Date().toISOString();
   const{error}=await sb.from('website_builds').update({last_published_at:ts,updated_at:ts}).eq('id',currentBuild.id);
   btn.disabled=false;
