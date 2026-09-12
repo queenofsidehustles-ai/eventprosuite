@@ -52,6 +52,17 @@
     return false;
   }
 
+  function printableProductReady(product, profileData) {
+    const pd = profileData || {};
+    const payment = text(product && product.stripe_link) || text(pd.paymentLink);
+    return Boolean(
+      product && product.active === true &&
+      hasPositivePrice(product) &&
+      text(product.file_url) &&
+      containsPaymentLink(payment)
+    );
+  }
+
   function evaluateLaunchProgress(input) {
     const data = input || {};
     const pd = data.profileData || {};
@@ -60,6 +71,9 @@
     const booking = build.booking_data || {};
     const sources = packageSources(pd, build);
     const allPackages = sources.bookingServices.concat(sources.websitePackages, sources.quotePackages);
+    const products = list(data.products);
+    const entitlements = data.entitlements || {};
+    const includePrintables = entitlements.hasPrintables === true;
 
     const hasService = Boolean(
       text(build.niche_type) ||
@@ -73,7 +87,8 @@
       text(brand.phone) || text(brand.email) || text(booking.phone) || text(booking.email)
     );
     const hasPricedPackage = allPackages.some(hasPositivePrice);
-    const hasPayment = ['stripe100', 'stripe250', 'stripe500', 'stripe1000'].some(key => containsPaymentLink(pd[key])) ||
+    const hasPayment = pd.depositProfile === 'manual' ||
+      ['stripe100', 'stripe250', 'stripe500', 'stripe1000'].some(key => containsPaymentLink(pd[key])) ||
       containsPaymentLink(pd.stripeLinks);
     const hasPublishedSite = Boolean(build.last_published_at);
     const hasCustomerPathTest = list(data.bookings).length > 0 || list(data.quotes).length > 0;
@@ -107,8 +122,8 @@
       {
         id: 'payments',
         title: 'Connect your payment links',
-        description: 'Add Stripe links so customers can pay from their quote.',
-        href: 'profile.html',
+        description: 'Add Stripe links or choose manual invoicing.',
+        href: 'profile.html?focus=payments',
         action: 'Connect payments',
         done: hasPayment
       },
@@ -130,6 +145,27 @@
       }
     ];
 
+    if (includePrintables) {
+      steps.push(
+        {
+          id: 'printable',
+          title: 'Choose your first printable',
+          description: 'Add one ready-made design to your store as a draft.',
+          href: 'store.html?tab=library',
+          action: 'Choose a printable',
+          done: products.length > 0
+        },
+        {
+          id: 'store',
+          title: 'Open your printable store',
+          description: 'Review the price, file, payment link, and store handle before going live.',
+          href: 'store.html?tab=mystore',
+          action: 'Finish my store',
+          done: Boolean(text(data.storeSlug)) && products.some(product => printableProductReady(product, pd))
+        }
+      );
+    }
+
     const completed = steps.filter(step => step.done).length;
     const nextStep = steps.find(step => !step.done) || null;
     return {
@@ -142,5 +178,5 @@
     };
   }
 
-  return { evaluateLaunchProgress, packageSources, containsPaymentLink };
+  return { evaluateLaunchProgress, packageSources, containsPaymentLink, printableProductReady };
 });
