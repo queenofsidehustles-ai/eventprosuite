@@ -619,7 +619,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div style="background:linear-gradient(135deg,rgba(109,40,217,.04),rgba(232,23,138,.03));border:1.5px solid var(--border);border-radius:14px;padding:20px">
           <div style="font-weight:800;font-size:.95rem;color:var(--plum-900);margin-bottom:14px">❓ Common Questions</div>
           <div style="display:flex;flex-direction:column;gap:12px">
-            <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">Do my customers download instantly?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Yes — once they pay through your payment link, you send them the Canva template link or file. For fully automated delivery, use Gumroad as your payment processor (it handles delivery automatically).</div></div>
+            <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">Do my customers download instantly?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Yes. Add the digital file and your Stripe payment link to the product. After checkout, Party Biz Hub shows the download and emails the customer a copy automatically.</div></div>
             <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">Can I sell products I created myself — not just the Party Profit Printables templates?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Yes — you can add any digital product to your store. The Quick Fill is pre-loaded with the Party Profit Printables templates, but you can type any product name and description manually.</div></div>
             <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">How do I customize the names (like changing "Unicorn" to "Dinosaur")?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">You customize in Canva. Open the Canva template link, click the text you want to change, type the new name. Download as PDF Print. Done. Your graphic designer included step-by-step Canva instructions with your template package.</div></div>
             <div><div style="font-weight:700;font-size:.83rem;color:var(--ink)">What if I need help?</div><div style="font-size:.8rem;color:var(--muted);margin-top:3px;line-height:1.65">Email <strong>support@partybizhub.com</strong> and we'll get back to you within 24 hours.</div></div>
@@ -823,7 +823,10 @@ async function init(){
   const payEl=document.getElementById('storePaymentLink');
   if(payEl)payEl.value=currentProfileData.paymentLink||'';
   const bc=currentProfileData.brandColors||{};
-  if(bc.primary){const el=document.getElementById('brandPrimary');if(el){el.value=bc.primary;document.getElementById('brandPrimaryHex').textContent=bc.primary;}}
+  // The main Business Profile is the brand source. Existing store-specific
+  // colors still win, but a new store starts on-brand without retyping.
+  const sharedPrimary=bc.primary||currentProfileData.brandColor||'';
+  if(sharedPrimary){const el=document.getElementById('brandPrimary');if(el){el.value=sharedPrimary;document.getElementById('brandPrimaryHex').textContent=sharedPrimary;}}
   if(bc.accent){const el=document.getElementById('brandAccent');if(el){el.value=bc.accent;document.getElementById('brandAccentHex').textContent=bc.accent;}}
   if(bc.bg){const el=document.getElementById('brandBg');if(el){el.value=bc.bg;document.getElementById('brandBgHex').textContent=bc.bg;}}
 
@@ -843,6 +846,8 @@ async function init(){
   }
 
   await loadProducts();
+  const requestedTab=new URLSearchParams(window.location.search).get('tab');
+  if(['mystore','sales','guide','library'].includes(requestedTab))switchTab(requestedTab);
 }
 
 function updateSlugPreview(){
@@ -1359,14 +1364,17 @@ async function claimTemplate(templateId){
       user_id:currentUser.id,
       name:template.name,
       description:template.description||null,
-      price:0,
+      // Library items begin as safe, reviewable drafts. A suggested starter
+      // price prevents the accidental $0 storefront problem, while inactive
+      // keeps the product private until the student reviews it.
+      price:9.99,
       theme:template.theme||null,
       image_url:template.image_url||null,
       file_url:template.file_url||null,
       file_name:template.file_name||null,
       instructions:template.instructions||null,
       library_template_id:template.id,
-      active:true,
+      active:false,
     }).select().single();
 
     if(pErr)throw pErr;
@@ -1378,10 +1386,13 @@ async function claimTemplate(templateId){
     });
 
     libraryClaims.push({template_id:templateId,product_id:product?.id});
-    showToast('✓ Template added to your store!');
     renderLibrary();
-    // Reload products so it shows up in My Store tab too
+    // Move directly into the one screen that still needs attention. The
+    // student reviews the price, payment link, and visibility without hunting.
     await loadProducts();
+    switchTab('mystore');
+    if(product?.id)openModal(product.id);
+    showToast('✓ Added as a draft. Review the price and payment link, then make it visible.');
   }catch(e){
     showToast('Error: '+(e.message||'unknown'));
     if(btn){btn.disabled=false;btn.textContent='Add to My Store';}

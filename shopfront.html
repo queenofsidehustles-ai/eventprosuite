@@ -506,7 +506,8 @@ async function init(){
   setMeta('og:title',bizName+' | Party Printables');
   setMeta('og:description',tagline);
   setMeta('og:url',location.href);
-  if(d.logoUrl)setMeta('og:image',d.logoUrl);
+  const sharedLogo=d.logoUrl||d.logoDataURL||null;
+  if(sharedLogo)setMeta('og:image',sharedLogo);
 
   // Load products
   const{data}=await sb.from('products').select('*').eq('user_id',ownerId).eq('active',true).order('created_at',{ascending:false});
@@ -516,7 +517,7 @@ async function init(){
   window.storePaymentLink = d.paymentLink || '';
 
   // Apply subscriber's brand colors if set
-  const bc = d.brandColors || {};
+  const bc = {primary:d.brandColor||'',...(d.brandColors||{})};
   if(bc.primary || bc.accent || bc.bg){
     const pfxName = pfx;
     const p = bc.primary || '#D115AE';
@@ -536,7 +537,7 @@ async function init(){
   }
 
   // Build the page shell for the chosen template
-  buildShell(bizName,tagline,d.logoUrl||null,d.bio||'',d.contactEmail||'');
+  buildShell(bizName,tagline,sharedLogo,d.bio||'',d.contactEmail||'');
 
   // Check for Stripe success redirect
   const success=params.get('success'),productId=params.get('product');

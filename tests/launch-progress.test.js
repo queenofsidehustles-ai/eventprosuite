@@ -92,4 +92,36 @@ function ids(result) {
   assert.equal(ids(result).package, false, 'untouched quote defaults are not a finished package');
 }
 
+{
+  const result = evaluateLaunchProgress({
+    profileData: { depositProfile: 'manual' }
+  });
+  assert.equal(ids(result).payments, true, 'manual invoicing is a completed payment choice');
+}
+
+{
+  const draft = {
+    id: 'printable-1', name: 'Unicorn Bundle', price: 9.99,
+    active: false, file_url: 'https://files.example/unicorn.pdf'
+  };
+  const result = evaluateLaunchProgress({
+    profileData: { paymentLink: 'https://buy.stripe.com/store' },
+    entitlements: { hasPrintables: true },
+    storeSlug: 'dream-parties',
+    products: [draft]
+  });
+  assert.equal(result.total, 8);
+  assert.equal(ids(result).printable, true);
+  assert.equal(ids(result).store, false, 'a private draft is not presented as a launched store');
+
+  draft.active = true;
+  const ready = evaluateLaunchProgress({
+    profileData: { paymentLink: 'https://buy.stripe.com/store' },
+    entitlements: { hasPrintables: true },
+    storeSlug: 'dream-parties',
+    products: [draft]
+  });
+  assert.equal(ids(ready).store, true);
+}
+
 console.log('launch progress tests passed');
