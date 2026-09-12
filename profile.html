@@ -102,6 +102,12 @@ input,select,textarea{font:inherit}
 .stripe-tile{padding:.9rem;background:linear-gradient(135deg,rgba(201,162,39,.08),rgba(246,229,166,.12));border:1px solid rgba(201,162,39,.25);border-radius:12px}
 .stripe-tile label{display:block;font-size:.74rem;font-weight:800;color:#7a5e1a;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem}
 .stripe-tile input{width:100%;padding:.55rem .7rem;border:1.5px solid var(--line);border-radius:8px;font-size:.85rem;background:#fff}
+.stripe-connect{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.1rem;margin-bottom:1rem;border:1.5px solid #D8D4FF;border-radius:14px;background:linear-gradient(135deg,#F7F6FF,#FFF)}
+.stripe-connect-copy strong{display:block;color:var(--plum-900);font-size:.94rem;margin-bottom:3px}
+.stripe-connect-copy span{display:block;color:var(--muted);font-size:.8rem;line-height:1.5}
+.stripe-status{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:5px 9px;border-radius:999px;background:#F4F1F7;color:var(--muted);font-size:.72rem;font-weight:800}
+.stripe-status.ready{background:#EAF8F0;color:#147A4B}
+@media(max-width:640px){.stripe-connect{align-items:stretch;flex-direction:column}.stripe-connect .btn{justify-content:center}}
 
 /* BUTTONS */
 .btn{padding:.85rem 1.6rem;border:none;border-radius:11px;font-weight:700;font-size:.88rem;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .15s}
@@ -269,7 +275,7 @@ input,select,textarea{font:inherit}
     <div class="card-header">
       <div>
         <h2>Deposit collection</h2>
-        <p>Your client clicks "Pay Deposit" on the invoice and pays directly into your Stripe account. We never touch your money. Paste your own Stripe Payment Links below.</p>
+        <p>Connect Stripe once. Party Biz Hub will create the exact deposit checkout, confirm the payment, update the booking, and send the contract automatically.</p>
       </div>
       <div class="section-badge">Step 3</div>
     </div>
@@ -277,13 +283,23 @@ input,select,textarea{font:inherit}
     <div class="field">
       <label>Deposit profile</label>
       <select id="depositProfile">
-        <option value="default">Stripe payment links (recommended)</option>
+        <option value="connected" id="connectedDepositOption" disabled>Automatic Stripe deposits (recommended)</option>
+        <option value="default">Stripe payment links (legacy)</option>
         <option value="manual">Manual follow-up invoice (no Stripe button)</option>
       </select>
-      <div class="field-help">Choose "manual" if you'd rather invoice clients separately. Stripe is recommended — clients book themselves from the quote.</div>
+      <div class="field-help">Automatic Stripe deposits remove the need to match payments or mark deposits paid by hand.</div>
     </div>
 
-    <p style="font-size:.86rem;color:var(--muted);margin:1rem 0 .8rem;line-height:1.6"><strong style="color:var(--plum-900)">Add your own Stripe Payment Links</strong> for each deposit tier. Inside the Quote Builder you'll pick the right tier per client.</p>
+    <div class="stripe-connect" id="stripeConnectBox" style="display:none">
+      <div class="stripe-connect-copy">
+        <strong>Connect your Stripe account</strong>
+        <span>Your customer pays you directly. Party Biz Hub receives only the payment confirmation needed to advance the booking.</span>
+        <span class="stripe-status" id="stripeConnectStatus">Not connected</span>
+      </div>
+      <button type="button" class="btn btn-primary" id="stripeConnectBtn" onclick="startStripeConnect()">Connect with Stripe</button>
+    </div>
+
+    <p style="font-size:.86rem;color:var(--muted);margin:1rem 0 .8rem;line-height:1.6"><strong style="color:var(--plum-900)">Already using the old payment-link setup?</strong> Your links stay available as a fallback. Nothing changes until you connect Stripe and select automatic deposits.</p>
 
     <div class="stripe-grid">
       <div class="stripe-tile">
@@ -305,7 +321,7 @@ input,select,textarea{font:inherit}
     </div>
 
     <div style="margin-top:1rem;padding:.85rem 1rem;background:var(--cream);border-radius:10px;border-left:3px solid var(--gold);font-size:.83rem;color:var(--muted);line-height:1.6">
-      💡 <strong style="color:var(--plum-900)">Don't have Stripe Payment Links yet?</strong> Log into your Stripe dashboard → Payment Links → New → Set the price → Copy the URL → Paste here. Each tier needs its own link.
+      💡 <strong style="color:var(--plum-900)">Recommended:</strong> Connect Stripe above so the deposit amount always matches the quote and the CRM updates itself after payment.
     </div>
   </section>
 
@@ -485,7 +501,8 @@ input,select,textarea{font:inherit}
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcXdvZGR3enBmbm1wanR3aWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mzk2ODksImV4cCI6MjA5MjExNTY4OX0.pHh7BI25YYlMDqN2FmBsKCrHpvgi7zb3IUizMDUr2K4';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null,logoDataURL=null,bookingServices=[],depositUpfrontEnabled=false;
+let currentUser=null,currentSession=null,logoDataURL=null,bookingServices=[],depositUpfrontEnabled=false;
+let stripeConnectedAccountId='';
 // Contract auto-send. Defaults to ON so existing accounts keep today's behaviour;
 // only an explicit false turns it off.
 let autoContractEnabled=true;
@@ -495,6 +512,7 @@ async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
   currentUser=session.user;
+  currentSession=session;
 
   try{
     const{data:p}=await sb.from('profiles').select('profile_data,full_name').eq('id',currentUser.id).maybeSingle();
@@ -524,6 +542,8 @@ async function init(){
     initNavSignout(handleLogout);
     updateLogoTextPreview();
     renderServices();
+    applyStripeConnectUI(pd.stripeConnectAccountId, pd.stripeConnectReady===true, pd.depositProfile);
+    await loadStripeConnectConfig(Boolean(pd.stripeConnectAccountId));
 
     // Booking link
     const base=location.origin+location.pathname.replace('profile.html','');
@@ -537,6 +557,8 @@ async function init(){
 
   $('authGate').style.display='none';
   $('pbhLayout').style.display='flex';
+
+  await handleStripeReturn();
 
   // First-login setup mode
   const isSetup=new URLSearchParams(window.location.search).get('setup')==='1';
@@ -561,6 +583,90 @@ async function init(){
       if(section){section.scrollIntoView({behavior:'smooth',block:'start'});section.style.boxShadow='0 0 0 3px rgba(109,40,217,.18),var(--shadow-lg)';}
     },250);
   }
+}
+
+function applyStripeConnectUI(accountId,ready,preferredProfile){
+  const status=$('stripeConnectStatus'),btn=$('stripeConnectBtn');
+  if(!status||!btn)return;
+  stripeConnectedAccountId=accountId||'';
+  $('connectedDepositOption').disabled=!ready;
+  if(ready){
+    status.textContent='✓ Connected and ready';
+    status.classList.add('ready');
+    btn.textContent='Check connection';
+    if(preferredProfile==='connected')$('depositProfile').value='connected';
+  }else if(accountId){
+    status.textContent='Action needed in Stripe';
+    status.classList.remove('ready');
+    btn.textContent='Check Stripe status';
+    if($('depositProfile').value==='connected')$('depositProfile').value='default';
+  }else{
+    status.textContent='Not connected';
+    status.classList.remove('ready');
+    btn.textContent='Connect with Stripe';
+    if($('depositProfile').value==='connected')$('depositProfile').value='default';
+  }
+}
+
+async function loadStripeConnectConfig(hasExistingConnection){
+  const box=$('stripeConnectBox');
+  try{
+    const r=await fetch('/api/send-quote-email',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({kind:'stripe-connect-config'})
+    });
+    const data=await r.json().catch(()=>({}));
+    if(box&&(data.enabled||hasExistingConnection))box.style.display='flex';
+  }catch(e){console.warn('Stripe connection setup is not enabled yet',e)}
+}
+
+async function stripeSetupRequest(body){
+  const token=currentSession&&currentSession.access_token;
+  const r=await fetch('/api/send-quote-email',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify(body)
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(data.error||'Stripe setup could not be completed');
+  return data;
+}
+
+async function startStripeConnect(){
+  const btn=$('stripeConnectBtn');
+  btn.disabled=true;btn.textContent=stripeConnectedAccountId?'Checking…':'Opening Stripe…';
+  try{
+    if(stripeConnectedAccountId){
+      const status=await stripeSetupRequest({kind:'stripe-connect-status'});
+      applyStripeConnectUI(status.accountId,status.ready,$('depositProfile').value);
+      showToast(status.ready?'✓ Stripe is connected and ready':'Stripe still needs more information before it can accept deposits');
+      btn.disabled=false;
+      return;
+    }
+    const data=await stripeSetupRequest({kind:'stripe-connect-start'});
+    window.location.href=data.url;
+  }catch(e){
+    showToast(e.message);btn.disabled=false;btn.textContent='Connect with Stripe';
+  }
+}
+
+async function handleStripeReturn(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('stripe')!=='return')return;
+  if(params.get('error')){
+    showToast('Stripe connection was not completed');
+    history.replaceState({},'',location.pathname+'?focus=payments');
+    return;
+  }
+  const code=params.get('code'),state=params.get('state');
+  if(!code||!state)return;
+  $('stripeConnectStatus').textContent='Confirming your Stripe account…';
+  try{
+    const data=await stripeSetupRequest({kind:'stripe-connect-complete',code,state});
+    applyStripeConnectUI(data.accountId,data.ready,data.ready?'connected':$('depositProfile').value);
+    showToast(data.ready?'✓ Stripe is connected. Deposits can now update themselves.':'Stripe is connected, but Stripe still needs more information.');
+  }catch(e){showToast(e.message)}
+  history.replaceState({},'',location.pathname+'?focus=payments');
 }
 
 /* ── Booking toggle ── */

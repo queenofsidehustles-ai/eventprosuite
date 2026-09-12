@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 /**
  * Customer-facing emails.
  *
@@ -17,7 +19,7 @@
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -29,6 +31,27 @@ module.exports = async function handler(req, res) {
   }
   if ((req.body || {}).kind === 'booking-confirmation') {
     return sendBookingConfirmation(req, res, RESEND_KEY, FROM_EMAIL);
+  }
+  if ((req.body || {}).kind === 'stripe-connect-config') {
+    return res.json({
+      enabled: Boolean(
+        process.env.STRIPE_SECRET_KEY &&
+        process.env.STRIPE_CONNECT_CLIENT_ID &&
+        process.env.STRIPE_CONNECT_WEBHOOK_SECRET
+      ),
+    });
+  }
+  if ((req.body || {}).kind === 'stripe-connect-start') {
+    return startStripeConnect(req, res);
+  }
+  if ((req.body || {}).kind === 'stripe-connect-complete') {
+    return completeStripeConnect(req, res);
+  }
+  if ((req.body || {}).kind === 'stripe-connect-status') {
+    return stripeConnectStatus(req, res);
+  }
+  if ((req.body || {}).kind === 'create-deposit-checkout') {
+    return createDepositCheckout(req, res);
   }
 
   const {
@@ -135,6 +158,237 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
 };
+
+const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+
+function serviceConfig() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+  return {
+    key,
+    headers: {
+      apikey: key,
+      Authorization: 'Bearer ' + key,
+      'Content-Type': 'application/json',
+    },
+  };
+}
+
+async function authenticatedUser(req) {
+  const token = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
+  if (!token) return null;
+  const { key } = serviceConfig();
+  if (!key) return null;
+  const r = await fetch(`${SUPA_URL}/auth/v1/user`, {
+    headers: { apikey: key, Authorization: 'Bearer ' + token },
+  });
+  return r.ok ? r.json() : null;
+}
+
+async function getOwnerProfile(ownerId) {
+  const { key, headers } = serviceConfig();
+  if (!key) throw new Error('Secure profile access is not configured');
+  const r = await fetch(
+    `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}&select=id,email,profile_data&limit=1`,
+    { headers }
+  );
+  const rows = await r.json().catch(() => []);
+  if (!r.ok || !Array.isArray(rows) || !rows[0]) throw new Error('Business profile was not found');
+  return rows[0];
+}
+
+async function saveOwnerProfileData(ownerId, profileData) {
+  const { headers } = serviceConfig();
+  const r = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}`, {
+    method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+    body: JSON.stringify({ profile_data: profileData, updated_at: new Date().toISOString() }),
+  });
+  if (!r.ok) throw new Error('Business profile could not be updated');
+}
+
+async function stripeFormRequest(path, values, connectedAccount) {
+  const secret = process.env.STRIPE_SECRET_KEY || '';
+  if (!secret) throw new Error('Stripe Connect is not configured');
+  const headers = {
+    Authorization: 'Basic ' + Buffer.from(secret + ':').toString('base64'),
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  if (connectedAccount) headers['Stripe-Account'] = connectedAccount;
+  const r = await fetch('https://api.stripe.com' + path, {
+    method: 'POST', headers, body: new URLSearchParams(values).toString(),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error?.message || 'Stripe request failed');
+  return data;
+}
+
+async function stripeOAuthToken(code) {
+  const secret = process.env.STRIPE_SECRET_KEY || '';
+  if (!secret) throw new Error('Stripe Connect is not configured');
+  const r = await fetch('https://connect.stripe.com/oauth/token', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Basic ' + Buffer.from(secret + ':').toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({ grant_type: 'authorization_code', code }).toString(),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error_description || data.error || 'Stripe connection failed');
+  return data;
+}
+
+async function stripeGet(path, connectedAccount) {
+  const secret = process.env.STRIPE_SECRET_KEY || '';
+  if (!secret) throw new Error('Stripe Connect is not configured');
+  const headers = { Authorization: 'Basic ' + Buffer.from(secret + ':').toString('base64') };
+  if (connectedAccount) headers['Stripe-Account'] = connectedAccount;
+  const r = await fetch('https://api.stripe.com' + path, { headers });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error?.message || 'Stripe request failed');
+  return data;
+}
+
+async function startStripeConnect(req, res) {
+  const user = await authenticatedUser(req);
+  if (!user) return res.status(401).json({ error: 'Please sign in again' });
+  const clientId = process.env.STRIPE_CONNECT_CLIENT_ID || '';
+  if (!clientId || !process.env.STRIPE_SECRET_KEY) {
+    return res.status(503).json({ error: 'Stripe Connect needs to be enabled by Party Biz Hub first' });
+  }
+  try {
+    const profile = await getOwnerProfile(user.id);
+    const pd = profile.profile_data || {};
+    const state = crypto.randomBytes(24).toString('hex');
+    await saveOwnerProfileData(user.id, {
+      ...pd,
+      stripeConnectState: state,
+      stripeConnectStateExpires: Date.now() + 10 * 60 * 1000,
+    });
+    const redirectUri = 'https://partybizhub.com/profile.html?focus=payments&stripe=return';
+    const params = new URLSearchParams({
+      response_type: 'code', client_id: clientId, scope: 'read_write', state,
+      redirect_uri: redirectUri,
+      'stripe_user[email]': user.email || profile.email || '',
+      'stripe_user[business_name]': pd.businessName || pd.bizName || '',
+      'stripe_user[product_description]': 'Kids party and event services',
+      'stripe_user[url]': `https://partybizhub.com/site.html?uid=${encodeURIComponent(user.id)}`,
+    });
+    return res.json({ url: 'https://connect.stripe.com/oauth/authorize?' + params.toString() });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+}
+
+async function completeStripeConnect(req, res) {
+  const user = await authenticatedUser(req);
+  if (!user) return res.status(401).json({ error: 'Please sign in again' });
+  const { code, state } = req.body || {};
+  if (!code || !state) return res.status(400).json({ error: 'Stripe did not return a complete connection' });
+  try {
+    const profile = await getOwnerProfile(user.id);
+    const pd = profile.profile_data || {};
+    if (state !== pd.stripeConnectState || Number(pd.stripeConnectStateExpires || 0) < Date.now()) {
+      return res.status(403).json({ error: 'This Stripe connection expired. Please start again.' });
+    }
+    const oauth = await stripeOAuthToken(code);
+    const accountId = oauth.stripe_user_id;
+    if (!/^acct_/.test(accountId || '')) throw new Error('Stripe account connection was not returned');
+    const account = await stripeGet('/v1/accounts/' + encodeURIComponent(accountId));
+    const next = { ...pd };
+    delete next.stripeConnectState;
+    delete next.stripeConnectStateExpires;
+    next.stripeConnectAccountId = accountId;
+    next.stripeConnectReady = account.charges_enabled === true && account.details_submitted === true;
+    next.depositProfile = next.stripeConnectReady ? 'connected' : (next.depositProfile || 'default');
+    await saveOwnerProfileData(user.id, next);
+    return res.json({ connected: true, ready: next.stripeConnectReady, accountId });
+  } catch (e) {
+    return res.status(502).json({ error: e.message });
+  }
+}
+
+async function stripeConnectStatus(req, res) {
+  const user = await authenticatedUser(req);
+  if (!user) return res.status(401).json({ error: 'Please sign in again' });
+  try {
+    const profile = await getOwnerProfile(user.id);
+    const pd = profile.profile_data || {};
+    if (!pd.stripeConnectAccountId) return res.json({ connected: false, ready: false });
+    const account = await stripeGet('/v1/accounts/' + encodeURIComponent(pd.stripeConnectAccountId));
+    const ready = account.charges_enabled === true && account.details_submitted === true;
+    if (pd.stripeConnectReady !== ready) {
+      await saveOwnerProfileData(user.id, { ...pd, stripeConnectReady: ready });
+    }
+    return res.json({ connected: true, ready, accountId: pd.stripeConnectAccountId });
+  } catch (e) {
+    return res.status(502).json({ error: e.message });
+  }
+}
+
+async function createDepositCheckout(req, res) {
+  const { bookingId, quoteId, clientEmail } = req.body || {};
+  if (!bookingId || !quoteId || !clientEmail) {
+    return res.status(400).json({ error: 'Booking, quote, and email are required' });
+  }
+  const { key, headers } = serviceConfig();
+  if (!key) return res.status(500).json({ error: 'Secure checkout is not configured' });
+  try {
+    const bookingRes = await fetch(
+      `${SUPA_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingId)}` +
+      `&quote_id=eq.${encodeURIComponent(quoteId)}&client_email=eq.${encodeURIComponent(clientEmail)}` +
+      '&select=id,owner_id,client_name,client_email,event_date,service_name,service_price,status,quote_id&limit=1',
+      { headers }
+    );
+    const bookings = await bookingRes.json().catch(() => []);
+    const booking = Array.isArray(bookings) ? bookings[0] : null;
+    if (!bookingRes.ok || !booking || booking.status !== 'awaiting-deposit') {
+      return res.status(409).json({ error: 'This booking is not waiting for a deposit' });
+    }
+    const quoteRes = await fetch(
+      `${SUPA_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}` +
+      `&user_id=eq.${encodeURIComponent(booking.owner_id)}&select=id,quote_data&limit=1`, { headers }
+    );
+    const quotes = await quoteRes.json().catch(() => []);
+    const quote = Array.isArray(quotes) ? quotes[0] : null;
+    if (!quoteRes.ok || !quote) return res.status(409).json({ error: 'The matching quote was not found' });
+    const total = parseFloat(String(booking.service_price || '0').replace(/[^0-9.]/g, '')) || 0;
+    const selected = parseFloat(quote.quote_data?.selectedDepositTier);
+    const deposit = Math.min(Number.isFinite(selected) && selected > 0 ? selected : total * 0.5, total);
+    const cents = Math.round(deposit * 100);
+    if (cents < 50) return res.status(409).json({ error: 'The deposit amount is too low for card checkout' });
+
+    const profile = await getOwnerProfile(booking.owner_id);
+    const pd = profile.profile_data || {};
+    if (!pd.stripeConnectAccountId || pd.stripeConnectReady !== true || pd.depositProfile !== 'connected') {
+      return res.status(409).json({ error: 'Automatic Stripe deposits are not connected for this business' });
+    }
+    const currency = /^[a-z]{3}$/i.test(pd.currency || '') ? pd.currency.toLowerCase() : 'usd';
+    const success = `https://partybizhub.com/view-quote.html?id=${encodeURIComponent(quoteId)}&deposit=success`;
+    const cancel = `https://partybizhub.com/view-quote.html?id=${encodeURIComponent(quoteId)}&deposit=cancelled`;
+    const session = await stripeFormRequest('/v1/checkout/sessions', {
+      mode: 'payment',
+      customer_email: booking.client_email,
+      client_reference_id: booking.id,
+      success_url: success,
+      cancel_url: cancel,
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': currency,
+      'line_items[0][price_data][unit_amount]': String(cents),
+      'line_items[0][price_data][product_data][name]': `Deposit for ${booking.service_name || 'party booking'}`,
+      'metadata[kind]': 'booking_deposit',
+      'metadata[booking_id]': booking.id,
+      'metadata[owner_id]': booking.owner_id,
+      'metadata[quote_id]': quoteId,
+      'metadata[deposit_amount_cents]': String(cents),
+      'payment_intent_data[metadata][kind]': 'booking_deposit',
+      'payment_intent_data[metadata][booking_id]': booking.id,
+      'payment_intent_data[metadata][owner_id]': booking.owner_id,
+    }, pd.stripeConnectAccountId);
+    return res.json({ url: session.url, automatic: true, depositAmount: deposit });
+  } catch (e) {
+    return res.status(502).json({ error: e.message });
+  }
+}
 
 
 // Advance the original inquiry when a customer accepts a quote. This route

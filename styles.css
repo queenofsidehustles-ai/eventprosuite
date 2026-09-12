@@ -182,10 +182,12 @@ body{background:var(--bg-page);color:var(--text-primary);min-height:100vh}
 
 .snav-section{
   font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:rgba(255,255,255,.28);padding:12px 10px 6px;
+  color:var(--text-subtle);padding:14px 10px 5px;
   margin-top:4px
 }
 .snav-section:first-child{margin-top:0}
+.snav-upgrade{margin-top:8px;background:var(--brand-tint);color:var(--brand);font-weight:700}
+.snav-upgrade:hover{background:var(--sidebar-bg-active);color:var(--brand-deep)}
 
 .snav-item{
   display:flex;align-items:center;gap:9px;

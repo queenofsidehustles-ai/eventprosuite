@@ -329,6 +329,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let allQuotes   = [];
 let activeId    = null;
 let currentUser = null;
+let currentAccessToken = '';
 let currentProfileData = {};
 let lifecycleContracts = [];
 let lifecyclePrep = [];
@@ -343,6 +344,7 @@ async function boot() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = 'login.html'; return; }
     currentUser = session.user;
+    currentAccessToken = session.access_token || '';
 
     const { data: profile } = await sb
       .from('profiles').select('*').eq('id', session.user.id).single();
@@ -863,7 +865,7 @@ async function maybeSendContract(id) {
 
     const r = await fetch('/api/auto-contract', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentAccessToken },
       body: JSON.stringify({
         ownerUID: currentUser.id,
         clientName: b.client_name, clientEmail: b.client_email, clientPhone: b.client_phone,

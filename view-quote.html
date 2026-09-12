@@ -219,6 +219,8 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
 
 <div class="qv-body">
 
+  ${params.get('deposit')==='success'?`<div class="qv-notice" style="background:#ECFDF3;border-color:#86EFAC;color:#166534"><div class="qv-notice-icon">✓</div><div><strong>Payment received.</strong> Stripe is confirming your deposit now. Your contract will be emailed automatically.</div></div>`:''}
+
   ${expired?`<div class="qv-notice"><div class="qv-notice-icon">⚠️</div><div>This quote <strong>expired</strong> on ${esc(fmtDate(expiryDate))}. Please contact ${esc(bizName)} for an updated quote.</div></div>`:''}
   ${!expired&&daysLeft!==null&&daysLeft<=7?`<div class="qv-notice"><div class="qv-notice-icon">⏰</div><div>This quote expires in <strong>${daysLeft} day${daysLeft!==1?'s':''}</strong>. Book now to lock in your price.</div></div>`:''}
 
@@ -368,12 +370,13 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         created_at:    new Date().toISOString()
       };
 
+      const sourceBookingId = (q.quote_data||{}).sourceBookingId;
+      const effectiveBookingId = sourceBookingId || payload.id;
       try{
         // Quotes created from an existing inquiry must advance that same CRM
         // record. Inserting another row here used to leave owners with two
         // records for one customer: the original inquiry plus a second
         // awaiting-deposit booking.
-        const sourceBookingId = (q.quote_data||{}).sourceBookingId;
         const res = sourceBookingId
           ? await fetch('/api/send-quote-email',{
               method:'POST',
@@ -412,7 +415,25 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         return;
       }
 
-      const depositLink = pickStripe(pd, ctx.depAmt);
+      let depositLink = pickStripe(pd, ctx.depAmt);
+
+      // Connected Stripe creates an exact checkout for this booking. Its
+      // metadata lets the verified webhook advance only this customer's row.
+      // Existing fixed payment links remain the fallback for current students.
+      if(pd.depositProfile==='connected'&&pd.stripeConnectReady===true){
+        try{
+          const checkoutRes=await fetch('/api/send-quote-email',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              kind:'create-deposit-checkout',bookingId:effectiveBookingId,
+              quoteId:q.id,clientEmail:email
+            })
+          });
+          const checkout=await checkoutRes.json().catch(()=>({}));
+          if(checkoutRes.ok&&checkout.url)depositLink=checkout.url;
+          else console.warn('Automatic deposit checkout unavailable:',checkout.error||checkoutRes.status);
+        }catch(e){console.warn('Automatic deposit checkout unavailable:',e)}
+      }
 
       // Fire-and-forget: a booking that saved but didn't email is
       // recoverable, so this must never block the confirmation.

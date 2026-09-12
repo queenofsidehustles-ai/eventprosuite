@@ -100,6 +100,17 @@ function ids(result) {
 }
 
 {
+  const result = evaluateLaunchProgress({
+    profileData: {
+      depositProfile: 'connected',
+      stripeConnectReady: true,
+      stripeConnectAccountId: 'acct_student'
+    }
+  });
+  assert.equal(ids(result).payments, true, 'a ready connected Stripe account completes payment setup');
+}
+
+{
   const draft = {
     id: 'printable-1', name: 'Unicorn Bundle', price: 9.99,
     active: false, file_url: 'https://files.example/unicorn.pdf'
