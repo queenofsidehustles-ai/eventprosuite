@@ -55,7 +55,10 @@ module.exports = async function handler(req, res) {
 
   // Insert contract via Supabase REST API
   const contractPayload = {
-    owner_id: ownerUID,
+    // Contract Center scopes records by user_id. Using owner_id here meant
+    // automated contracts could be emailed but never appear in the owner's
+    // saved contract list.
+    user_id: ownerUID,
     biz_name: bizName || '',
     biz_email: bizEmail || '',
     biz_phone: bizPhone || '',
@@ -72,7 +75,7 @@ module.exports = async function handler(req, res) {
     balance_due: balance,
     clauses,
     contract_type: 'service_agreement',
-    status: 'pending',
+    status: 'Sent to Client',
     sign_token: signToken,
     created_at: new Date().toISOString(),
   };
