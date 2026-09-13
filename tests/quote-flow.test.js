@@ -32,6 +32,14 @@ assert.match(api, /\(!clientEmail && !clientPhone\)/);
 assert.match(api, /if \(!clientEmail\)/);
 assert.match(profile, /contactPhone\.includes\('@'\)/);
 
+// Package promises become per-quote checklists. Website inclusions are on by
+// default, researched suggestions are off, and only checked rows reach the
+// customer-facing quote.
+assert.match(app, /COMMON_INCLUSIONS/);
+assert.match(app, /data-q-inc/);
+assert.match(app, /source:'suggested'/);
+assert.match(view, /it\.inclusions\.filter/);
+
 // All inline browser scripts must still parse.
 for (const html of [app, view, profile]) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
