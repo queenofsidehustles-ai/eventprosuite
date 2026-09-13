@@ -32,6 +32,9 @@ module.exports = async function handler(req, res) {
   if ((req.body || {}).kind === 'booking-confirmation') {
     return sendBookingConfirmation(req, res, RESEND_KEY, FROM_EMAIL);
   }
+  if ((req.body || {}).kind === 'website-booking') {
+    return createWebsiteBooking(req, res);
+  }
   if ((req.body || {}).kind === 'stripe-connect-config') {
     return res.json({
       enabled: Boolean(
@@ -171,6 +174,81 @@ function serviceConfig() {
       'Content-Type': 'application/json',
     },
   };
+}
+
+// Public websites use this server-side bridge instead of embedding a Supabase
+// key in their HTML. The owner is still explicit, but we verify that the
+// business exists and accept only the small set of fields needed for an
+// inquiry. This keeps a rotated browser key from silently breaking bookings.
+async function createWebsiteBooking(req, res) {
+  const body = req.body || {};
+  if (body.companyWebsite) return res.status(200).json({ received: true }); // honeypot
+
+  const clean = (value, max = 500) => String(value == null ? '' : value).trim().slice(0, max);
+  const ownerId = clean(body.ownerId, 36);
+  const clientName = clean(body.clientName, 140);
+  const clientEmail = clean(body.clientEmail, 254).toLowerCase();
+  const eventDate = clean(body.eventDate, 10);
+  const serviceName = clean(body.serviceName || 'Website booking', 220);
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ownerId)) {
+    return res.status(400).json({ error: 'A valid business booking ID is required' });
+  }
+  if (!clientName || !/^\S+@\S+\.\S+$/.test(clientEmail) || !/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
+    return res.status(400).json({ error: 'Name, email, and preferred event date are required' });
+  }
+
+  const { key, headers } = serviceConfig();
+  if (!key) return res.status(500).json({ error: 'Secure booking delivery is not configured' });
+
+  try {
+    const ownerRes = await fetch(
+      `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}&select=id&limit=1`,
+      { headers }
+    );
+    const owners = await ownerRes.json().catch(() => []);
+    if (!ownerRes.ok || !Array.isArray(owners) || !owners[0]) {
+      return res.status(404).json({ error: 'The selected business booking page is unavailable' });
+    }
+
+    const integerOrNull = value => {
+      const number = Number.parseInt(value, 10);
+      return Number.isFinite(number) && number >= 0 ? number : null;
+    };
+    const price = Number.parseFloat(String(body.servicePrice == null ? '' : body.servicePrice).replace(/[^0-9.]/g, ''));
+    const eventTime = clean(body.eventTime, 8);
+    const payload = {
+      owner_id: ownerId,
+      client_name: clientName,
+      client_email: clientEmail,
+      client_phone: clean(body.clientPhone, 40) || null,
+      event_date: eventDate,
+      event_time: /^\d{2}:\d{2}(:\d{2})?$/.test(eventTime) ? eventTime : null,
+      event_address: clean(body.eventAddress, 300) || null,
+      num_kids: integerOrNull(body.numKids),
+      honoree_name: clean(body.honoreeName, 140) || null,
+      honoree_age: integerOrNull(body.honoreeAge),
+      service_name: serviceName,
+      service_price: Number.isFinite(price) ? price : null,
+      notes: clean(body.notes, 4000) || null,
+      status: 'inquiry',
+    };
+
+    const insertRes = await fetch(`${SUPA_URL}/rest/v1/bookings`, {
+      method: 'POST',
+      headers: { ...headers, Prefer: 'return=representation' },
+      body: JSON.stringify(payload),
+    });
+    const inserted = await insertRes.json().catch(() => []);
+    if (!insertRes.ok) {
+      console.error('Website booking insert failed', insertRes.status, inserted);
+      return res.status(502).json({ error: 'The booking request could not be delivered' });
+    }
+    return res.status(201).json({ received: true, bookingId: inserted?.[0]?.id || null });
+  } catch (error) {
+    console.error('Website booking bridge failed', error);
+    return res.status(502).json({ error: 'The booking request could not be delivered' });
+  }
 }
 
 async function authenticatedUser(req) {
