@@ -141,6 +141,14 @@
   .package-item-row{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;color:var(--muted);padding:6px 0;border-top:1px solid var(--line)}
   .package-item-row:first-child{border-top:none}
   .package-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .inclusion-editor{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff}
+  .inclusion-editor>strong{display:block;font-size:12px;color:var(--plum-900);margin-bottom:7px}
+  .inclusion-option{display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;padding:6px 0;border-top:1px solid var(--line);font-size:12px;color:var(--ink)}
+  .inclusion-option:first-of-type{border-top:0}.inclusion-option input{margin-top:2px}.inclusion-option small{color:var(--muted);display:block;margin-top:2px}
+  .quote-inclusions{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#faf7fb;border:1px solid var(--line)}
+  .quote-inclusions strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+  .quote-inclusion{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12px;color:var(--ink)}
+  .included-list{margin:7px 0 0;padding-left:18px;color:var(--muted);font-size:12px;line-height:1.55}
   @media(max-width:960px){.package-grid{grid-template-columns:1fr}}
 
   /* CATALOG */
@@ -598,7 +606,17 @@ async function checkAuth() {
       if (pd.taxMode && $('taxMode')) $('taxMode').value = pd.taxMode;
       if (pd.currency && $('currency')) $('currency').value = pd.currency;
       if (pd.depositProfile && $('depositProfile')) $('depositProfile').value = pd.depositProfile;
-      if (pd.packages) state.packages = pd.packages;
+      if (pd.packages) {
+        state.packages = pd.packages;
+        const sourcePackages = buildPackagesFromOwnerData(pd, ownerBuildRow) || [];
+        state.packages = state.packages.map((saved, index) => {
+          if (normalizeInclusions(saved.inclusions || saved.items?.[0]?.inclusions).length) return saved;
+          const match = sourcePackages.find(source => String(source.name || '').trim().toLowerCase() === String(saved.name || '').trim().toLowerCase()) || sourcePackages[index];
+          if (!match) return saved;
+          const inclusions = normalizeInclusions(match.inclusions);
+          return { ...saved, inclusions, items: (saved.items || []).map(item => item.category === 'Package' ? { ...item, inclusions } : item) };
+        });
+      }
 
       // Seed from her real packages, but only while these offers are still the
       // untouched defaults, so we never clobber offers she has actually built.
@@ -973,6 +991,39 @@ function defaultPackages() {
   ];
 }
 
+const COMMON_INCLUSIONS = {
+  bear: ['Party host or activity facilitator','A keepsake birth certificate for each bear','A take-home carrier or bag for each bear','Invitations or a digital invitation','Themed tableware and serving supplies','Final cleanup of the activity area'],
+  spa: ['Robes and spa headbands for use','Mini manicure or pedicure','Kid-friendly facial or face mask','Individual nail tools and toe separators','Music and a photo or runway moment','Take-home beauty favor'],
+  teepee: ['Fresh fitted sheet for each mattress','Blanket and sleeping pillow for each guest','Bed tray and battery-operated light','Personalized name sign','Coordinated garland or themed accents','Delivery window and next-day collection'],
+  movie: ['Pre-event equipment test','Extension cords and power setup','Ambient lighting','Blankets, pillows, or lounge seating','Popcorn supplies or snack containers','Weather and rescheduling plan'],
+  slime: ['Table protection and disposable cleanup supplies','Individual mixing tools','Safety and ingredient information'],
+  paint: ['Table coverings and water cups','Drying or take-home bags','Guided activity instructions']
+};
+
+function inclusionSuggestions(name) {
+  const n = String(name || '').toLowerCase();
+  const keys = [];
+  if (/bear|stuff/.test(n)) keys.push('bear');
+  if (/spa|pamper|beauty/.test(n)) keys.push('spa');
+  if (/teepee|sleepover|slumber/.test(n)) keys.push('teepee');
+  if (/movie|cinema/.test(n)) keys.push('movie');
+  if (/slime/.test(n)) keys.push('slime');
+  if (/paint|canvas/.test(n)) keys.push('paint');
+  return [...new Set(keys.flatMap(key => COMMON_INCLUSIONS[key] || []))];
+}
+
+function normalizeInclusions(value, source) {
+  const rows = Array.isArray(value) ? value : String(value || '').split(/\n| · /);
+  return rows.map((row, index) => {
+    if (typeof row === 'string') return { id: `inc-${index}`, text: row.trim(), included: true, source: source || 'package' };
+    return { id: row.id || `inc-${index}`, text: String(row.text || row.label || '').trim(), included: row.included !== false, source: row.source || source || 'package' };
+  }).filter(row => row.text);
+}
+
+function quoteItemFromPackageItem(item, inclusions) {
+  return { ...item, inclusions: normalizeInclusions(inclusions).map(row => ({ ...row })) };
+}
+
 // ─────────────────────────────────────────────────────────────
 // IMPORT THE OWNER'S REAL PACKAGES
 // The Quote Builder keeps its offers in profile_data.packages. The owner's
@@ -1010,33 +1061,47 @@ function buildPackagesFromOwnerData(pd, build) {
         const lines = String(p.included || '').split('\n').map(l => l.trim()).filter(Boolean);
         return {
           name: String(p.name).trim(), price: p.price, duration: p.duration, kids: p.kids,
-          detail: lines.length ? lines.join(' · ') : ((match && match.description) || '')
+          detail: lines.length ? lines.join(' · ') : ((match && match.description) || ''),
+          inclusionLines: lines.length ? lines : String((match && match.description) || '').split(/\n| · /).map(l => l.trim()).filter(Boolean)
         };
       })
     : svc.filter(s => s && String(s.name || '').trim()).map(s => ({
         name: String(s.name).trim(), price: s.price, duration: s.duration, kids: '',
-        detail: s.description || ''
+        detail: s.description || '', inclusionLines: String(s.description || '').split(/\n| · /).map(l => l.trim()).filter(Boolean)
       }));
 
   if (!rows.length) return null;
 
   const TIERS = ['Basic', 'Mid', 'Premium'];
-  return rows.slice(0, 6).map((r, i) => {
+  return rows.map((r, i) => {
     const price = parseFloat(String(r.price == null ? '' : r.price).replace(/[^0-9.]/g, '')) || 0;
     const meta = [
       r.duration ? String(r.duration) : '',
       r.kids ? ('up to ' + r.kids + ' guests') : ''
     ].filter(Boolean).join(' · ');
+    const promised = [];
+    (r.inclusionLines || []).forEach(line => {
+      if (/^everything in\b/i.test(line) && i > 0) {
+        normalizeInclusions(rows[i - 1].resolvedInclusions || []).forEach(row => promised.push(row.text));
+      } else promised.push(line);
+    });
+    r.resolvedInclusions = [...new Set(promised)];
+    const suggestions = inclusionSuggestions(r.name).filter(text => !r.resolvedInclusions.some(existing => existing.toLowerCase() === text.toLowerCase()));
+    const inclusions = [
+      ...r.resolvedInclusions.map((text, index) => ({ id:`website-${index}`, text, included:true, source:'website' })),
+      ...suggestions.map((text, index) => ({ id:`suggested-${index}`, text, included:false, source:'suggested' }))
+    ];
     return {
       id: 'own-' + i,
       tier: TIERS[i] || ('Tier ' + (i + 1)),
       name: r.name,
       description: [meta, r.detail].filter(Boolean).join(' — '),
       notes: '',
+      inclusions,
       // One line item carrying the package price so quote totals are correct.
       // She can still add catalog services on top.
       items: price > 0
-        ? [{ category: 'Package', name: r.name + (meta ? ' (' + meta + ')' : ''), qty: 1, price: price, taxable: true }]
+        ? [{ category: 'Package', name: r.name + (meta ? ' (' + meta + ')' : ''), qty: 1, price: price, taxable: true, inclusions }]
         : []
     };
   });
@@ -1138,6 +1203,14 @@ function renderPackages() {
       <h3><input data-pkg-name="${p.id}" value="${escapeHtml(p.name)}"/></h3>
       <textarea data-pkg-desc="${p.id}" placeholder="Short package description">${escapeHtml(p.description)}</textarea>
       <div class="field" style="margin-top:8px"><label>Package notes (internal)</label><input data-pkg-notes="${p.id}" value="${escapeHtml(p.notes)}"/></div>
+      <div class="inclusion-editor">
+        <strong>What customers get</strong>
+        ${normalizeInclusions(p.inclusions || (p.items[0] && p.items[0].inclusions)).map((inc, idx) => `
+          <label class="inclusion-option">
+            <input type="checkbox" data-pkg-inc="${p.id}:${idx}" ${inc.included !== false ? 'checked' : ''}/>
+            <span>${escapeHtml(inc.text)}${inc.source === 'suggested' ? '<small>Suggested option, off by default</small>' : ''}</span>
+          </label>`).join('') || '<span style="font-size:12px;color:var(--muted)">No inclusions saved yet.</span>'}
+      </div>
       <div class="package-total"><strong>Package total</strong><span>${money(packageTotal(p.id))}</span></div>
       <div style="margin-top:8px;font-size:12px;color:var(--muted)">${p.items.length} items</div>
       <div class="package-items">
@@ -1210,7 +1283,11 @@ function renderLive() {
   $('taxLabelLive').textContent = t.mode === 'none' ? 'Tax' : t.label;
   $('grandVal').textContent = money(grand);
   $('liveMini').innerHTML = items.length
-    ? items.map(it => `<div class="live-row"><div><strong>${escapeHtml(it.name)}</strong><small>${escapeHtml(it.category)} · Qty ${it.qty}</small></div><span>${money(it.total)}</span></div>`).join('')
+    ? items.map((it, idx) => {
+        const incs = normalizeInclusions(it.inclusions);
+        return `<div class="live-row"><div><strong>${escapeHtml(it.name)}</strong><small>${escapeHtml(it.category)} · Qty ${it.qty}</small></div><span>${money(it.total)}</span></div>
+        ${incs.length ? `<div class="quote-inclusions"><strong>Choose what this quote includes</strong>${incs.map((inc, ii) => `<label class="quote-inclusion"><input type="checkbox" data-q-inc="${idx}:${ii}" ${inc.included !== false ? 'checked' : ''}/><span>${escapeHtml(inc.text)}</span></label>`).join('')}</div>` : ''}`;
+      }).join('')
     : `<div class="empty-state">Add items below or use a saved package to start building.</div>`;
   $('tierGrid').innerHTML = depositOptions.map(v =>
     `<button type="button" class="tier-btn ${state.selectedDepositTier === v ? 'active' : ''}" data-deposit="${v}">${money(v)}</button>`
@@ -1231,7 +1308,7 @@ function renderPreview() {
   const payLink = depositLink();
   const rows = items.length ? items.map((it, idx) => `
     <div class="invoice-row">
-      <span><strong>${escapeHtml(it.name)}</strong><br><small style="color:var(--muted)">${escapeHtml(it.category)}</small></span>
+      <span><strong>${escapeHtml(it.name)}</strong><br><small style="color:var(--muted)">${escapeHtml(it.category)}</small>${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).length ? `<ul class="included-list">${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).map(inc => `<li>${escapeHtml(inc.text)}</li>`).join('')}</ul>` : ''}</span>
       <span><input type="number" value="${it.qty}" data-q-qty="${idx}"/></span>
       <span><input type="number" value="${it.price}" data-q-price="${idx}"/></span>
       <span style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span>${money(it.total)}</span><button class="tiny-btn" data-q-remove="${idx}">×</button></span>
@@ -1327,7 +1404,7 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'useActiveOfferBtn') {
     const p = pkg(state.activePackageId);
     if (!p) { toast('Pick an offer first'); return; }
-    p.items.forEach(i => state.quoteItems.push({...i}));
+    p.items.forEach(i => state.quoteItems.push(quoteItemFromPackageItem(i, p.inclusions || i.inclusions)));
     refreshAll();
     toast(`✓ ${p.name} added to quote`);
     return;
@@ -1361,7 +1438,7 @@ document.addEventListener('click', async (e) => {
     return;
   }
   const setPkg = t.closest('[data-pkg-active]'); if (setPkg) { state.activePackageId = setPkg.dataset.pkgActive; refreshAll(); return; }
-  const usePkg = t.closest('[data-pkg-use]'); if (usePkg) { const p = pkg(usePkg.dataset.pkgUse); p.items.forEach(i => state.quoteItems.push({...i})); refreshAll(); toast('✓ Added to quote'); return; }
+  const usePkg = t.closest('[data-pkg-use]'); if (usePkg) { const p = pkg(usePkg.dataset.pkgUse); p.items.forEach(i => state.quoteItems.push(quoteItemFromPackageItem(i, p.inclusions || i.inclusions))); refreshAll(); toast('✓ Added to quote'); return; }
   const remPkg = t.closest('[data-pkg-remove]'); if (remPkg) { const [id, idx] = remPkg.dataset.pkgRemove.split(':'); pkg(id).items.splice(Number(idx), 1); await savePackages(); refreshAll(); return; }
   const remQ = t.closest('[data-q-remove]'); if (remQ) { state.quoteItems.splice(Number(remQ.dataset.qRemove), 1); refreshAll(); return; }
 });
@@ -1379,6 +1456,8 @@ document.addEventListener('change', (e) => {
   const catPrice = t.closest('[data-cat-price]'); if (catPrice) { const [ci, ii] = catPrice.dataset.catPrice.split(':').map(Number); state.catalog[ci].items[ii].price = parseFloat(catPrice.value || '0'); refreshAll(); return; }
   const qQty = t.closest('[data-q-qty]'); if (qQty) { state.quoteItems[Number(qQty.dataset.qQty)].qty = Math.max(1, parseInt(qQty.value || '1', 10)); refreshAll(); return; }
   const qPrice = t.closest('[data-q-price]'); if (qPrice) { state.quoteItems[Number(qPrice.dataset.qPrice)].price = parseFloat(qPrice.value || '0'); refreshAll(); return; }
+  const qInc = t.closest('[data-q-inc]'); if (qInc) { const [qi, ii] = qInc.dataset.qInc.split(':').map(Number); const list = normalizeInclusions(state.quoteItems[qi].inclusions); list[ii].included = qInc.checked; state.quoteItems[qi].inclusions = list; refreshAll(); return; }
+  const pInc = t.closest('[data-pkg-inc]'); if (pInc) { const [id, ii] = pInc.dataset.pkgInc.split(':'); const p = pkg(id); const list = normalizeInclusions(p.inclusions || (p.items[0] && p.items[0].inclusions)); list[Number(ii)].included = pInc.checked; p.inclusions = list; p.items.forEach(item => { if (item.category === 'Package') item.inclusions = list; }); return; }
   const pName = t.closest('[data-pkg-name]'); if (pName) { pkg(pName.dataset.pkgName).name = pName.value; renderLive(); return; }
   const pDesc = t.closest('[data-pkg-desc]'); if (pDesc) { pkg(pDesc.dataset.pkgDesc).description = pDesc.value; return; }
   const pNotes = t.closest('[data-pkg-notes]'); if (pNotes) { pkg(pNotes.dataset.pkgNotes).notes = pNotes.value; return; }
@@ -1402,7 +1481,10 @@ function clearCustom() { $('customName').value = ''; $('customCategory').value =
 function copyQuoteText() {
   const { items, subtotal, tax, grand, t } = totals();
   const lines = ['QUOTE', '', `Business: ${$('businessName').value || 'Your Business Name'}`, `Client: ${$('clientName').value || '—'}`, `Event: ${$('eventType').value || '—'}`, `Event Date: ${$('eventDate').value || '—'}`, `Expires: ${$('expiryDate').value || '—'}`, '', 'ITEMS'];
-  items.forEach(i => lines.push(`- ${i.name} | Qty ${i.qty} | ${money(i.price)} | ${money(i.total)}`));
+  items.forEach(i => {
+    lines.push(`- ${i.name} | Qty ${i.qty} | ${money(i.price)} | ${money(i.total)}`);
+    normalizeInclusions(i.inclusions).filter(inc => inc.included !== false).forEach(inc => lines.push(`  ✓ ${inc.text}`));
+  });
   lines.push('', `Subtotal: ${money(subtotal)}`, `${t.label}: ${money(tax)}`, `Total: ${money(grand)}`, `Deposit: ${money(state.selectedDepositTier)}`);
   navigator.clipboard.writeText(lines.join('\n')).then(() => toast('✓ Copied to clipboard'));
 }
@@ -1559,12 +1641,15 @@ async function prefillFromBooking() {
 
   const price = parseFloat(String(b.service_price || '').replace(/[^0-9.]/g, ''));
   if (Number.isFinite(price) && price > 0) {
+    const requested = String(b.service_name || '').toLowerCase();
+    const matchedPackage = state.packages.find(p => requested.includes(String(p.name || '').toLowerCase()) || String(p.name || '').toLowerCase().includes(requested));
     state.quoteItems.push({
       category: 'From website booking',
       name: b.service_name || 'Requested package',
       qty: 1,
       price,
       taxable: true,
+      inclusions: normalizeInclusions(matchedPackage && (matchedPackage.inclusions || matchedPackage.items?.[0]?.inclusions)),
     });
     if ($('depositProfile').value !== 'manual') {
       state.selectedDepositTier = depositRecommendation(price).tier;
