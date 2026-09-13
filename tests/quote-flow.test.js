@@ -36,6 +36,7 @@ assert.match(profile, /contactPhone\.includes\('@'\)/);
 // default, researched suggestions are off, and only checked rows reach the
 // customer-facing quote.
 assert.match(app, /COMMON_INCLUSIONS/);
+assert.match(app, /BEAR_HUG_PACKAGE_INCLUSIONS/);
 assert.match(app, /data-q-inc/);
 assert.match(app, /source:'suggested'/);
 assert.match(view, /it\.inclusions\.filter/);
