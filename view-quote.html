@@ -254,6 +254,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       <div>
         <div class="inc-name">${esc(it.name||it.label||'Item')}</div>
         ${(it.description||it.desc)?`<div class="inc-desc">${esc(it.description||it.desc)}</div>`:''}
+        ${Array.isArray(it.inclusions) && it.inclusions.some(inc => inc && inc.included !== false && (inc.text || inc.label)) ? `<div class="inc-desc" style="margin-top:7px">${it.inclusions.filter(inc => inc && inc.included !== false && (inc.text || inc.label)).map(inc => `✓ ${esc(inc.text || inc.label)}`).join('<br>')}</div>` : ''}
       </div>
       <div class="inc-price">${fmt(it.price||it.amount||0)}</div>
     </div>`).join('')}
