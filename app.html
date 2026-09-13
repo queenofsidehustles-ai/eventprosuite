@@ -1000,6 +1000,23 @@ const COMMON_INCLUSIONS = {
   paint: ['Table coverings and water cups','Drying or take-home bags','Guided activity instructions']
 };
 
+const BEAR_HUG_PACKAGE_INCLUSIONS = {
+  'signature bear party': ['Bear stuffing experience','Heart ceremony','Styled activity setup','Basic bear outfit','Setup and breakdown','Up to 8 kids','75 minutes'],
+  'creative bear party': ['Bear stuffing experience','Heart ceremony','Styled activity setup','Basic bear outfit','Setup and breakdown','Choose 1 activity','More styled presentation','Up to 10 kids','90 minutes'],
+  'luxury bear experience': ['Bear stuffing experience','Heart ceremony','Styled activity setup','Basic bear outfit','Setup and breakdown','Choose 2 activities','Tables and chairs included','Photo-focused styling','Up to 12 kids','2 hours'],
+  'luxury teepee sleepover experience': ['Teepee tents with coordinated styling','Mattresses, bedding, and decorative pillows','Styled trays or accent decor','Full setup and next-day pickup','Up to 6 guests'],
+  'deluxe sleepover experience': ['Teepee tents with coordinated styling','Mattresses, bedding, and decorative pillows','Styled trays or accent decor','Full setup and next-day pickup','One DIY activity add-on','Elevated styling and layered details'],
+  'luxury backyard movie night': ['Inflatable movie screen','Projector and sound setup','Seating for up to 8 to 10 guests','Styled popcorn and candy snack station','Delivery, setup, and next-day pickup','Movie suggestion list','Client provides movie access or login'],
+  'luxury styled movie night experience': ['Inflatable movie screen','Projector and sound setup','Seating for up to 8 to 10 guests','Styled popcorn and candy snack station','Delivery, setup, and next-day pickup','Cozy blankets, pillows, and lounge styling','Balloon accents or backdrop styling','Ambient lighting','Elevated snack station display','Client provides movie access or login'],
+  'slime diy kit': ['Pre-measured slime ingredients per guest','Color options, glitter, and mix-ins','Individual take-home containers','Step-by-step instruction cards','All supplies included','Up to 8 guests','Drop-off with no host required'],
+  'diy spa kit': ['DIY face mask packet per guest','Nail polish selection','Spa headbands and accessories','Lip gloss and mini beauty items','Styled packaging and instruction cards','All supplies included','Up to 8 guests','Drop-off with no host required'],
+  'sip & paint kit': ['Pre-sketched canvas per guest','Acrylic paints, brushes, and palettes','Aprons','Step-by-step painting guide','All supplies included','Up to 8 guests','Drop-off with no host required']
+};
+
+function knownPackageInclusions(name) {
+  return BEAR_HUG_PACKAGE_INCLUSIONS[String(name || '').trim().toLowerCase()] || [];
+}
+
 function inclusionSuggestions(name) {
   const n = String(name || '').toLowerCase();
   const keys = [];
@@ -1085,7 +1102,7 @@ function buildPackagesFromOwnerData(pd, build) {
         normalizeInclusions(rows[i - 1].resolvedInclusions || []).forEach(row => promised.push(row.text));
       } else promised.push(line);
     });
-    r.resolvedInclusions = [...new Set(promised)];
+    r.resolvedInclusions = [...new Set([...promised, ...knownPackageInclusions(r.name)])];
     const suggestions = inclusionSuggestions(r.name).filter(text => !r.resolvedInclusions.some(existing => existing.toLowerCase() === text.toLowerCase()));
     const inclusions = [
       ...r.resolvedInclusions.map((text, index) => ({ id:`website-${index}`, text, included:true, source:'website' })),
