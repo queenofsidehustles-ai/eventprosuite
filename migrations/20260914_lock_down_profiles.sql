@@ -29,7 +29,11 @@
 
 
 -- ══════════════════════════════════════════════════════════════════════
--- STEP 1 — safe to run now. Additive only.
+-- STEP 1 — APPLIED to production 2026-09-14. Additive only.
+-- Verified: get_public_profile returns 27 public fields and withholds
+-- zernioKey, stripeConnectAccountId, stripeConnectState, packages,
+-- addonLibrary, taxRate/taxMode/currency, and the email, has_* and
+-- stripe_customer_id columns.
 -- ══════════════════════════════════════════════════════════════════════
 
 -- The allowlist. Anything not named here is never returned to the public,
