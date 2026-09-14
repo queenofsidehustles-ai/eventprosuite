@@ -1013,8 +1013,36 @@ const BEAR_HUG_PACKAGE_INCLUSIONS = {
   'sip & paint kit': ['Pre-sketched canvas per guest','Acrylic paints, brushes, and palettes','Aprons','Step-by-step painting guide','All supplies included','Up to 8 guests','Drop-off with no host required']
 };
 
+function packageNameTokens(name) {
+  return [...new Set(String(name || '')
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(/\s+/)
+    .filter(word => word && !['the','a','an','and','or','package','party'].includes(word)))];
+}
+
+function packageNameMatchScore(left, right) {
+  const a = packageNameTokens(left);
+  const b = packageNameTokens(right);
+  if (!a.length || !b.length) return 0;
+  const overlap = a.filter(word => b.includes(word)).length;
+  return overlap / Math.max(a.length, b.length);
+}
+
+function packageNamesMatch(left, right) {
+  const a = String(left || '').trim().toLowerCase();
+  const b = String(right || '').trim().toLowerCase();
+  return Boolean(a && b && (a.includes(b) || b.includes(a) || packageNameMatchScore(a, b) >= 0.7));
+}
+
 function knownPackageInclusions(name) {
-  return BEAR_HUG_PACKAGE_INCLUSIONS[String(name || '').trim().toLowerCase()] || [];
+  const exact = String(name || '').trim().toLowerCase();
+  if (BEAR_HUG_PACKAGE_INCLUSIONS[exact]) return BEAR_HUG_PACKAGE_INCLUSIONS[exact];
+  const match = Object.keys(BEAR_HUG_PACKAGE_INCLUSIONS)
+    .map(key => ({ key, score: packageNameMatchScore(name, key) }))
+    .sort((a, b) => b.score - a.score)[0];
+  return match && match.score >= 0.7 ? BEAR_HUG_PACKAGE_INCLUSIONS[match.key] : [];
 }
 
 function inclusionSuggestions(name) {
@@ -1658,15 +1686,26 @@ async function prefillFromBooking() {
 
   const price = parseFloat(String(b.service_price || '').replace(/[^0-9.]/g, ''));
   if (Number.isFinite(price) && price > 0) {
-    const requested = String(b.service_name || '').toLowerCase();
-    const matchedPackage = state.packages.find(p => requested.includes(String(p.name || '').toLowerCase()) || String(p.name || '').toLowerCase().includes(requested));
+    const requested = String(b.service_name || '');
+    const matchedPackage = state.packages
+      .map(p => ({ package: p, score: packageNameMatchScore(requested, p.name) }))
+      .sort((a, b) => b.score - a.score)
+      .find(row => packageNamesMatch(requested, row.package.name));
+    const savedInclusions = normalizeInclusions(matchedPackage && (matchedPackage.package.inclusions || matchedPackage.package.items?.[0]?.inclusions));
+    const promised = knownPackageInclusions(requested);
+    const fallbackInclusions = [
+      ...promised.map((text, index) => ({ id:`website-${index}`, text, included:true, source:'website' })),
+      ...inclusionSuggestions(requested)
+        .filter(text => !promised.some(existing => existing.toLowerCase() === text.toLowerCase()))
+        .map((text, index) => ({ id:`suggested-${index}`, text, included:false, source:'suggested' }))
+    ];
     state.quoteItems.push({
       category: 'From website booking',
       name: b.service_name || 'Requested package',
       qty: 1,
       price,
       taxable: true,
-      inclusions: normalizeInclusions(matchedPackage && (matchedPackage.inclusions || matchedPackage.items?.[0]?.inclusions)),
+      inclusions: savedInclusions.length ? savedInclusions : fallbackInclusions,
     });
     if ($('depositProfile').value !== 'manual') {
       state.selectedDepositTier = depositRecommendation(price).tier;
