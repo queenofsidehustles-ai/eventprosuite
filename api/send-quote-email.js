@@ -198,6 +198,32 @@ function senderFrom(bizName, fallbackFrom) {
   return clean + ' <' + addr + '>';
 }
 
+
+// ── SLIDING DEPOSIT SCALE ───────────────────────────────────────────────
+// The owner can require more up front the closer an event is. The rungs are
+// frozen onto the quote when it is sent, so changing the policy afterwards
+// cannot alter a number a customer has already been shown.
+//
+// This is the authoritative copy: the Quote Builder and the customer's page
+// each run the same rule for display, but what actually gets charged is
+// decided here. Returns null when no sliding policy applies, leaving the
+// original flat-amount behaviour untouched.
+function slidingDepositPct(policy, eventDate) {
+  if (!policy || !Array.isArray(policy.ladder) || !policy.ladder.length) return null;
+  if (!eventDate) return null;
+  const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00' : eventDate);
+  if (isNaN(ev)) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = Math.round((ev - today) / 86400000);
+  const rungs = policy.ladder
+    .filter(r => r && Number(r.withinDays) >= 1 && Number(r.pct) > 0 && Number(r.pct) <= 100)
+    .sort((a, b) => Number(a.withinDays) - Number(b.withinDays));
+  const rung = rungs.find(r => days <= Number(r.withinDays));
+  if (rung) return Number(rung.pct);
+  const base = Number(policy.basePct);
+  return (base > 0 && base <= 100) ? base : null;
+}
+
 // A syntactically sane address, or null. Resend rejects the whole send on a
 // malformed reply_to, so a typo in a profile must never cost the quote email.
 function validEmail(value) {
@@ -491,8 +517,15 @@ async function createDepositCheckout(req, res) {
     const quote = Array.isArray(quotes) ? quotes[0] : null;
     if (!quoteRes.ok || !quote) return res.status(409).json({ error: 'The matching quote was not found' });
     const total = parseFloat(String(booking.service_price || '0').replace(/[^0-9.]/g, '')) || 0;
+    // The amount charged is worked out here, from the policy frozen onto the
+    // quote and the event date on the booking — never from anything the
+    // browser sent. A sliding scale that only existed client-side would be a
+    // number the customer could edit before paying.
+    const slidingPct = slidingDepositPct(quote.quote_data?.depositPolicy, booking.event_date);
     const selected = parseFloat(quote.quote_data?.selectedDepositTier);
-    const deposit = Math.min(Number.isFinite(selected) && selected > 0 ? selected : total * 0.5, total);
+    const deposit = slidingPct != null
+      ? Math.min(Math.round(total * slidingPct) / 100, total)
+      : Math.min(Number.isFinite(selected) && selected > 0 ? selected : total * 0.5, total);
     const cents = Math.round(deposit * 100);
     if (cents < 50) return res.status(409).json({ error: 'The deposit amount is too low for card checkout' });
 

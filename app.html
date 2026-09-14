@@ -874,6 +874,10 @@ async function saveQuote() {
     quote_data: {
       items: state.quoteItems,
       addOns: state.quoteAddons,
+      // Frozen at send time. If she changes her deposit policy next week, a
+      // quote already with a customer must not quietly ask for a different
+      // number than the one they were shown.
+      depositPolicy: depositPolicyFrom(ownerBuildRow && ownerBuildRow.booking_data),
       subtotal, tax, grand,
       businessName: $('businessName').value,
       clientName: $('clientName').value,
@@ -1402,11 +1406,48 @@ function depositLink() {
   const map = { 100: $('stripe100').value.trim(), 250: $('stripe250').value.trim(), 500: $('stripe500').value.trim(), 1000: $('stripe1000').value.trim() };
   return map[state.selectedDepositTier] || '';
 }
+// ── SLIDING DEPOSIT SCALE ───────────────────────────────────────────────
+// A date three weeks out is a different risk from one next spring: other work
+// gets turned away for it and there is less time to re-fill it if the customer
+// walks. The owner can set rungs — "booked within 14 days, ask for 100%" — and
+// the tightest matching rung wins. With no rungs set, the flat percent applies
+// exactly as before.
+//
+// The same rule runs on the customer's quote page and again on the server
+// before any card is charged, so all three agree on the number.
+function depositPolicyFrom(bookingData) {
+  const bd = bookingData || {};
+  const raw = parseFloat(bd.depositPct);
+  const basePct = Number.isFinite(raw) && raw > 0 && raw <= 100 ? raw : 50;
+  const ladder = (bd.depositSliding === true && Array.isArray(bd.depositLadder))
+    ? bd.depositLadder
+        .filter(r => r && Number(r.withinDays) >= 1 && Number(r.pct) > 0 && Number(r.pct) <= 100)
+        .map(r => ({ withinDays: Number(r.withinDays), pct: Number(r.pct) }))
+        .sort((a, b) => a.withinDays - b.withinDays)
+    : [];
+  return { basePct, ladder };
+}
+
+function daysUntilEvent(eventDate) {
+  if (!eventDate) return null;
+  const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00' : eventDate);
+  if (isNaN(ev)) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.round((ev - today) / 86400000);
+}
+
+function depositPercentFor(policy, eventDate) {
+  const p = policy || { basePct: 50, ladder: [] };
+  const days = daysUntilEvent(eventDate);
+  if (days === null || !p.ladder.length) return p.basePct;
+  // A date already past is as urgent as it gets, so it takes the tightest rung.
+  const rung = p.ladder.find(r => days <= r.withinDays);
+  return rung ? rung.pct : p.basePct;
+}
+
 function depositRecommendation(total) {
-  const rawPct = ownerBuildRow && ownerBuildRow.booking_data
-    ? parseFloat(ownerBuildRow.booking_data.depositPct)
-    : NaN;
-  const pct = Number.isFinite(rawPct) && rawPct > 0 && rawPct <= 100 ? rawPct : 50;
+  const policy = depositPolicyFrom(ownerBuildRow && ownerBuildRow.booking_data);
+  const pct = depositPercentFor(policy, $('eventDate') ? $('eventDate').value : '');
   const target = Math.round(Number(total || 0) * pct) / 100;
   const links = {
     100: $('stripe100').value.trim(), 250: $('stripe250').value.trim(),

@@ -173,6 +173,25 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     return row;
   }
 
+  // Returns a percentage when the owner set a sliding scale that applies, or
+  // null to leave the existing flat-amount behaviour alone. Kept deliberately
+  // narrow so a quote saved before this existed is untouched.
+  const slidingDepositPct = (policy, eventDate) => {
+    if(!policy || !Array.isArray(policy.ladder) || !policy.ladder.length) return null;
+    if(!eventDate) return null;
+    const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00' : eventDate);
+    if(isNaN(ev)) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const days = Math.round((ev - today) / 86400000);
+    const rungs = policy.ladder
+      .filter(r => r && Number(r.withinDays) >= 1 && Number(r.pct) > 0 && Number(r.pct) <= 100)
+      .sort((a,b) => Number(a.withinDays) - Number(b.withinDays));
+    const rung = rungs.find(r => days <= Number(r.withinDays));
+    if(rung) return Number(rung.pct);
+    const base = Number(policy.basePct);
+    return (base > 0 && base <= 100) ? base : null;
+  };
+
   const cleanPackageName = name => {
     let clean=String(name||'').replace(/\s*\([^)]*\$[^)]*\)\s*/g,' ').replace(/\s+\$\s*[0-9,.]+\s*\+?\s*$/g,'').replace(/\s+/g,' ').trim();
     const parts=clean.split(/\s+[—–]\s+/).map(part=>part.trim()).filter(Boolean);
@@ -249,8 +268,15 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     // percentage, so a $250 deposit on a $388.80 quote displayed as "250%" =
     // $972 due up front, with a negative balance. Treat it as dollars, and
     // never let the deposit exceed the total.
+    //
+    // A sliding policy, when the owner set one, is computed from the event
+    // date instead — the same rule the Quote Builder showed her and the same
+    // one the server re-runs before charging a card.
     const depRaw   = parseFloat(qd.selectedDepositTier);
-    const depAmt   = Math.min(Number.isFinite(depRaw) && depRaw > 0 ? depRaw : grand * 0.5, grand);
+    const slidingPct = slidingDepositPct(qd.depositPolicy, q.event_date || qd.eventDate);
+    const depAmt   = slidingPct != null
+      ? Math.min(Math.round(grand * slidingPct) / 100, grand)
+      : Math.min(Number.isFinite(depRaw) && depRaw > 0 ? depRaw : grand * 0.5, grand);
     const balance  = Math.max(grand - depAmt, 0);
 
     const expiryDate = qd.expiryDate;

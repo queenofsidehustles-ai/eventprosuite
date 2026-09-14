@@ -984,6 +984,41 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
                   <div class="field-help">Final payment timing. Most use 7 or 14 days.</div>
                 </div>
               </div>
+
+              <!-- A last-minute date carries more risk than one a year out: you
+                   turn away other work for it and have less time to re-fill it.
+                   This asks for more up front the closer the event is. Off by
+                   default — the flat percent above keeps applying until it is
+                   switched on. -->
+              <div style="margin-top:.9rem;padding:.85rem 1rem;border:1px solid var(--line);border-radius:12px;background:#FCFAFD">
+                <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;margin:0">
+                  <input type="checkbox" id="bookingDepositSliding" onchange="toggleDepositLadder()" style="width:16px;height:16px;accent-color:var(--brand)"/>
+                  <span style="font-size:.86rem;font-weight:700;color:var(--plum-900,#1F1A24)">Ask for more when the event is close</span>
+                </label>
+                <div class="field-help" style="margin:.35rem 0 0 2.2rem">Overrides the flat percent above for bookings inside these windows.</div>
+
+                <div id="depositLadderRows" style="display:none;margin-top:.8rem;display:grid;gap:.5rem">
+                  <div style="display:grid;grid-template-columns:auto 90px auto 80px;gap:.5rem;align-items:center;font-size:.82rem">
+                    <span>Booked within</span>
+                    <input type="number" id="ladderDays1" min="1" max="365" placeholder="14" oninput="onSectionInput('booking')"/>
+                    <span>days &rarr; deposit</span>
+                    <input type="number" id="ladderPct1" min="1" max="100" placeholder="100" oninput="onSectionInput('booking')"/>
+                  </div>
+                  <div style="display:grid;grid-template-columns:auto 90px auto 80px;gap:.5rem;align-items:center;font-size:.82rem">
+                    <span>Booked within</span>
+                    <input type="number" id="ladderDays2" min="1" max="365" placeholder="30" oninput="onSectionInput('booking')"/>
+                    <span>days &rarr; deposit</span>
+                    <input type="number" id="ladderPct2" min="1" max="100" placeholder="75" oninput="onSectionInput('booking')"/>
+                  </div>
+                  <div style="display:grid;grid-template-columns:auto 90px auto 80px;gap:.5rem;align-items:center;font-size:.82rem">
+                    <span>Booked within</span>
+                    <input type="number" id="ladderDays3" min="1" max="365" placeholder="60" oninput="onSectionInput('booking')"/>
+                    <span>days &rarr; deposit</span>
+                    <input type="number" id="ladderPct3" min="1" max="100" placeholder="50" oninput="onSectionInput('booking')"/>
+                  </div>
+                  <div class="field-help" style="margin-top:.2rem">Anything further out uses the flat percent above. Leave a row blank to skip it.</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1689,6 +1724,16 @@ async function loadExistingBuild(){
       if(b.email)$('bookingEmail').value=b.email;
       if(b.area)$('bookingArea').value=b.area;
       if(b.depositPct&&$('bookingDepositPct'))$('bookingDepositPct').value=b.depositPct;
+      if($('bookingDepositSliding')){
+        $('bookingDepositSliding').checked = b.depositSliding===true;
+        const rows = Array.isArray(b.depositLadder)?b.depositLadder:[];
+        rows.slice(0,3).forEach((row,i)=>{
+          const d=$('ladderDays'+(i+1)), p=$('ladderPct'+(i+1));
+          if(d&&row&&row.withinDays)d.value=row.withinDays;
+          if(p&&row&&row.pct)p.value=row.pct;
+        });
+        toggleDepositLadder();
+      }
       if(b.balanceDays&&$('bookingBalanceDays'))$('bookingBalanceDays').value=b.balanceDays;
     }
 
@@ -2052,6 +2097,38 @@ function continueFromStep2(){
 
 // ─── AUTOSAVE ────────────────────────────────────────────────────
 let saveTimer;
+
+// ── SLIDING DEPOSIT SCALE ───────────────────────────────────────────────
+// Three optional rungs: "booked within N days -> ask for P%". Rows with a
+// missing number are skipped rather than saved as zero, so a half-filled row
+// cannot quietly set a 0% deposit.
+function collectDepositLadder(){
+  const rows=[];
+  for(let i=1;i<=3;i++){
+    const d=$('ladderDays'+i), p=$('ladderPct'+i);
+    if(!d||!p) continue;
+    const days=parseInt(d.value,10), pct=parseFloat(p.value);
+    if(!Number.isFinite(days)||days<1||days>365) continue;
+    if(!Number.isFinite(pct)||pct<1||pct>100) continue;
+    rows.push({withinDays:days,pct:pct});
+  }
+  // Tightest window first, which is the order it is evaluated in.
+  return rows.sort((a,b)=>a.withinDays-b.withinDays);
+}
+
+function toggleDepositLadder(){
+  const box=$('bookingDepositSliding'), rows=$('depositLadderRows');
+  if(!box||!rows) return;
+  rows.style.display = box.checked ? 'grid' : 'none';
+  // Prefill sensible rungs the first time it is switched on, so there is
+  // something to react to rather than three empty boxes.
+  if(box.checked && !$('ladderDays1').value && !$('ladderDays2').value && !$('ladderDays3').value){
+    $('ladderDays1').value=14; $('ladderPct1').value=100;
+    $('ladderDays2').value=30; $('ladderPct2').value=75;
+    $('ladderDays3').value=60; $('ladderPct3').value=50;
+  }
+}
+
 function debouncedSave(){
   $('autosaveBadge').style.display='inline-flex';
   $('autosaveBadge').classList.remove('saved');
@@ -2111,6 +2188,10 @@ async function saveNow(){
       email:$('bookingEmail')?$('bookingEmail').value:'',
       area:$('bookingArea')?$('bookingArea').value:'',
       depositPct:$('bookingDepositPct')?$('bookingDepositPct').value:'',
+      // The sliding scale. Stored as rows so the windows and the percentages
+      // are both the owner's to set, not baked in here.
+      depositSliding:$('bookingDepositSliding')?!!$('bookingDepositSliding').checked:false,
+      depositLadder:collectDepositLadder(),
       balanceDays:$('bookingBalanceDays')?$('bookingBalanceDays').value:'',
       // Preserve the live snapshot while the student keeps editing her draft.
       // It is replaced only when she intentionally publishes again.
