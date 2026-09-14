@@ -273,8 +273,14 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     profilePayload.library_tier = assignedTier;
     if (isKPPS) {
       profilePayload.has_kpps_access = true;
-      // KPPS includes the Party Biz Hub business tools for the first year.
+      // KPPS includes the Party Biz Hub business tools for the first year —
+      // which the sales page promises and the code previously never enforced,
+      // handing every buyer $27/month of subscription permanently. The date is
+      // what makes the year real; the daily cron warns them and then closes it.
       profilePayload.has_crm_access = true;
+      const oneYear = new Date();
+      oneYear.setFullYear(oneYear.getFullYear() + 1);
+      profilePayload.crm_access_expires_at = oneYear.toISOString();
     }
   }
 

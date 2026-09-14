@@ -318,10 +318,14 @@ async function init(){
 
   // Check has_paid
   try{
-    const{data:p}=await sb.from('profiles').select('has_paid,profile_data,full_name').eq('id',session.user.id).single();
+    const{data:p}=await sb.from('profiles').select('has_paid,has_crm_access,has_kpps_access,has_printables_access,crm_access_expires_at,profile_data,full_name').eq('id',session.user.id).single();
     if(p && p.has_paid===false){
       await sb.auth.signOut();
       window.location.href='login.html';
+      return;
+    }
+    if(p && ((p.has_crm_access!==true && p.has_kpps_access!==true) || (p.crm_access_expires_at && new Date(p.crm_access_expires_at) <= new Date()))){
+      window.location.href='store.html';
       return;
     }
     // Populate user chip with business name if available, else email

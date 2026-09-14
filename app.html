@@ -652,7 +652,9 @@ async function checkAuth() {
 
     currentProfile = profile || { id: currentUser.id, email: currentUser.email };
 
-    if (profile && profile.has_crm_access !== true && profile.has_kpps_access !== true) {
+    const hubExpired = profile && profile.crm_access_expires_at
+      && new Date(profile.crm_access_expires_at) <= new Date();
+    if (profile && ((profile.has_crm_access !== true && profile.has_kpps_access !== true) || hubExpired)) {
       window.location.href = 'store.html';
       return;
     }

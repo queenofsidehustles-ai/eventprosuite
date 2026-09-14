@@ -161,12 +161,148 @@ module.exports = async function handler(req, res) {
   // surprise — but we always nudge first.
   const deposits = await runDepositHold(today);
 
+  // ── Bundled Hub access: warn, then close ───────────────────────────
+  const hubAccess = await runHubAccessExpiry(today);
+
   return res.json({
     processed: results.length,
     results,
-    deposits
+    deposits,
+    hubAccess
   });
 };
+
+
+// ── THE YEAR THAT WAS PROMISED ──────────────────────────────────────────
+// KPPS is sold as "Party Biz Hub included for one year, then $27/month". The
+// purchase sets crm_access_expires_at twelve months out; this closes the year
+// when it arrives, and — more importantly — warns them well before it does.
+//
+// Nobody should discover this by finding their quote builder gone. They are
+// told at 30 days, 7 days and on the last day, every message carrying the
+// price and a link to continue.
+async function runHubAccessExpiry(today) {
+  const out = { warned: [], closed: [], errors: [] };
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+
+  const dayISO = offset => {
+    const d = new Date(today); d.setDate(today.getDate() + offset);
+    return d.toISOString().split('T')[0];
+  };
+
+  // ── Warnings at 30, 7 and 1 days out.
+  for (const days of [30, 7, 1]) {
+    const target = dayISO(days);
+    const rows = await supabaseGet(
+      `profiles?has_crm_access=is.true&crm_access_expires_at=gte.${target}T00:00:00Z` +
+      `&crm_access_expires_at=lt.${target}T23:59:59Z&select=id,email,full_name,profile_data,crm_access_expires_at`
+    );
+    if (!Array.isArray(rows)) continue;
+
+    for (const row of rows) {
+      const pd = row.profile_data || {};
+      // A reminder already sent for this milestone must not go again — the
+      // cron runs daily and a repeated "your access ends in 7 days" is worse
+      // than none at all.
+      const sent = Array.isArray(pd.hubExpiryRemindersSent) ? pd.hubExpiryRemindersSent : [];
+      if (sent.includes(days)) continue;
+
+      const to = validEmail(pd.contactEmail) || validEmail(pd.bizEmail) || validEmail(row.email);
+      if (!to) continue;
+
+      const ok = await sendHubExpiryEmail({
+        RESEND_KEY, FROM_EMAIL, to, days,
+        name: pd.businessName || row.full_name || 'there',
+        endsOn: row.crm_access_expires_at,
+      });
+      if (!ok) { out.errors.push({ id: row.id, days }); continue; }
+
+      await supabasePatch('profiles', row.id, {
+        profile_data: { ...pd, hubExpiryRemindersSent: [...sent, days] },
+      });
+      out.warned.push({ id: row.id, days });
+    }
+  }
+
+  // ── The year is up. KPPS training access is untouched; only the bundled
+  //    Hub tools close, which is exactly what was sold.
+  const nowISO = new Date().toISOString();
+  const lapsed = await supabaseGet(
+    `profiles?has_crm_access=is.true&crm_access_expires_at=lt.${nowISO}&select=id,email,profile_data`
+  );
+  if (Array.isArray(lapsed)) {
+    for (const row of lapsed) {
+      const r = await supabasePatch('profiles', row.id, { has_crm_access: false });
+      if (r && r.ok) out.closed.push(row.id);
+      else out.errors.push({ id: row.id, step: 'close' });
+    }
+  }
+
+  return out;
+}
+
+function validEmail(value) {
+  const v = String(value || '').trim();
+  return /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(v) ? v : null;
+}
+
+async function sendHubExpiryEmail({ RESEND_KEY, FROM_EMAIL, to, days, name, endsOn }) {
+  if (!RESEND_KEY) return false;
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const when = (() => {
+    const d = new Date(endsOn);
+    return isNaN(d) ? 'soon' : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  })();
+  const headline = days === 1 ? 'Your included Hub year ends tomorrow'
+    : days === 7 ? 'One week left of your included Hub year'
+    : 'Your included Hub year ends in 30 days';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:540px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden">
+  <div style="background:#4C1D95;padding:24px 30px;color:#fff">
+    <h1 style="margin:0;font-size:1.25rem;font-weight:800">${esc(headline)}</h1>
+  </div>
+  <div style="padding:26px 30px;color:#2F1E3B;font-size:.95rem;line-height:1.7">
+    <p style="margin:0 0 16px">Hi ${esc(name)},</p>
+    <p style="margin:0 0 16px">
+      Your Kids Party Profit System purchase included a full year of Party Biz Hub —
+      quotes, contracts, bookings, your website and the rest. That year ends on
+      <strong>${esc(when)}</strong>.
+    </p>
+    <p style="margin:0 0 16px">
+      To keep your quotes, contracts and bookings exactly where they are, continue for
+      <strong>$27/month</strong>. Nothing moves and nothing is lost — your account carries straight on.
+    </p>
+    <p style="margin:0 0 20px;padding:14px 16px;background:#FAF7FB;border-radius:10px;font-size:.88rem">
+      Your <strong>KPPS training, playbooks and templates stay yours for life</strong>.
+      This is only about the Hub software.
+    </p>
+    <a href="https://www.partybizhub.com/#pricing" style="display:block;background:#4C1D95;color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:700">Keep my Hub for $27/month &rarr;</a>
+    <p style="margin:18px 0 0;font-size:.82rem;color:#8A7A96">
+      Do nothing and the Hub tools simply close on ${esc(when)}. Your data is kept, so you can pick up again any time.
+    </p>
+  </div>
+</div>
+</body></html>`;
+
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + RESEND_KEY,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `hub-expiry/${days}/${to}`,
+      },
+      body: JSON.stringify({ from: FROM_EMAIL, to, subject: headline, html }),
+    });
+    return r.ok;
+  } catch (e) {
+    console.error('Hub expiry email failed:', e);
+    return false;
+  }
+}
 
 
 async function runDepositHold(today) {
