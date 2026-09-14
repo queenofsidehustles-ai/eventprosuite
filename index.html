@@ -522,35 +522,10 @@ a{text-decoration:none;color:inherit}
   <div class="section-inner">
     <div class="text-center">
       <span class="eyebrow">Founders Pricing — Limited Time</span>
-      <h2 class="section-title">Lock in your rate before <span class="script">it's gone.</span></h2>
-      <p class="section-sub">Founders pricing ends June 6th. After that, Starter goes to $37/mo and Pro goes to $57/mo. Lock in today and pay this rate forever.</p>
+      <h2 class="section-title">Lock in your <span class="script">founders rate.</span></h2>
+      <p class="section-sub">Founders pricing won't be around forever — Starter is going to $37/mo and Pro to $57/mo. Join today and your rate stays locked for as long as you're a member.</p>
     </div>
 
-    <!-- Countdown Timer -->
-    <div id="countdown-bar" style="background:linear-gradient(135deg,#4C1D95,#6D28D9);border-radius:16px;padding:20px 28px;max-width:600px;margin:28px auto 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-      <div style="color:rgba(255,255,255,0.85);font-size:14px;font-weight:600;">⏳ Founders rate expires in:</div>
-      <div style="display:flex;gap:14px;align-items:center;">
-        <div style="text-align:center;">
-          <div id="cd-days" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Days</div>
-        </div>
-        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.4);margin-bottom:14px;">:</div>
-        <div style="text-align:center;">
-          <div id="cd-hours" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Hours</div>
-        </div>
-        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.4);margin-bottom:14px;">:</div>
-        <div style="text-align:center;">
-          <div id="cd-mins" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Mins</div>
-        </div>
-        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.4);margin-bottom:14px;">:</div>
-        <div style="text-align:center;">
-          <div id="cd-secs" style="font-size:32px;font-weight:900;color:#fff;line-height:1;">--</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Secs</div>
-        </div>
-      </div>
-    </div>
 
     <div class="pricing-grid">
       <!-- Starter -->
@@ -563,7 +538,7 @@ a{text-decoration:none;color:inherit}
           <span class="price-num">27</span>
           <span class="price-per">/month</span>
         </div>
-        <div style="font-size:12px;color:#9333ea;font-weight:700;margin-bottom:4px;">Going to <span style="text-decoration:line-through;color:var(--muted);">$37</span> after June 6th</div>
+        <div style="font-size:12px;color:#9333ea;font-weight:700;margin-bottom:4px;">Going to <span style="text-decoration:line-through;color:var(--muted);">$37</span> soon</div>
         <div class="price-note">Lock in $27 forever. Cancel anytime.</div>
         <div class="price-divider"></div>
         <ul class="price-features">
@@ -588,7 +563,7 @@ a{text-decoration:none;color:inherit}
           <span class="price-num">47</span>
           <span class="price-per">/month</span>
         </div>
-        <div style="font-size:12px;color:#9333ea;font-weight:700;margin-bottom:4px;">Going to <span style="text-decoration:line-through;color:var(--muted);">$57</span> after June 6th</div>
+        <div style="font-size:12px;color:#9333ea;font-weight:700;margin-bottom:4px;">Going to <span style="text-decoration:line-through;color:var(--muted);">$57</span> soon</div>
         <div class="price-note">Lock in $47 forever. Cancel anytime.</div>
         <div class="price-divider"></div>
         <ul class="price-features">
@@ -690,30 +665,6 @@ function toggleFaq(btn) {
   if (!isOpen) item.classList.add('open');
 }
 
-// Founders Rate Countdown — expires June 6, 2026 11:59 PM ET
-(function() {
-  const deadline = new Date('2026-06-07T03:59:00Z'); // midnight ET = 04:00 UTC
-  function update() {
-    const now  = new Date();
-    const diff = deadline - now;
-    if (diff <= 0) {
-      const bar = document.getElementById('countdown-bar');
-      if (bar) bar.innerHTML = '<div style="color:#fff;font-size:14px;font-weight:700;text-align:center;width:100%;">⚠️ Founders pricing has ended. New pricing is now in effect.</div>';
-      return;
-    }
-    const d = Math.floor(diff / 864e5);
-    const h = Math.floor((diff % 864e5) / 36e5);
-    const m = Math.floor((diff % 36e5) / 6e4);
-    const s = Math.floor((diff % 6e4) / 1e3);
-    const pad = n => String(n).padStart(2,'0');
-    document.getElementById('cd-days').textContent  = d;
-    document.getElementById('cd-hours').textContent = pad(h);
-    document.getElementById('cd-mins').textContent  = pad(m);
-    document.getElementById('cd-secs').textContent  = pad(s);
-  }
-  update();
-  setInterval(update, 1000);
-})();
 </script>
 </body>
 </html>
