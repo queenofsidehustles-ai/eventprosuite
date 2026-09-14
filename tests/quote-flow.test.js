@@ -41,7 +41,11 @@ assert.match(app, /data-q-inc/);
 assert.match(app, /source:'suggested'/);
 assert.match(app, /packageNameMatchScore/);
 assert.match(app, /savedInclusions\.length \? savedInclusions : fallbackInclusions/);
+assert.match(app, /cleanPackageDisplayName/);
+assert.match(app, /Personalized party T-shirt/);
+assert.match(app, /invoice-side-stack/);
 assert.match(view, /it\.inclusions\.filter/);
+assert.match(view, /cleanPackageName/);
 
 // All inline browser scripts must still parse.
 for (const html of [app, view, profile]) {
