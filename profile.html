@@ -396,6 +396,16 @@ input,select,textarea{font:inherit}
       </label>
     </div>
 
+    <!-- Business email. Read in eight places — the public site, the booking
+         form, the quote page, and the reply-to on every customer email — and
+         until now there was nowhere in the app to set it, so it fell back to
+         the login address everywhere. -->
+    <div class="field" style="margin-bottom:1.4rem">
+      <label>Business email (shown to clients)</label>
+      <input type="email" id="contactEmail" placeholder="e.g. hello@yourbusiness.com"/>
+      <div class="field-help">Where client replies go. Shown on your website and quote pages, and used as the reply-to on quotes and confirmations. Leave blank to use the email you sign in with.</div>
+    </div>
+
     <!-- Contact phone for booking form -->
     <div class="field" style="margin-bottom:1.4rem">
       <label>Contact phone (shown on booking form)</label>
@@ -531,6 +541,7 @@ async function init(){
     if(pd.stripe1000)$('stripe1000').value=pd.stripe1000;
     if(pd.logoDataURL){logoDataURL=pd.logoDataURL;applyLogoPreview()}
     if(pd.contactPhone)$('contactPhone').value=pd.contactPhone;
+    if($('contactEmail'))$('contactEmail').value=pd.contactEmail||pd.bizEmail||'';
     if(pd.bookingServices)bookingServices=[...pd.bookingServices];
     if(pd.depositUpfront){depositUpfrontEnabled=true;applyToggleUI(true)}
     autoContractEnabled=pd.autoContract!==false; // undefined = ON (existing behaviour)
@@ -820,6 +831,12 @@ function handleLogoUpload(e){
 
 async function saveProfile(){
   if(!currentUser)return;
+  const contactEmail=$('contactEmail')?$('contactEmail').value.trim():'';
+  if(contactEmail&&!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(contactEmail)){
+    showToast('That business email does not look right — check for a typo.','error');
+    $('contactEmail').focus();
+    return;
+  }
   const contactPhone=$('contactPhone').value.trim();
   const phoneDigits=contactPhone.replace(/\D/g,'');
   if(contactPhone&&(contactPhone.includes('@')||phoneDigits.length<10)){
@@ -855,6 +872,7 @@ async function saveProfile(){
       depositUpfront:depositUpfrontEnabled,
       autoContract:autoContractEnabled,
       contactPhone,
+      contactEmail,
       bookingServices:bookingServices,
       zernioKey:$('zernioKey').value.trim()
     };

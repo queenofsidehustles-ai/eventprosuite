@@ -331,6 +331,20 @@ async function createWebsiteBooking(req, res) {
       console.error('Website booking insert failed', insertRes.status, inserted);
       return res.status(502).json({ error: 'The booking request could not be delivered' });
     }
+    // A lead that nobody is told about is a lead lost. Until now this saved
+    // silently and the owner found out only if she happened to open the
+    // dashboard. The enquiry is already safe in the database, so a failure to
+    // email must never turn a saved lead into an error for the customer.
+    try {
+      await notifyOwnerOfEnquiry({
+        ownerId, headers, payload,
+        bookingId: inserted?.[0]?.id || null,
+        host: (req.headers && req.headers.host) || 'www.partybizhub.com',
+      });
+    } catch (e) {
+      console.warn('Enquiry saved but the owner could not be notified:', e);
+    }
+
     return res.status(201).json({ received: true, bookingId: inserted?.[0]?.id || null });
   } catch (error) {
     console.error('Website booking bridge failed', error);
@@ -698,6 +712,93 @@ async function acceptQuote(req, res) {
   }
 }
 
+
+
+// ── "You have a new enquiry" ────────────────────────────────────────────
+// Someone filling in a booking form is a stranger who might book. Quote
+// acceptances already email the owner; this closes the same gap one step
+// earlier in the funnel, where the lead is coldest and speed matters most.
+async function notifyOwnerOfEnquiry({ ownerId, headers, payload, bookingId, host }) {
+  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  if (!RESEND_KEY) return;
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+
+  const ownerRes = await fetch(
+    `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}&select=email,profile_data&limit=1`,
+    { headers }
+  );
+  const owners = await ownerRes.json().catch(() => []);
+  const owner = Array.isArray(owners) ? owners[0] : null;
+  if (!owner) return;
+
+  const pd = owner.profile_data || {};
+  // The account address is the dependable one — there is currently no field in
+  // the app for a separate business address, so it is usually all there is.
+  const to = validEmail(pd.contactEmail) || validEmail(pd.bizEmail) || validEmail(owner.email);
+  if (!to) return;
+
+  const brand = /^#[0-9a-fA-F]{6}$/.test(String(pd.brandColor || '')) ? pd.brandColor : '#6D28D9';
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const fmtDate = d => {
+    if (!d) return 'Not given';
+    const parsed = new Date(String(d).length <= 10 ? d + 'T00:00' : d);
+    return isNaN(parsed) ? String(d) : parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  };
+  const row = (label, value) => value
+    ? `<tr><td style="padding:6px 14px 6px 0;color:#8A7A96;font-size:13px;white-space:nowrap">${esc(label)}</td><td style="padding:6px 0;color:#2F1E3B;font-size:13px;font-weight:600">${esc(value)}</td></tr>`
+    : '';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:560px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden">
+  <div style="background:${esc(brand)};padding:26px 30px;color:#fff">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.85">New enquiry</div>
+    <h1 style="margin:6px 0 0;font-size:1.3rem;font-weight:800">${esc(payload.client_name || 'Someone')} asked about a party</h1>
+  </div>
+  <div style="padding:26px 30px">
+    <p style="margin:0 0 18px;color:#4A3B55;font-size:.95rem;line-height:1.65">
+      They filled in your booking form. Nothing is booked and no price has been agreed —
+      this is a lead waiting on a quote from you.
+    </p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+      ${row('Wants', payload.service_name)}
+      ${row('Date', fmtDate(payload.event_date))}
+      ${row('Time', payload.event_time)}
+      ${row('Where', payload.event_address)}
+      ${row('Guests', payload.num_kids)}
+      ${row('For', payload.honoree_name)}
+      ${row('Email', payload.client_email)}
+      ${row('Phone', payload.client_phone)}
+    </table>
+    ${payload.notes ? `<p style="margin:0 0 18px;padding:14px 16px;background:#FAF7FB;border-radius:10px;color:#4A3B55;font-size:.88rem;line-height:1.6;white-space:pre-line"><strong>What they said:</strong>\n${esc(payload.notes)}</p>` : ''}
+    <a href="https://${esc(host)}/dashboard.html" style="display:block;background:${esc(brand)};color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:700;font-size:.98rem">Send them a quote &rarr;</a>
+  </div>
+  <div style="padding:14px 30px;text-align:center;font-size:.76rem;color:#A99EB3;border-top:1px solid #EFEAF3">
+    ${bookingId ? 'Reference ' + esc(String(bookingId).slice(0, 8).toUpperCase()) + ' &middot; ' : ''}Party Biz Hub
+  </div>
+</div>
+</body></html>`;
+
+  const sendRes = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + RESEND_KEY,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': `enquiry/${bookingId || payload.client_email}`,
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to,
+      reply_to: validEmail(payload.client_email) || undefined,
+      subject: `New enquiry from ${payload.client_name || 'a customer'} — ${fmtDate(payload.event_date)}`,
+      html,
+    }),
+  });
+  if (!sendRes.ok) {
+    const detail = await sendRes.json().catch(() => ({}));
+    console.warn('Enquiry notification not delivered:', detail.message || sendRes.status);
+  }
+}
 
 // ── "You just got booked" ───────────────────────────────────────────────
 // The customer has always received a confirmation the moment they accept a
