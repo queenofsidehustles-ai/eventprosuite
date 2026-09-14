@@ -474,9 +474,9 @@ async function createDepositCheckout(req, res) {
 // update permission on every owner's bookings table. The quote must explicitly
 // point at the same source booking before anything is changed.
 async function acceptQuote(req, res) {
-  const { quoteId, sourceBookingId, booking = {} } = req.body || {};
-  if (!quoteId || !sourceBookingId) {
-    return res.status(400).json({ error: 'quoteId and sourceBookingId are required' });
+  const { quoteId, sourceBookingId, selectedAddOns = [], booking = {} } = req.body || {};
+  if (!quoteId) {
+    return res.status(400).json({ error: 'quoteId is required' });
   }
 
   const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
@@ -493,15 +493,44 @@ async function acceptQuote(req, res) {
   try {
     const quoteRes = await fetch(
       `${SUPA_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}` +
-      '&select=id,user_id,quote_data&limit=1',
+      '&select=id,user_id,total_amount,quote_data&limit=1',
       { headers }
     );
     const quotes = await quoteRes.json().catch(() => []);
     const quote = Array.isArray(quotes) ? quotes[0] : null;
-    const linkedId = quote && quote.quote_data && quote.quote_data.sourceBookingId;
-    if (!quoteRes.ok || !quote || String(linkedId || '') !== String(sourceBookingId)) {
+    if (!quoteRes.ok || !quote) {
+      return res.status(404).json({ error: 'Quote not found' });
+    }
+    const quoteData = quote.quote_data || {};
+    const linkedId = quoteData.sourceBookingId || null;
+    if (sourceBookingId && String(linkedId || '') !== String(sourceBookingId)) {
       return res.status(403).json({ error: 'This quote is not linked to that inquiry' });
     }
+
+    // Never trust prices sent by the public browser. Match requested ids back
+    // to the add-ons the owner saved on this exact quote, then recalculate.
+    const offered = Array.isArray(quoteData.addOns) ? quoteData.addOns : [];
+    const requested = Array.isArray(selectedAddOns) ? selectedAddOns : [];
+    const acceptedAddOns = [];
+    requested.slice(0, 50).forEach(row => {
+      const source = offered.find(addon => String(addon.id) === String(row && row.id));
+      if (!source) return;
+      const price = Math.max(0, Number(source.price) || 0);
+      const quantity = source.pricingType === 'per_guest'
+        ? Math.max(1, Math.min(100, Math.floor(Number(row.quantity) || 1))) : 1;
+      acceptedAddOns.push({
+        id: source.id, name: String(source.name || 'Optional add-on').slice(0, 160),
+        description: String(source.description || '').slice(0, 500),
+        pricingType: ['flat','per_guest','starting_at'].includes(source.pricingType) ? source.pricingType : 'flat',
+        price, quantity, total: Math.round(price * quantity * 100) / 100,
+      });
+    });
+    const baseGrand = Math.max(0, Number(quoteData.baseGrand != null ? quoteData.baseGrand : quoteData.grand != null ? quoteData.grand : quote.total_amount) || 0);
+    const addOnTotal = Math.round(acceptedAddOns.reduce((sum, addon) => sum + addon.total, 0) * 100) / 100;
+    const finalGrand = Math.round((baseGrand + addOnTotal) * 100) / 100;
+    const addOnNotes = acceptedAddOns.length
+      ? '\n\nSelected add-ons:\n' + acceptedAddOns.map(addon => `• ${addon.name}${addon.quantity > 1 ? ` × ${addon.quantity}` : ''} — $${addon.total.toFixed(2)}`).join('\n')
+      : '';
 
     const patch = {
       client_name: booking.client_name || '',
@@ -511,27 +540,42 @@ async function acceptQuote(req, res) {
       event_time: booking.event_time || null,
       event_address: booking.event_address || '',
       service_name: booking.service_name || 'Quoted package',
-      service_price: booking.service_price || '',
-      notes: booking.notes || null,
+      service_price: String(finalGrand),
+      notes: ((booking.notes || '') + addOnNotes).trim() || null,
       status: 'awaiting-deposit',
       deposit_due_at: booking.deposit_due_at || null,
       deposit_reminder_sent: null,
       quote_id: quoteId,
     };
-    const updateRes = await fetch(
-      `${SUPA_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(sourceBookingId)}` +
-      `&owner_id=eq.${encodeURIComponent(quote.user_id)}`,
-      {
-        method: 'PATCH',
-        headers: { ...headers, Prefer: 'return=representation' },
-        body: JSON.stringify(patch),
-      }
-    );
-    const updated = await updateRes.json().catch(() => []);
-    if (!updateRes.ok || !Array.isArray(updated) || !updated.length) {
-      return res.status(409).json({ error: 'The original inquiry could not be updated' });
+    let bookingId = linkedId || booking.id || crypto.randomUUID();
+    let saveRes;
+    if (linkedId) {
+      saveRes = await fetch(
+        `${SUPA_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(linkedId)}` +
+        `&owner_id=eq.${encodeURIComponent(quote.user_id)}`,
+        { method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' }, body: JSON.stringify(patch) }
+      );
+    } else {
+      saveRes = await fetch(`${SUPA_URL}/rest/v1/bookings`, {
+        method: 'POST', headers: { ...headers, Prefer: 'return=representation' },
+        body: JSON.stringify({ id: bookingId, owner_id: quote.user_id, created_at: booking.created_at || new Date().toISOString(), ...patch })
+      });
     }
-    return res.json({ saved: true, bookingId: sourceBookingId });
+    const savedBooking = await saveRes.json().catch(() => []);
+    if (!saveRes.ok || !Array.isArray(savedBooking) || !savedBooking.length) {
+      return res.status(409).json({ error: linkedId ? 'The original inquiry could not be updated' : 'The booking could not be created' });
+    }
+
+    const acceptedQuoteData = {
+      ...quoteData, baseGrand, addOnTotal, customerSelectedAddOns: acceptedAddOns,
+      grand: finalGrand, acceptedAt: new Date().toISOString(), acceptedBookingId: bookingId,
+    };
+    const quoteUpdate = await fetch(`${SUPA_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}&user_id=eq.${encodeURIComponent(quote.user_id)}`, {
+      method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+      body: JSON.stringify({ total_amount: finalGrand, quote_data: acceptedQuoteData }),
+    });
+    if (!quoteUpdate.ok) console.warn('Booking saved but quote total could not be updated');
+    return res.json({ saved: true, bookingId, baseGrand, addOnTotal, grand: finalGrand, selectedAddOns: acceptedAddOns });
   } catch (e) {
     console.error('Quote acceptance failed:', e);
     return res.status(500).json({ error: 'Could not accept this quote' });
