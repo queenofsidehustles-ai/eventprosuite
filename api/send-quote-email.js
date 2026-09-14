@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
   }
 
   const {
-    clientEmail, clientPhone, clientName, bizName, bizEmail,
+    clientEmail, clientPhone, clientName, bizName, bizEmail, brandColor,
     eventType, eventDate, grand,
     quoteLink, expiryDate,
   } = req.body || {};
@@ -91,34 +91,41 @@ module.exports = async function handler(req, res) {
   const formattedDate = fmtDate(eventDate);
   const formattedExpiry = expiryDate ? new Date(expiryDate + 'T00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 
+  // This is one business emailing their own customer. Party Biz Hub's purple
+  // has no business being on it.
+  const brand = /^#[0-9a-fA-F]{6}$/.test(String(brandColor || '')) ? brandColor : '#6D28D9';
+  const brandSoft = brand + '14';   // 8-digit hex is unreliable in email, so it
+  const esc = v => String(v == null ? '' : v)   // is only used where a fallback
+    .replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+
   const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><style>
 body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
 .wrap{max-width:540px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-.top{background:linear-gradient(135deg,#4C1D95,#6D28D9);padding:28px 32px;color:#fff;text-align:center}
+.top{background:${brand};padding:28px 32px;color:#fff;text-align:center}
 .top h1{margin:0;font-size:1.3rem;font-weight:800;letter-spacing:-.02em}
 .top p{margin:6px 0 0;font-size:.88rem;opacity:.82}
 .body{padding:28px 32px}
 .body p{color:#333;line-height:1.7;font-size:.95rem;margin:0 0 16px}
-.btn{display:block;background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;margin:24px 0}
-.detail{background:#f5f0fb;border-radius:10px;padding:14px 18px;margin-bottom:20px}
-.detail p{margin:3px 0;font-size:.88rem;color:#4C1D95}
-.total{font-size:1.5rem;font-weight:800;color:#4C1D95;text-align:center;margin:12px 0 4px}
+.btn{display:block;background:${brand};color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;margin:24px 0}
+.detail{background:#FAFAFC;border-left:3px solid ${brand};border-radius:10px;padding:14px 18px;margin-bottom:20px}
+.detail p{margin:3px 0;font-size:.88rem;color:#333}
+.total{font-size:1.5rem;font-weight:800;color:${brand};text-align:center;margin:12px 0 4px}
 .footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}
 </style></head>
 <body>
 <div class="wrap">
   <div class="top">
-    <h1>${bizName || 'Your Party Quote'} 🎉</h1>
+    <h1>${esc(bizName) || 'Your Party Quote'} 🎉</h1>
     <p>Your personalized event quote is ready to review</p>
   </div>
   <div class="body">
-    <p>Hi ${clientFirst},</p>
-    <p>Your party quote from <strong>${bizName || 'us'}</strong> is ready! Review everything below and click the button to book your deposit.</p>
+    <p>Hi ${esc(clientFirst)},</p>
+    <p>Your party quote from <strong>${esc(bizName) || 'us'}</strong> is ready! Review everything below and click the button to book your deposit.</p>
     <div class="detail">
-      ${eventType ? `<p><strong>Event:</strong> ${eventType}</p>` : ''}
+      ${eventType ? `<p><strong>Event:</strong> ${esc(eventType)}</p>` : ''}
       ${formattedDate ? `<p><strong>Event Date:</strong> ${formattedDate}</p>` : ''}
       ${formattedExpiry ? `<p><strong>Quote expires:</strong> ${formattedExpiry}</p>` : ''}
     </div>
@@ -126,7 +133,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
     <a href="${quoteLink}" class="btn">🎀 View My Full Quote</a>
     <p style="font-size:.82rem;color:#888">If the button doesn't work, copy this link into your browser:<br>${quoteLink}</p>
   </div>
-  <div class="footer">Questions? Reply to this email and we'll get back to you right away.</div>
+  <div class="footer">${esc(bizName) || 'We'} &middot; Questions? Just reply to this email.</div>
 </div>
 </body></html>`;
 
@@ -138,7 +145,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: FROM_EMAIL,
+        from: senderFrom(bizName, FROM_EMAIL),
         to: clientEmail,
         reply_to: validEmail(bizEmail) || undefined,
         subject: `🎉 Your party quote from ${bizName || 'us'}${eventType ? ' — ' + eventType : ''}`,
@@ -165,6 +172,31 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
 };
+
+
+// ── WHO THE EMAIL APPEARS TO BE FROM ────────────────────────────────────
+// Every tenant sends over the one domain verified with Resend, because a
+// student cannot send as their own Gmail — the receiving server would reject
+// it or bin it as spoofing. But the DISPLAY NAME is ours to set, and that is
+// what people actually read in an inbox. So a Bear Hug quote arrives from
+// "Bear Hug Events", not "Party Biz Hub", with reply-to pointing at their real
+// address.
+//
+// The name lands in a mail header, so anything that could open a second header
+// — newlines, carriage returns — is stripped rather than escaped. Quotes,
+// commas, colons and angle brackets go too, since they break the
+// "Name <address>" form.
+function senderFrom(bizName, fallbackFrom) {
+  const addr = (/<([^>]+)>/.exec(fallbackFrom || '') || [null, fallbackFrom || ''])[1].trim();
+  const clean = String(bizName || '')
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/["<>,:;\\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 64);
+  if (!clean || !addr) return fallbackFrom;
+  return clean + ' <' + addr + '>';
+}
 
 // A syntactically sane address, or null. Resend rejects the whole send on a
 // malformed reply_to, so a typo in a profile must never cost the quote email.
@@ -992,7 +1024,7 @@ async function sendBookingConfirmation(req, res, RESEND_KEY, FROM_EMAIL) {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: FROM_EMAIL,
+        from: senderFrom(bizName, FROM_EMAIL),
         to: clientEmail,
         reply_to: validEmail(bizEmail) || undefined,
         subject,

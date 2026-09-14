@@ -975,6 +975,8 @@ async function shareQuote() {
         clientEmail: clientEmail || undefined,
         clientPhone, alsoText: !!clientPhone,
         clientName, bizName, bizEmail: ownerReplyEmail(),
+        // So the quote arrives in her colours rather than Party Biz Hub purple.
+        brandColor: $('brandColor').value || '',
         eventType, eventTheme, eventDate, grand,
         quoteLink: link, expiryDate,
       })
