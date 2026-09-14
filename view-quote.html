@@ -211,6 +211,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     const specs = [
       {k:'Service',    v:cleanPackageName(q.event_type||qd.eventType||'Party package')},
       {k:'Event date', v:q.event_date?fmtDate(q.event_date):'To be confirmed'},
+      qd.eventTheme?{k:'Theme / customization',v:qd.eventTheme}:null,
       {k:'Prepared by',v:bizName},
       expiryDate?{k:'Quote valid until', v:fmtDate(expiryDate)}:null
     ].filter(Boolean);
