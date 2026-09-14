@@ -474,6 +474,32 @@ let successProduct=null, sellerBizName='';
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function setMeta(n,v){let e=document.querySelector(`meta[name="${n}"]`)||document.querySelector(`meta[property="${n}"]`);if(e)e.content=v;}
 
+
+// The storefront is public, so branding is read through a curated
+// security-definer function rather than the profiles table, which is private.
+// The slug lookup resolves to an id without exposing the row behind it. Direct
+// reads remain only as a fallback for the window between deploying this and
+// running the migration.
+let _slugProfile=null;
+async function loadPublicProfile(client,id){
+  try{
+    const{data,error}=await client.rpc('get_public_profile',{p_id:id});
+    if(!error&&Array.isArray(data)&&data.length)return data[0];
+    if(!error&&data&&!Array.isArray(data))return data;
+  }catch(e){}
+  const{data:row}=await client.from('profiles').select('id,full_name,profile_data').eq('id',id).maybeSingle();
+  return row;
+}
+async function loadPublicProfileBySlug(client,slug){
+  try{
+    const{data,error}=await client.rpc('get_public_profile_by_slug',{p_slug:slug});
+    if(!error&&Array.isArray(data)&&data.length)return data[0];
+    if(!error&&data&&!Array.isArray(data))return data;
+  }catch(e){}
+  const{data:row}=await client.from('profiles').select('id,full_name,profile_data').eq('store_slug',slug).maybeSingle();
+  return row;
+}
+
 async function init(){
   try {
   const params=new URLSearchParams(location.search);
@@ -485,14 +511,14 @@ async function init(){
 
   // Resolve slug → uid if needed
   if(!ownerId&&slug){
-    const{data:slugProfile}=await sb.from('profiles').select('id').eq('store_slug',slug).maybeSingle();
-    if(slugProfile)ownerId=slugProfile.id;
+    const slugProfile=await loadPublicProfileBySlug(sb,slug);
+    if(slugProfile){ownerId=slugProfile.id;_slugProfile=slugProfile;}
   }
 
   if(!ownerId){renderError('Store Not Found','This store link is missing an ID. Please contact the store owner.');hideGate();return;}
 
   // Load seller profile
-  const{data:profile}=await sb.from('profiles').select('full_name,profile_data').eq('id',ownerId).single();
+  const profile=(_slugProfile&&_slugProfile.id===ownerId)?_slugProfile:await loadPublicProfile(sb,ownerId);
   const d=profile?.profile_data||{};
   const bizName=d.businessName||profile?.full_name||'Party Printables';
   sellerBizName=bizName;

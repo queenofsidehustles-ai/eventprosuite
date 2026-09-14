@@ -25,7 +25,16 @@ module.exports = async function handler(req, res) {
         }
       };
     const [profileResponse, websiteResponse] = await Promise.all([
-      fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(uid)}&select=id,profile_data&limit=1`, requestOptions),
+      // Booking pages are public, so this reads through the curated
+      // security-definer function instead of the profiles table. The old
+      // direct select returned the whole profile_data blob — including the
+      // zernioKey API secret and the Stripe Connect handshake token — to
+      // anyone who opened a booking link.
+      fetch(`${SUPA_URL}/rest/v1/rpc/get_public_profile`, {
+        ...requestOptions,
+        method: 'POST',
+        body: JSON.stringify({ p_id: uid }),
+      }),
       // Only published website data may feed a public booking page. This also
       // gives existing students a seamless fallback when their website has
       // packages but Business Profile booking services are still empty.
@@ -33,14 +42,23 @@ module.exports = async function handler(req, res) {
     ]);
     clearTimeout(timer);
 
-    const rows = await profileResponse.json();
+    let rows = await profileResponse.json();
     const websiteRows = websiteResponse.ok ? await websiteResponse.json() : [];
 
+    // Fallback for the window between this deploying and the migration being
+    // run. Once the function exists this branch never executes.
     if (!profileResponse.ok) {
-      return res.status(500).json({ error: `Database error ${profileResponse.status}`, detail: rows });
+      const legacy = await fetch(
+        `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(uid)}&select=id,profile_data&limit=1`,
+        requestOptions
+      );
+      if (!legacy.ok) {
+        return res.status(500).json({ error: `Database error ${profileResponse.status}`, detail: rows });
+      }
+      rows = await legacy.json();
     }
 
-    if (!rows || rows.length === 0) {
+    if (!Array.isArray(rows) || rows.length === 0) {
       return res.status(404).json({ error: 'No profile found for this booking link. The business owner needs to save their Business Profile.' });
     }
 

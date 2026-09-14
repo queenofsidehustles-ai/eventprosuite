@@ -156,6 +156,23 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     return 'Priced for ' + n + ' ' + plural + ' — change the number below.';
   };
 
+
+  // Public pages read a business's branding without anyone logged in. The
+  // profiles table itself is private, so that goes through a curated
+  // security-definer function which returns only the public-facing fields —
+  // never the API keys, entitlements or internal pricing that also live there.
+  // The direct read is kept as a fallback purely so this page keeps working in
+  // the window between deploying and running the migration.
+  async function loadPublicProfile(client, id){
+    try{
+      const { data, error } = await client.rpc('get_public_profile', { p_id: id });
+      if(!error && Array.isArray(data) && data.length) return data[0];
+      if(!error && data && !Array.isArray(data)) return data;
+    }catch(e){ /* function not deployed yet — fall through */ }
+    const { data: row } = await client.from('profiles').select('profile_data,full_name').eq('id', id).maybeSingle();
+    return row;
+  }
+
   const cleanPackageName = name => {
     let clean=String(name||'').replace(/\s*\([^)]*\$[^)]*\)\s*/g,' ').replace(/\s+\$\s*[0-9,.]+\s*\+?\s*$/g,'').replace(/\s+/g,' ').trim();
     const parts=clean.split(/\s+[—–]\s+/).map(part=>part.trim()).filter(Boolean);
@@ -205,8 +222,8 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     }
     const q = Array.isArray(data)?data[0]:data;
     if(!q){ showError(); return; }
-    return sb.from('profiles').select('profile_data,full_name').eq('id',q.user_id).maybeSingle()
-      .then(({data:p})=>render(q,(p&&p.profile_data)||{},p));
+    return loadPublicProfile(sb, q.user_id)
+      .then(p=>render(q,(p&&p.profile_data)||{},p));
   }).catch(e=>{ console.error(e); showError(); });
 
 

@@ -127,10 +127,27 @@ button{font:inherit;cursor:pointer;border:none;background:none}
   const bookURL=uid?'book.html?uid='+encodeURIComponent(uid):'#book';
   const supabase=window.supabase.createClient(SUPA_URL,SUPA_ANON);
 
+  // Public pages read a business's branding without anyone logged in. The
+  // profiles table itself is private, so that goes through a curated
+  // security-definer function which returns only the public-facing fields —
+  // never the API keys, entitlements or internal pricing that also live there.
+  // The direct read is kept as a fallback purely so this page keeps working in
+  // the window between deploying and running the migration.
+  async function loadPublicProfile(client, id){
+    try{
+      const { data, error } = await client.rpc('get_public_profile', { p_id: id });
+      if(!error && Array.isArray(data) && data.length) return data[0];
+      if(!error && data && !Array.isArray(data)) return data;
+    }catch(e){ /* function not deployed yet — fall through */ }
+    const { data: row } = await client.from('profiles').select('profile_data,full_name').eq('id', id).maybeSingle();
+    return row;
+  }
+
+
   (_inline
     ?Promise.resolve([{data:_inline.profile,error:null},{data:_inline.build,error:null}])
     :Promise.all([
-        supabase.from('profiles').select('profile_data,full_name').eq('id',uid).single(),
+        loadPublicProfile(supabase, uid).then(row=>({data:row,error:row?null:{message:'not found'}})),
         supabase.from('website_builds').select('*').eq('user_id',uid).order('updated_at',{ascending:false}).limit(1).maybeSingle()
       ])
   ).then(([pRes,bRes])=>{
