@@ -59,6 +59,22 @@ img{max-width:100%;display:block}
 .tot-row{display:flex;justify-content:space-between;padding:.7rem 0;font-size:.92rem;color:#6B5B73;border-top:1px solid #F5F0FB}
 .tot-row.grand{font-size:1.1rem;font-weight:800;color:#1A1020}
 
+/* Customer-selected upgrades */
+.addon-card{border:1px solid #DDCFF0;background:linear-gradient(180deg,#fff,#FCFAFF)}
+.addon-intro{font-size:.9rem;color:#6B5B73;line-height:1.65;margin:-.35rem 0 1rem}
+.addon-choice{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:11px;align-items:start;padding:1rem 0;border-top:1px solid #F0EAF7}
+.addon-choice:first-of-type{border-top:none}
+.addon-choice input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:#6D28D9}
+.addon-choice-name{font-size:.94rem;font-weight:750;color:#2F1E3B}
+.addon-choice-desc{font-size:.8rem;color:#8A7A96;line-height:1.5;margin-top:3px}
+.addon-choice-price{font-size:.88rem;font-weight:800;white-space:nowrap;text-align:right}
+.addon-qty{grid-column:2/-1;display:none;grid-template-columns:1fr 92px;gap:10px;align-items:center;padding:.75rem .85rem;background:#F8F4FC;border-radius:10px;font-size:.8rem;color:#6B5B73}
+.addon-choice.selected .addon-qty{display:grid}
+.addon-qty input{padding:.55rem .65rem;text-align:center}
+.addon-summary{margin-top:1rem;padding:1rem;border-radius:12px;background:#F6F0FC;display:grid;gap:.5rem}
+.addon-summary-row{display:flex;justify-content:space-between;gap:14px;font-size:.88rem;color:#6B5B73}
+.addon-summary-row.total{padding-top:.6rem;border-top:1px solid #DDCFF0;color:#1A1020;font-size:1.03rem;font-weight:800}
+
 /* Form */
 .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1rem}
 .f-full{grid-column:1/-1}
@@ -186,9 +202,12 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     const onBrand = readableOn(brand);
 
     const items    = qd.items || [];
+    const previouslySelectedAddOns = Array.isArray(qd.customerSelectedAddOns) ? qd.customerSelectedAddOns : [];
     const subtotal = qd.subtotal || 0;
     const tax      = qd.tax || 0;
-    const grand    = qd.grand != null ? qd.grand : (q.total_amount || 0);
+    // Once accepted, qd.grand includes customer-selected upgrades. Keep the
+    // original amount separate so reopening the link can never add them twice.
+    const grand    = qd.baseGrand != null ? qd.baseGrand : (qd.grand != null ? qd.grand : (q.total_amount || 0));
     // selectedDepositTier is a flat DOLLAR amount, not a percent — the Quote
     // Builder renders it with money() and its tier buttons are $ values
     // (app.html:1140, 1196). The old page divided it by 100 and called it a
@@ -236,15 +255,15 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
 
     <div class="price-box" style="background:${shade(brand,-.45)};color:${readableOn(shade(brand,-.45))}">
       <div class="price-label">Your price</div>
-      <div class="price-amt">${fmt(grand)}</div>
-      <div class="price-split">${fmt(depAmt)} deposit to book · ${fmt(balance)} on the day</div>
+      <div class="price-amt" id="customerGrand">${fmt(grand)}</div>
+      <div class="price-split" id="customerSplit">${fmt(depAmt)} deposit to book · ${fmt(balance)} on the day</div>
     </div>
 
     <div class="spec">
       ${specs.map(s=>`<div class="spec-row"><span class="spec-k">${esc(s.k)}</span><span class="spec-v">${esc(s.v)}</span></div>`).join('')}
     </div>
 
-    <p class="locked-note">This is the price we quoted you — <strong>it doesn't change when you book here.</strong></p>
+    <p class="locked-note">${Array.isArray(qd.addOns)&&qd.addOns.length?'This is your original quoted price. <strong>It only changes if you choose an optional upgrade below.</strong>':'This is the price we quoted you — <strong>it doesn\'t change when you book here.</strong>'}</p>
 
     ${(qd.eventNotes||pd.termsText)?`<div class="terms">
       ${qd.eventNotes?`<p>${esc(qd.eventNotes)}</p>`:''}
@@ -267,8 +286,26 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     </div>`).join('')}
     ${subtotal&&subtotal!==grand?`<div class="tot-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>`:''}
     ${tax>0?`<div class="tot-row"><span>${esc(pd.taxLabel||'Tax')}</span><span>${fmt(tax)}</span></div>`:''}
-    <div class="tot-row grand"><span>Total</span><span>${fmt(grand)}</span></div>
+    <div class="tot-row grand"><span>${Array.isArray(qd.addOns)&&qd.addOns.length?'Original quote':'Total'}</span><span>${fmt(grand)}</span></div>
   </div>`:''}
+
+  ${Array.isArray(qd.addOns) && qd.addOns.length ? `
+  <div class="card addon-card" id="addonCard">
+    <div class="card-title">Make it extra special</div>
+    <p class="addon-intro">These upgrades are optional and are not included in the original quote. Choose any you want and your updated total will appear instantly.</p>
+    ${qd.addOns.map((addon,index)=>{const prior=previouslySelectedAddOns.find(row=>String(row.id)===String(addon.id));return `
+      <label class="addon-choice ${prior?'selected':''}" data-customer-addon-row="${index}">
+        <input type="checkbox" data-customer-addon="${index}" ${prior?'checked':''}/>
+        <span><span class="addon-choice-name">${esc(addon.name||'Optional add-on')}</span>${addon.description?`<span class="addon-choice-desc">${esc(addon.description)}</span>`:''}</span>
+        <span class="addon-choice-price">${addon.pricingType==='starting_at'?'From ':''}${fmt(addon.price||0)}${addon.pricingType==='per_guest'?' / guest':''}</span>
+        ${addon.pricingType==='per_guest'?`<span class="addon-qty"><span>How many guests should receive this add-on?</span><input type="number" min="1" max="100" value="${prior?Math.max(1,Number(prior.quantity)||1):1}" data-customer-addon-qty="${index}"/></span>`:''}
+      </label>`}).join('')}
+    <div class="addon-summary">
+      <div class="addon-summary-row"><span>Original quote</span><span>${fmt(grand)}</span></div>
+      <div class="addon-summary-row"><span>Selected add-ons</span><span id="addonTotal">${fmt(0)}</span></div>
+      <div class="addon-summary-row total"><span>Updated total</span><span id="updatedGrand">${fmt(grand)}</span></div>
+    </div>
+  </div>` : ''}
 
   ${expired?`
   <div class="card" style="text-align:center">
@@ -295,7 +332,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     <button class="btn-book" id="bookBtn" style="background:${brand};color:${onBrand}">
       Book this party <span>&rarr;</span>
     </button>
-    <p class="pay-note">Next step is a ${fmt(depAmt)} deposit to hold your spot.<br>The remaining ${fmt(balance)} is due ${esc(pd.paymentTerms||'before your event')}.</p>
+    <p class="pay-note" id="payNote">Next step is a ${fmt(depAmt)} deposit to hold your spot.<br>The remaining ${fmt(balance)} is due ${esc(pd.paymentTerms||'before your event')}.</p>
   </div>
 
   <div class="card" id="confirmCard">
@@ -316,7 +353,38 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     document.getElementById('loadingState').style.display='none';
     document.getElementById('quoteRoot').classList.add('show');
 
-    if(!expired) wireBooking(q, pd, {grand, depAmt, balance, bizName, brand});
+    if(!expired) {
+      const selected = new Map();
+      const addOns = Array.isArray(qd.addOns) ? qd.addOns : [];
+      previouslySelectedAddOns.forEach(prior=>{const index=addOns.findIndex(addon=>String(addon.id)===String(prior.id));if(index>-1)selected.set(index,Math.max(1,Number(prior.quantity)||1));});
+      const pricing = () => {
+        const chosen = [...selected.entries()].map(([index,qty]) => {
+          const addon = addOns[index];
+          const safeQty = addon.pricingType === 'per_guest' ? Math.max(1, Math.min(100, Number(qty)||1)) : 1;
+          return { id:addon.id, name:addon.name, pricingType:addon.pricingType, price:Number(addon.price)||0, quantity:safeQty, total:(Number(addon.price)||0)*safeQty };
+        });
+        const addOnTotal = chosen.reduce((sum,addon)=>sum+addon.total,0);
+        return { selectedAddOns:chosen, addOnTotal, grand:grand+addOnTotal, depAmt:Math.min(depAmt,grand+addOnTotal), balance:Math.max(grand+addOnTotal-depAmt,0) };
+      };
+      const refreshPricing = () => {
+        const current = pricing();
+        const values = { customerGrand:current.grand, addonTotal:current.addOnTotal, updatedGrand:current.grand };
+        Object.entries(values).forEach(([id,value])=>{ const el=document.getElementById(id); if(el)el.textContent=fmt(value); });
+        const split=document.getElementById('customerSplit'); if(split)split.textContent=`${fmt(current.depAmt)} deposit to book · ${fmt(current.balance)} on the day`;
+        const note=document.getElementById('payNote'); if(note)note.innerHTML=`Next step is a ${fmt(current.depAmt)} deposit to hold your spot.<br>The remaining ${fmt(current.balance)} is due ${esc(pd.paymentTerms||'before your event')}.`;
+      };
+      document.querySelectorAll('[data-customer-addon]').forEach(box=>box.addEventListener('change',()=>{
+        const index=Number(box.dataset.customerAddon); const row=document.querySelector(`[data-customer-addon-row="${index}"]`);
+        if(box.checked){ const qty=document.querySelector(`[data-customer-addon-qty="${index}"]`); selected.set(index,qty?Number(qty.value)||1:1); row&&row.classList.add('selected'); }
+        else { selected.delete(index); row&&row.classList.remove('selected'); }
+        refreshPricing();
+      }));
+      document.querySelectorAll('[data-customer-addon-qty]').forEach(input=>input.addEventListener('input',()=>{
+        const index=Number(input.dataset.customerAddonQty); if(selected.has(index))selected.set(index,Math.max(1,Math.min(100,Number(input.value)||1))); refreshPricing();
+      }));
+      refreshPricing();
+      wireBooking(q, pd, {baseGrand:grand, depAmt, balance, bizName, brand, pricing});
+    }
   }
 
 
@@ -354,8 +422,9 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       const addr = [$('fAddr').value.trim(), $('fCity').value.trim(), $('fZip').value.trim()]
         .filter(Boolean).join(', ');
 
-      // service_price carries the QUOTED total, so what she quoted on the phone
-      // is what lands in the CRM. The customer never re-picks a package here.
+      const currentPricing = ctx.pricing();
+      // service_price carries the accepted total, including only the optional
+      // upgrades the customer selected on this page.
       const payload = {
         id: crypto.randomUUID(),
         owner_id:      q.user_id,
@@ -367,7 +436,8 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         event_address: addr,
         service_name:  cleanPackageName(q.event_type || (q.quote_data||{}).eventType || 'Quoted package')
                          + ' (quote #' + String(q.id).slice(0,8).toUpperCase() + ')',
-        service_price: String(ctx.grand),
+        service_price: String(currentPricing.grand),
+        selected_addons: currentPricing.selectedAddOns,
         notes:         $('fNotes').value.trim() || null,
         // They picked a date off an agreed price, so the date is held
         // provisionally. The deposit has 48 hours to arrive; the cron nudges
@@ -385,25 +455,14 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         // record. Inserting another row here used to leave owners with two
         // records for one customer: the original inquiry plus a second
         // awaiting-deposit booking.
-        const res = sourceBookingId
-          ? await fetch('/api/send-quote-email',{
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({
-                kind:'accept-quote', quoteId:q.id, sourceBookingId,
-                booking:payload
-              })
-            })
-          : await fetch(SUPA_URL+'/rest/v1/bookings',{
-              method:'POST',
-              headers:{
-                'apikey':SUPA_ANON,
-                'Authorization':'Bearer '+SUPA_ANON,
-                'Content-Type':'application/json',
-                'Prefer':'return=minimal'
-              },
-              body:JSON.stringify(payload)
-            });
+        const res = await fetch('/api/send-quote-email',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            kind:'accept-quote', quoteId:q.id, sourceBookingId,
+            selectedAddOns:currentPricing.selectedAddOns, booking:payload
+          })
+        });
         if(!res.ok){
           const detail = await res.text().catch(()=> '');
           console.error('Booking insert failed:',res.status,detail);
@@ -423,7 +482,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         return;
       }
 
-      let depositLink = pickStripe(pd, ctx.depAmt);
+      let depositLink = pickStripe(pd, currentPricing.depAmt);
 
       // Connected Stripe creates an exact checkout for this booking. Its
       // metadata lets the verified webhook advance only this customer's row.
@@ -460,16 +519,16 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
           eventDate:    payload.event_date,
           eventTime:    payload.event_time,
           eventAddress: payload.event_address,
-          total:        ctx.grand,
-          depositAmount:ctx.depAmt,
-          balance:      ctx.balance,
+          total:        currentPricing.grand,
+          depositAmount:currentPricing.depAmt,
+          balance:      currentPricing.balance,
           depositLink:  depositLink,
           depositDueAt: payload.deposit_due_at,
           paymentTerms: pd.paymentTerms || ''
         })
       }).catch(e => console.error('Confirmation email failed:', e));
 
-      showConfirmed(pd, ctx, email, depositLink, payload.deposit_due_at);
+      showConfirmed(pd, { ...ctx, ...currentPricing }, email, depositLink, payload.deposit_due_at);
     });
   }
 
