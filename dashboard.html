@@ -951,11 +951,11 @@ function goToQuoteBuilder() {
   if (q && q._source === 'booking') {
     window.location.href = 'app.html?booking=' + encodeURIComponent(q.id);
   } else if (q) {
-    const params = new URLSearchParams();
-    if (q.client_name) params.set('client', q.client_name);
-    if (q.event_type) params.set('event', q.event_type);
-    if (q.event_date) params.set('date', q.event_date);
-    window.location.href = 'app.html?' + params.toString();
+    // A saved quote is reopened by id so the whole thing comes back — line
+    // items, add-ons, notes, the lot. This used to pass client/event/date as
+    // loose query parameters that the Quote Builder never read, so clicking a
+    // saved quote opened an empty form with the client name missing.
+    window.location.href = 'app.html?quote=' + encodeURIComponent(q.id);
   } else {
     window.location.href = 'app.html';
   }

@@ -2081,8 +2081,61 @@ function closeQuotesModal(e) {
 
    The website quotes starting prices ("$700+"), excluding travel and extra
    guests, so the imported line is a starting point the owner edits. */
+// Reopening a saved quote from the dashboard. Everything is already stored on
+// the quote, so it is loaded whole rather than rebuilt from a few query
+// parameters — which is what used to happen, and why the form came up empty
+// with no client name on it.
+async function prefillFromSavedQuote() {
+  const quoteId = new URLSearchParams(location.search).get('quote');
+  if (!quoteId || !currentUser) return false;
+
+  const { data, error } = await sb.from('saved_quotes')
+    .select('id,quote_data').eq('id', quoteId).eq('user_id', currentUser.id).maybeSingle();
+
+  if (error || !data) {
+    console.warn('Could not reopen that quote:', error);
+    toast('Could not open that quote — starting a blank one');
+    return false;
+  }
+
+  loadQuote(data.quote_data || {});
+  // It already exists, so it can be sent without saving again.
+  _lastSavedQuoteId = data.id;
+  if ((data.quote_data || {}).sourceBookingId) _sourceBookingId = data.quote_data.sourceBookingId;
+  enableShareButton();
+  toast('✓ Reopened — edit and save, or send it as it is');
+  return true;
+}
+
+// Kept in step with saveQuote, so a reopened quote offers the same choices as
+// one just saved.
+function enableShareButton() {
+  const shareBtn = $('shareQuoteBtn');
+  if (!shareBtn) return;
+  const hasEmail = !!$('clientEmail').value.trim();
+  const hasPhone = !!$('clientPhone').value.trim();
+  shareBtn.textContent = hasEmail && hasPhone ? '📨 Email + Text to Client'
+                       : hasPhone            ? '📱 Text to Client'
+                       : hasEmail            ? '📧 Email to Client'
+                       :                       '📤 Copy Link';
+  shareBtn.style.opacity = '1';
+  shareBtn.style.pointerEvents = 'auto';
+}
+
 async function prefillFromBooking() {
-  const bookingId = new URLSearchParams(location.search).get('booking');
+  // An old-style link carrying loose client/event/date parameters still opens
+  // something useful rather than a blank form.
+  const params = new URLSearchParams(location.search);
+  if (!params.get('booking') && !params.get('quote')) {
+    if (params.get('client') && $('clientName') && !$('clientName').value) $('clientName').value = params.get('client');
+    if (params.get('event') && $('eventType') && !$('eventType').value) $('eventType').value = params.get('event');
+    if (params.get('date') && $('eventDate')) $('eventDate').value = params.get('date');
+    if (params.get('client') || params.get('event')) refreshAll();
+  }
+
+  if (await prefillFromSavedQuote()) return;
+
+  const bookingId = params.get('booking');
   if (!bookingId || !currentUser) return;
   _sourceBookingId = bookingId;
 
