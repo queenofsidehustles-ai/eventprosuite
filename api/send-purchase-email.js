@@ -145,8 +145,16 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // Optional explicit tag on the checkout / payment link (most reliable when set)
   const metaProduct = (session.metadata && session.metadata.product || '').toLowerCase();
 
-  // Party Biz Hub CRM — a RECURRING subscription (the only subscription product is the $27/mo plan)
-  const isCRMSub = sessionMode === 'subscription';
+  // An explicit `product` tag always wins. Without this, ANY subscription is
+  // treated as the $27/mo Hub plan — so a KPPS payment plan billed as three
+  // monthly instalments would quietly grant Hub access instead of KPPS, and
+  // the buyer would never receive what they paid for.
+  const taggedKpps       = metaProduct === 'kpps';
+  const taggedPrintables = metaProduct === 'printables' || metaProduct === 'ppp';
+  const taggedCRM        = metaProduct === 'crm' || metaProduct === 'hub';
+
+  // Party Biz Hub CRM — a recurring subscription, unless the link says otherwise.
+  const isCRMSub = taggedCRM || (sessionMode === 'subscription' && !taggedKpps && !taggedPrintables);
 
   // Prices change. Recognising a purchase only by its amount means the next
   // price change silently stops granting access, so the order of preference is:
@@ -162,7 +170,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // Check the pre-discount subtotal first so COUPON / discounted purchases still deliver.
   const KPPS_AMOUNTS = new Set([19700, 40000, 49700, ...envAmounts(process.env.KPPS_PRICE_CENTS)]);
   const isKPPS = !isCRMSub && (
-    metaProduct === 'kpps' ||
+    taggedKpps ||
     KPPS_AMOUNTS.has(amountSubtotal) || KPPS_AMOUNTS.has(amountTotal)
   );
 
@@ -171,7 +179,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // purchases are still recognised on a replay.
   const PPP_AMOUNTS = new Set([7900, 9700, ...envAmounts(process.env.PRINTABLES_PRICE_CENTS)]);
   const isPrintables = !isCRMSub && !isKPPS && (
-    metaProduct === 'printables' || metaProduct === 'ppp' ||
+    taggedPrintables ||
     PPP_AMOUNTS.has(amountSubtotal) || PPP_AMOUNTS.has(amountTotal)
   );
   const assignedTier = isKPPS ? 'founding' : (isPrintables ? 'founding' : null);

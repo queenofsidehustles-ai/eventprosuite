@@ -20,7 +20,11 @@ assert.match(webhook, /profilePayload\.has_crm_access = true/);
 assert.match(webhook, /profilePayload\.has_printables_access = true/);
 
 // Every purchase shape the webhook recognises must still reach that grant.
-assert.match(webhook, /const isCRMSub = sessionMode === 'subscription'/);
+// A tagged product beats the subscription default. Without this a KPPS
+// payment plan billed as monthly instalments would grant Hub access instead of
+// KPPS, and the buyer would never get what they paid for.
+assert.match(webhook, /const isCRMSub = taggedCRM \|\| \(sessionMode === 'subscription' && !taggedKpps && !taggedPrintables\)/);
+assert.match(webhook, /const taggedKpps\s+= metaProduct === 'kpps'/);
 assert.match(webhook, /metaProduct === 'kpps'/);
 // Recognition prefers a metadata tag, then an env-var amount, then the
 // built-in list — so changing a price cannot silently stop granting access.
