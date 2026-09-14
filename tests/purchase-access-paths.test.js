@@ -22,8 +22,21 @@ assert.match(webhook, /profilePayload\.has_printables_access = true/);
 // Every purchase shape the webhook recognises must still reach that grant.
 assert.match(webhook, /const isCRMSub = sessionMode === 'subscription'/);
 assert.match(webhook, /metaProduct === 'kpps'/);
-assert.match(webhook, /KPPS_AMOUNTS = \{ 19700: true, 40000: true, 49700: true \}/);
-assert.match(webhook, /PPP_TIER_MAP = \{ 9700: 'founding' \}/);
+// Recognition prefers a metadata tag, then an env-var amount, then the
+// built-in list — so changing a price cannot silently stop granting access.
+assert.match(webhook, /metaProduct === 'printables' \|\| metaProduct === 'ppp'/);
+assert.match(webhook, /KPPS_PRICE_CENTS/);
+assert.match(webhook, /PRINTABLES_PRICE_CENTS/);
+// Historical prices stay listed so a past purchase can still be replayed.
+assert.match(webhook, /KPPS_AMOUNTS = new Set\(\[19700, 40000, 49700/);
+assert.match(webhook, /PPP_AMOUNTS = new Set\(\[7900, 9700/);
+
+// The subscription price shown to a customer must match what they were
+// charged — the landing page and Stripe link are $27.
+const success2 = read('success.html');
+assert.match(success2, /\$27\/month founder rate/);
+assert.doesNotMatch(success2, /\$29\/month/);
+assert.doesNotMatch(read('mywebsite.html'), /\$29\/mo Hub rate/);
 
 // ── A purchase that grants nothing must not be silent ───────────────────
 // Recognition is by amount, so a price change or an untagged new product falls

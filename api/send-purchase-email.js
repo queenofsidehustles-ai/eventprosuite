@@ -148,16 +148,33 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // Party Biz Hub CRM — a RECURRING subscription (the only subscription product is the $27/mo plan)
   const isCRMSub = sessionMode === 'subscription';
 
+  // Prices change. Recognising a purchase only by its amount means the next
+  // price change silently stops granting access, so the order of preference is:
+  //   1. a `product` metadata tag on the Stripe link — price-proof, always wins
+  //   2. an amount listed in a Vercel env var — change a price without a deploy
+  //   3. the amounts below, which include every historical price so past
+  //      customers can still be re-delivered
+  const envAmounts = raw => String(raw || '')
+    .split(',').map(v => parseInt(String(v).trim(), 10))
+    .filter(n => Number.isFinite(n) && n > 0);
+
   // KPPS one-time purchases — unlock the full system for life.
   // Check the pre-discount subtotal first so COUPON / discounted purchases still deliver.
-  const KPPS_AMOUNTS = { 19700: true, 40000: true, 49700: true }; // current $197 offer + legacy purchases
-  const isKPPS = !isCRMSub && (metaProduct === 'kpps' || !!KPPS_AMOUNTS[amountSubtotal] || !!KPPS_AMOUNTS[amountTotal]);
+  const KPPS_AMOUNTS = new Set([19700, 40000, 49700, ...envAmounts(process.env.KPPS_PRICE_CENTS)]);
+  const isKPPS = !isCRMSub && (
+    metaProduct === 'kpps' ||
+    KPPS_AMOUNTS.has(amountSubtotal) || KPPS_AMOUNTS.has(amountTotal)
+  );
 
-  // Party Printables — one-time $97 (unlimited template library)
-  const PPP_TIER_MAP = { 9700: 'founding' };
-  const assignedTier = isKPPS
-    ? 'founding'
-    : (isCRMSub ? null : (PPP_TIER_MAP[amountSubtotal] || PPP_TIER_MAP[amountTotal] || null));
+  // Party Printables — one-time purchase of the unlimited template library.
+  // 9700 is the original founding price and stays listed so historical
+  // purchases are still recognised on a replay.
+  const PPP_AMOUNTS = new Set([7900, 9700, ...envAmounts(process.env.PRINTABLES_PRICE_CENTS)]);
+  const isPrintables = !isCRMSub && !isKPPS && (
+    metaProduct === 'printables' || metaProduct === 'ppp' ||
+    PPP_AMOUNTS.has(amountSubtotal) || PPP_AMOUNTS.has(amountTotal)
+  );
+  const assignedTier = isKPPS ? 'founding' : (isPrintables ? 'founding' : null);
 
   if (!isCRMSub && !isKPPS && !assignedTier) {
     // A skipped purchase is money taken with no access granted, and returning
