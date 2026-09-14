@@ -39,6 +39,8 @@ assert.match(app, /COMMON_INCLUSIONS/);
 assert.match(app, /BEAR_HUG_PACKAGE_INCLUSIONS/);
 assert.match(app, /data-q-inc/);
 assert.match(app, /source:'suggested'/);
+assert.match(app, /packageNameMatchScore/);
+assert.match(app, /savedInclusions\.length \? savedInclusions : fallbackInclusions/);
 assert.match(view, /it\.inclusions\.filter/);
 
 // All inline browser scripts must still parse.
