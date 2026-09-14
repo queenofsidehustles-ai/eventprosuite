@@ -54,6 +54,24 @@ assert.match(view, /it\.inclusions\.filter/);
 assert.match(view, /cleanPackageName/);
 assert.match(view, /Theme \/ customization/);
 
+// Optional upgrades are chosen by the owner per quote, stay outside the base
+// proposal, and are only added after the customer actively selects them.
+assert.match(app, /function defaultAddonLibrary/);
+assert.match(app, /addonLibrary:\s*defaultAddonLibrary/);
+assert.match(app, /quoteAddons:\s*\[\]/);
+assert.match(app, /addOns:\s*state\.quoteAddons/);
+assert.match(app, /data-addon-toggle/);
+assert.match(app, /Save add-on library/);
+assert.match(view, /data-customer-addon/);
+assert.match(view, /Selected add-ons/);
+assert.match(view, /const refreshPricing/);
+assert.match(view, /selectedAddOns:currentPricing\.selectedAddOns/);
+assert.match(api, /Never trust prices sent by the public browser/);
+assert.match(api, /offered\.find\(addon => String\(addon\.id\)/);
+assert.match(api, /source\.pricingType === 'per_guest'/);
+assert.match(api, /customerSelectedAddOns:\s*acceptedAddOns/);
+assert.match(api, /total_amount:\s*finalGrand/);
+
 // All inline browser scripts must still parse.
 for (const html of [app, view, profile]) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
