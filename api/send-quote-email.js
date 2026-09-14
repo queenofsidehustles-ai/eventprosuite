@@ -24,7 +24,10 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  // Must be an address on a domain verified in Resend. The old fallback,
+  // onboarding@resend.dev, is Resend's shared sandbox sender and may only
+  // email the Resend account owner, so quotes to real clients were rejected.
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
   if ((req.body || {}).kind === 'accept-quote') {
     return acceptQuote(req, res);
@@ -58,7 +61,7 @@ module.exports = async function handler(req, res) {
   }
 
   const {
-    clientEmail, clientPhone, clientName, bizName,
+    clientEmail, clientPhone, clientName, bizName, bizEmail,
     eventType, eventDate, grand,
     quoteLink, expiryDate,
   } = req.body || {};
@@ -137,13 +140,14 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: clientEmail,
+        reply_to: validEmail(bizEmail) || undefined,
         subject: `🎉 Your party quote from ${bizName || 'us'}${eventType ? ' — ' + eventType : ''}`,
         html,
       }),
     });
     const body = await emailRes.json().catch(() => ({}));
     const emailOK = emailRes.ok;
-    const emailNote = emailOK ? null : 'Email delivery failed: ' + (body.message || emailRes.status);
+    const emailNote = emailOK ? null : explainEmailFailure(emailRes.status, body, FROM_EMAIL);
 
     // Each channel reports separately. One vague "couldn't send" would hide the
     // case that actually matters — the email silently not going while the text
@@ -161,6 +165,31 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
 };
+
+// A syntactically sane address, or null. Resend rejects the whole send on a
+// malformed reply_to, so a typo in a profile must never cost the quote email.
+function validEmail(value) {
+  const v = String(value || '').trim();
+  return /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(v) ? v : null;
+}
+
+// Resend's own message is written for developers. Owners need to know which
+// knob to turn, so the two failures that actually happen get named.
+function explainEmailFailure(status, body, fromEmail) {
+  const detail = (body && (body.message || body.error)) || ('HTTP ' + status);
+  const text = String(detail).toLowerCase();
+  if (status === 403 || text.includes('only send testing emails')) {
+    return 'The sending address ' + fromEmail + ' is not verified in Resend yet, so it can only email the account owner. '
+         + 'Verify the domain in Resend, then set RESEND_FROM_EMAIL in Vercel.';
+  }
+  if (status === 401 || text.includes('api key')) {
+    return 'Resend rejected the API key. Check RESEND_API_KEY in your Vercel environment variables.';
+  }
+  if (status === 429) {
+    return 'Resend is rate limiting right now. Wait a moment and send again.';
+  }
+  return 'Email delivery failed: ' + detail;
+}
 
 const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 
@@ -516,20 +545,28 @@ async function acceptQuote(req, res) {
       const source = offered.find(addon => String(addon.id) === String(row && row.id));
       if (!source) return;
       const price = Math.max(0, Number(source.price) || 0);
-      const quantity = source.pricingType === 'per_guest'
+      const perUnit = source.pricingType === 'per_guest' || source.pricingType === 'per_item';
+      const quantity = perUnit
         ? Math.max(1, Math.min(100, Math.floor(Number(row.quantity) || 1))) : 1;
+      const coverage = Math.max(0, Math.min(999, Math.floor(Number(source.coverage) || 0)));
       acceptedAddOns.push({
         id: source.id, name: String(source.name || 'Optional add-on').slice(0, 160),
         description: String(source.description || '').slice(0, 500),
-        pricingType: ['flat','per_guest','starting_at'].includes(source.pricingType) ? source.pricingType : 'flat',
-        price, quantity, total: Math.round(price * quantity * 100) / 100,
+        pricingType: ['flat','per_guest','per_item','starting_at'].includes(source.pricingType) ? source.pricingType : 'flat',
+        price, quantity, coverage, total: Math.round(price * quantity * 100) / 100,
       });
     });
     const baseGrand = Math.max(0, Number(quoteData.baseGrand != null ? quoteData.baseGrand : quoteData.grand != null ? quoteData.grand : quote.total_amount) || 0);
     const addOnTotal = Math.round(acceptedAddOns.reduce((sum, addon) => sum + addon.total, 0) * 100) / 100;
     const finalGrand = Math.round((baseGrand + addOnTotal) * 100) / 100;
+    const addOnLine = addon => {
+      const unit = addon.pricingType === 'per_item' ? 'item' : 'guest';
+      if (addon.quantity > 1) return `• ${addon.name} × ${addon.quantity} ${unit}s — $${addon.total.toFixed(2)}`;
+      if (addon.pricingType === 'flat' && addon.coverage) return `• ${addon.name} (covers up to ${addon.coverage}) — $${addon.total.toFixed(2)}`;
+      return `• ${addon.name} — $${addon.total.toFixed(2)}`;
+    };
     const addOnNotes = acceptedAddOns.length
-      ? '\n\nSelected add-ons:\n' + acceptedAddOns.map(addon => `• ${addon.name}${addon.quantity > 1 ? ` × ${addon.quantity}` : ''} — $${addon.total.toFixed(2)}`).join('\n')
+      ? '\n\nSelected add-ons:\n' + acceptedAddOns.map(addOnLine).join('\n')
       : '';
 
     const patch = {
@@ -575,6 +612,20 @@ async function acceptQuote(req, res) {
       body: JSON.stringify({ total_amount: finalGrand, quote_data: acceptedQuoteData }),
     });
     if (!quoteUpdate.ok) console.warn('Booking saved but quote total could not be updated');
+
+    // The booking is already safe in the database. Telling the owner is the
+    // part that was missing, and it must never be able to undo that — so a
+    // failure here is logged and swallowed, never returned as an error.
+    try {
+      await notifyOwnerOfBooking({
+        ownerId: quote.user_id, headers, booking: patch, addOns: acceptedAddOns,
+        baseGrand, addOnTotal, grand: finalGrand, bookingId,
+        host: (req.headers && req.headers.host) || 'www.partybizhub.com',
+      });
+    } catch (e) {
+      console.warn('Booking saved but the owner could not be notified:', e);
+    }
+
     return res.json({ saved: true, bookingId, baseGrand, addOnTotal, grand: finalGrand, selectedAddOns: acceptedAddOns });
   } catch (e) {
     console.error('Quote acceptance failed:', e);
@@ -582,6 +633,114 @@ async function acceptQuote(req, res) {
   }
 }
 
+
+// ── "You just got booked" ───────────────────────────────────────────────
+// The customer has always received a confirmation the moment they accept a
+// quote. The owner received nothing — she found out by remembering to open
+// the dashboard. With a date held on a 48-hour deposit clock, that is the one
+// message that genuinely has to arrive, so it is sent here, on the same
+// request that saved the booking.
+async function notifyOwnerOfBooking({ ownerId, headers, booking, addOns, baseGrand, addOnTotal, grand, bookingId, host }) {
+  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  if (!RESEND_KEY) return;
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+
+  const ownerRes = await fetch(
+    `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}&select=email,profile_data&limit=1`,
+    { headers }
+  );
+  const owners = await ownerRes.json().catch(() => []);
+  const owner = Array.isArray(owners) ? owners[0] : null;
+  if (!owner) return;
+
+  const pd = owner.profile_data || {};
+  // The account address is the reliable one; a contact address is only used
+  // when she has actually set one.
+  const to = validEmail(pd.contactEmail) || validEmail(pd.bizEmail) || validEmail(owner.email);
+  if (!to) return;
+
+  const brand = /^#[0-9a-fA-F]{6}$/.test(String(pd.brandColor || '')) ? pd.brandColor : '#6D28D9';
+  const money = n => '$' + parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const fmtDate = d => {
+    if (!d) return 'Date to confirm';
+    const parsed = new Date(String(d).length <= 10 ? d + 'T00:00' : d);
+    return isNaN(parsed) ? String(d) : parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  };
+  const dueText = booking.deposit_due_at
+    ? new Date(booking.deposit_due_at).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    : null;
+
+  const row = (label, value) => value
+    ? `<tr><td style="padding:6px 14px 6px 0;color:#8A7A96;font-size:13px;white-space:nowrap">${esc(label)}</td><td style="padding:6px 0;color:#2F1E3B;font-size:13px;font-weight:600">${esc(value)}</td></tr>`
+    : '';
+
+  const addOnRows = (addOns || []).map(a => {
+    const unit = a.pricingType === 'per_item' ? 'item' : 'guest';
+    const detail = a.quantity > 1 ? ` × ${a.quantity} ${unit}s`
+      : (a.pricingType === 'flat' && a.coverage ? ` (covers up to ${a.coverage})` : '');
+    return `<tr><td style="padding:5px 0;color:#2F1E3B;font-size:13px">${esc(a.name)}${esc(detail)}</td>`
+         + `<td style="padding:5px 0;text-align:right;color:#2F1E3B;font-size:13px;font-weight:700">${money(a.total)}</td></tr>`;
+  }).join('');
+
+  const dashboard = `https://${host}/dashboard.html`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:560px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07)">
+  <div style="background:${esc(brand)};padding:26px 30px;color:#fff">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.8">New booking</div>
+    <h1 style="margin:6px 0 0;font-size:1.35rem;font-weight:800">${esc(booking.client_name || 'A customer')} accepted your quote 🎉</h1>
+  </div>
+  <div style="padding:26px 30px">
+    <p style="margin:0 0 18px;color:#4A3B55;font-size:.95rem;line-height:1.65">
+      They picked a date and it is pencilled in.
+      ${dueText ? `The deposit is due by <strong>${esc(dueText)}</strong> — after that the date goes back on your calendar automatically.` : 'The deposit has not arrived yet, so the date is not locked.'}
+    </p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+      ${row('Event', booking.service_name)}
+      ${row('Date', fmtDate(booking.event_date))}
+      ${row('Time', booking.event_time)}
+      ${row('Where', booking.event_address)}
+      ${row('Email', booking.client_email)}
+      ${row('Phone', booking.client_phone)}
+    </table>
+    ${addOnRows ? `<div style="background:#FAF7FB;border-radius:12px;padding:14px 18px;margin-bottom:18px">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8A7A96;font-weight:700;margin-bottom:8px">Add-ons they chose</div>
+      <table style="width:100%;border-collapse:collapse">${addOnRows}</table>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E6DCEF;font-size:13px;color:#8A7A96">
+        Quote ${money(baseGrand)} + add-ons ${money(addOnTotal)}
+      </div>
+    </div>` : ''}
+    <div style="background:#FAF7FB;border-radius:12px;padding:16px 18px;text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8A7A96;font-weight:700">Booked total</div>
+      <div style="font-size:1.7rem;font-weight:800;color:${esc(brand)};margin-top:4px">${money(grand)}</div>
+    </div>
+    ${booking.notes ? `<p style="margin:0 0 18px;color:#4A3B55;font-size:.88rem;line-height:1.6;white-space:pre-line"><strong>Their notes:</strong>\n${esc(booking.notes)}</p>` : ''}
+    <a href="${esc(dashboard)}" style="display:block;background:${esc(brand)};color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:700;font-size:.98rem">Open your dashboard &rarr;</a>
+  </div>
+  <div style="padding:14px 30px;text-align:center;font-size:.76rem;color:#A99EB3;border-top:1px solid #EFEAF3">
+    Reference ${esc(String(bookingId).slice(0, 8).toUpperCase())} · Party Biz Hub
+  </div>
+</div>
+</body></html>`;
+
+  const sendRes = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to,
+      reply_to: validEmail(booking.client_email) || undefined,
+      subject: `🎉 ${booking.client_name || 'A customer'} just booked — ${fmtDate(booking.event_date)}`,
+      html,
+    }),
+  });
+  if (!sendRes.ok) {
+    const detail = await sendRes.json().catch(() => ({}));
+    console.warn('Owner booking notification not delivered:', detail.message || sendRes.status);
+  }
+}
 
 // ── Text the quote ──────────────────────────────────────────────────────
 // Email is the right place for a price and a list of what's included, but it
@@ -835,7 +994,7 @@ async function sendBookingConfirmation(req, res, RESEND_KEY, FROM_EMAIL) {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: clientEmail,
-        reply_to: bizEmail || undefined,
+        reply_to: validEmail(bizEmail) || undefined,
         subject,
         html,
       }),

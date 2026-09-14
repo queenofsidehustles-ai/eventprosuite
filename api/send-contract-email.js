@@ -6,7 +6,9 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const RESEND_KEY = process.env.RESEND_API_KEY || '';
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  // onboarding@resend.dev is Resend's sandbox sender and can only reach the
+  // Resend account owner, so contracts to real clients were rejected.
+  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
 
   const {
     clientEmail, clientName, bizName, bizEmail, bizPhone,

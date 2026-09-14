@@ -187,20 +187,26 @@
   .addon-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;border-radius:16px;background:#FAF7FB;border:1px solid var(--line)}
   .addon-toolbar span{font-size:13px;color:var(--muted);line-height:1.55}
   .addon-list{display:grid;gap:10px}
-  .addon-row{display:grid;grid-template-columns:28px minmax(180px,1.4fr) minmax(220px,1.6fr) 130px 150px 36px;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .addon-row{display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .addon-row-main{display:grid;grid-template-columns:28px minmax(150px,1.3fr) minmax(170px,1.5fr) 96px 118px 142px 36px;gap:10px;align-items:center}
+  .addon-row-hint{font-size:11.5px;color:var(--muted);padding-left:38px;line-height:1.5}
+  .addon-row-hint b{color:var(--plum-800);font-weight:700}
+  .addon-covers{position:relative}
+  .addon-covers input{text-align:center}
+  .addon-covers input:disabled{background:#F4F1F6;color:#B3AAB9;cursor:not-allowed}
   .addon-row.offered{border-color:#CDB8DE;background:linear-gradient(135deg,#fff,#FAF7FB)}
   .addon-row input[type="checkbox"]{width:18px;height:18px;margin:auto;accent-color:var(--brand)}
   .addon-row input,.addon-row select{padding:9px 10px;font-size:12.5px}
   .addon-price{position:relative}.addon-price span{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted)}
   .addon-price input{padding-left:22px}
   .addon-delete{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#A33;cursor:pointer}
-  .addon-custom{display:grid;grid-template-columns:1.2fr 1.5fr 120px 150px auto;gap:10px;align-items:end;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .addon-custom{display:grid;grid-template-columns:1.1fr 1.4fr 90px 110px 140px auto;gap:10px;align-items:end;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
   .addon-preview{margin-top:16px;padding:16px 18px;border-radius:16px;border:1px dashed #CDB8DE;background:#FCFAFD}
   .addon-preview>strong{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--plum-800);margin-bottom:8px}
   .addon-preview-row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
   .addon-preview-row:first-of-type{border-top:0}
-  @media(max-width:980px){.addon-row{grid-template-columns:28px 1fr 1fr}.addon-row>*:nth-child(4),.addon-row>*:nth-child(5){grid-column:span 1}.addon-custom{grid-template-columns:1fr 1fr}}
-  @media(max-width:650px){.addon-row,.addon-custom{grid-template-columns:1fr}.addon-row input[type="checkbox"]{margin:0}.addon-delete{justify-self:end}}
+  @media(max-width:980px){.addon-row-main{grid-template-columns:28px 1fr 1fr}.addon-custom{grid-template-columns:1fr 1fr}}
+  @media(max-width:650px){.addon-row-main,.addon-custom{grid-template-columns:1fr}.addon-row input[type="checkbox"]{margin:0}.addon-row-hint{padding-left:0}.addon-delete{justify-self:end}}
 
   /* SIDE RAIL (Live Quote Summary) */
   .side-rail{position:sticky;top:84px}
@@ -495,15 +501,17 @@
         <div class="section-badge">Step 4 · Upsells</div>
       </div>
       <div class="addon-toolbar">
-        <span><strong>Reusable library:</strong> Edit the names, descriptions, prices, or pricing style once, then save them for future quotes.</span>
+        <span><strong>Reusable library:</strong> Set how many guests or items each price covers, pick whether that price is a total or per guest, then save it for every future quote.</span>
         <button type="button" class="tiny-btn" id="saveAddonLibraryBtn">Save add-on library</button>
       </div>
+      <div class="addon-row-hint" style="padding-left:38px;margin-bottom:-4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:10.5px">Offer · Name · Description · Covers · Price · Pricing</div>
       <div class="addon-list" id="addonLibrary"></div>
       <div class="addon-custom">
         <div class="field"><label>New add-on</label><input id="newAddonName" placeholder="e.g. Matching pajamas"/></div>
         <div class="field"><label>Description</label><input id="newAddonDescription" placeholder="What the customer receives"/></div>
+        <div class="field"><label>Covers</label><input id="newAddonCoverage" type="number" min="1" max="100" step="1" placeholder="8"/></div>
         <div class="field"><label>Price</label><input id="newAddonPrice" type="number" min="0" step="0.01"/></div>
-        <div class="field"><label>Pricing</label><select id="newAddonType"><option value="flat">Flat total</option><option value="per_guest">Per guest</option><option value="starting_at">Starting at</option></select></div>
+        <div class="field"><label>Pricing</label><select id="newAddonType"><option value="flat">Flat total</option><option value="per_guest">Per guest</option><option value="per_item">Per item</option><option value="starting_at">Starting at</option></select></div>
         <button type="button" class="btn btn-primary" id="addCustomAddonBtn">Add & offer</button>
       </div>
     </section>
@@ -676,7 +684,15 @@ async function checkAuth() {
       if (pd.taxMode && $('taxMode')) $('taxMode').value = pd.taxMode;
       if (pd.currency && $('currency')) $('currency').value = pd.currency;
       if (pd.depositProfile && $('depositProfile')) $('depositProfile').value = pd.depositProfile;
-      if (Array.isArray(pd.addonLibrary) && pd.addonLibrary.length) state.addonLibrary = pd.addonLibrary;
+      if (Array.isArray(pd.addonLibrary) && pd.addonLibrary.length) {
+        if (pd.addonDefaultsFlatV2 === true) {
+          state.addonLibrary = pd.addonLibrary;
+        } else {
+          const corrected = applyKeepsakeFlatDefaults(pd.addonLibrary);
+          state.addonLibrary = corrected.list;
+          _addonDefaultsNeedPersist = true;
+        }
+      }
       if (pd.packages) {
         state.packages = pd.packages;
         const sourcePackages = buildPackagesFromOwnerData(pd, ownerBuildRow) || [];
@@ -743,6 +759,9 @@ async function checkAuth() {
   }
 
   refreshAll();
+
+  // Runs at most once per owner; a no-op for everyone already on flat pricing.
+  persistAddonDefaultsOnce();
 }
 
 async function handleLogout() {
@@ -784,6 +803,7 @@ async function saveBrandProfile() {
     taxLabel: $('taxLabel').value,
     taxMode: $('taxMode').value,
     addonLibrary: state.addonLibrary,
+    addonDefaultsFlatV2: true,
     packages: state.packages
   };
 
@@ -825,7 +845,7 @@ async function saveAddonLibrary() {
   if (!currentUser) return;
   const { data: latest, error: loadError } = await sb.from('profiles').select('profile_data').eq('id', currentUser.id).maybeSingle();
   if (loadError) { console.error(loadError); toast('Could not save the add-on library'); return; }
-  const pd = { ...((latest && latest.profile_data) || {}), addonLibrary: state.addonLibrary };
+  const pd = { ...((latest && latest.profile_data) || {}), addonLibrary: state.addonLibrary, addonDefaultsFlatV2: true };
   const { error } = await sb.from('profiles').upsert({
     id: currentUser.id, email: currentUser.email, profile_data: pd, updated_at: new Date().toISOString()
   }, { onConflict: 'id' });
@@ -894,6 +914,11 @@ async function saveQuote() {
     : '✓ Quote saved — add an email or phone, or click Copy Link');
 }
 
+function ownerReplyEmail() {
+  const pd = (currentProfile && currentProfile.profile_data) || {};
+  return pd.contactEmail || pd.bizEmail || (currentUser && currentUser.email) || '';
+}
+
 async function shareQuote() {
   if (!_lastSavedQuoteId) { toast('Save the quote first'); return; }
   const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
@@ -947,7 +972,8 @@ async function shareQuote() {
       body: JSON.stringify({
         clientEmail: clientEmail || undefined,
         clientPhone, alsoText: !!clientPhone,
-        clientName, bizName, eventType, eventTheme, eventDate, grand,
+        clientName, bizName, bizEmail: ownerReplyEmail(),
+        eventType, eventTheme, eventDate, grand,
         quoteLink: link, expiryDate,
       })
     });
@@ -995,12 +1021,12 @@ function defaultAddonLibrary() {
     { id:'addon-extra-sleepover-guest', category:'Guests & time', name:'Additional sleepover guest', description:'One additional coordinated sleepover setup.', price:85, pricingType:'per_guest' },
     { id:'addon-extra-party-child', category:'Guests & time', name:'Additional party child', description:'Add one child to the hosted party experience.', price:30, pricingType:'per_guest' },
     { id:'addon-extra-hour', category:'Guests & time', name:'Extra event hour', description:'One additional hour of party time.', price:75, pricingType:'flat' },
-    { id:'addon-pajamas', category:'Wearables & keepsakes', name:'Matching pajamas', description:'Coordinated pajamas for selected guests.', price:30, pricingType:'per_guest' },
-    { id:'addon-shirts', category:'Wearables & keepsakes', name:'Customized party T-shirts', description:'Personalized party shirt for each selected guest.', price:15, pricingType:'per_guest' },
-    { id:'addon-robes', category:'Wearables & keepsakes', name:'Matching spa bathrobes', description:'Coordinated spa robe for each selected guest.', price:25, pricingType:'per_guest' },
-    { id:'addon-sleep-masks', category:'Wearables & keepsakes', name:'Personalized sleep masks', description:'A personalized sleep mask for each selected guest.', price:12, pricingType:'per_guest' },
-    { id:'addon-pillowcases', category:'Wearables & keepsakes', name:'Personalized pillowcases', description:'A keepsake pillowcase personalized for each selected guest.', price:18, pricingType:'per_guest' },
-    { id:'addon-loot-bags', category:'Wearables & keepsakes', name:'Party favor bags', description:'A take-home favor bag for each selected guest.', price:15, pricingType:'per_guest' },
+    { id:'addon-pajamas', category:'Wearables & keepsakes', name:'Matching pajamas', description:'Coordinated pajamas for the party.', price:240, pricingType:'flat', coverage:8 },
+    { id:'addon-shirts', category:'Wearables & keepsakes', name:'Customized party T-shirts', description:'Personalized party shirts for the group.', price:120, pricingType:'flat', coverage:8 },
+    { id:'addon-robes', category:'Wearables & keepsakes', name:'Matching spa bathrobes', description:'Coordinated spa robes for the group.', price:200, pricingType:'flat', coverage:8 },
+    { id:'addon-sleep-masks', category:'Wearables & keepsakes', name:'Personalized sleep masks', description:'Personalized sleep masks for the group.', price:96, pricingType:'flat', coverage:8 },
+    { id:'addon-pillowcases', category:'Wearables & keepsakes', name:'Personalized pillowcases', description:'Keepsake personalized pillowcases.', price:144, pricingType:'flat', coverage:8 },
+    { id:'addon-loot-bags', category:'Wearables & keepsakes', name:'Party favor bags', description:'Take-home favor bags for the group.', price:120, pricingType:'flat', coverage:8 },
     { id:'addon-diy-spa', category:'Activities', name:'DIY manicure & pedicure spa activity', description:'Supplies and guided setup for a spa-style activity.', price:200, pricingType:'flat' },
     { id:'addon-diy-slime', category:'Activities', name:'DIY slime activity kit', description:'Slime-making supplies and activity setup.', price:175, pricingType:'flat' },
     { id:'addon-sip-paint', category:'Activities', name:'Sip & paint activity kit', description:'Painting supplies and creative activity setup.', price:200, pricingType:'flat' },
@@ -1013,6 +1039,64 @@ function defaultAddonLibrary() {
     { id:'addon-photo', category:'Styling & décor', name:'Signature photo setup', description:'Styled photo backdrop with coordinated balloon details.', price:250, pricingType:'flat' },
     { id:'addon-activity-tables', category:'Styling & décor', name:'Activity tables & chairs', description:'Tables and chairs arranged for the selected activity station.', price:60, pricingType:'flat' }
   ];
+}
+
+// ─────────────────────────────────────────────────────────────
+// ONE-TIME CORRECTION: KEEPSAKE ADD-ONS BECOME A FLAT TOTAL
+// Pajamas, shirts, robes, masks, pillowcases and favor bags originally
+// shipped as per-guest, so a quote read "$30 per guest" for something most
+// hosts price as a single line. They now default to a flat total for the
+// party.
+//
+// Libraries saved before that change are corrected once, and only where the
+// row is still *exactly* the old shipped default. A price someone typed
+// themselves, or a row they deliberately switched, is left alone — so this
+// can never overwrite real pricing decisions. The marker below stops it
+// running a second time, which is what lets an owner set an item back to
+// per-guest and have it stay that way.
+// ─────────────────────────────────────────────────────────────
+const KEEPSAKE_FLAT_DEFAULTS = {
+  'addon-pajamas':      { wasPrice: 30, price: 240, coverage: 8, description: 'Coordinated pajamas for the party.' },
+  'addon-shirts':       { wasPrice: 15, price: 120, coverage: 8, description: 'Personalized party shirts for the group.' },
+  'addon-robes':        { wasPrice: 25, price: 200, coverage: 8, description: 'Coordinated spa robes for the group.' },
+  'addon-sleep-masks':  { wasPrice: 12, price:  96, coverage: 8, description: 'Personalized sleep masks for the group.' },
+  'addon-pillowcases':  { wasPrice: 18, price: 144, coverage: 8, description: 'Keepsake personalized pillowcases.' },
+  'addon-loot-bags':    { wasPrice: 15, price: 120, coverage: 8, description: 'Take-home favor bags for the group.' }
+};
+
+function applyKeepsakeFlatDefaults(list) {
+  if (!Array.isArray(list)) return { list: list, changed: false };
+  let changed = false;
+  const next = list.map(addon => {
+    const fix = addon && KEEPSAKE_FLAT_DEFAULTS[addon.id];
+    if (!fix) return addon;
+    // Only an untouched old default qualifies.
+    if (addon.pricingType !== 'per_guest') return addon;
+    if (Number(addon.price) !== fix.wasPrice) return addon;
+    changed = true;
+    return { ...addon, pricingType: 'flat', price: fix.price, coverage: fix.coverage, description: fix.description };
+  });
+  return { list: next, changed };
+}
+
+// Writes the corrected library straight back, quietly. Without this the
+// correction would re-run on every load and undo a deliberate switch back to
+// per-guest.
+let _addonDefaultsNeedPersist = false;
+async function persistAddonDefaultsOnce() {
+  if (!_addonDefaultsNeedPersist || !currentUser) return;
+  _addonDefaultsNeedPersist = false;
+  try {
+    const { data: latest } = await sb.from('profiles').select('profile_data').eq('id', currentUser.id).maybeSingle();
+    const pd = { ...((latest && latest.profile_data) || {}), addonLibrary: state.addonLibrary, addonDefaultsFlatV2: true };
+    const { error } = await sb.from('profiles').upsert({
+      id: currentUser.id, email: currentUser.email, profile_data: pd, updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+    if (error) { console.warn('Could not save the add-on pricing correction:', error); return; }
+    currentProfile = { ...(currentProfile || {}), profile_data: pd };
+  } catch (e) {
+    console.warn('Could not save the add-on pricing correction:', e);
+  }
 }
 
 function fullCatalog() {
@@ -1463,28 +1547,89 @@ function renderCatalog() {
   `).join('');
 }
 
+// How many guests (or items) the price accounts for. Blank or nonsense means
+// "not specified", which is a valid choice — plenty of add-ons don't need one.
+function addonCoverage(addon) {
+  const n = Math.floor(Number(addon && addon.coverage) || 0);
+  return n >= 1 && n <= 999 ? n : 0;
+}
+// 'starting_at' is a "from" price with no fixed scope, so a count would only
+// mislead. Everything else can carry one.
+function addonUsesCoverage(addon) {
+  return (addon && addon.pricingType) !== 'starting_at';
+}
+function addonUnitWord(addon, n) {
+  const word = (addon && addon.pricingType) === 'per_item' ? 'item' : 'guest';
+  return n === 1 ? word : word + 's';
+}
+
 function addonPriceLabel(addon) {
   const amount = money(addon.price);
   if (addon.pricingType === 'per_guest') return amount + ' per guest';
+  if (addon.pricingType === 'per_item') return amount + ' per item';
   if (addon.pricingType === 'starting_at') return 'Starting at ' + amount;
   return amount + ' total';
+}
+
+// The scope line the customer reads under the price. For a flat total it says
+// what the money buys; for per-unit pricing it says how many are assumed, which
+// is also the quantity their page starts on.
+function addonCoverageLabel(addon) {
+  const n = addonCoverage(addon);
+  if (!n || !addonUsesCoverage(addon)) return '';
+  if (addon.pricingType === 'flat') return 'Covers up to ' + n + ' ' + addonUnitWord(addon, n);
+  return 'Priced for ' + n + ' ' + addonUnitWord(addon, n) + ' — adjustable';
+}
+
+// Shown only in the builder: the arithmetic behind a flat total, so an owner
+// can sanity-check "$240 for 8" without reaching for a calculator.
+function addonBuilderHint(addon) {
+  const price = Number(addon.price) || 0;
+  const n = addonCoverage(addon);
+  if (addon.pricingType === 'flat') {
+    if (!n) return 'Customer sees <b>' + escapeHtml(addonPriceLabel(addon)) + '</b>. Set a "Covers" number to say how many it includes.';
+    return 'Customer sees <b>' + escapeHtml(addonPriceLabel(addon)) + '</b> for ' + n + ' ' + addonUnitWord(addon, n)
+         + ' — that works out to <b>' + escapeHtml(money(price / n)) + '</b> each.';
+  }
+  if (addon.pricingType === 'per_guest' || addon.pricingType === 'per_item') {
+    if (!n) return 'Customer sees <b>' + escapeHtml(addonPriceLabel(addon)) + '</b> and chooses the quantity.';
+    return 'Customer starts at ' + n + ' ' + addonUnitWord(addon, n) + ' = <b>' + escapeHtml(money(price * n))
+         + '</b>, and can change the quantity.';
+  }
+  return 'Customer sees <b>' + escapeHtml(addonPriceLabel(addon)) + '</b>. You confirm the final price with them.';
 }
 
 function renderAddonLibrary() {
   const offeredIds = new Set(state.quoteAddons.map(addon => addon.id));
   $('addonLibrary').innerHTML = state.addonLibrary.map((addon, index) => `
     <div class="addon-row ${offeredIds.has(addon.id) ? 'offered' : ''}">
-      <input type="checkbox" data-addon-toggle="${escapeHtml(addon.id)}" ${offeredIds.has(addon.id) ? 'checked' : ''} aria-label="Offer ${escapeHtml(addon.name)} on this quote"/>
-      <input data-addon-name="${index}" value="${escapeHtml(addon.name)}" aria-label="Add-on name"/>
-      <input data-addon-description="${index}" value="${escapeHtml(addon.description || '')}" aria-label="Add-on description"/>
-      <div class="addon-price"><span>${escapeHtml(currency())}</span><input type="number" min="0" step="0.01" data-addon-price="${index}" value="${Number(addon.price || 0).toFixed(2)}" aria-label="Add-on price"/></div>
-      <select data-addon-type="${index}" aria-label="Add-on pricing type">
-        <option value="flat" ${addon.pricingType === 'flat' ? 'selected' : ''}>Flat total</option>
-        <option value="per_guest" ${addon.pricingType === 'per_guest' ? 'selected' : ''}>Per guest</option>
-        <option value="starting_at" ${addon.pricingType === 'starting_at' ? 'selected' : ''}>Starting at</option>
-      </select>
-      <button type="button" class="addon-delete" data-addon-delete="${index}" aria-label="Delete ${escapeHtml(addon.name)}">×</button>
+      <div class="addon-row-main">
+        <input type="checkbox" data-addon-toggle="${escapeHtml(addon.id)}" ${offeredIds.has(addon.id) ? 'checked' : ''} aria-label="Offer ${escapeHtml(addon.name)} on this quote"/>
+        <input data-addon-name="${index}" value="${escapeHtml(addon.name)}" aria-label="Add-on name"/>
+        <input data-addon-description="${index}" value="${escapeHtml(addon.description || '')}" aria-label="Add-on description"/>
+        <div class="addon-covers">
+          <input type="number" min="1" max="999" step="1" data-addon-coverage="${index}"
+                 value="${addonCoverage(addon) || ''}" placeholder="—"
+                 ${addonUsesCoverage(addon) ? '' : 'disabled'}
+                 aria-label="How many guests or items ${escapeHtml(addon.name)} covers"/>
+        </div>
+        <div class="addon-price"><span>${escapeHtml(currency())}</span><input type="number" min="0" step="0.01" data-addon-price="${index}" value="${Number(addon.price || 0).toFixed(2)}" aria-label="Add-on price"/></div>
+        <select data-addon-type="${index}" aria-label="Add-on pricing type">
+          <option value="flat" ${addon.pricingType === 'flat' ? 'selected' : ''}>Flat total</option>
+          <option value="per_guest" ${addon.pricingType === 'per_guest' ? 'selected' : ''}>Per guest</option>
+          <option value="per_item" ${addon.pricingType === 'per_item' ? 'selected' : ''}>Per item</option>
+          <option value="starting_at" ${addon.pricingType === 'starting_at' ? 'selected' : ''}>Starting at</option>
+        </select>
+        <button type="button" class="addon-delete" data-addon-delete="${index}" aria-label="Delete ${escapeHtml(addon.name)}">×</button>
+      </div>
+      <div class="addon-row-hint">${addonBuilderHint(addon)}</div>
     </div>`).join('');
+}
+
+function updateAddonRowHint(index) {
+  const row = document.querySelector(`[data-addon-price="${index}"]`);
+  const hint = row && row.closest('.addon-row') && row.closest('.addon-row').querySelector('.addon-row-hint');
+  if (hint) hint.innerHTML = addonBuilderHint(state.addonLibrary[index]);
 }
 
 function syncOfferedAddon(addon) {
@@ -1547,7 +1692,7 @@ function renderPreview() {
 
   const optionalRows = state.quoteAddons.length ? `<div class="addon-preview">
     <strong>Optional upgrades — not included yet</strong>
-    ${state.quoteAddons.map(addon => `<div class="addon-preview-row"><span><b>${escapeHtml(addon.name)}</b>${addon.description ? '<br><small>' + escapeHtml(addon.description) + '</small>' : ''}</span><span>${escapeHtml(addonPriceLabel(addon))}</span></div>`).join('')}
+    ${state.quoteAddons.map(addon => { const scope = addonCoverageLabel(addon); return `<div class="addon-preview-row"><span><b>${escapeHtml(addon.name)}</b>${addon.description ? '<br><small>' + escapeHtml(addon.description) + '</small>' : ''}${scope ? '<br><small>' + escapeHtml(scope) + '</small>' : ''}</span><span>${escapeHtml(addonPriceLabel(addon))}</span></div>`; }).join('')}
   </div>` : '';
 
   $('fullPreview').innerHTML = `
@@ -1629,14 +1774,16 @@ document.addEventListener('click', async (e) => {
     const name = $('newAddonName').value.trim();
     const price = Math.max(0, parseFloat($('newAddonPrice').value || '0'));
     if (!name || !price) { toast('Enter an add-on name and price'); return; }
+    const rawCoverage = String($('newAddonCoverage').value).trim();
     const addon = {
       id: 'addon-custom-' + crypto.randomUUID(), category: 'Custom', name,
       description: $('newAddonDescription').value.trim(), price,
-      pricingType: $('newAddonType').value || 'flat'
+      pricingType: $('newAddonType').value || 'flat',
+      coverage: rawCoverage === '' ? 0 : Math.max(1, Math.min(999, Math.floor(Number(rawCoverage) || 0)))
     };
     state.addonLibrary.push(addon);
     state.quoteAddons.push({ ...addon });
-    $('newAddonName').value = ''; $('newAddonDescription').value = ''; $('newAddonPrice').value = ''; $('newAddonType').value = 'flat';
+    $('newAddonName').value = ''; $('newAddonDescription').value = ''; $('newAddonPrice').value = ''; $('newAddonCoverage').value = ''; $('newAddonType').value = 'flat';
     renderAddonLibrary(); renderPreview();
     toast('✓ Add-on added to this quote');
     return;
@@ -1734,8 +1881,13 @@ document.addEventListener('change', (e) => {
   const pNotes = t.closest('[data-pkg-notes]'); if (pNotes) { pkg(pNotes.dataset.pkgNotes).notes = pNotes.value; return; }
   const addonName = t.closest('[data-addon-name]'); if (addonName) { const addon = state.addonLibrary[Number(addonName.dataset.addonName)]; addon.name = addonName.value.trim() || 'Untitled add-on'; syncOfferedAddon(addon); renderPreview(); return; }
   const addonDescription = t.closest('[data-addon-description]'); if (addonDescription) { const addon = state.addonLibrary[Number(addonDescription.dataset.addonDescription)]; addon.description = addonDescription.value.trim(); syncOfferedAddon(addon); renderPreview(); return; }
-  const addonPrice = t.closest('[data-addon-price]'); if (addonPrice) { const addon = state.addonLibrary[Number(addonPrice.dataset.addonPrice)]; addon.price = Math.max(0, parseFloat(addonPrice.value || '0')); syncOfferedAddon(addon); renderPreview(); return; }
-  const addonType = t.closest('[data-addon-type]'); if (addonType) { const addon = state.addonLibrary[Number(addonType.dataset.addonType)]; addon.pricingType = addonType.value; syncOfferedAddon(addon); renderPreview(); return; }
+  const addonPrice = t.closest('[data-addon-price]'); if (addonPrice) { const i = Number(addonPrice.dataset.addonPrice); const addon = state.addonLibrary[i]; addon.price = Math.max(0, parseFloat(addonPrice.value || '0')); syncOfferedAddon(addon); updateAddonRowHint(i); renderPreview(); return; }
+  // How many guests (or items) the price covers. Blank clears it back to
+  // "not specified" rather than forcing a number onto every add-on.
+  const addonCoverageInput = t.closest('[data-addon-coverage]'); if (addonCoverageInput) { const i = Number(addonCoverageInput.dataset.addonCoverage); const addon = state.addonLibrary[i]; const raw = String(addonCoverageInput.value).trim(); addon.coverage = raw === '' ? 0 : Math.max(1, Math.min(999, Math.floor(Number(raw) || 0))); syncOfferedAddon(addon); updateAddonRowHint(i); renderPreview(); return; }
+  // Switching the pricing style changes what the count means and whether it
+  // applies at all, so this one redraws the row.
+  const addonType = t.closest('[data-addon-type]'); if (addonType) { const addon = state.addonLibrary[Number(addonType.dataset.addonType)]; addon.pricingType = addonType.value; syncOfferedAddon(addon); renderAddonLibrary(); renderPreview(); return; }
   if (['clientName','eventType','eventDate','expiryDate','depositProfile','taxMode','taxRate','taxLabel','businessName','brandColor','stripe100','stripe250','stripe500','stripe1000','currency'].includes(t.id)) { refreshAll(); return; }
 });
 
@@ -1764,7 +1916,7 @@ function copyQuoteText() {
   });
   if (state.quoteAddons.length) {
     lines.push('', 'OPTIONAL UPGRADES (not included unless selected)');
-    state.quoteAddons.forEach(addon => lines.push(`- ${addon.name}: ${addonPriceLabel(addon)}`));
+    state.quoteAddons.forEach(addon => { const scope = addonCoverageLabel(addon); lines.push(`- ${addon.name}: ${addonPriceLabel(addon)}${scope ? ' (' + scope + ')' : ''}`); });
   }
   lines.push('', `Subtotal: ${money(subtotal)}`, `${t.label}: ${money(tax)}`, `Total: ${money(grand)}`, `Deposit: ${money(state.selectedDepositTier)}`);
   navigator.clipboard.writeText(lines.join('\n')).then(() => toast('✓ Copied to clipboard'));

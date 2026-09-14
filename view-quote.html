@@ -138,6 +138,24 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
   const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmt = n => '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const fmtDate = d => {if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})};
+  // How many guests or items the owner priced this add-on for. Zero means she
+  // left it blank, which is a valid choice.
+  const addonCoverage = addon => {
+    const n = Math.floor(Number(addon && addon.coverage) || 0);
+    return n >= 1 && n <= 999 ? n : 0;
+  };
+  // The scope line under an add-on. A flat total needs it most — "$240" alone
+  // invites "for how many?" — and per-unit pricing uses it to explain where the
+  // starting quantity came from.
+  const addonScopeLine = addon => {
+    const n = addonCoverage(addon);
+    if(!n || addon.pricingType === 'starting_at') return '';
+    const unit = addon.pricingType === 'per_item' ? 'item' : 'guest';
+    const plural = n === 1 ? unit : unit + 's';
+    if(addon.pricingType === 'flat') return 'Covers up to ' + n + ' ' + plural + '.';
+    return 'Priced for ' + n + ' ' + plural + ' — change the number below.';
+  };
+
   const cleanPackageName = name => {
     let clean=String(name||'').replace(/\s*\([^)]*\$[^)]*\)\s*/g,' ').replace(/\s+\$\s*[0-9,.]+\s*\+?\s*$/g,'').replace(/\s+/g,' ').trim();
     const parts=clean.split(/\s+[—–]\s+/).map(part=>part.trim()).filter(Boolean);
@@ -293,12 +311,19 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
   <div class="card addon-card" id="addonCard">
     <div class="card-title">Make it extra special</div>
     <p class="addon-intro">These upgrades are optional and are not included in the original quote. Choose any you want and your updated total will appear instantly.</p>
-    ${qd.addOns.map((addon,index)=>{const prior=previouslySelectedAddOns.find(row=>String(row.id)===String(addon.id));return `
+    ${qd.addOns.map((addon,index)=>{
+      const prior=previouslySelectedAddOns.find(row=>String(row.id)===String(addon.id));
+      const perUnit=addon.pricingType==='per_guest'||addon.pricingType==='per_item';
+      const unit=addon.pricingType==='per_item'?'item':'guest';
+      const covers=addonCoverage(addon);
+      const startQty=prior?Math.max(1,Number(prior.quantity)||1):(covers||1);
+      const scope=addonScopeLine(addon);
+      return `
       <label class="addon-choice ${prior?'selected':''}" data-customer-addon-row="${index}">
         <input type="checkbox" data-customer-addon="${index}" ${prior?'checked':''}/>
-        <span><span class="addon-choice-name">${esc(addon.name||'Optional add-on')}</span>${addon.description?`<span class="addon-choice-desc">${esc(addon.description)}</span>`:''}</span>
-        <span class="addon-choice-price">${addon.pricingType==='starting_at'?'From ':''}${fmt(addon.price||0)}${addon.pricingType==='per_guest'?' / guest':''}</span>
-        ${addon.pricingType==='per_guest'?`<span class="addon-qty"><span>How many guests should receive this add-on?</span><input type="number" min="1" max="100" value="${prior?Math.max(1,Number(prior.quantity)||1):1}" data-customer-addon-qty="${index}"/></span>`:''}
+        <span><span class="addon-choice-name">${esc(addon.name||'Optional add-on')}</span>${addon.description?`<span class="addon-choice-desc">${esc(addon.description)}</span>`:''}${scope?`<span class="addon-choice-desc">${esc(scope)}</span>`:''}</span>
+        <span class="addon-choice-price">${addon.pricingType==='starting_at'?'From ':''}${fmt(addon.price||0)}${perUnit?' / '+unit:''}</span>
+        ${perUnit?`<span class="addon-qty"><span>How many ${unit}s should receive this add-on?</span><input type="number" min="1" max="100" value="${startQty}" data-customer-addon-qty="${index}"/></span>`:''}
       </label>`}).join('')}
     <div class="addon-summary">
       <div class="addon-summary-row"><span>Original quote</span><span>${fmt(grand)}</span></div>
@@ -357,10 +382,11 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       const selected = new Map();
       const addOns = Array.isArray(qd.addOns) ? qd.addOns : [];
       previouslySelectedAddOns.forEach(prior=>{const index=addOns.findIndex(addon=>String(addon.id)===String(prior.id));if(index>-1)selected.set(index,Math.max(1,Number(prior.quantity)||1));});
+      const defaultQty = addon => (addon.pricingType==='per_guest'||addon.pricingType==='per_item') ? (addonCoverage(addon)||1) : 1;
       const pricing = () => {
         const chosen = [...selected.entries()].map(([index,qty]) => {
           const addon = addOns[index];
-          const safeQty = addon.pricingType === 'per_guest' ? Math.max(1, Math.min(100, Number(qty)||1)) : 1;
+          const safeQty = (addon.pricingType === 'per_guest' || addon.pricingType === 'per_item') ? Math.max(1, Math.min(100, Number(qty)||1)) : 1;
           return { id:addon.id, name:addon.name, pricingType:addon.pricingType, price:Number(addon.price)||0, quantity:safeQty, total:(Number(addon.price)||0)*safeQty };
         });
         const addOnTotal = chosen.reduce((sum,addon)=>sum+addon.total,0);
@@ -375,7 +401,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       };
       document.querySelectorAll('[data-customer-addon]').forEach(box=>box.addEventListener('change',()=>{
         const index=Number(box.dataset.customerAddon); const row=document.querySelector(`[data-customer-addon-row="${index}"]`);
-        if(box.checked){ const qty=document.querySelector(`[data-customer-addon-qty="${index}"]`); selected.set(index,qty?Number(qty.value)||1:1); row&&row.classList.add('selected'); }
+        if(box.checked){ const qty=document.querySelector(`[data-customer-addon-qty="${index}"]`); selected.set(index,qty?(Number(qty.value)||defaultQty(addOns[index])):defaultQty(addOns[index])); row&&row.classList.add('selected'); }
         else { selected.delete(index); row&&row.classList.remove('selected'); }
         refreshPricing();
       }));
