@@ -97,9 +97,19 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const eventId = event.id || 'unknown-event';
 
   // Subscription canceled or ended → revoke the CRM key so access stops
+  // A finished instalment plan is a subscription ending because it was PAID
+  // OFF, not abandoned. Revoking access here would punish the customer who
+  // completed every payment, so those plans are skipped — as is anyone whose
+  // access came from KPPS rather than from a monthly plan.
   if (event.type === 'customer.subscription.deleted' && !event.account) {
     const sub = event.data?.object || {};
     const customerId = sub.customer;
+    if (isInstalmentPlanSubscription(sub)) {
+      return res.json({ received: true, note: 'Instalment plan completed — access kept' });
+    }
+    if (customerId && SUPABASE_SERVICE_KEY && await customerHasLifetimeAccess(SUPABASE_URL, SUPABASE_SERVICE_KEY, customerId)) {
+      return res.json({ received: true, note: 'KPPS member — CRM access not revoked' });
+    }
     if (customerId && SUPABASE_SERVICE_KEY) {
       try {
         await fetch(`${SUPABASE_URL}/rest/v1/profiles?stripe_customer_id=eq.${customerId}`, {
@@ -115,6 +125,12 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
       } catch (_) {}
     }
     return res.json({ received: true, note: 'Subscription canceled — CRM access revoked' });
+  }
+
+  // Every successful instalment payment passes through here so the plan can be
+  // closed once it is paid in full.
+  if (event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded') {
+    return handleInstalmentInvoice(res, event, { RESEND_KEY, FROM_EMAIL });
   }
 
   if (event.type !== 'checkout.session.completed') {
@@ -177,7 +193,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // Party Printables — one-time purchase of the unlimited template library.
   // 9700 is the original founding price and stays listed so historical
   // purchases are still recognised on a replay.
-  const PPP_AMOUNTS = new Set([7900, 9700, ...envAmounts(process.env.PRINTABLES_PRICE_CENTS)]);
+  const PPP_AMOUNTS = new Set([6700, 7900, 9700, ...envAmounts(process.env.PRINTABLES_PRICE_CENTS)]);
   const isPrintables = !isCRMSub && !isKPPS && (
     taggedPrintables ||
     PPP_AMOUNTS.has(amountSubtotal) || PPP_AMOUNTS.has(amountTotal)
@@ -513,6 +529,129 @@ async function alertOwnerOfSkippedPurchase({ RESEND_KEY, FROM_EMAIL, eventId, se
   } catch (e) {
     console.error('Could not send the skipped-purchase alert:', e);
   }
+}
+
+
+// ── KPPS PAYMENT PLAN ───────────────────────────────────────────────────
+// A plan is a normal Stripe subscription billed every two weeks, marked as a
+// plan by `plan_payments` metadata on the Stripe link. Stripe has no built-in
+// "stop after 3", so the count is enforced here: once the agreed number of
+// invoices is paid, the subscription is cancelled. Without this the customer
+// is billed forever.
+//
+// The amount fallback exists because Payment Link metadata does not always
+// reach the subscription. Set KPPS_PLAN_AMOUNT_CENTS if the instalment is not
+// $69.
+function instalmentPlanSize(sub) {
+  const meta = (sub && sub.metadata) || {};
+  const declared = parseInt(meta.plan_payments, 10);
+  if (Number.isFinite(declared) && declared > 1) return declared;
+
+  const planAmount = parseInt(process.env.KPPS_PLAN_AMOUNT_CENTS || '6900', 10);
+  const item = sub && sub.items && sub.items.data && sub.items.data[0];
+  const amount = item && item.price && item.price.unit_amount;
+  const product = String(meta.product || '').toLowerCase();
+  if (amount === planAmount && (product === 'kpps' || !product)) {
+    return parseInt(process.env.KPPS_PLAN_PAYMENTS || '3', 10) || 3;
+  }
+  return 0;
+}
+
+function isInstalmentPlanSubscription(sub) {
+  return instalmentPlanSize(sub) > 0;
+}
+
+// KPPS access is bought outright. A monthly plan ending must never take it
+// away, whatever else that customer has subscribed to.
+async function customerHasLifetimeAccess(SUPABASE_URL, SERVICE_KEY, customerId) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=has_kpps_access&limit=1`,
+      { headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY } }
+    );
+    const rows = await r.json().catch(() => []);
+    return Array.isArray(rows) && rows[0] && rows[0].has_kpps_access === true;
+  } catch (_) {
+    // If the lookup fails, keep the customer's access. Wrongly revoking a
+    // paid-up member is far worse than briefly keeping a lapsed one.
+    return true;
+  }
+}
+
+async function handleInstalmentInvoice(res, event, { RESEND_KEY, FROM_EMAIL }) {
+  const invoice = event.data?.object || {};
+  const subId = invoice.subscription;
+  if (!subId) return res.json({ received: true });
+
+  const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || '';
+  if (!STRIPE_KEY) {
+    // Silence here means billing a customer past the end of their plan.
+    console.error('INSTALMENT PLAN CANNOT BE CLOSED — STRIPE_SECRET_KEY is not set', { subId });
+    return res.json({ received: true, note: 'STRIPE_SECRET_KEY not configured' });
+  }
+  const stripeGet = async path => {
+    const r = await fetch('https://api.stripe.com/v1/' + path, {
+      headers: { Authorization: 'Bearer ' + STRIPE_KEY },
+    });
+    return r.ok ? r.json() : null;
+  };
+
+  const sub = await stripeGet('subscriptions/' + encodeURIComponent(subId));
+  if (!sub) return res.json({ received: true, note: 'Subscription could not be read' });
+
+  const planSize = instalmentPlanSize(sub);
+  // Not a plan — this is an ordinary monthly Hub subscription. Leave it alone.
+  if (!planSize) return res.json({ received: true });
+
+  const paidList = await stripeGet(
+    'invoices?subscription=' + encodeURIComponent(subId) + '&status=paid&limit=100'
+  );
+  const paidCount = (paidList && Array.isArray(paidList.data)) ? paidList.data.length : 0;
+  if (paidCount < planSize) {
+    return res.json({ received: true, note: `Instalment ${paidCount} of ${planSize} paid` });
+  }
+
+  // Paid in full. Cancel immediately so no fourth payment is ever taken.
+  const cancelRes = await fetch('https://api.stripe.com/v1/subscriptions/' + encodeURIComponent(subId), {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer ' + STRIPE_KEY },
+  });
+  if (!cancelRes.ok) {
+    const detail = await cancelRes.json().catch(() => ({}));
+    console.error('PLAN PAID IN FULL BUT COULD NOT BE CANCELLED — cancel it by hand in Stripe', {
+      subId, detail: detail.error?.message || cancelRes.status,
+    });
+    return res.json({ received: true, note: 'Paid in full, cancel failed' });
+  }
+
+  const to = invoice.customer_email || (sub.metadata && sub.metadata.customer_email) || '';
+  if (RESEND_KEY && to) {
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:520px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden">
+  <div style="background:#4C1D95;padding:24px 28px;color:#fff">
+    <h1 style="margin:0;font-size:1.25rem;font-weight:800">You're paid in full 🎉</h1>
+  </div>
+  <div style="padding:24px 28px;color:#2F1E3B;font-size:.94rem;line-height:1.7">
+    <p style="margin:0 0 14px">That was your final payment for the Kids Party Profit System. Your plan is now closed and <strong>you will not be charged again</strong>.</p>
+    <p style="margin:0">Your access carries on exactly as it is — nothing changes, nothing to do.</p>
+  </div>
+</div>
+</body></html>`;
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + RESEND_KEY,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `plan-complete/${subId}`,
+        },
+        body: JSON.stringify({ from: FROM_EMAIL, to, subject: "You're paid in full — no more payments", html }),
+      });
+    } catch (e) { console.error('Plan-complete email failed:', e); }
+  }
+
+  return res.json({ received: true, note: `Plan complete after ${paidCount} payments — subscription cancelled` });
 }
 
 async function handleBookingDeposit(res, event, session, config) {

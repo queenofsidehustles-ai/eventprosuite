@@ -33,7 +33,33 @@ assert.match(webhook, /KPPS_PRICE_CENTS/);
 assert.match(webhook, /PRINTABLES_PRICE_CENTS/);
 // Historical prices stay listed so a past purchase can still be replayed.
 assert.match(webhook, /KPPS_AMOUNTS = new Set\(\[19700, 40000, 49700/);
-assert.match(webhook, /PPP_AMOUNTS = new Set\(\[7900, 9700/);
+assert.match(webhook, /PPP_AMOUNTS = new Set\(\[6700, 7900, 9700/);
+
+// ── Instalment plans must stop, and must not cost the buyer their access ──
+// Stripe has no built-in "charge 3 times then stop", so the count is enforced
+// here. Without it a payment plan bills the customer forever.
+assert.match(webhook, /async function handleInstalmentInvoice/);
+assert.match(webhook, /invoice\.paid' \|\| event\.type === 'invoice\.payment_succeeded'/);
+assert.match(webhook, /paidCount < planSize/);
+assert.match(webhook, /subscriptions\/'[\s\S]{0,160}method: 'DELETE'/);
+// An ordinary monthly Hub subscription must never be cancelled by this path.
+assert.match(webhook, /if \(!planSize\) return res\.json\(\{ received: true \}\)/);
+
+// A plan ending because it was PAID OFF must not revoke access — that would
+// punish the customer who completed every payment.
+assert.match(webhook, /isInstalmentPlanSubscription\(sub\)/);
+assert.match(webhook, /Instalment plan completed — access kept/);
+assert.match(webhook, /customerHasLifetimeAccess/);
+assert.match(webhook, /KPPS member — CRM access not revoked/);
+// If that lookup fails, keep access rather than risk revoking a paid member's.
+const lifetime = /async function customerHasLifetimeAccess[\s\S]*?\n\}/.exec(webhook);
+assert.ok(lifetime, 'the lifetime-access guard is missing');
+assert.match(lifetime[0], /catch \(_\) \{[\s\S]*?return true;/);
+
+// The printables sales page must not quote a stale price anywhere.
+const join = read('join.html');
+assert.doesNotMatch(join, /\$97/);
+assert.match(join, /\$67/);
 
 // The subscription price shown to a customer must match what they were
 // charged — the landing page and Stripe link are $27.
