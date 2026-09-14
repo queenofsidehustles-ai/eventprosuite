@@ -377,11 +377,42 @@ async function markUserAsPaid(userId, first, last, attempt = 1) {
     return;
   }
 
-  // Success - show the done screen
+  // An upsert that returns no error is not proof of access. Entitlement
+  // columns are owned by the server: the Stripe webhook sets them with the
+  // service-role key, and the database ignores a browser trying to set them
+  // itself. So confirm what actually landed rather than trusting this write.
+  const confirmed = await waitForFounderAccess(userId);
   setLoading(false);
+
+  if (!confirmed) {
+    // Paid, account created, webhook not landed yet. Say something true and
+    // calm rather than showing a success screen that login would contradict.
+    showError(
+      'Your account is created and your payment went through — we are just ' +
+      'finishing off your access, which usually takes under a minute. ' +
+      'Wait a moment and sign in. If it still will not let you in, email ' +
+      'monica@partybusinesscoach.com and we will sort it straight away.'
+    );
+    return;
+  }
+
   document.getElementById('setupSection').style.display = 'none';
   document.getElementById('doneSection').style.display = 'block';
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// The webhook usually lands before the customer finishes typing a password,
+// but it is a separate request and can lag. Poll briefly rather than racing it.
+async function waitForFounderAccess(userId) {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const { data } = await sb.from('profiles')
+      .select('has_paid, has_crm_access')
+      .eq('id', userId)
+      .maybeSingle();
+    if (data && (data.has_paid === true || data.has_crm_access === true)) return true;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return false;
 }
 </script>
 

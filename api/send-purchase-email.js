@@ -160,7 +160,19 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     : (isCRMSub ? null : (PPP_TIER_MAP[amountSubtotal] || PPP_TIER_MAP[amountTotal] || null));
 
   if (!isCRMSub && !isKPPS && !assignedTier) {
-    return res.json({ received: true, note: `Not a recognized purchase — skipped (subtotal=${amountSubtotal}, total=${amountTotal})` });
+    // A skipped purchase is money taken with no access granted, and returning
+    // 200 means Stripe shows a green tick and nobody finds out until the
+    // customer complains. Recognition is by amount, so this fires the moment a
+    // price changes or a new product is sold without a `product` metadata tag.
+    const note = `Not a recognized purchase — skipped (subtotal=${amountSubtotal}, total=${amountTotal})`;
+    console.error('PURCHASE NOT RECOGNISED — no access granted', {
+      eventId, sessionId: session.id, amountSubtotal, amountTotal, sessionMode, metaProduct,
+      customerEmail: session.customer_details?.email || session.customer_email || '(none)',
+    });
+    await alertOwnerOfSkippedPurchase({
+      RESEND_KEY, FROM_EMAIL, eventId, session, amountSubtotal, amountTotal, sessionMode, metaProduct,
+    });
+    return res.json({ received: true, note });
   }
 
   const customerEmail = session.customer_details?.email || session.customer_email || '';
@@ -421,6 +433,61 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     profileWritten,
     emailSent: false,
   });
+}
+
+
+// ── Somebody paid and got nothing ───────────────────────────────────────
+// Purchases are recognised by amount, so a price change or a new product sold
+// without a `product` metadata tag silently falls through. This turns that
+// silence into an email, because the alternative is finding out from an angry
+// customer days later.
+async function alertOwnerOfSkippedPurchase({ RESEND_KEY, FROM_EMAIL, eventId, session, amountSubtotal, amountTotal, sessionMode, metaProduct }) {
+  if (!RESEND_KEY) return;
+  const to = process.env.PBH_ALERT_EMAIL || 'support@partybizhub.com';
+  const money = cents => '$' + (Number(cents || 0) / 100).toFixed(2);
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const email = session.customer_details?.email || session.customer_email || '(no email on the session)';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:560px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden">
+  <div style="background:#B3261E;padding:22px 28px;color:#fff">
+    <h1 style="margin:0;font-size:1.2rem;font-weight:800">A purchase went through with no access granted</h1>
+  </div>
+  <div style="padding:24px 28px;color:#2F1E3B;font-size:.93rem;line-height:1.65">
+    <p style="margin:0 0 16px">Stripe took the payment, but the amount did not match any product this webhook knows about, so no account was created and nothing was unlocked.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <tr><td style="padding:6px 14px 6px 0;color:#8A7A96">Customer</td><td style="padding:6px 0;font-weight:700">${esc(email)}</td></tr>
+      <tr><td style="padding:6px 14px 6px 0;color:#8A7A96">Paid</td><td style="padding:6px 0;font-weight:700">${money(amountTotal)}</td></tr>
+      <tr><td style="padding:6px 14px 6px 0;color:#8A7A96">List price</td><td style="padding:6px 0;font-weight:700">${money(amountSubtotal)}</td></tr>
+      <tr><td style="padding:6px 14px 6px 0;color:#8A7A96">Mode</td><td style="padding:6px 0;font-weight:700">${esc(sessionMode)}</td></tr>
+      <tr><td style="padding:6px 14px 6px 0;color:#8A7A96">Product tag</td><td style="padding:6px 0;font-weight:700">${esc(metaProduct || '(none set)')}</td></tr>
+      <tr><td style="padding:6px 14px 6px 0;color:#8A7A96">Stripe event</td><td style="padding:6px 0;font-family:monospace;font-size:12px">${esc(eventId)}</td></tr>
+    </table>
+    <p style="margin:18px 0 0;padding:14px 16px;background:#FDF4F3;border-radius:10px;font-size:.86rem">
+      <strong>To fix this one:</strong> grant their access by hand on your Grant Access page.<br>
+      <strong>To stop it recurring:</strong> add <code>product</code> metadata to that Stripe payment link
+      (<code>kpps</code>, <code>printables</code>, or leave subscriptions alone) — a tagged product is
+      recognised whatever the price.
+    </p>
+  </div>
+</div>
+</body></html>`;
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + RESEND_KEY,
+        'Content-Type': 'application/json',
+        // Stripe retries webhooks; one alert per event is enough.
+        'Idempotency-Key': `purchase-skipped/${eventId}`,
+      },
+      body: JSON.stringify({ from: FROM_EMAIL, to, subject: '⚠️ A purchase went through with no access granted', html }),
+    });
+  } catch (e) {
+    console.error('Could not send the skipped-purchase alert:', e);
+  }
 }
 
 async function handleBookingDeposit(res, event, session, config) {
