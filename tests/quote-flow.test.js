@@ -44,8 +44,15 @@ assert.match(app, /savedInclusions\.length \? savedInclusions : fallbackInclusio
 assert.match(app, /cleanPackageDisplayName/);
 assert.match(app, /Personalized party T-shirt/);
 assert.match(app, /invoice-side-stack/);
+assert.match(app, /id="eventTheme"/);
+assert.match(app, /eventTheme:\s*\$\('eventTheme'\)/);
+assert.match(app, /class="proposal-item"/);
+assert.match(app, /data-q-line-total/);
+assert.match(app, /What this proposal includes/);
+assert.doesNotMatch(app, /<strong>Qty<\/strong><strong>Unit<\/strong>/);
 assert.match(view, /it\.inclusions\.filter/);
 assert.match(view, /cleanPackageName/);
+assert.match(view, /Theme \/ customization/);
 
 // All inline browser scripts must still parse.
 for (const html of [app, view, profile]) {
