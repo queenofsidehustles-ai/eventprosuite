@@ -442,7 +442,8 @@ async function loadData() {
     _raw: b
   }));
 
-  allQuotes = [...incoming, ...quotes];
+  allQuotes = [...incoming, ...quotes]
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   lifecycleContracts = contractsRes.data || [];
   lifecyclePrep = prepRes.data || [];
   lifecycleProfit = lifecycleProfitRes.data || [];
@@ -742,7 +743,9 @@ function renderBookings() {
     return;
   }
 
-  const rows = allQuotes.slice(0, 20).map(q => {
+  const SHOWN = 25;
+  const hidden = Math.max(allQuotes.length - SHOWN, 0);
+  const rows = allQuotes.slice(0, SHOWN).map(q => {
     const status = statusOf(q);
     const label  = STATUS_LABELS[status] || 'New Booking';
     const date   = q.event_date ? fmtDate(q.event_date) : '—';
@@ -783,7 +786,9 @@ function renderBookings() {
       <th></th>
     </tr></thead>
     <tbody>${rows}</tbody>
-  </table>`;
+  </table>` + (hidden ? `<div style="padding:12px 16px;text-align:center;font-size:.82rem;color:var(--muted)">
+    Showing your ${SHOWN} most recent &middot; ${hidden} older ${hidden === 1 ? 'one is' : 'ones are'} not listed
+  </div>` : '');
 }
 
 /* ── MODAL ── */
