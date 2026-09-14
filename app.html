@@ -230,15 +230,21 @@
   .invoice-meta{padding:20px 26px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;border-bottom:1px solid var(--line)}
   .meta-box small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
   .meta-box strong{display:block;margin-top:4px;font-size:13.5px;color:var(--ink);line-height:1.5;font-weight:600}
-  .invoice-core{display:grid;grid-template-columns:minmax(0,1.2fr) 330px;gap:20px;padding:22px 26px 26px}
-  @media(max-width:860px){.invoice-top,.invoice-meta,.invoice-core{grid-template-columns:1fr}.invoice-status{align-items:flex-start}}
+  .invoice-core{padding:22px 26px 26px}
+  @media(max-width:860px){.invoice-top,.invoice-meta{grid-template-columns:1fr}.invoice-status{align-items:flex-start}}
   .invoice-table{border:1px solid var(--line);border-radius:16px;overflow:hidden}
-  .invoice-row{display:grid;grid-template-columns:1.7fr .55fr .7fr .8fr;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px}
+  .invoice-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 100px 112px;gap:14px;align-items:start;padding:16px 18px;border-bottom:1px solid var(--line);font-size:13px}
   .invoice-row:last-child{border-bottom:none}
   .invoice-row.head{background:#faf7fb}
   .invoice-row.head strong{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
   .invoice-row input{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);font-size:12.5px}
-  .invoice-side{display:flex;flex-direction:column;gap:14px}
+  .invoice-item-main>strong{display:block;font-size:15px;color:var(--plum-900);line-height:1.4}
+  .invoice-item-main>small{display:block;margin-top:3px}
+  .included-list{list-style:none;margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;color:var(--ink);font-size:12.5px;line-height:1.45}
+  .included-list li{position:relative;padding-left:19px}
+  .included-list li::before{content:'✓';position:absolute;left:0;top:0;color:var(--user-primary);font-weight:900}
+  .invoice-side{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:16px;align-items:start}
+  .invoice-side-stack{display:flex;flex-direction:column;gap:14px}
   .totals-card,.payment-card,.notes-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
   .totals-card{background:linear-gradient(180deg,#fff,#fdfbfe)}
   .totals-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
@@ -254,6 +260,11 @@
   .payment-note{margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.55}
   .notes-card strong{display:block;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:700}
   .notes-card div{font-size:13.5px;line-height:1.7;color:var(--ink)}
+  @media(max-width:760px){
+    .invoice-row{grid-template-columns:minmax(0,1fr) 54px 82px 92px;gap:8px;padding:13px 12px}
+    .included-list{grid-template-columns:1fr}
+    .invoice-side{grid-template-columns:1fr}
+  }
 
   /* MODAL (My Quotes) */
   .modal-backdrop{position:fixed;inset:0;background:rgba(30,20,40,.56);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
@@ -610,6 +621,10 @@ async function checkAuth() {
         state.packages = pd.packages;
         const sourcePackages = buildPackagesFromOwnerData(pd, ownerBuildRow) || [];
         state.packages = state.packages.map((saved, index) => {
+          const refreshedTeepee = refreshedTeepeeInclusions(saved.name, saved.inclusions || saved.items?.[0]?.inclusions);
+          if (refreshedTeepee) {
+            return { ...saved, name: cleanPackageDisplayName(saved.name), inclusions: refreshedTeepee, items: (saved.items || []).map(item => item.category === 'Package' ? { ...item, name: cleanPackageDisplayName(item.name), inclusions: refreshedTeepee } : item) };
+          }
           if (normalizeInclusions(saved.inclusions || saved.items?.[0]?.inclusions).length) return saved;
           const match = sourcePackages.find(source => String(source.name || '').trim().toLowerCase() === String(saved.name || '').trim().toLowerCase()) || sourcePackages[index];
           if (!match) return saved;
@@ -994,7 +1009,7 @@ function defaultPackages() {
 const COMMON_INCLUSIONS = {
   bear: ['Party host or activity facilitator','A keepsake birth certificate for each bear','A take-home carrier or bag for each bear','Invitations or a digital invitation','Themed tableware and serving supplies','Final cleanup of the activity area'],
   spa: ['Robes and spa headbands for use','Mini manicure or pedicure','Kid-friendly facial or face mask','Individual nail tools and toe separators','Music and a photo or runway moment','Take-home beauty favor'],
-  teepee: ['Fresh fitted sheet for each mattress','Blanket and sleeping pillow for each guest','Bed tray and battery-operated light','Personalized name sign','Coordinated garland or themed accents','Delivery window and next-day collection'],
+  teepee: ['Personalized name sign','Custom eye mask for each guest','Party-themed tumbler for each guest','Personalized party T-shirt','Gift bag or favor bag'],
   movie: ['Pre-event equipment test','Extension cords and power setup','Ambient lighting','Blankets, pillows, or lounge seating','Popcorn supplies or snack containers','Weather and rescheduling plan'],
   slime: ['Table protection and disposable cleanup supplies','Individual mixing tools','Safety and ingredient information'],
   paint: ['Table coverings and water cups','Drying or take-home bags','Guided activity instructions']
@@ -1004,8 +1019,8 @@ const BEAR_HUG_PACKAGE_INCLUSIONS = {
   'signature bear party': ['Bear stuffing experience','Heart ceremony','Styled activity setup','Basic bear outfit','Setup and breakdown','Up to 8 kids','75 minutes'],
   'creative bear party': ['Bear stuffing experience','Heart ceremony','Styled activity setup','Basic bear outfit','Setup and breakdown','Choose 1 activity','More styled presentation','Up to 10 kids','90 minutes'],
   'luxury bear experience': ['Bear stuffing experience','Heart ceremony','Styled activity setup','Basic bear outfit','Setup and breakdown','Choose 2 activities','Tables and chairs included','Photo-focused styling','Up to 12 kids','2 hours'],
-  'luxury teepee sleepover experience': ['Teepee tents with coordinated styling','Mattresses, bedding, and decorative pillows','Styled trays or accent decor','Full setup and next-day pickup','Up to 6 guests'],
-  'deluxe sleepover experience': ['Teepee tents with coordinated styling','Mattresses, bedding, and decorative pillows','Styled trays or accent decor','Full setup and next-day pickup','One DIY activity add-on','Elevated styling and layered details'],
+  'luxury teepee sleepover experience': ['Styled teepee tents','Air mattresses','Fresh fitted sheets and bed linens','Blankets and decorative pillows','Bed trays','Fairy lights and decorative lanterns','Coordinated themed decorations','Full delivery and setup','Next-day pickup and breakdown','Up to 6 guests'],
+  'deluxe sleepover experience': ['Styled teepee tents','Air mattresses','Fresh fitted sheets and bed linens','Blankets and decorative pillows','Bed trays','Fairy lights and decorative lanterns','Coordinated themed decorations','Full delivery and setup','Next-day pickup and breakdown','One DIY activity add-on','Elevated styling and layered details'],
   'luxury backyard movie night': ['Inflatable movie screen','Projector and sound setup','Seating for up to 8 to 10 guests','Styled popcorn and candy snack station','Delivery, setup, and next-day pickup','Movie suggestion list','Client provides movie access or login'],
   'luxury styled movie night experience': ['Inflatable movie screen','Projector and sound setup','Seating for up to 8 to 10 guests','Styled popcorn and candy snack station','Delivery, setup, and next-day pickup','Cozy blankets, pillows, and lounge styling','Balloon accents or backdrop styling','Ambient lighting','Elevated snack station display','Client provides movie access or login'],
   'slime diy kit': ['Pre-measured slime ingredients per guest','Color options, glitter, and mix-ins','Individual take-home containers','Step-by-step instruction cards','All supplies included','Up to 8 guests','Drop-off with no host required'],
@@ -1034,6 +1049,19 @@ function packageNamesMatch(left, right) {
   const a = String(left || '').trim().toLowerCase();
   const b = String(right || '').trim().toLowerCase();
   return Boolean(a && b && (a.includes(b) || b.includes(a) || packageNameMatchScore(a, b) >= 0.7));
+}
+
+function cleanPackageDisplayName(name) {
+  let clean = String(name || '')
+    .replace(/\s*\([^)]*\$[^)]*\)\s*/g, ' ')
+    .replace(/\s+\$\s*[0-9,.]+\s*\+?\s*$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const parts = clean.split(/\s+[—–]\s+/).map(part => part.trim()).filter(Boolean);
+  if (parts.length > 1 && /^(teepee|sleepover)\s+(experience|package|setup)$/i.test(parts[0]) && parts[1].split(/\s+/).length > 1) {
+    clean = parts.slice(1).join(' - ');
+  }
+  return clean || 'Party package';
 }
 
 function knownPackageInclusions(name) {
@@ -1066,7 +1094,20 @@ function normalizeInclusions(value, source) {
 }
 
 function quoteItemFromPackageItem(item, inclusions) {
-  return { ...item, inclusions: normalizeInclusions(inclusions).map(row => ({ ...row })) };
+  return { ...item, name: cleanPackageDisplayName(item.name), inclusions: normalizeInclusions(inclusions).map(row => ({ ...row })) };
+}
+
+function refreshedTeepeeInclusions(name, currentValue) {
+  if (!/teepee|sleepover|slumber/i.test(String(name || ''))) return null;
+  const promised = knownPackageInclusions(name);
+  if (!promised.length) return null;
+  const current = normalizeInclusions(currentValue);
+  const priorState = new Map(current.map(row => [row.text.toLowerCase(), row.included !== false]));
+  const optional = inclusionSuggestions(name).filter(text => !promised.some(existing => existing.toLowerCase() === text.toLowerCase()));
+  return [
+    ...promised.map((text, index) => ({ id:`website-${index}`, text, included:priorState.has(text.toLowerCase()) ? priorState.get(text.toLowerCase()) : true, source:'website' })),
+    ...optional.map((text, index) => ({ id:`suggested-${index}`, text, included:priorState.get(text.toLowerCase()) === true, source:'suggested' }))
+  ];
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1351,9 +1392,10 @@ function renderPreview() {
   const logo = window._logoDataURL || '';
   const businessName = $('businessName').value.trim() || 'Your Business Name';
   const payLink = depositLink();
+  const manualPayment = $('depositProfile').value === 'manual';
   const rows = items.length ? items.map((it, idx) => `
     <div class="invoice-row">
-      <span><strong>${escapeHtml(it.name)}</strong><br><small style="color:var(--muted)">${escapeHtml(it.category)}</small>${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).length ? `<ul class="included-list">${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).map(inc => `<li>${escapeHtml(inc.text)}</li>`).join('')}</ul>` : ''}</span>
+      <span class="invoice-item-main"><strong>${escapeHtml(cleanPackageDisplayName(it.name))}</strong><small style="color:var(--muted)">${escapeHtml(it.category)}</small>${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).length ? `<ul class="included-list">${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).map(inc => `<li>${escapeHtml(inc.text)}</li>`).join('')}</ul>` : ''}</span>
       <span><input type="number" value="${it.qty}" data-q-qty="${idx}"/></span>
       <span><input type="number" value="${it.price}" data-q-price="${idx}"/></span>
       <span style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span>${money(it.total)}</span><button class="tiny-btn" data-q-remove="${idx}">×</button></span>
@@ -1367,7 +1409,7 @@ function renderPreview() {
           <div class="invoice-logo">${logo ? `<img src="${logo}" alt=""/>` : `<div class="invoice-logo-fallback">${escapeHtml(businessName.charAt(0))}</div>`}</div>
           <div>
             <h4>${escapeHtml(businessName)}</h4>
-            <p>Luxury event quote for a premium client experience.<br/>Build · Book · Be Paid</p>
+            <p>Personalized event proposal<br/>Prepared with care for your celebration</p>
           </div>
         </div>
         <div class="invoice-status">
@@ -1378,7 +1420,7 @@ function renderPreview() {
       </div>
       <div class="invoice-meta">
         <div class="meta-box"><small>Client</small><strong>${escapeHtml($('clientName').value || '—')}</strong></div>
-        <div class="meta-box"><small>Event</small><strong>${escapeHtml($('eventType').value || '—')}</strong></div>
+          <div class="meta-box"><small>Event</small><strong>${escapeHtml(cleanPackageDisplayName($('eventType').value) || '—')}</strong></div>
         <div class="meta-box"><small>Event date</small><strong>${escapeHtml($('eventDate').value || '—')}</strong></div>
         <div class="meta-box"><small>Expires</small><strong>${escapeHtml($('expiryDate').value || '—')}</strong></div>
       </div>
@@ -1388,21 +1430,22 @@ function renderPreview() {
           ${rows}
         </div>
         <div class="invoice-side">
-          <div class="totals-card">
-            <div class="totals-row"><span>Subtotal</span><span>${money(subtotal)}</span></div>
-            <div class="totals-row"><span>${escapeHtml(t.label)}${t.mode === 'added' ? ' (added)' : t.mode === 'included' ? ' (incl)' : ''}</span><span>${money(tax)}</span></div>
-            <div class="totals-row grand"><span>Total</span><span>${money(grand)}</span></div>
-          </div>
-          <div class="payment-card">
-            <div class="payment-kicker">Secure booking</div>
-            <div class="payment-title">${money(state.selectedDepositTier)} deposit</div>
-            <div class="payment-copy">Client clicks below to pay the deposit through your Stripe link.</div>
-            <a class="pay-btn ${payLink ? '' : 'disabled'}" href="${payLink || '#'}" target="_blank" rel="noopener">Pay Deposit to Secure Booking</a>
-            <div class="payment-note">${payLink ? '✓ Stripe link connected' : 'Add a Stripe link in your brand setup to activate.'}</div>
-          </div>
           <div class="notes-card">
             <strong>Event notes</strong>
             <div>${escapeHtml($('eventNotes').value || 'No additional notes added.')}</div>
+          </div>
+          <div class="invoice-side-stack">
+            <div class="totals-card">
+              <div class="totals-row"><span>Subtotal</span><span>${money(subtotal)}</span></div>
+              <div class="totals-row"><span>${escapeHtml(t.label)}${t.mode === 'added' ? ' (added)' : t.mode === 'included' ? ' (incl)' : ''}</span><span>${money(tax)}</span></div>
+              <div class="totals-row grand"><span>Total</span><span>${money(grand)}</span></div>
+            </div>
+            <div class="payment-card">
+              <div class="payment-kicker">${manualPayment ? 'Next step' : 'Secure your date'}</div>
+              <div class="payment-title">${manualPayment ? 'Payment details' : money(state.selectedDepositTier) + ' deposit'}</div>
+              <div class="payment-copy">${manualPayment ? 'Payment instructions will be confirmed after you approve this proposal.' : 'Pay the deposit to reserve your event date.'}</div>
+              ${!manualPayment && payLink ? `<a class="pay-btn" href="${payLink}" target="_blank" rel="noopener">Pay Deposit to Secure Booking</a><div class="payment-note">Secure payment powered by Stripe</div>` : `<div class="payment-note">Payment instructions will be provided separately.</div>`}
+            </div>
           </div>
         </div>
       </div>
@@ -1665,7 +1708,7 @@ async function prefillFromBooking() {
   if ($('clientName')  && b.client_name)   $('clientName').value  = b.client_name;
   if ($('clientEmail') && b.client_email)  $('clientEmail').value = b.client_email;
   if ($('clientPhone') && b.client_phone)  $('clientPhone').value = b.client_phone;
-  if ($('eventType')   && b.service_name)  $('eventType').value   = b.service_name;
+  if ($('eventType')   && b.service_name)  $('eventType').value   = cleanPackageDisplayName(b.service_name);
   if ($('eventDate')   && b.event_date)    $('eventDate').value   = b.event_date;
 
   // Quotes expire in 7 days by default — the countdown on the quote page is
@@ -1701,11 +1744,11 @@ async function prefillFromBooking() {
     ];
     state.quoteItems.push({
       category: 'From website booking',
-      name: b.service_name || 'Requested package',
+      name: cleanPackageDisplayName(b.service_name || 'Requested package'),
       qty: 1,
       price,
       taxable: true,
-      inclusions: savedInclusions.length ? savedInclusions : fallbackInclusions,
+      inclusions: refreshedTeepeeInclusions(requested, savedInclusions) || (savedInclusions.length ? savedInclusions : fallbackInclusions),
     });
     if ($('depositProfile').value !== 'manual') {
       state.selectedDepositTier = depositRecommendation(price).tier;
