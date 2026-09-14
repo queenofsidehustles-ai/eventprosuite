@@ -122,6 +122,12 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
   const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmt = n => '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const fmtDate = d => {if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})};
+  const cleanPackageName = name => {
+    let clean=String(name||'').replace(/\s*\([^)]*\$[^)]*\)\s*/g,' ').replace(/\s+\$\s*[0-9,.]+\s*\+?\s*$/g,'').replace(/\s+/g,' ').trim();
+    const parts=clean.split(/\s+[—–]\s+/).map(part=>part.trim()).filter(Boolean);
+    if(parts.length>1&&/^(teepee|sleepover)\s+(experience|package|setup)$/i.test(parts[0])&&parts[1].split(/\s+/).length>1)clean=parts.slice(1).join(' - ');
+    return clean||'Party package';
+  };
 
   // Pale brand colors (Bear Hug's is #adf0ec) make white header text unreadable.
   // Pick the text color from the background's luminance instead of assuming white.
@@ -203,7 +209,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     document.title = 'Quote for ' + (q.client_name||'You') + ' — ' + bizName;
 
     const specs = [
-      {k:'Service',    v:q.event_type||qd.eventType||'Party package'},
+      {k:'Service',    v:cleanPackageName(q.event_type||qd.eventType||'Party package')},
       {k:'Event date', v:q.event_date?fmtDate(q.event_date):'To be confirmed'},
       {k:'Prepared by',v:bizName},
       expiryDate?{k:'Quote valid until', v:fmtDate(expiryDate)}:null
@@ -252,7 +258,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     <div class="inc-row">
       <div class="inc-check" style="color:${brand}">✓</div>
       <div>
-        <div class="inc-name">${esc(it.name||it.label||'Item')}</div>
+        <div class="inc-name">${esc(cleanPackageName(it.name||it.label||'Item'))}</div>
         ${(it.description||it.desc)?`<div class="inc-desc">${esc(it.description||it.desc)}</div>`:''}
         ${Array.isArray(it.inclusions) && it.inclusions.some(inc => inc && inc.included !== false && (inc.text || inc.label)) ? `<div class="inc-desc" style="margin-top:7px">${it.inclusions.filter(inc => inc && inc.included !== false && (inc.text || inc.label)).map(inc => `✓ ${esc(inc.text || inc.label)}`).join('<br>')}</div>` : ''}
       </div>
@@ -358,7 +364,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         event_date:    $('fDate').value,
         event_time:    $('fTime').value || null,
         event_address: addr,
-        service_name:  (q.event_type || (q.quote_data||{}).eventType || 'Quoted package')
+        service_name:  cleanPackageName(q.event_type || (q.quote_data||{}).eventType || 'Quoted package')
                          + ' (quote #' + String(q.id).slice(0,8).toUpperCase() + ')',
         service_price: String(ctx.grand),
         notes:         $('fNotes').value.trim() || null,
