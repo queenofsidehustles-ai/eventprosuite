@@ -145,9 +145,11 @@
   .inclusion-editor>strong{display:block;font-size:12px;color:var(--plum-900);margin-bottom:7px}
   .inclusion-option{display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start;padding:6px 0;border-top:1px solid var(--line);font-size:12px;color:var(--ink)}
   .inclusion-option:first-of-type{border-top:0}.inclusion-option input{margin-top:2px}.inclusion-option small{color:var(--muted);display:block;margin-top:2px}
-  .quote-inclusions{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#faf7fb;border:1px solid var(--line)}
+  .quote-inclusions{margin:0 0 10px;padding:12px;border-radius:12px;background:#faf7fb;border:1px solid var(--line);max-height:360px;overflow:auto}
   .quote-inclusions strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
-  .quote-inclusion{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12px;color:var(--ink)}
+  .quote-inclusion{display:grid;grid-template-columns:18px minmax(0,1fr);gap:9px;align-items:start;padding:5px 0;font-size:12px;color:var(--ink);text-align:left}
+  .quote-inclusion input{width:16px;height:16px;margin:1px 0 0}
+  .quote-inclusion span{text-align:left;line-height:1.4;overflow-wrap:anywhere}
   .included-list{margin:7px 0 0;padding-left:18px;color:var(--muted);font-size:12px;line-height:1.55}
   @media(max-width:960px){.package-grid{grid-template-columns:1fr}}
 
@@ -232,15 +234,24 @@
   .meta-box strong{display:block;margin-top:4px;font-size:13.5px;color:var(--ink);line-height:1.5;font-weight:600}
   .invoice-core{padding:22px 26px 26px}
   @media(max-width:860px){.invoice-top,.invoice-meta{grid-template-columns:1fr}.invoice-status{align-items:flex-start}}
-  .invoice-table{border:1px solid var(--line);border-radius:16px;overflow:hidden}
-  .invoice-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 100px 112px;gap:14px;align-items:start;padding:16px 18px;border-bottom:1px solid var(--line);font-size:13px}
-  .invoice-row:last-child{border-bottom:none}
-  .invoice-row.head{background:#faf7fb}
-  .invoice-row.head strong{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .invoice-row input{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);font-size:12.5px}
-  .invoice-item-main>strong{display:block;font-size:15px;color:var(--plum-900);line-height:1.4}
-  .invoice-item-main>small{display:block;margin-top:3px}
-  .included-list{list-style:none;margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;color:var(--ink);font-size:12.5px;line-height:1.45}
+  .invoice-customization{margin:18px 26px 0;padding:14px 16px;border:1px solid rgba(192,132,252,.22);border-radius:16px;background:linear-gradient(135deg,rgba(90,52,118,.05),rgba(230,162,190,.1))}
+  .invoice-customization small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+  .invoice-customization strong{display:block;margin-top:5px;color:var(--plum-900);font-size:14px;line-height:1.55}
+  .proposal-items{display:grid;gap:16px}
+  .proposal-item{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+  .proposal-item-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding:18px 20px;background:linear-gradient(135deg,#fff,#faf7fb)}
+  .proposal-item-copy{min-width:0}
+  .proposal-item-copy strong{display:block;font-family:'Playfair Display',serif;font-size:20px;color:var(--plum-900);line-height:1.35}
+  .proposal-item-copy small{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+  .proposal-item-total{display:flex;align-items:flex-end;gap:9px;flex-shrink:0}
+  .proposal-total-field label{display:block;margin-bottom:5px;color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;text-align:right}
+  .proposal-total-control{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:11px;background:#fff;overflow:hidden;color:var(--plum-900);font-weight:800}
+  .proposal-total-control span{padding-left:11px}
+  .proposal-total-control input{width:105px;border:0;padding:9px 10px 9px 4px;background:transparent;color:inherit;font:inherit;text-align:right;outline:none}
+  .proposal-remove{width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);cursor:pointer}
+  .proposal-inclusions{padding:18px 20px 20px;border-top:1px solid var(--line)}
+  .proposal-inclusions>strong{display:block;margin-bottom:10px;color:var(--muted);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+  .included-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 26px;color:var(--ink);font-size:13px;line-height:1.5}
   .included-list li{position:relative;padding-left:19px}
   .included-list li::before{content:'✓';position:absolute;left:0;top:0;color:var(--user-primary);font-weight:900}
   .invoice-side{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:16px;align-items:start}
@@ -261,7 +272,10 @@
   .notes-card strong{display:block;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:700}
   .notes-card div{font-size:13.5px;line-height:1.7;color:var(--ink)}
   @media(max-width:760px){
-    .invoice-row{grid-template-columns:minmax(0,1fr) 54px 82px 92px;gap:8px;padding:13px 12px}
+    .proposal-item-head{display:grid;gap:14px;padding:16px}
+    .proposal-item-total{justify-content:space-between;width:100%}
+    .proposal-total-field label{text-align:left}
+    .proposal-inclusions{padding:16px}
     .included-list{grid-template-columns:1fr}
     .invoice-side{grid-template-columns:1fr}
   }
@@ -373,6 +387,7 @@
         <div class="field"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
         <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
         <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
+        <div class="field full"><label>Theme / customization <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label><input id="eventTheme" placeholder="e.g. Pink and gold Barbie theme with personalized birthday details"/></div>
         <div class="field full"><label>Event notes (visible on quote)</label><textarea id="eventNotes" placeholder="Delivery time, setup requirements, special touches..."></textarea></div>
       </div>
     </section>
@@ -783,6 +798,7 @@ async function saveQuote() {
       clientEmail: $('clientEmail').value.trim(),
       clientPhone: $('clientPhone').value.trim(),
       eventType: $('eventType').value,
+      eventTheme: $('eventTheme').value.trim(),
       eventDate: $('eventDate').value,
       expiryDate: $('expiryDate').value,
       eventNotes: $('eventNotes').value,
@@ -827,6 +843,7 @@ async function shareQuote() {
   const clientName  = $('clientName').value.trim() || 'there';
   const bizName     = $('businessName').value.trim() || 'your party host';
   const eventType   = $('eventType').value.trim();
+  const eventTheme  = $('eventTheme').value.trim();
   const eventDate   = $('eventDate').value;
   const { grand }   = totals();
   const expiryDate  = $('expiryDate').value;
@@ -839,6 +856,7 @@ async function shareQuote() {
     'Hi ' + clientName + ',\n\n' +
     'Your personalized party quote from ' + bizName + ' is ready!\n\n' +
     (eventType ? 'Event: ' + eventType + '\n' : '') +
+    (eventTheme ? 'Theme / customization: ' + eventTheme + '\n' : '') +
     (eventDate ? 'Date: ' + fmtDate(eventDate) + '\n' : '') +
     'Total: ' + grandFmt + '\n\n' +
     'View your full quote here:\n' + link + '\n\n' +
@@ -869,7 +887,7 @@ async function shareQuote() {
       body: JSON.stringify({
         clientEmail: clientEmail || undefined,
         clientPhone, alsoText: !!clientPhone,
-        clientName, bizName, eventType, eventDate, grand,
+        clientName, bizName, eventType, eventTheme, eventDate, grand,
         quoteLink: link, expiryDate,
       })
     });
@@ -1393,14 +1411,25 @@ function renderPreview() {
   const businessName = $('businessName').value.trim() || 'Your Business Name';
   const payLink = depositLink();
   const manualPayment = $('depositProfile').value === 'manual';
-  const rows = items.length ? items.map((it, idx) => `
-    <div class="invoice-row">
-      <span class="invoice-item-main"><strong>${escapeHtml(cleanPackageDisplayName(it.name))}</strong><small style="color:var(--muted)">${escapeHtml(it.category)}</small>${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).length ? `<ul class="included-list">${normalizeInclusions(it.inclusions).filter(inc => inc.included !== false).map(inc => `<li>${escapeHtml(inc.text)}</li>`).join('')}</ul>` : ''}</span>
-      <span><input type="number" value="${it.qty}" data-q-qty="${idx}"/></span>
-      <span><input type="number" value="${it.price}" data-q-price="${idx}"/></span>
-      <span style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span>${money(it.total)}</span><button class="tiny-btn" data-q-remove="${idx}">×</button></span>
-    </div>
-  `).join('') : `<div class="empty-state" style="background:#fff;border:1px dashed var(--line);color:var(--muted)">Add at least one item to preview the invoice.</div>`;
+  const rows = items.length ? items.map((it, idx) => {
+    const included = normalizeInclusions(it.inclusions).filter(inc => inc.included !== false);
+    return `<article class="proposal-item">
+      <div class="proposal-item-head">
+        <div class="proposal-item-copy">
+          <strong>${escapeHtml(cleanPackageDisplayName(it.name))}</strong>
+          <small>${escapeHtml(it.category)}</small>
+        </div>
+        <div class="proposal-item-total">
+          <div class="proposal-total-field">
+            <label>Total amount</label>
+            <div class="proposal-total-control"><span>${escapeHtml($('currency').value || '$')}</span><input type="number" min="0" step="0.01" value="${Number(it.total || 0).toFixed(2)}" data-q-line-total="${idx}" aria-label="Total amount for ${escapeHtml(cleanPackageDisplayName(it.name))}"/></div>
+          </div>
+          <button class="proposal-remove" type="button" data-q-remove="${idx}" aria-label="Remove ${escapeHtml(cleanPackageDisplayName(it.name))}">×</button>
+        </div>
+      </div>
+      ${included.length ? `<div class="proposal-inclusions"><strong>What this proposal includes</strong><ul class="included-list">${included.map(inc => `<li>${escapeHtml(inc.text)}</li>`).join('')}</ul></div>` : ''}
+    </article>`;
+  }).join('') : `<div class="empty-state" style="background:#fff;border:1px dashed var(--line);color:var(--muted)">Add at least one item to preview the proposal.</div>`;
 
   $('fullPreview').innerHTML = `
     <div class="invoice-shell" id="invoiceForPdf">
@@ -1424,9 +1453,9 @@ function renderPreview() {
         <div class="meta-box"><small>Event date</small><strong>${escapeHtml($('eventDate').value || '—')}</strong></div>
         <div class="meta-box"><small>Expires</small><strong>${escapeHtml($('expiryDate').value || '—')}</strong></div>
       </div>
+      ${$('eventTheme').value.trim() ? `<div class="invoice-customization"><small>Theme / customization</small><strong>${escapeHtml($('eventTheme').value.trim())}</strong></div>` : ''}
       <div class="invoice-core">
-        <div class="invoice-table">
-          <div class="invoice-row head"><strong>Item</strong><strong>Qty</strong><strong>Unit</strong><strong>Total</strong></div>
+        <div class="proposal-items">
           ${rows}
         </div>
         <div class="invoice-side">
@@ -1544,6 +1573,7 @@ document.addEventListener('change', (e) => {
   const catPrice = t.closest('[data-cat-price]'); if (catPrice) { const [ci, ii] = catPrice.dataset.catPrice.split(':').map(Number); state.catalog[ci].items[ii].price = parseFloat(catPrice.value || '0'); refreshAll(); return; }
   const qQty = t.closest('[data-q-qty]'); if (qQty) { state.quoteItems[Number(qQty.dataset.qQty)].qty = Math.max(1, parseInt(qQty.value || '1', 10)); refreshAll(); return; }
   const qPrice = t.closest('[data-q-price]'); if (qPrice) { state.quoteItems[Number(qPrice.dataset.qPrice)].price = parseFloat(qPrice.value || '0'); refreshAll(); return; }
+  const qLineTotal = t.closest('[data-q-line-total]'); if (qLineTotal) { const item = state.quoteItems[Number(qLineTotal.dataset.qLineTotal)]; const qty = Math.max(1, Number(item.qty) || 1); item.price = Math.max(0, parseFloat(qLineTotal.value || '0')) / qty; refreshAll(); return; }
   const qInc = t.closest('[data-q-inc]'); if (qInc) { const [qi, ii] = qInc.dataset.qInc.split(':').map(Number); const list = normalizeInclusions(state.quoteItems[qi].inclusions); list[ii].included = qInc.checked; state.quoteItems[qi].inclusions = list; refreshAll(); return; }
   const pInc = t.closest('[data-pkg-inc]'); if (pInc) { const [id, ii] = pInc.dataset.pkgInc.split(':'); const p = pkg(id); const list = normalizeInclusions(p.inclusions || (p.items[0] && p.items[0].inclusions)); list[Number(ii)].included = pInc.checked; p.inclusions = list; p.items.forEach(item => { if (item.category === 'Package') item.inclusions = list; }); return; }
   const pName = t.closest('[data-pkg-name]'); if (pName) { pkg(pName.dataset.pkgName).name = pName.value; renderLive(); return; }
@@ -1553,7 +1583,7 @@ document.addEventListener('change', (e) => {
 });
 
 document.addEventListener('input', (e) => {
-  if (['eventNotes','businessName','brandColor'].includes(e.target.id)) refreshAll();
+  if (['eventTheme','eventNotes','businessName','brandColor'].includes(e.target.id)) refreshAll();
 });
 
 function customItem() {
@@ -1568,7 +1598,9 @@ function clearCustom() { $('customName').value = ''; $('customCategory').value =
 
 function copyQuoteText() {
   const { items, subtotal, tax, grand, t } = totals();
-  const lines = ['QUOTE', '', `Business: ${$('businessName').value || 'Your Business Name'}`, `Client: ${$('clientName').value || '—'}`, `Event: ${$('eventType').value || '—'}`, `Event Date: ${$('eventDate').value || '—'}`, `Expires: ${$('expiryDate').value || '—'}`, '', 'ITEMS'];
+  const lines = ['QUOTE', '', `Business: ${$('businessName').value || 'Your Business Name'}`, `Client: ${$('clientName').value || '—'}`, `Event: ${$('eventType').value || '—'}`, `Event Date: ${$('eventDate').value || '—'}`, `Expires: ${$('expiryDate').value || '—'}`];
+  if ($('eventTheme').value.trim()) lines.push(`Theme / customization: ${$('eventTheme').value.trim()}`);
+  lines.push('', 'ITEMS');
   items.forEach(i => {
     lines.push(`- ${i.name} | Qty ${i.qty} | ${money(i.price)} | ${money(i.total)}`);
     normalizeInclusions(i.inclusions).filter(inc => inc.included !== false).forEach(inc => lines.push(`  ✓ ${inc.text}`));
@@ -1767,6 +1799,7 @@ function loadQuote(data) {
   if (data.clientEmail) $('clientEmail').value = data.clientEmail;
   if (data.clientPhone) $('clientPhone').value = data.clientPhone;
   if (data.eventType) $('eventType').value = data.eventType;
+  if (data.eventTheme) $('eventTheme').value = data.eventTheme;
   if (data.eventDate) $('eventDate').value = data.eventDate;
   if (data.expiryDate) $('expiryDate').value = data.expiryDate;
   if (data.eventNotes) $('eventNotes').value = data.eventNotes;
