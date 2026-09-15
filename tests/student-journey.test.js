@@ -50,7 +50,9 @@ assert.match(nav, /Unlock Full System/);
 // review. Existing products are never migrated or rewritten.
 assert.match(store, /price:9\.99/);
 assert.match(store, /active:false/);
-assert.match(store, /if\(product\?\.id\)openModal\(product\.id\)/);
+// The draft still opens for review, but from inside the library and with a
+// route back to it, rather than stranding the student in My Shop.
+assert.match(store, /if\(product\?\.id\)\{ returnToLibrary=true; switchTab\('mystore'\); openModal\(product\.id\); \}/);
 assert.match(store, /currentProfileData\.brandColor/);
 assert.match(store, /requestedTab/);
 

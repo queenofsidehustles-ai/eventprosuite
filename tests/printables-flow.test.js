@@ -94,4 +94,36 @@ assert.match(store, /your shop page will say "Coming Soon" until at least one is
 // drafts told the owner they were further along than they were.
 assert.match(store, /const hasProduct=Array\.isArray\(products\)&&products\.some\(p=>p\.active===true\);/);
 
+
+// ── Adding the same template twice ──────────────────────────────────────
+// "Already added" was read from library_claims, whose insert is unchecked and
+// had been failing silently — the table was empty while seven products
+// existed. So every template still offered "Add to My Store" and clicking
+// again made a duplicate. products.library_template_id is the same fact,
+// already loaded, and cannot drift because it IS the product.
+assert.match(store, /function claimedTemplateIds\(\)/);
+assert.match(store, /if\(p\.library_template_id\)ids\.add\(p\.library_template_id\)/);
+assert.match(store, /const claimedIds=claimedTemplateIds\(\);/);
+// The slot count follows the same source, so it cannot disagree with the cards.
+assert.match(store, /const used=claimedTemplateIds\(\)\.size;/);
+// Products reload before the library redraws, so the card flips to "Added"
+// straight away and a second click cannot slip through.
+assert.match(store, /await loadProducts\(\);\n    renderLibrary\(\);/);
+// The failing write is no longer trusted, but it is no longer silent either.
+assert.match(store, /library_claims insert failed \(not fatal\)/);
+
+// ── No reaching for the back button ─────────────────────────────────────
+// Adding used to strand you in My Shop with no way back to the templates.
+assert.match(store, /let returnToLibrary=false;/);
+assert.match(store, /if\(returnToLibrary\)\{ returnToLibrary=false; switchTab\('library'\); \}/);
+// An already-added template offers the useful next step instead of a dead chip.
+assert.match(store, /function openMyProduct\(id\)/);
+assert.match(store, /In your shop — view/);
+
+// ── Price and publish in one action ─────────────────────────────────────
+assert.match(store, /id="savePublishBtn"/);
+assert.match(store, /onclick="saveProduct\(true\)"/);
+assert.match(store, /async function saveProduct\(publishNow\)/);
+assert.match(store, /active: publishNow===true \? true : document\.getElementById\('pActive'\)\.value==='true'/);
+
 console.log('printables flow tests passed');

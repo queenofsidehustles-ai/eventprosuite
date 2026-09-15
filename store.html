@@ -765,8 +765,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
     <div class="modal-footer">
       <button class="btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" id="saveBtn" onclick="saveProduct()">
-        <span id="saveBtnText">Save Product</span>
+      <button class="btn-outline" id="saveBtn" onclick="saveProduct()">
+        <span id="saveBtnText">Save as draft</span>
+      </button>
+      <button class="btn-primary" id="savePublishBtn" onclick="saveProduct(true)">
+        Save &amp; Publish
       </button>
     </div>
   </div>
@@ -1070,7 +1073,12 @@ function openModal(id){
   document.getElementById('productModal').classList.add('open');
 }
 function editProduct(id){openModal(id);}
-function closeModal(){document.getElementById('productModal').classList.remove('open');}
+function closeModal(){
+  document.getElementById('productModal').classList.remove('open');
+  // You came from the Templates tab, so that is where you go back to — not
+  // stranded in My Shop hunting for the way back.
+  if(returnToLibrary){ returnToLibrary=false; switchTab('library'); }
+}
 document.getElementById('productModal').addEventListener('click',e=>{if(e.target===document.getElementById('productModal'))closeModal();});
 
 const PRODUCT_TEMPLATES={
@@ -1181,7 +1189,7 @@ async function uploadToStorage(bucket,file,folder){
   return publicUrl;
 }
 
-async function saveProduct(){
+async function saveProduct(publishNow){
   const name=(document.getElementById('pName').value||'').trim();
   if(!name){document.getElementById('pName').focus();return;}
   // Refresh session — updates sb's internal state so all subsequent requests are authenticated
@@ -1208,7 +1216,9 @@ async function saveProduct(){
       price:parseFloat(document.getElementById('pPrice').value)||0,
       theme:document.getElementById('pTheme').value||null,
       stripe_link:(document.getElementById('pStripeLink').value||'').trim()||null,
-      active:document.getElementById('pActive').value==='true',
+      // "Save & Publish" overrides the visibility dropdown, so setting a price
+      // and going live is one action rather than a save and a second trip.
+      active: publishNow===true ? true : document.getElementById('pActive').value==='true',
       image_url,file_url,file_name,
     };
 
@@ -1220,7 +1230,7 @@ async function saveProduct(){
       ({error:err}=await sb.from('products').insert(payload));
     }
     if(err)throw err;
-    showToast(editingId?'✓ Product updated!':'✓ Product added to your store!');
+    showToast(publishNow===true?'✓ Published — customers can buy it now':(editingId?'✓ Saved as a draft':'✓ Added to your store'));
     closeModal();
     await loadProducts();
   } catch(e){
@@ -1426,10 +1436,33 @@ async function loadLibrary(){
   renderLibrary();
 }
 
+
+// From a template straight to its product, and back to the templates when the
+// modal closes — so browsing the library never means reaching for the back
+// button.
+let returnToLibrary=false;
+function openMyProduct(id){
+  if(!id){switchTab('mystore');return;}
+  returnToLibrary=true;
+  switchTab('mystore');
+  openModal(id);
+}
+
+function claimedTemplateIds(){
+  const ids=new Set();
+  (Array.isArray(products)?products:[]).forEach(p=>{ if(p.library_template_id)ids.add(p.library_template_id); });
+  (Array.isArray(libraryClaims)?libraryClaims:[]).forEach(c=>{ if(c.template_id)ids.add(c.template_id); });
+  return ids;
+}
+
+function productForTemplate(templateId){
+  return (Array.isArray(products)?products:[]).find(p=>p.library_template_id===templateId)||null;
+}
+
 function renderLibrary(){
   const tier=userLibraryTier||'tier1';
   const limit=TIER_LIMITS[tier]||15;
-  const used=libraryClaims.length;
+  const used=claimedTemplateIds().size;
   const remaining=isFinite(limit)?Math.max(0,limit-used):null;
 
   // Tier badge
@@ -1450,7 +1483,7 @@ function renderLibrary(){
     return;
   }
 
-  const claimedIds=new Set(libraryClaims.map(c=>c.template_id));
+  const claimedIds=claimedTemplateIds();
   const canClaim=remaining===null||remaining>0;
 
   gridEl.innerHTML='<div class="products-grid">'+libraryTemplates.map(t=>{
@@ -1458,8 +1491,10 @@ function renderLibrary(){
     const imgHtml=t.image_url
       ?`<img src="${esc(t.image_url)}" alt="${esc(t.name)}">`
       :'<div class="no-img"><span>🎉</span></div>';
+    const mine=productForTemplate(t.id);
     const actionBtn=claimed
-      ?`<button class="btn-edit" style="flex:1;background:rgba(30,140,90,.08);border-color:rgba(30,140,90,.2);color:var(--success);cursor:default" disabled>✓ Added to Store</button>`
+      ?`<button class="btn-edit" style="flex:1;background:rgba(30,140,90,.08);border-color:rgba(30,140,90,.2);color:var(--success);font-weight:700"
+           onclick="openMyProduct('${mine?mine.id:''}')">${mine&&mine.active?'✓ In your shop — view':'✓ Added — set price &amp; publish'}</button>`
       :canClaim
         ?`<button class="btn-edit" style="flex:1" onclick="claimTemplate('${t.id}')">Add to My Store</button>`
         :`<button class="btn-edit" style="flex:1;opacity:.5;cursor:not-allowed" disabled>Slot limit reached</button>`;
@@ -1528,20 +1563,25 @@ async function claimTemplate(templateId){
 
     if(pErr)throw pErr;
 
-    await sb.from('library_claims').insert({
+    // Best-effort bookkeeping. It has been failing silently, which is what let
+    // duplicates happen — the library used to trust this table alone. It no
+    // longer does, but a failure should at least be visible in the console.
+    const{error:cErr}=await sb.from('library_claims').insert({
       user_id:currentUser.id,
       template_id:templateId,
       product_id:product?.id||null,
     });
+    if(cErr)console.warn('library_claims insert failed (not fatal):',cErr);
 
     libraryClaims.push({template_id:templateId,product_id:product?.id});
-    renderLibrary();
-    // Move directly into the one screen that still needs attention. The
-    // student reviews the price, payment link, and visibility without hunting.
+    // Reload products first: the library reads what is already added from
+    // them, so the card flips to "Added" immediately and a second click cannot
+    // create a duplicate.
     await loadProducts();
-    switchTab('mystore');
-    if(product?.id)openModal(product.id);
-    showToast('✓ Added as a draft. Review the price and payment link, then make it visible.');
+    renderLibrary();
+    // Review the price now, then come straight back to the templates.
+    if(product?.id){ returnToLibrary=true; switchTab('mystore'); openModal(product.id); }
+    showToast('✓ Added as a draft. Set your price, then Publish it in My Shop.');
   }catch(e){
     showToast('Error: '+(e.message||'unknown'));
     if(btn){btn.disabled=false;btn.textContent='Add to My Store';}
