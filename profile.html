@@ -670,13 +670,27 @@ async function handleStripeReturn(){
     return;
   }
   const code=params.get('code'),state=params.get('state');
-  if(!code||!state)return;
+  if(!code||!state){
+    // Stripe sent us back with nothing to exchange. Saying so beats leaving
+    // "Not connected" on screen with no explanation at all.
+    $('stripeConnectStatus').textContent='Stripe returned without a connection code. Please try again.';
+    history.replaceState({},'',location.pathname+'?focus=payments');
+    return;
+  }
   $('stripeConnectStatus').textContent='Confirming your Stripe account…';
   try{
     const data=await stripeSetupRequest({kind:'stripe-connect-complete',code,state});
     applyStripeConnectUI(data.accountId,data.ready,data.ready?'connected':$('depositProfile').value);
     showToast(data.ready?'✓ Stripe is connected. Deposits can now update themselves.':'Stripe is connected, but Stripe still needs more information.');
-  }catch(e){showToast(e.message)}
+  }catch(e){
+    // A toast is gone before it can be read, and the box underneath then says
+    // "Not connected" with no reason — indistinguishable from never having
+    // tried. The reason stays on screen instead.
+    console.error('Stripe connect failed:',e);
+    $('stripeConnectStatus').textContent='Could not connect: '+((e&&e.message)||'unknown error');
+    $('stripeConnectStatus').style.color='#B3261E';
+    showToast(e.message);
+  }
   history.replaceState({},'',location.pathname+'?focus=payments');
 }
 
