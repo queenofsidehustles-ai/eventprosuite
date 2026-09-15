@@ -1466,11 +1466,21 @@ function depositRecommendation(total) {
     100: $('stripe100').value.trim(), 250: $('stripe250').value.trim(),
     500: $('stripe500').value.trim(), 1000: $('stripe1000').value.trim()
   };
+  // A connected Stripe account can charge any amount, so there is nothing to
+  // round to. The four fixed tiers only exist because a payment link is for a
+  // set price — snapping to them once an exact charge is possible turns a 50%
+  // deposit on $795 into $500.
+  const pd = (currentProfile && currentProfile.profile_data) || {};
+  const canChargeExact = pd.depositProfile === 'connected' && pd.stripeConnectReady === true;
+  if (canChargeExact) {
+    return { pct, target, tier: target, exact: true, canChargeExact: true, hasConfiguredLink: true };
+  }
+
   const configured = depositOptions.filter(v => links[v]);
   const choices = configured.length ? configured : depositOptions;
   const tier = choices.reduce((best, value) =>
     Math.abs(value - target) < Math.abs(best - target) ? value : best, choices[0]);
-  return { pct, target, tier, exact: Math.abs(tier - target) < 0.01, hasConfiguredLink: !!links[tier] };
+  return { pct, target, tier, exact: Math.abs(tier - target) < 0.01, canChargeExact: false, hasConfiguredLink: !!links[tier] };
 }
 function totals() {
   const items = state.quoteItems.map(i => ({ ...i, total: i.qty * i.price }));
@@ -1710,13 +1720,23 @@ function renderLive() {
         ${incs.length ? `<div class="quote-inclusions"><strong>Choose what this quote includes</strong>${incs.map((inc, ii) => `<label class="quote-inclusion"><input type="checkbox" data-q-inc="${idx}:${ii}" ${inc.included !== false ? 'checked' : ''}/><span>${escapeHtml(inc.text)}</span></label>`).join('')}</div>` : ''}`;
       }).join('')
     : `<div class="empty-state">Add items below or use a saved package to start building.</div>`;
-  $('tierGrid').innerHTML = depositOptions.map(v =>
-    `<button type="button" class="tier-btn ${state.selectedDepositTier === v ? 'active' : ''}" data-deposit="${v}">${money(v)}</button>`
-  ).join('');
+  if (recommendation.canChargeExact && grand > 0) {
+    // The amount charged is the percentage itself, so the tier buttons have
+    // nothing left to choose between.
+    state.selectedDepositTier = recommendation.target;
+    $('tierGrid').innerHTML =
+      `<div class="tier-btn active" style="grid-column:1/-1;cursor:default">${money(recommendation.target)}</div>`;
+  } else {
+    $('tierGrid').innerHTML = depositOptions.map(v =>
+      `<button type="button" class="tier-btn ${state.selectedDepositTier === v ? 'active' : ''}" data-deposit="${v}">${money(v)}</button>`
+    ).join('');
+  }
   $('tierHelp').textContent = $('depositProfile').value === 'manual'
     ? 'Manual follow-up invoice. No Stripe button will show.'
     : grand <= 0
       ? 'Add quote items to see the recommended deposit.'
+      : recommendation.canChargeExact
+        ? `${recommendation.pct}% of this quote is ${money(recommendation.target)}. Your connected Stripe charges exactly that.`
       : recommendation.exact
         ? `${recommendation.pct}% of this quote is ${money(recommendation.target)}. The matching deposit tier is selected.`
         : `${recommendation.pct}% would be ${money(recommendation.target)}. Your fixed Stripe links cannot charge that exact amount, so confirm the deposit tier before sending.`;

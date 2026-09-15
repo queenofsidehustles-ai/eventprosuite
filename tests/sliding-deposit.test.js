@@ -112,4 +112,25 @@ const collect = /function collectDepositLadder\(\)\{[\s\S]*?\n\}/.exec(site);
 assert.ok(collect);
 assert.match(collect[0], /if\(!Number\.isFinite\(pct\)\|\|pct<1\|\|pct>100\) continue;/);
 
+
+// ── A connected Stripe charges the exact percentage ─────────────────────
+// The four fixed tiers exist only because a payment link is for a set price.
+// Once an exact charge is possible there is nothing to round to, and snapping
+// anyway turned a 50% deposit on $795 into $500 — $102.50 more than quoted.
+assert.match(app, /const canChargeExact = pd\.depositProfile === 'connected' && pd\.stripeConnectReady === true;/);
+assert.match(app, /return \{ pct, target, tier: target, exact: true, canChargeExact: true/);
+// The exact figure becomes the amount carried on the quote, which is what the
+// customer page and the checkout endpoint both read.
+assert.match(app, /state\.selectedDepositTier = recommendation\.target;/);
+// And the tier buttons stop offering a choice that no longer exists.
+assert.match(app, /Your connected Stripe charges exactly that/);
+
+const rec = /function depositRecommendation\(total\) \{[\s\S]*?\n\}/.exec(app);
+assert.ok(rec, 'depositRecommendation is missing');
+// Owners still on fixed links must keep snapping — they cannot charge $397.50.
+assert.match(rec[0], /const configured = depositOptions\.filter\(v => links\[v\]\);/);
+assert.match(rec[0], /canChargeExact: false/);
+// Connected-but-not-ready must not claim exact charging.
+assert.match(rec[0], /pd\.stripeConnectReady === true/);
+
 console.log('sliding deposit tests passed');
