@@ -443,14 +443,32 @@ async function startStripeConnect(req, res) {
       stripeConnectState: state,
       stripeConnectStateExpires: Date.now() + 10 * 60 * 1000,
     });
-    const redirectUri = 'https://partybizhub.com/profile.html?focus=payments&stripe=return';
+    // Stripe matches the redirect URI exactly, and the site answers on both
+    // partybizhub.com and www.partybizhub.com. Sending a fixed host means
+    // anyone who started on the other one is bounced to a different origin —
+    // where their sign-in does not exist, because browser storage is
+    // per-origin — so they would land back on the profile page logged out.
+    //
+    // The origin the request actually came from is used, checked against a
+    // short allowlist so nothing arbitrary can be reflected into Stripe. Both
+    // must be registered in the Stripe dashboard.
+    const ALLOWED_RETURN_ORIGINS = [
+      'https://www.partybizhub.com',
+      'https://partybizhub.com',
+      'https://app.partybizhub.com',
+    ];
+    const requestOrigin = String((req.headers && (req.headers.origin || '')) || '').replace(/\/$/, '');
+    const origin = ALLOWED_RETURN_ORIGINS.includes(requestOrigin)
+      ? requestOrigin
+      : 'https://www.partybizhub.com';
+    const redirectUri = origin + '/profile.html?focus=payments&stripe=return';
     const params = new URLSearchParams({
       response_type: 'code', client_id: clientId, scope: 'read_write', state,
       redirect_uri: redirectUri,
       'stripe_user[email]': user.email || profile.email || '',
       'stripe_user[business_name]': pd.businessName || pd.bizName || '',
       'stripe_user[product_description]': 'Kids party and event services',
-      'stripe_user[url]': `https://partybizhub.com/site.html?uid=${encodeURIComponent(user.id)}`,
+      'stripe_user[url]': `${origin}/site.html?uid=${encodeURIComponent(user.id)}`,
     });
     return res.json({ url: 'https://connect.stripe.com/oauth/authorize?' + params.toString() });
   } catch (e) {
