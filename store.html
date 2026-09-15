@@ -982,7 +982,16 @@ function renderProducts(){
     </div>`;
     return;
   }
-  grid.innerHTML=`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
+  // Say plainly when products exist but nobody can buy them. Without this the
+  // owner sees a full shop here and customers see "Coming Soon", with nothing
+  // connecting the two.
+  const hidden=products.filter(p=>!p.active).length;
+  const notice=hidden?`<div style="background:#FFF8E6;border:1px solid #F0DCA0;border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-size:.88rem;color:#6B5423;line-height:1.55">
+      <strong>${hidden} ${hidden===1?'product is':'products are'} hidden.</strong>
+      Customers cannot see or buy ${hidden===1?'it':'them'} yet — your shop page will say "Coming Soon" until at least one is published.
+      Hit <strong>Publish</strong> on the ${hidden===1?'one':'ones'} you are ready to sell.
+    </div>`:'';
+  grid.innerHTML=notice+`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
 }
 
 function productCard(p){
@@ -1000,11 +1009,28 @@ function productCard(p){
       <div class="product-desc">${esc(p.description||'No description yet.')}</div>
       <div class="product-price">$${Number(p.price||0).toFixed(2)}<small>one-time</small></div>
       <div class="product-actions">
+        ${p.active
+          ? `<button class="btn-edit" onclick="togglePublish('${p.id}',false)">Hide</button>`
+          : `<button class="btn-edit" style="background:rgba(30,140,90,.10);border-color:rgba(30,140,90,.25);color:var(--success);font-weight:800" onclick="togglePublish('${p.id}',true)">Publish</button>`}
         <button class="btn-edit" onclick="editProduct('${p.id}')">Edit</button>
         <button class="btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
       </div>
     </div>
   </div>`;
+}
+
+
+/* ── Publish / hide ───────────────────────────────────────────────────────
+   A product added from the library starts hidden on purpose, so nobody
+   accidentally sells something at a price they have not looked at. But the
+   only way to publish was buried in the edit modal, so products sat hidden
+   and the shop showed "Printables Coming Soon" to customers.
+   ──────────────────────────────────────────────────────────────────────── */
+async function togglePublish(id,makeLive){
+  const{error}=await sb.from('products').update({active:!!makeLive}).eq('id',id).eq('user_id',currentUser.id);
+  if(error){console.error(error);alert('Could not update that product. Please try again.');return;}
+  await loadProducts();
+  if(typeof toast==='function')toast(makeLive?'✓ Published — customers can buy it now':'Hidden from your shop');
 }
 
 function openModal(id){
@@ -1270,7 +1296,7 @@ async function markSetupDone(key){
 function setupStepState(){
   const flags=setupFlags();
   const hasShopName=!!(storeSlugValue||currentProfileData.businessName);
-  const hasProduct=Array.isArray(products)&&products.length>0;
+  const hasProduct=Array.isArray(products)&&products.some(p=>p.active===true);
   const hasPayment=!!(currentProfileData.paymentLink||currentProfileData.stripeConnectReady===true);
   return [
     { key:'downloaded', done:flags.downloaded===true, mins:5,
@@ -1283,7 +1309,7 @@ function setupStepState(){
       cta:'Open My Shop', act:"switchTab('mystore')" },
     { key:'product', done:hasProduct, mins:10,
       title:'Add your first product',
-      body:'Turn one template into something people can buy. You can add the rest later.',
+      body:'Turn one template into something people can buy, then hit Publish on it. A product stays hidden from your shop until you do.',
       cta:'Add a product', act:"switchTab('mystore')" },
     { key:'payment', done:hasPayment, mins:5,
       title:'Set up getting paid',

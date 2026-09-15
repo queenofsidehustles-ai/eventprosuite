@@ -51,7 +51,6 @@ assert.match(sw[0], /if\(panel\)panel\.classList\.add\('active'\)/);
 // A shop with products in it reads as done whether or not anyone ticked
 // anything, so the checklist cannot drift from the truth.
 assert.match(store, /function setupStepState\(\)/);
-assert.match(store, /const hasProduct=Array\.isArray\(products\)&&products\.length>0;/);
 assert.match(store, /const hasPayment=!!\(currentProfileData\.paymentLink\|\|currentProfileData\.stripeConnectReady===true\);/);
 // Only the two steps with no trace in the database are remembered as flags.
 assert.match(store, /printablesSetup/);
@@ -74,5 +73,25 @@ assert.doesNotMatch(store, /Digital Store is a/);
 assert.doesNotMatch(store, /Pro feature/);
 assert.doesNotMatch(store, /partybizcoach\.com/);
 assert.match(store, /Get Party Printables — \$67/);
+
+
+// ── A product nobody can buy is not a shop ──────────────────────────────
+// Adding from the library creates a deliberately hidden draft, so nobody
+// accidentally sells at a price they have not looked at. But the only way to
+// publish was buried in the edit modal, so products sat hidden while the
+// storefront told customers "Printables Coming Soon".
+assert.match(store, /async function togglePublish\(id,makeLive\)/);
+assert.match(store, /update\(\{active:!!makeLive\}\)\.eq\('id',id\)\.eq\('user_id',currentUser\.id\)/);
+// One click, right on the card, without opening Edit.
+assert.match(store, /togglePublish\('\$\{p\.id\}',true\)/);
+assert.match(store, /togglePublish\('\$\{p\.id\}',false\)/);
+
+// The owner is told why their shop looks empty to everyone else.
+assert.match(store, /const hidden=products\.filter\(p=>!p\.active\)\.length;/);
+assert.match(store, /your shop page will say "Coming Soon" until at least one is published/);
+
+// And the checklist only ticks on something actually buyable — counting hidden
+// drafts told the owner they were further along than they were.
+assert.match(store, /const hasProduct=Array\.isArray\(products\)&&products\.some\(p=>p\.active===true\);/);
 
 console.log('printables flow tests passed');
