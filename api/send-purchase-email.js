@@ -1,3 +1,6 @@
+// A pasted environment value can carry a trailing newline that survives
+// invisibly and then fails authentication with an error blaming the key.
+const env = name => String(process.env[name] || '').trim();
 const crypto = require('crypto');
 
 function readRawBody(req) {
@@ -41,17 +44,17 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // Keep the original account connected while allowing KPPS purchases from its
   // dedicated Stripe account. Each Stripe account issues its own endpoint secret.
   const STRIPE_SECRETS = [
-    process.env.STRIPE_WEBHOOK_SECRET || '',
-    process.env.KPPS_STRIPE_WEBHOOK_SECRET || '',
-    process.env.STRIPE_CONNECT_WEBHOOK_SECRET || '',
+    env('STRIPE_WEBHOOK_SECRET'),
+    env('KPPS_STRIPE_WEBHOOK_SECRET'),
+    env('STRIPE_CONNECT_WEBHOOK_SECRET'),
   ].filter(Boolean);
   const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const SUPABASE_SERVICE_KEY = env('SUPABASE_SERVICE_KEY');
+  const RESEND_KEY = env('RESEND_API_KEY');
   // Default to the VERIFIED partybizhub.com sender so emails work even if the env
   // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
   // delivers to the account owner — never use it for real customer email.
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
 
   // Never accept an unsigned/unverified Stripe event. These are endpoint signing
   // secrets (whsec_...), not Stripe API secret keys.
@@ -144,7 +147,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // metadata, and Connect events identify the student's Stripe account at the
   // top level. Handle these before classifying Party Biz Hub product sales.
   if (event.type === 'checkout.session.completed' && session.metadata?.kind === 'booking_deposit') {
-    if (!process.env.STRIPE_CONNECT_WEBHOOK_SECRET || reqStripeSecret !== process.env.STRIPE_CONNECT_WEBHOOK_SECRET) {
+    if (!env('STRIPE_CONNECT_WEBHOOK_SECRET') || reqStripeSecret !== env('STRIPE_CONNECT_WEBHOOK_SECRET')) {
       return res.status(400).json({ error: 'Deposit event did not come through the Connect webhook' });
     }
     return handleBookingDeposit(res, event, session, {
@@ -184,7 +187,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   // KPPS one-time purchases — unlock the full system for life.
   // Check the pre-discount subtotal first so COUPON / discounted purchases still deliver.
-  const KPPS_AMOUNTS = new Set([19700, 40000, 49700, ...envAmounts(process.env.KPPS_PRICE_CENTS)]);
+  const KPPS_AMOUNTS = new Set([19700, 40000, 49700, ...envAmounts(env('KPPS_PRICE_CENTS'))]);
   const isKPPS = !isCRMSub && (
     taggedKpps ||
     KPPS_AMOUNTS.has(amountSubtotal) || KPPS_AMOUNTS.has(amountTotal)
@@ -193,7 +196,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   // Party Printables — one-time purchase of the unlimited template library.
   // 9700 is the original founding price and stays listed so historical
   // purchases are still recognised on a replay.
-  const PPP_AMOUNTS = new Set([6700, 7900, 9700, ...envAmounts(process.env.PRINTABLES_PRICE_CENTS)]);
+  const PPP_AMOUNTS = new Set([6700, 7900, 9700, ...envAmounts(env('PRINTABLES_PRICE_CENTS'))]);
   const isPrintables = !isCRMSub && !isKPPS && (
     taggedPrintables ||
     PPP_AMOUNTS.has(amountSubtotal) || PPP_AMOUNTS.has(amountTotal)
@@ -490,7 +493,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 // customer days later.
 async function alertOwnerOfSkippedPurchase({ RESEND_KEY, FROM_EMAIL, eventId, session, amountSubtotal, amountTotal, sessionMode, metaProduct }) {
   if (!RESEND_KEY) return;
-  const to = process.env.PBH_ALERT_EMAIL || 'support@partybizhub.com';
+  const to = env('PBH_ALERT_EMAIL') || 'support@partybizhub.com';
   const money = cents => '$' + (Number(cents || 0) / 100).toFixed(2);
   const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
   const email = session.customer_details?.email || session.customer_email || '(no email on the session)';
@@ -553,12 +556,12 @@ function instalmentPlanSize(sub) {
   const declared = parseInt(meta.plan_payments, 10);
   if (Number.isFinite(declared) && declared > 1) return declared;
 
-  const planAmount = parseInt(process.env.KPPS_PLAN_AMOUNT_CENTS || '6900', 10);
+  const planAmount = parseInt(env('KPPS_PLAN_AMOUNT_CENTS') || '6900', 10);
   const item = sub && sub.items && sub.items.data && sub.items.data[0];
   const amount = item && item.price && item.price.unit_amount;
   const product = String(meta.product || '').toLowerCase();
   if (amount === planAmount && (product === 'kpps' || !product)) {
-    return parseInt(process.env.KPPS_PLAN_PAYMENTS || '3', 10) || 3;
+    return parseInt(env('KPPS_PLAN_PAYMENTS') || '3', 10) || 3;
   }
   return 0;
 }
@@ -589,7 +592,7 @@ async function handleInstalmentInvoice(res, event, { RESEND_KEY, FROM_EMAIL }) {
   const subId = invoice.subscription;
   if (!subId) return res.json({ received: true });
 
-  const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || '';
+  const STRIPE_KEY = env('STRIPE_SECRET_KEY');
   if (!STRIPE_KEY) {
     // Silence here means billing a customer past the end of their plan.
     console.error('INSTALMENT PLAN CANNOT BE CLOSED — STRIPE_SECRET_KEY is not set', { subId });
@@ -773,7 +776,7 @@ async function handleBookingDeposit(res, event, session, config) {
 }
 
 async function handleGenerateCopy(res, body) {
-  const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
+  const OPENROUTER_KEY = env('OPENROUTER_API_KEY');
   const { name, theme } = body;
   if (!name) return res.status(400).json({ error: 'name is required' });
   if (!OPENROUTER_KEY) return res.status(200).json({ error: 'OPENROUTER_API_KEY not set in Vercel env vars' });
@@ -830,12 +833,12 @@ Return ONLY this JSON with a string array for instructions:
 
 async function handleGrantAccess(res, body) {
   const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const SUPABASE_SERVICE_KEY = env('SUPABASE_SERVICE_KEY');
+  const RESEND_KEY = env('RESEND_API_KEY');
   // Default to the VERIFIED partybizhub.com sender so emails work even if the env
   // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
   // delivers to the account owner — never use it for real customer email.
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
 
   const { email, accessType, customerName } = body; // accessType: 'ppp' | 'kpps' | 'both' | 'crm'
   if (!email) return res.status(400).json({ error: 'email is required' });
@@ -973,11 +976,11 @@ ${skoolBlock}
 }
 
 async function handleSendEmail(res, body) {
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const RESEND_KEY = env('RESEND_API_KEY');
   // Default to the VERIFIED partybizhub.com sender so emails work even if the env
   // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
   // delivers to the account owner — never use it for real customer email.
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
   const { customerEmail, customerName, productName, downloadUrl, instructions, sellerName } = body;
 
   if (!customerEmail || !downloadUrl) {

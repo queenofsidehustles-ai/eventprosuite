@@ -1,3 +1,6 @@
+// A pasted environment value can carry a trailing newline that survives
+// invisibly and then fails authentication with an error blaming the key.
+const env = name => String(process.env[name] || '').trim();
 /**
  * send-reminders.js
  * Called daily by Vercel Cron (see vercel.json).
@@ -17,7 +20,7 @@ const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 //
 // The service-role key bypasses RLS. It lives only in Vercel's env (server
 // side) and must never appear in browser code.
-const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SUPA_KEY = env('SUPABASE_SERVICE_ROLE_KEY');
 
 async function supabaseGet(path) {
   const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
@@ -40,7 +43,7 @@ async function supabasePatch(table, id, body) {
 }
 
 async function sendEmail({ to, clientName, bizName, eventDate, stripeLink, daysUntil, fromEmail }) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = env('RESEND_API_KEY');
   if (!apiKey) return { ok: false, reason: 'no RESEND_API_KEY' };
 
   const formatted = new Date(eventDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -85,7 +88,7 @@ module.exports = async function handler(req, res) {
   }
 
   // Simple auth: require a secret header or param so random people can't trigger it
-  const secret = process.env.CRON_SECRET || 'pbh-cron';
+  const secret = env('CRON_SECRET') || 'pbh-cron';
   const provided = req.headers['x-cron-secret'] || req.query.secret;
   if (provided !== secret) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -123,7 +126,7 @@ module.exports = async function handler(req, res) {
     );
     const pd = (profiles[0] && profiles[0].profile_data) || {};
     const bizName = pd.businessName || 'Your Party Business';
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@partybizhub.com';
+    const fromEmail = env('RESEND_FROM_EMAIL') || 'noreply@partybizhub.com';
 
     // Pick the right Stripe link based on service price
     const price = parseFloat((booking.service_price || '0').replace(/[^0-9.]/g, '')) || 0;
@@ -183,8 +186,8 @@ module.exports = async function handler(req, res) {
 // price and a link to continue.
 async function runHubAccessExpiry(today) {
   const out = { warned: [], closed: [], errors: [] };
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
+  const RESEND_KEY = env('RESEND_API_KEY');
 
   const dayISO = offset => {
     const d = new Date(today); d.setDate(today.getDate() + offset);
@@ -359,7 +362,7 @@ async function runDepositHold(today) {
 
 
 async function sendDepositNudge(booking, pd, due) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = env('RESEND_API_KEY');
   if (!apiKey || !booking.client_email) return false;
 
   const bizName = pd.bizName || pd.businessName || 'Your Party Business';
@@ -415,7 +418,7 @@ async function sendDepositNudge(booking, pd, due) {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@partybizhub.com',
+        from: env('RESEND_FROM_EMAIL') || 'noreply@partybizhub.com',
         to: booking.client_email,
         reply_to: pd.bizEmail || pd.contactEmail || undefined,
         subject: `Your date is still on hold — ${bizName}`,

@@ -1,3 +1,6 @@
+// A pasted environment value can carry a trailing newline that survives
+// invisibly and then fails authentication with an error blaming the key.
+const env = name => String(process.env[name] || '').trim();
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -5,10 +8,10 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const RESEND_KEY = env('RESEND_API_KEY');
   // onboarding@resend.dev is Resend's sandbox sender and can only reach the
   // Resend account owner, so contracts to real clients were rejected.
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
 
   const {
     clientEmail, clientName, bizName, bizEmail, bizPhone,

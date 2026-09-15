@@ -1,5 +1,12 @@
 const crypto = require('crypto');
 
+// Environment values arrive by copy and paste, and a trailing newline or stray
+// space survives that journey invisibly. A key with "\n" on the end fails
+// authentication with an error that blames the key itself, which sends anyone
+// debugging it off checking the wrong thing — as happened here, where a pasted
+// Connect client id spent several rounds looking like a wrong id.
+const env = name => String(process.env[name] || '').trim();
+
 /**
  * Customer-facing emails.
  *
@@ -23,11 +30,11 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const RESEND_KEY = env('RESEND_API_KEY');
   // Must be an address on a domain verified in Resend. The old fallback,
   // onboarding@resend.dev, is Resend's shared sandbox sender and may only
   // email the Resend account owner, so quotes to real clients were rejected.
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
 
   if ((req.body || {}).kind === 'accept-quote') {
     return acceptQuote(req, res);
@@ -41,9 +48,9 @@ module.exports = async function handler(req, res) {
   if ((req.body || {}).kind === 'stripe-connect-config') {
     return res.json({
       enabled: Boolean(
-        process.env.STRIPE_SECRET_KEY &&
-        process.env.STRIPE_CONNECT_CLIENT_ID &&
-        process.env.STRIPE_CONNECT_WEBHOOK_SECRET
+        env('STRIPE_SECRET_KEY') &&
+        env('STRIPE_CONNECT_CLIENT_ID') &&
+        env('STRIPE_CONNECT_WEBHOOK_SECRET')
       ),
     });
   }
@@ -252,7 +259,7 @@ function explainEmailFailure(status, body, fromEmail) {
 const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 
 function serviceConfig() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+  const key = env('SUPABASE_SERVICE_ROLE_KEY') || env('SUPABASE_SERVICE_KEY');
   return {
     key,
     headers: {
@@ -385,7 +392,7 @@ async function saveOwnerProfileData(ownerId, profileData) {
 }
 
 async function stripeFormRequest(path, values, connectedAccount) {
-  const secret = process.env.STRIPE_SECRET_KEY || '';
+  const secret = env('STRIPE_SECRET_KEY');
   if (!secret) throw new Error('Stripe Connect is not configured');
   const headers = {
     Authorization: 'Basic ' + Buffer.from(secret + ':').toString('base64'),
@@ -401,7 +408,7 @@ async function stripeFormRequest(path, values, connectedAccount) {
 }
 
 async function stripeOAuthToken(code) {
-  const secret = process.env.STRIPE_SECRET_KEY || '';
+  const secret = env('STRIPE_SECRET_KEY');
   if (!secret) throw new Error('Stripe Connect is not configured');
   const r = await fetch('https://connect.stripe.com/oauth/token', {
     method: 'POST',
@@ -417,7 +424,7 @@ async function stripeOAuthToken(code) {
 }
 
 async function stripeGet(path, connectedAccount) {
-  const secret = process.env.STRIPE_SECRET_KEY || '';
+  const secret = env('STRIPE_SECRET_KEY');
   if (!secret) throw new Error('Stripe Connect is not configured');
   const headers = { Authorization: 'Basic ' + Buffer.from(secret + ':').toString('base64') };
   if (connectedAccount) headers['Stripe-Account'] = connectedAccount;
@@ -430,8 +437,8 @@ async function stripeGet(path, connectedAccount) {
 async function startStripeConnect(req, res) {
   const user = await authenticatedUser(req);
   if (!user) return res.status(401).json({ error: 'Please sign in again' });
-  const clientId = process.env.STRIPE_CONNECT_CLIENT_ID || '';
-  if (!clientId || !process.env.STRIPE_SECRET_KEY) {
+  const clientId = env('STRIPE_CONNECT_CLIENT_ID');
+  if (!clientId || !env('STRIPE_SECRET_KEY')) {
     return res.status(503).json({ error: 'Stripe Connect needs to be enabled by Party Biz Hub first' });
   }
   try {
@@ -606,7 +613,7 @@ async function acceptQuote(req, res) {
   }
 
   const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
-  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+  const SERVICE_KEY = env('SUPABASE_SERVICE_ROLE_KEY') || env('SUPABASE_SERVICE_KEY');
   if (!SERVICE_KEY) {
     return res.status(500).json({ error: 'Secure booking updates are not configured' });
   }
@@ -737,9 +744,9 @@ async function acceptQuote(req, res) {
 // acceptances already email the owner; this closes the same gap one step
 // earlier in the funnel, where the lead is coldest and speed matters most.
 async function notifyOwnerOfEnquiry({ ownerId, headers, payload, bookingId, host }) {
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const RESEND_KEY = env('RESEND_API_KEY');
   if (!RESEND_KEY) return;
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
 
   const ownerRes = await fetch(
     `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}&select=email,profile_data&limit=1`,
@@ -825,9 +832,9 @@ async function notifyOwnerOfEnquiry({ ownerId, headers, payload, bookingId, host
 // message that genuinely has to arrive, so it is sent here, on the same
 // request that saved the booking.
 async function notifyOwnerOfBooking({ ownerId, headers, booking, addOns, baseGrand, addOnTotal, grand, bookingId, host }) {
-  const RESEND_KEY = process.env.RESEND_API_KEY || '';
+  const RESEND_KEY = env('RESEND_API_KEY');
   if (!RESEND_KEY) return;
-  const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Party Biz Hub <support@partybizhub.com>';
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
 
   const ownerRes = await fetch(
     `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(ownerId)}&select=email,profile_data&limit=1`,
@@ -939,9 +946,9 @@ async function maybeTextQuote(b) {
   const off = { attempted: false, sent: false, note: null };
   if (!b.alsoText) return off;
 
-  const SID   = process.env.TWILIO_ACCOUNT_SID || '';
-  const TOKEN = process.env.TWILIO_AUTH_TOKEN  || '';
-  const FROM  = process.env.TWILIO_PHONE       || '';
+  const SID   = env('TWILIO_ACCOUNT_SID');
+  const TOKEN = env('TWILIO_AUTH_TOKEN');
+  const FROM  = env('TWILIO_PHONE');
   if (!SID || !TOKEN || !FROM) {
     return { attempted: true, sent: false,
              note: 'Texting is not set up yet — add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_PHONE in Vercel.' };

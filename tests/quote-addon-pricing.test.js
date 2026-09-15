@@ -87,8 +87,8 @@ assert.match(app, /persistAddonDefaultsOnce\(\)/);
 // is that it is no longer the fallback the code actually sends from)
 assert.doesNotMatch(api, /\|\| 'onboarding@resend\.dev'/);
 assert.doesNotMatch(contractApi, /\|\| 'onboarding@resend\.dev'/);
-assert.match(api, /RESEND_FROM_EMAIL \|\| 'Party Biz Hub <support@partybizhub\.com>'/);
-assert.match(contractApi, /RESEND_FROM_EMAIL \|\| 'Party Biz Hub <support@partybizhub\.com>'/);
+assert.match(api, /RESEND_FROM_EMAIL'\) \|\| 'Party Biz Hub <support@partybizhub\.com>'/);
+assert.match(contractApi, /RESEND_FROM_EMAIL'\) \|\| 'Party Biz Hub <support@partybizhub\.com>'/);
 
 // A client hitting reply reaches the planner, not Party Biz Hub — and a typo
 // in her profile must not take the whole send down with it.
