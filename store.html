@@ -206,15 +206,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div style="position:absolute;top:-100px;right:-100px;width:280px;height:280px;background:radial-gradient(circle,rgba(212,168,64,.2),transparent 65%);pointer-events:none"></div>
         <div style="position:relative;z-index:1">
           <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;font-size:32px;margin-bottom:1rem;box-shadow:0 10px 30px rgba(201,162,39,.4)">🛍️</div>
-          <h2 style="font-family:'Playfair Display',serif;font-size:1.9rem;margin-bottom:.7rem;color:#fff">Digital Store is a <span style="font-family:'Dancing Script',cursive;color:#F6E5A6">Pro feature</span></h2>
-          <p style="color:rgba(255,255,255,.85);font-size:.96rem;line-height:1.7;margin-bottom:1.4rem;max-width:480px;margin-left:auto;margin-right:auto">Upgrade to Party Biz Hub Pro to unlock your own digital storefront — sell party template bundles directly to your customers while you sleep.</p>
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.9rem;margin-bottom:.7rem;color:#fff">Unlock <span style="font-family:'Dancing Script',cursive;color:#F6E5A6">Party Printables</span></h2>
+          <p style="color:rgba(255,255,255,.85);font-size:.96rem;line-height:1.7;margin-bottom:1.4rem;max-width:480px;margin-left:auto;margin-right:auto">Party Profit Printables gives you 15 done-for-you templates, your own branded shop, and instant file delivery — a one-time $67. Your party business tools are a separate upgrade.</p>
           <div style="text-align:left;max-width:400px;margin:0 auto 1.6rem;display:grid;gap:8px">
             <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:.9rem;color:rgba(255,255,255,.92)"><span style="color:#D4AE52;font-weight:800;flex-shrink:0">✦</span>Add unlimited party template bundles</div>
             <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:.9rem;color:rgba(255,255,255,.92)"><span style="color:#D4AE52;font-weight:800;flex-shrink:0">✦</span>Customers pay you directly via Stripe</div>
             <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:.9rem;color:rgba(255,255,255,.92)"><span style="color:#D4AE52;font-weight:800;flex-shrink:0">✦</span>Instant automated file delivery after purchase</div>
             <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:.9rem;color:rgba(255,255,255,.92)"><span style="color:#D4AE52;font-weight:800;flex-shrink:0">✦</span>Your own branded storefront link to share</div>
           </div>
-          <a href="https://partybizcoach.com/upgrade" style="display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;text-decoration:none;font-weight:800;padding:1rem 2rem;border-radius:14px;font-size:1rem;box-shadow:0 14px 32px rgba(201,162,39,.4)">Upgrade to Pro →</a>
+          <a href="https://www.partybizhub.com/join" style="display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#3a2a07;text-decoration:none;font-weight:800;padding:1rem 2rem;border-radius:14px;font-size:1rem;box-shadow:0 14px 32px rgba(201,162,39,.4)">Get Party Printables — $67 →</a>
           <div style="margin-top:1rem;font-size:.78rem;color:rgba(255,255,255,.6)">Already upgraded? Sign out and back in to refresh your access.</div>
         </div>
       </div>
@@ -222,34 +222,57 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
 
     <div id="storeContent" style="display:none">
 
-      <!-- Tab bar -->
+      <!-- Tab bar
+           Ordered as the work actually happens: get set up, get your files,
+           build the shop, watch the money. "Quick Start" and "Marketing Guide"
+           used to sit here too, but they navigated away to other pages — a tab
+           that leaves the page is not a tab. They are linked from Start here. -->
       <div class="store-tabs">
-        <button class="tab-btn active" id="tabMyStore" onclick="switchTab('mystore')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          My Store
-        </button>
-        <button class="tab-btn" id="tabSales" onclick="switchTab('sales')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Sales &amp; Revenue
-        </button>
-        <button class="tab-btn" id="tabGuide" onclick="switchTab('guide')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Getting Started
+        <button class="tab-btn active" id="tabStart" onclick="switchTab('start')">
+          🚀 Start here
         </button>
         <button class="tab-btn" id="tabLibrary" onclick="switchTab('library')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Template Library
+          🎨 Templates
         </button>
-        <button class="tab-btn" onclick="window.location.href='welcome.html'">
-          🚀 Quick Start
+        <button class="tab-btn" id="tabMystore" onclick="switchTab('mystore')">
+          🛍️ My Shop
         </button>
-        <button class="tab-btn" onclick="window.location.href='marketing-guide.html'">
-          📣 Marketing Guide
+        <button class="tab-btn" id="tabSales" onclick="switchTab('sales')">
+          💰 Sales
         </button>
       </div>
 
+      <!-- START HERE TAB -->
+      <div class="tab-panel active" id="panelStart">
+        <div style="max-width:720px">
+          <h2 style="margin:0 0 .3rem;font-size:1.35rem">Set up your printables business</h2>
+          <p style="margin:0 0 1.2rem;color:#6B5B73;font-size:.94rem;line-height:1.6">
+            Five steps, about half an hour. You will have your template files ready to list
+            anywhere, and your own shop live. Come back any time — your progress is saved.
+          </p>
+
+          <div style="background:#F6F0FC;border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1.4rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:.86rem;font-weight:700;color:#4C1D95">
+              <span id="setupProgressLabel">0 of 5 done</span>
+              <span id="setupProgressPct">0%</span>
+            </div>
+            <div style="height:8px;background:#E4D8F2;border-radius:99px;margin-top:.5rem;overflow:hidden">
+              <div id="setupProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#7559d4,#9d73df);transition:width .3s"></div>
+            </div>
+          </div>
+
+          <div id="setupSteps"></div>
+
+          <div style="margin-top:1.6rem;padding-top:1.1rem;border-top:1px solid #EFEAF3;display:flex;gap:.6rem;flex-wrap:wrap">
+            <button class="tab-btn" onclick="window.location.href='welcome.html'">🚀 Quick Start guide</button>
+            <button class="tab-btn" onclick="window.location.href='marketing-guide.html'">📣 Marketing guide</button>
+            <button class="tab-btn" onclick="switchTab('guide')">❓ Selling FAQ</button>
+          </div>
+        </div>
+      </div>
+
       <!-- MY STORE TAB -->
-      <div class="tab-panel active" id="panelMystore">
+      <div class="tab-panel" id="panelMystore">
       <div class="wrap">
 
       <!-- Add Product — always visible at top of My Store tab -->
@@ -795,6 +818,7 @@ async function init(){
   document.getElementById('authGate').style.display='none';
 
   userLibraryTier=p?.library_tier||'tier1';
+  storeSlugValue=p?.store_slug||'';
   if(currentUser.email==='ggkidsspa@gmail.com'&&typeof setNavAdmin==='function')setNavAdmin();
   const hasAccess=p?.has_kpps_access===true||p?.has_printables_access===true;
   if(!hasAccess){
@@ -807,6 +831,12 @@ async function init(){
   if(typeof window.setNavPlan==='function') window.setNavPlan(isPPPOnly?'printables':'kpps');
 
   document.getElementById('storeContent').style.display='block';
+
+  // Deep links from the dashboard or an email can open a specific tab, and
+  // #templates keeps the old My Downloads links working.
+  const wanted=(location.hash||'').replace('#','').toLowerCase();
+  const alias={templates:'library',downloads:'library',shop:'mystore',store:'mystore'};
+  if(wanted)switchTab(alias[wanted]||wanted);
 
   // Restore saved template choice
   currentProfileData=p?.profile_data||{};
@@ -937,6 +967,8 @@ async function loadProducts(){
   if(error){console.error(error);return}
   products=data||[];
   renderProducts();
+  // Adding a product ticks step 3 without anyone having to say so.
+  renderSetupSteps();
 }
 
 function renderProducts(){
@@ -1195,12 +1227,103 @@ function copyStoreLink(){
 /* ── Tab switching ── */
 let salesLoaded=false;
 function switchTab(name){
+  const cap=name.charAt(0).toUpperCase()+name.slice(1);
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
-  document.getElementById('panel'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  // Null-safe: some panels (the older Getting Started content) are reachable
+  // from a link rather than a tab button, and a missing element used to throw
+  // and leave the page stuck on whatever was showing.
+  const btn=document.getElementById('tab'+cap);
+  const panel=document.getElementById('panel'+cap);
+  if(btn)btn.classList.add('active');
+  if(panel)panel.classList.add('active');
   if(name==='sales'&&!salesLoaded){salesLoaded=true;loadSales();}
   if(name==='library'&&!libraryLoaded){libraryLoaded=true;loadLibrary();}
+  if(name==='start')renderSetupSteps();
+  try{location.hash=name;}catch(e){}
+}
+
+
+/* ── SETUP CHECKLIST ──────────────────────────────────────────────────────
+   Five steps, roughly half an hour. Progress is derived from what actually
+   exists rather than from ticked boxes, so it cannot drift from reality — a
+   shop with products in it reads as done whether or not anyone ticked
+   anything. Only the two steps with no trace in the database (downloading
+   files, sharing the link) are remembered as flags.
+   ──────────────────────────────────────────────────────────────────────── */
+let storeSlugValue='';
+
+function setupFlags(){
+  const f=currentProfileData.printablesSetup;
+  return (f&&typeof f==='object')?f:{};
+}
+
+async function markSetupDone(key){
+  const flags={...setupFlags(),[key]:true};
+  currentProfileData={...currentProfileData,printablesSetup:flags};
+  renderSetupSteps();
+  try{
+    await sb.from('profiles').update({profile_data:currentProfileData}).eq('id',currentUser.id);
+  }catch(e){console.warn('Could not save setup progress:',e);}
+}
+
+function setupStepState(){
+  const flags=setupFlags();
+  const hasShopName=!!(storeSlugValue||currentProfileData.businessName);
+  const hasProduct=Array.isArray(products)&&products.length>0;
+  const hasPayment=!!(currentProfileData.paymentLink||currentProfileData.stripeConnectReady===true);
+  return [
+    { key:'downloaded', done:flags.downloaded===true, mins:5,
+      title:'Get your template files',
+      body:'Download the PDFs and mockup images. These are what you list on Etsy or Facebook — you can start selling with these alone.',
+      cta:'Open Templates', act:"switchTab('library')" },
+    { key:'shop', done:hasShopName, mins:5,
+      title:'Name and brand your shop',
+      body:'Pick your shop handle and colours. This is the link you will share.',
+      cta:'Open My Shop', act:"switchTab('mystore')" },
+    { key:'product', done:hasProduct, mins:10,
+      title:'Add your first product',
+      body:'Turn one template into something people can buy. You can add the rest later.',
+      cta:'Add a product', act:"switchTab('mystore')" },
+    { key:'payment', done:hasPayment, mins:5,
+      title:'Set up getting paid',
+      body:'Connect Stripe so customers pay you directly and the file is delivered automatically.',
+      cta:'Set up payment', act:"window.location.href='profile.html?focus=payments'" },
+    { key:'shared', done:flags.shared===true, mins:5,
+      title:'Put it in front of people',
+      body:'Share your shop link, and list the same files on Etsy or Facebook. That is usually the quickest first sale.',
+      cta:'How to sell these', act:"switchTab('guide')" },
+  ];
+}
+
+function renderSetupSteps(){
+  const wrap=document.getElementById('setupSteps');
+  if(!wrap)return;
+  const steps=setupStepState();
+  const done=steps.filter(s=>s.done).length;
+  const pct=Math.round(done/steps.length*100);
+  const lbl=document.getElementById('setupProgressLabel');
+  const pctEl=document.getElementById('setupProgressPct');
+  const bar=document.getElementById('setupProgressBar');
+  if(lbl)lbl.textContent=done+' of '+steps.length+' done';
+  if(pctEl)pctEl.textContent=pct+'%';
+  if(bar)bar.style.width=pct+'%';
+
+  wrap.innerHTML=steps.map((st,i)=>`
+    <div style="display:flex;gap:.9rem;padding:1rem 0;border-top:${i?'1px solid #EFEAF3':'none'}">
+      <div style="flex-shrink:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;
+                  background:${st.done?'#1F9D55':'#EFEAF3'};color:${st.done?'#fff':'#6B5B73'}">${st.done?'✓':i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:750;font-size:.95rem;color:#2F1E3B;${st.done?'text-decoration:line-through;opacity:.6':''}">${st.title}</div>
+        <div style="font-size:.86rem;color:#6B5B73;line-height:1.55;margin:.2rem 0 .55rem">${st.body}</div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <button class="tab-btn" onclick="${st.act}">${st.cta}</button>
+          ${(st.key==='downloaded'||st.key==='shared')&&!st.done
+            ? `<button class="tab-btn" onclick="markSetupDone('${st.key}')">Mark done</button>` : ''}
+          <span style="font-size:.78rem;color:#A99EB3">~${st.mins} min</span>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
 /* ── Sales dashboard ── */

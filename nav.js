@@ -7,7 +7,7 @@
   const PAGES = [
     { id: 'dashboard',  href: 'dashboard.html',  icon: '🏠', label: 'Home' },
     { section: 'Start Here' },
-    { id: 'downloads',  href: 'downloads.html',  icon: '📥', label: 'My Downloads' },
+    { id: 'store',      href: 'store.html',      icon: '🎨', label: 'Party Printables' },
     { id: 'profile',    href: 'profile.html',    icon: '⚙',  label: 'Business Profile' },
     { section: 'Build & Book', kppsOnly: true },
     { id: 'mywebsite',  href: 'mywebsite.html',  icon: '🌐', label: 'My Website',       kppsOnly: true },
@@ -19,7 +19,6 @@
     { id: 'vendors',    href: 'vendors.html',     icon: '🤝', label: 'Vendors',          kppsOnly: true },
     { section: 'Market & Sell' },
     { id: 'content',    href: 'content.html',     icon: '📱', label: 'Content Studio',   kppsOnly: true },
-    { id: 'store',      href: 'store.html',       icon: '🛍️', label: 'Party Profit Printables' },
     { id: 'assistant',  href: 'assistant.html',   icon: '🤖', label: 'PartyGenius AI',   kppsOnly: true },
   ];
   // Quick Start Guide and Marketing Guide live inside the Party Profit Printables tabs — not in the sidebar

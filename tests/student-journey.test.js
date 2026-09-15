@@ -38,7 +38,9 @@ assert.match(autoContract, /depositAmountPaid/);
 for (const section of ['Start Here', 'Build & Book', 'Run Your Events', 'Market & Sell']) {
   assert.match(nav, new RegExp(section.replace('&', '\\&')));
 }
-const navOrder = ['downloads', 'profile', 'mywebsite', 'app', 'contract', 'prep', 'profit', 'vendors', 'content', 'store', 'assistant'];
+// Printables is one entry now, at the top: for a $67 buyer it is the whole
+// product, and it used to be split across My Downloads and Market & Sell.
+const navOrder = ['store', 'profile', 'mywebsite', 'app', 'contract', 'prep', 'profit', 'vendors', 'content', 'assistant'];
 for (let i = 1; i < navOrder.length; i++) {
   assert.ok(nav.indexOf(`id: '${navOrder[i - 1]}'`) < nav.indexOf(`id: '${navOrder[i]}'`), 'sidebar order follows the student journey');
 }
