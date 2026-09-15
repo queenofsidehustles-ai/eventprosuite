@@ -126,4 +126,43 @@ assert.match(store, /onclick="saveProduct\(true\)"/);
 assert.match(store, /async function saveProduct\(publishNow\)/);
 assert.match(store, /active: publishNow===true \? true : document\.getElementById\('pActive'\)\.value==='true'/);
 
+
+// ── Clearing up duplicates already created ──────────────────────────────
+// The library used to offer "Add to My Store" on templates already added, so
+// accounts carry duplicates from before that was fixed. Two products from one
+// template are always a mistake — same file, same images, same description.
+assert.match(store, /function duplicateProductGroups\(\)/);
+assert.match(store, /function duplicatesToRemove\(\)/);
+assert.match(store, /async function removeDuplicateProducts\(\)/);
+// Destructive, so it names what goes and asks first.
+assert.match(store, /if\(!confirm\(/);
+assert.match(store, /This cannot be undone/);
+// Scoped to the owner, so a product id cannot be used to delete someone else's.
+assert.match(store, /\.delete\(\)\.eq\('id',p\.id\)\.eq\('user_id',currentUser\.id\)/);
+
+const vm2 = require('node:vm');
+const ctx3 = {}; vm2.createContext(ctx3);
+const grp = /function duplicateProductGroups\(\)\{[\s\S]*?\n\}/.exec(store)[0];
+const doom = /function duplicatesToRemove\(\)\{[\s\S]*?\n\}/.exec(store)[0];
+vm2.runInContext('var products=[];' + grp + doom + 'this.set=p=>{products=p};this.doomed=duplicatesToRemove;', ctx3);
+ctx3.set([
+  { id:'keep-a', active:true,  library_template_id:'dc', created_at:'2026-09-01' },
+  { id:'dup-b',  active:true,  library_template_id:'dc', created_at:'2026-09-05' },
+  { id:'dup-c',  active:false, library_template_id:'dc', created_at:'2026-08-20' },
+  { id:'keep-d', active:true,  library_template_id:'a8', created_at:'2026-09-02' },
+  { id:'only',   active:true,  library_template_id:'zz', created_at:'2026-09-01' },
+  { id:'handmade', active:true, library_template_id:null, created_at:'2026-09-01' },
+]);
+const ids = ctx3.doomed().map(p => p.id).sort();
+// join() because arrays from the sandbox carry a different prototype.
+assert.equal(ids.join(','), 'dup-b,dup-c', 'only the extra copies go');
+// A published copy is kept over an older draft — the one likely already linked
+// or shared is the one that survives.
+assert.ok(!ids.includes('keep-a'));
+// A template added once, and a product never made from a template at all, are
+// never touched.
+assert.ok(!ids.includes('only'));
+assert.ok(!ids.includes('handmade'));
+assert.ok(!ids.includes('keep-d'));
+
 console.log('printables flow tests passed');

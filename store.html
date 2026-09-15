@@ -988,13 +988,19 @@ function renderProducts(){
   // Say plainly when products exist but nobody can buy them. Without this the
   // owner sees a full shop here and customers see "Coming Soon", with nothing
   // connecting the two.
+  const dupes=duplicatesToRemove().length;
+  const dupeNotice=dupes?`<div style="background:#FDF4F3;border:1px solid #F0C4BE;border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-size:.88rem;color:#7A3B33;line-height:1.55;display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+      <span style="flex:1;min-width:220px"><strong>${dupes} duplicate ${dupes===1?'product':'products'}.</strong>
+      The same template was added more than once. One copy of each will stay.</span>
+      <button class="btn-edit" style="font-weight:800" onclick="removeDuplicateProducts()">Remove duplicates</button>
+    </div>`:'';
   const hidden=products.filter(p=>!p.active).length;
   const notice=hidden?`<div style="background:#FFF8E6;border:1px solid #F0DCA0;border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-size:.88rem;color:#6B5423;line-height:1.55">
       <strong>${hidden} ${hidden===1?'product is':'products are'} hidden.</strong>
       Customers cannot see or buy ${hidden===1?'it':'them'} yet — your shop page will say "Coming Soon" until at least one is published.
       Hit <strong>Publish</strong> on the ${hidden===1?'one':'ones'} you are ready to sell.
     </div>`:'';
-  grid.innerHTML=notice+`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
+  grid.innerHTML=dupeNotice+notice+`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
 }
 
 function productCard(p){
@@ -1029,6 +1035,54 @@ function productCard(p){
    only way to publish was buried in the edit modal, so products sat hidden
    and the shop showed "Printables Coming Soon" to customers.
    ──────────────────────────────────────────────────────────────────────── */
+
+/* ── DUPLICATE CLEANUP ────────────────────────────────────────────────────
+   Products created before the library stopped offering to add what was
+   already added. Two products from one template are always a mistake — the
+   file, the images and the description are identical — so this offers to
+   remove the extras, keeping the oldest of each set, and the published one
+   ahead of a draft where they differ.
+   ──────────────────────────────────────────────────────────────────────── */
+function duplicateProductGroups(){
+  const byTemplate={};
+  (Array.isArray(products)?products:[]).forEach(p=>{
+    if(!p.library_template_id)return;
+    (byTemplate[p.library_template_id]=byTemplate[p.library_template_id]||[]).push(p);
+  });
+  return Object.values(byTemplate).filter(g=>g.length>1);
+}
+
+function duplicatesToRemove(){
+  const doomed=[];
+  duplicateProductGroups().forEach(group=>{
+    // Keep a published one over a draft, then the oldest — the one most likely
+    // to be the one already linked or shared.
+    const sorted=[...group].sort((a,b)=>{
+      if(!!b.active !== !!a.active) return (b.active?1:0)-(a.active?1:0);
+      return new Date(a.created_at||0)-new Date(b.created_at||0);
+    });
+    doomed.push(...sorted.slice(1));
+  });
+  return doomed;
+}
+
+async function removeDuplicateProducts(){
+  const doomed=duplicatesToRemove();
+  if(!doomed.length)return;
+  const names=[...new Set(doomed.map(p=>p.name))].join(', ');
+  if(!confirm('Remove '+doomed.length+' duplicate '+(doomed.length===1?'product':'products')+'?\n\n'
+    +names+'\n\nOne copy of each stays in your shop. This cannot be undone.'))return;
+  let removed=0;
+  for(const p of doomed){
+    const{error}=await sb.from('products').delete().eq('id',p.id).eq('user_id',currentUser.id);
+    if(error){console.error('Could not remove duplicate',p.id,error);continue;}
+    removed++;
+  }
+  await loadProducts();
+  renderLibrary();
+  showToast(removed?('✓ Removed '+removed+' duplicate'+(removed===1?'':'s')):'Could not remove those — please try again');
+}
+
 async function togglePublish(id,makeLive){
   const{error}=await sb.from('products').update({active:!!makeLive}).eq('id',id).eq('user_id',currentUser.id);
   if(error){console.error(error);alert('Could not update that product. Please try again.');return;}
