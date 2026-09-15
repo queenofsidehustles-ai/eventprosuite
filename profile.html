@@ -290,6 +290,47 @@ input,select,textarea{font:inherit}
       <div class="field-help">Automatic Stripe deposits remove the need to match payments or mark deposits paid by hand.</div>
     </div>
 
+    <!-- How much to ask for, and when the rest is due. This is a business
+         policy, but it used to live only inside the website builder — so
+         anyone who brought their own website had nowhere to set it and
+         silently got 50%. It belongs here, next to how deposits are collected. -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+      <div class="field">
+        <label>Deposit percent</label>
+        <input type="number" id="depositPct" min="1" max="100" step="1" placeholder="50"/>
+        <div class="field-help">% of the quote due to hold the date. Most use 50%.</div>
+      </div>
+      <div class="field">
+        <label>Balance due (days before event)</label>
+        <input type="number" id="balanceDays" min="1" max="90" step="1" placeholder="7"/>
+        <div class="field-help">When the rest is due. Most use 7 or 14 days.</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.4rem;padding:.9rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:var(--cream,#FCFAFD)">
+      <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;margin:0">
+        <input type="checkbox" id="depositSliding" onchange="toggleDepositLadder()" style="width:16px;height:16px"/>
+        <span style="font-weight:700;font-size:.9rem">Ask for more when the event is close</span>
+      </label>
+      <div class="field-help" style="margin:.35rem 0 0 2.2rem">A date three weeks away is a bigger risk than one next spring. Overrides the flat percent above.</div>
+
+      <div id="depositLadderRows" style="display:none;margin-top:.85rem">
+        <div style="display:grid;grid-template-columns:auto 84px auto 74px;gap:.5rem;align-items:center;font-size:.84rem;margin-bottom:.45rem">
+          <span>Booked within</span><input type="number" id="ladderDays1" min="1" max="365" placeholder="14"/>
+          <span>days &rarr; deposit</span><input type="number" id="ladderPct1" min="1" max="100" placeholder="100"/>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 84px auto 74px;gap:.5rem;align-items:center;font-size:.84rem;margin-bottom:.45rem">
+          <span>Booked within</span><input type="number" id="ladderDays2" min="1" max="365" placeholder="30"/>
+          <span>days &rarr; deposit</span><input type="number" id="ladderPct2" min="1" max="100" placeholder="75"/>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 84px auto 74px;gap:.5rem;align-items:center;font-size:.84rem">
+          <span>Booked within</span><input type="number" id="ladderDays3" min="1" max="365" placeholder="60"/>
+          <span>days &rarr; deposit</span><input type="number" id="ladderPct3" min="1" max="100" placeholder="50"/>
+        </div>
+        <div class="field-help" style="margin-top:.5rem">Anything further out uses the flat percent. Leave a row blank to skip it.</div>
+      </div>
+    </div>
+
     <div class="stripe-connect" id="stripeConnectBox" style="display:none">
       <div class="stripe-connect-copy">
         <strong>Connect your Stripe account</strong>
@@ -528,6 +569,14 @@ async function init(){
     const{data:p}=await sb.from('profiles').select('profile_data,full_name').eq('id',currentUser.id).maybeSingle();
     const pd=(p&&p.profile_data)||{};
 
+    // Only so an owner who set a deposit percent in the website builder keeps
+    // seeing it here. Nothing is written back to that row.
+    try{
+      const{data:build}=await sb.from('website_builds').select('booking_data')
+        .eq('user_id',currentUser.id).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+      currentBuildBookingData=(build&&build.booking_data)||null;
+    }catch(e){ currentBuildBookingData=null; }
+
     if(pd.businessName)$('businessName').value=pd.businessName;
     if(pd.brandColor)$('brandColor').value=pd.brandColor;
     if(pd.currency)$('currency').value=pd.currency;
@@ -542,6 +591,22 @@ async function init(){
     if(pd.logoDataURL){logoDataURL=pd.logoDataURL;applyLogoPreview()}
     if(pd.contactPhone)$('contactPhone').value=pd.contactPhone;
     if($('contactEmail'))$('contactEmail').value=pd.contactEmail||pd.bizEmail||'';
+    // Existing owners set these in the website builder, so fall back to that
+    // rather than showing them a blank box and quietly losing their setting.
+    const bd=(currentBuildBookingData&&typeof currentBuildBookingData==='object')?currentBuildBookingData:{};
+    if($('depositPct'))$('depositPct').value=pd.depositPct||bd.depositPct||'';
+    if($('balanceDays'))$('balanceDays').value=pd.balanceDays||bd.balanceDays||'';
+    if($('depositSliding')){
+      $('depositSliding').checked = (pd.depositSliding===true)||(bd.depositSliding===true);
+      const rows=Array.isArray(pd.depositLadder)&&pd.depositLadder.length?pd.depositLadder
+                :(Array.isArray(bd.depositLadder)?bd.depositLadder:[]);
+      rows.slice(0,3).forEach((row,i)=>{
+        const d=$('ladderDays'+(i+1)),pc=$('ladderPct'+(i+1));
+        if(d&&row&&row.withinDays)d.value=row.withinDays;
+        if(pc&&row&&row.pct)pc.value=row.pct;
+      });
+      toggleDepositLadder();
+    }
     if(pd.bookingServices)bookingServices=[...pd.bookingServices];
     if(pd.depositUpfront){depositUpfrontEnabled=true;applyToggleUI(true)}
     autoContractEnabled=pd.autoContract!==false; // undefined = ON (existing behaviour)
@@ -692,6 +757,35 @@ async function handleStripeReturn(){
     showToast(e.message);
   }
   history.replaceState({},'',location.pathname+'?focus=payments');
+}
+
+
+// The website builder is where these used to live. Keeping its row to hand
+// means an owner who set a percentage there still sees it here.
+let currentBuildBookingData=null;
+
+function collectDepositLadder(){
+  const rows=[];
+  for(let i=1;i<=3;i++){
+    const d=$('ladderDays'+i),p=$('ladderPct'+i);
+    if(!d||!p)continue;
+    const days=parseInt(d.value,10),pct=parseFloat(p.value);
+    if(!Number.isFinite(days)||days<1||days>365)continue;
+    if(!Number.isFinite(pct)||pct<1||pct>100)continue;
+    rows.push({withinDays:days,pct:pct});
+  }
+  return rows.sort((a,b)=>a.withinDays-b.withinDays);
+}
+
+function toggleDepositLadder(){
+  const box=$('depositSliding'),rows=$('depositLadderRows');
+  if(!box||!rows)return;
+  rows.style.display=box.checked?'block':'none';
+  if(box.checked&&!$('ladderDays1').value&&!$('ladderDays2').value&&!$('ladderDays3').value){
+    $('ladderDays1').value=14;$('ladderPct1').value=100;
+    $('ladderDays2').value=30;$('ladderPct2').value=75;
+    $('ladderDays3').value=60;$('ladderPct3').value=50;
+  }
 }
 
 /* ── Booking toggle ── */
@@ -887,6 +981,10 @@ async function saveProfile(){
       autoContract:autoContractEnabled,
       contactPhone,
       contactEmail,
+      depositPct:$('depositPct')?($('depositPct').value.trim()||''):'',
+      balanceDays:$('balanceDays')?($('balanceDays').value.trim()||''):'',
+      depositSliding:$('depositSliding')?!!$('depositSliding').checked:false,
+      depositLadder:collectDepositLadder(),
       bookingServices:bookingServices,
       zernioKey:$('zernioKey').value.trim()
     };

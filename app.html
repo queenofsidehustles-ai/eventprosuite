@@ -877,7 +877,7 @@ async function saveQuote() {
       // Frozen at send time. If she changes her deposit policy next week, a
       // quote already with a customer must not quietly ask for a different
       // number than the one they were shown.
-      depositPolicy: depositPolicyFrom(ownerBuildRow && ownerBuildRow.booking_data),
+      depositPolicy: depositPolicyFrom(currentProfile && currentProfile.profile_data, ownerBuildRow && ownerBuildRow.booking_data),
       subtotal, tax, grand,
       businessName: $('businessName').value,
       clientName: $('clientName').value,
@@ -1415,8 +1415,21 @@ function depositLink() {
 //
 // The same rule runs on the customer's quote page and again on the server
 // before any card is charged, so all three agree on the number.
-function depositPolicyFrom(bookingData) {
-  const bd = bookingData || {};
+// The policy is a business setting and lives on the profile. The website
+// builder's booking_data is only a fallback, for owners who set a percentage
+// there before this moved — anyone using their own website never had a way to
+// set it and silently got 50%.
+function depositPolicyFrom(profileData, bookingData) {
+  const pdSrc = profileData || {};
+  const bdSrc = bookingData || {};
+  const has = v => v !== undefined && v !== null && String(v).trim() !== '';
+  const bd = {
+    depositPct: has(pdSrc.depositPct) ? pdSrc.depositPct : bdSrc.depositPct,
+    depositSliding: pdSrc.depositSliding === true ? true
+      : (has(pdSrc.depositPct) ? false : bdSrc.depositSliding === true),
+    depositLadder: (Array.isArray(pdSrc.depositLadder) && pdSrc.depositLadder.length)
+      ? pdSrc.depositLadder : bdSrc.depositLadder,
+  };
   const raw = parseFloat(bd.depositPct);
   const basePct = Number.isFinite(raw) && raw > 0 && raw <= 100 ? raw : 50;
   const ladder = (bd.depositSliding === true && Array.isArray(bd.depositLadder))
@@ -1446,7 +1459,7 @@ function depositPercentFor(policy, eventDate) {
 }
 
 function depositRecommendation(total) {
-  const policy = depositPolicyFrom(ownerBuildRow && ownerBuildRow.booking_data);
+  const policy = depositPolicyFrom(currentProfile && currentProfile.profile_data, ownerBuildRow && ownerBuildRow.booking_data);
   const pct = depositPercentFor(policy, $('eventDate') ? $('eventDate').value : '');
   const target = Math.round(Number(total || 0) * pct) / 100;
   const links = {

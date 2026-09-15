@@ -65,13 +65,42 @@ assert.equal(pct({ basePct: 50, ladder: [{ withinDays: 30, pct: 250 }] }, inDays
 
 // ── All three surfaces run the same rule ────────────────────────────────
 assert.match(app, /function depositPercentFor\(policy, eventDate\)/);
+
+// ── The policy belongs to the business, not to the website builder ──────
+// It used to be read only from website_builds.booking_data, so an owner who
+// brought their own website had nowhere to set it and silently got 50%.
+assert.match(app, /function depositPolicyFrom\(profileData, bookingData\)/);
+assert.match(app, /depositPolicyFrom\(currentProfile && currentProfile\.profile_data, ownerBuildRow && ownerBuildRow\.booking_data\)/);
+const profileHtml = read('profile.html');
+assert.match(profileHtml, /id="depositPct"/);
+assert.match(profileHtml, /id="balanceDays"/);
+assert.match(profileHtml, /id="depositSliding"/);
+assert.match(profileHtml, /depositLadder:collectDepositLadder\(\)/);
+// The builder's value is still read as a fallback, so nobody who set it there
+// loses it — but nothing is written back to that row.
+assert.match(profileHtml, /currentBuildBookingData/);
+assert.match(profileHtml, /from\('website_builds'\)\.select\('booking_data'\)/);
+
+// Profile wins over builder, and a profile percent with sliding off is
+// respected rather than inheriting the builder's ladder.
+const ctxP = {}; vm.createContext(ctxP);
+const fn2 = /function depositPolicyFrom\(profileData, bookingData\) \{[\s\S]*?\n\}/.exec(app);
+assert.ok(fn2, 'depositPolicyFrom is missing');
+vm.runInContext(fn2[0] + '\nthis.f = depositPolicyFrom;', ctxP);
+const build = { depositPct: 25, depositSliding: true, depositLadder: [{ withinDays: 30, pct: 90 }] };
+assert.equal(ctxP.f({ depositPct: 60 }, build).basePct, 60, 'the profile percent must win');
+// Arrays from the sandbox have a different prototype, so compare length.
+assert.equal(ctxP.f({ depositPct: 60 }, build).ladder.length, 0, 'a profile percent must not inherit the builder ladder');
+assert.equal(ctxP.f({}, build).basePct, 25, 'with nothing on the profile, the builder value still applies');
+assert.equal(ctxP.f({}, build).ladder.length, 1);
+assert.equal(ctxP.f({}, {}).basePct, 50, 'and 50% remains the final fallback');
 assert.match(app, /const pct = depositPercentFor\(policy, \$\('eventDate'\)/);
 assert.match(view, /const slidingDepositPct = \(policy, eventDate\) =>/);
 assert.match(view, /slidingDepositPct\(qd\.depositPolicy, q\.event_date \|\| qd\.eventDate\)/);
 
 // The policy is frozen onto the quote, so changing settings later cannot move
 // a number the customer has already been shown.
-assert.match(app, /depositPolicy: depositPolicyFrom\(ownerBuildRow && ownerBuildRow\.booking_data\)/);
+assert.match(app, /depositPolicy: depositPolicyFrom\(currentProfile && currentProfile\.profile_data, ownerBuildRow && ownerBuildRow\.booking_data\)/);
 
 // ── The owner can set the windows and the percentages ───────────────────
 assert.match(site, /id="bookingDepositSliding"/);
