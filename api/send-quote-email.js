@@ -66,6 +66,12 @@ module.exports = async function handler(req, res) {
   if ((req.body || {}).kind === 'create-deposit-checkout') {
     return createDepositCheckout(req, res);
   }
+  if ((req.body || {}).kind === 'create-product-checkout') {
+    return createProductCheckout(req, res);
+  }
+  if ((req.body || {}).kind === 'complete-product-purchase') {
+    return completeProductPurchase(req, res);
+  }
 
   const {
     clientEmail, clientPhone, clientName, bizName, bizEmail, brandColor,
@@ -738,6 +744,181 @@ async function acceptQuote(req, res) {
 }
 
 
+
+
+// ── SELLING A PRINTABLE ─────────────────────────────────────────────────
+// The printables storefront predates Stripe Connect and only understood a
+// pasted payment link — one link, one price, and a step nothing told students
+// they had to do, so most shops displayed products nobody could buy.
+//
+// These two calls give it the same footing as booking deposits: a checkout
+// built on the seller's own connected account at that product's real price,
+// and delivery that only happens once Stripe confirms the money arrived.
+async function createProductCheckout(req, res) {
+  const { productId, buyerEmail } = req.body || {};
+  if (!productId) return res.status(400).json({ error: 'A product is required' });
+  const email = validEmail(buyerEmail);
+  if (!email) return res.status(400).json({ error: 'A valid email is required' });
+
+  const { key, headers } = serviceConfig();
+  if (!key) return res.status(500).json({ error: 'Secure checkout is not configured' });
+
+  try {
+    // Price and seller come from the database, never from the browser — a
+    // shopper must not be able to name their own price.
+    const pRes = await fetch(
+      `${SUPA_URL}/rest/v1/products?id=eq.${encodeURIComponent(productId)}` +
+      '&select=id,user_id,name,price,active,file_url&limit=1',
+      { headers }
+    );
+    const rows = await pRes.json().catch(() => []);
+    const product = Array.isArray(rows) ? rows[0] : null;
+    if (!pRes.ok || !product) return res.status(404).json({ error: 'That product is no longer available' });
+    if (product.active !== true) return res.status(409).json({ error: 'That product is not on sale' });
+
+    const price = Math.round((Number(product.price) || 0) * 100);
+    if (price < 50) return res.status(409).json({ error: 'That product cannot be sold at this price' });
+
+    const owner = await getOwnerProfile(product.user_id);
+    const pd = owner.profile_data || {};
+    if (!pd.stripeConnectAccountId || pd.stripeConnectReady !== true) {
+      return res.status(409).json({ error: 'This shop has not finished setting up payments yet' });
+    }
+
+    const currency = /^[a-z]{3}$/i.test(pd.currency || '') ? pd.currency.toLowerCase() : 'usd';
+    const base = `https://${(req.headers && req.headers.host) || 'www.partybizhub.com'}/shopfront.html?uid=${encodeURIComponent(product.user_id)}`;
+
+    const session = await stripeFormRequest('/v1/checkout/sessions', {
+      mode: 'payment',
+      customer_email: email,
+      success_url: `${base}&purchase={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${base}&purchase=cancelled`,
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': currency,
+      'line_items[0][price_data][unit_amount]': String(price),
+      'line_items[0][price_data][product_data][name]': String(product.name || 'Party printable').slice(0, 250),
+      'metadata[kind]': 'printable_purchase',
+      'metadata[product_id]': product.id,
+      'metadata[owner_id]': product.user_id,
+      'payment_intent_data[metadata][kind]': 'printable_purchase',
+      'payment_intent_data[metadata][product_id]': product.id,
+    }, pd.stripeConnectAccountId);
+
+    return res.json({ url: session.url });
+  } catch (e) {
+    console.error('Product checkout failed:', e);
+    return res.status(502).json({ error: e.message || 'Could not start checkout' });
+  }
+}
+
+// Delivery used to happen because the browser arrived at a success URL, which
+// meant anyone who typed that URL got the file and a sale was recorded. The
+// session is now checked with Stripe before anything is sent.
+async function completeProductPurchase(req, res) {
+  const { sessionId, productId } = req.body || {};
+  if (!sessionId || !productId) return res.status(400).json({ error: 'Missing purchase details' });
+
+  const { key, headers } = serviceConfig();
+  if (!key) return res.status(500).json({ error: 'Secure delivery is not configured' });
+
+  try {
+    const pRes = await fetch(
+      `${SUPA_URL}/rest/v1/products?id=eq.${encodeURIComponent(productId)}` +
+      '&select=id,user_id,name,price,file_url,file_name,instructions&limit=1',
+      { headers }
+    );
+    const rows = await pRes.json().catch(() => []);
+    const product = Array.isArray(rows) ? rows[0] : null;
+    if (!pRes.ok || !product) return res.status(404).json({ error: 'That product is no longer available' });
+
+    const owner = await getOwnerProfile(product.user_id);
+    const pd = owner.profile_data || {};
+    if (!pd.stripeConnectAccountId) return res.status(409).json({ error: 'This shop is not set up for payments' });
+
+    const session = await stripeGet('/v1/checkout/sessions/' + encodeURIComponent(sessionId), pd.stripeConnectAccountId);
+    if (session.payment_status !== 'paid') {
+      return res.status(402).json({ error: 'That payment has not completed' });
+    }
+    // The session must belong to this product, or one purchase could be
+    // replayed to collect a different file.
+    if (String(session.metadata?.product_id || '') !== String(product.id)) {
+      return res.status(403).json({ error: 'That payment does not match this product' });
+    }
+
+    const buyer = validEmail(session.customer_details?.email || session.customer_email || '');
+
+    // Stripe's session id is the natural idempotency key: a refresh, a back
+    // button or a second tab must not record the sale twice.
+    const existing = await fetch(
+      `${SUPA_URL}/rest/v1/sales?stripe_session_id=eq.${encodeURIComponent(sessionId)}&select=id&limit=1`,
+      { headers }
+    );
+    const already = await existing.json().catch(() => []);
+    if (!Array.isArray(already) || !already.length) {
+      await fetch(`${SUPA_URL}/rest/v1/sales`, {
+        method: 'POST', headers: { ...headers, Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          seller_id: product.user_id,
+          product_id: product.id,
+          product_name: product.name,
+          amount: Number(product.price) || 0,
+          stripe_session_id: sessionId,
+        }),
+      });
+    }
+
+    if (buyer && product.file_url) {
+      await sendPrintableToBuyer({ to: buyer, product, pd });
+    }
+
+    return res.json({ delivered: true, email: buyer || null, fileUrl: product.file_url || null });
+  } catch (e) {
+    console.error('Product delivery failed:', e);
+    return res.status(502).json({ error: e.message || 'Could not complete that purchase' });
+  }
+}
+
+async function sendPrintableToBuyer({ to, product, pd }) {
+  const RESEND_KEY = env('RESEND_API_KEY');
+  if (!RESEND_KEY) return;
+  const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
+  const shop = pd.businessName || pd.bizName || 'Party Printables';
+  const brand = /^#[0-9a-fA-F]{6}$/.test(String(pd.brandColor || '')) ? pd.brandColor : '#6D28D9';
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:540px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden">
+  <div style="background:${esc(brand)};padding:24px 30px;color:#fff">
+    <h1 style="margin:0;font-size:1.25rem;font-weight:800">Your printables are ready 🎉</h1>
+  </div>
+  <div style="padding:26px 30px;color:#2F1E3B;font-size:.95rem;line-height:1.7">
+    <p style="margin:0 0 16px">Thank you for buying <strong>${esc(product.name)}</strong> from ${esc(shop)}.</p>
+    <a href="${esc(product.file_url)}" style="display:block;background:${esc(brand)};color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:10px;font-weight:700">Download your files &rarr;</a>
+    ${product.instructions ? `<p style="margin:18px 0 0;padding:14px 16px;background:#FAF7FB;border-radius:10px;font-size:.88rem;white-space:pre-line">${esc(product.instructions)}</p>` : ''}
+    <p style="margin:18px 0 0;font-size:.82rem;color:#8A7A96">Keep this email — the link stays available if you need to download again.</p>
+  </div>
+  <div style="padding:14px 30px;text-align:center;font-size:.76rem;color:#A99EB3;border-top:1px solid #EFEAF3">${esc(shop)}</div>
+</div>
+</body></html>`;
+
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + RESEND_KEY,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': `printable/${product.id}/${to}`,
+    },
+    body: JSON.stringify({
+      from: senderFrom(shop, FROM_EMAIL),
+      to,
+      reply_to: validEmail(pd.contactEmail) || validEmail(pd.bizEmail) || undefined,
+      subject: `Your ${product.name} download`,
+      html,
+    }),
+  });
+  if (!r.ok) console.warn('Printable delivery email failed:', await r.text().catch(() => ''));
+}
 
 // ── "You have a new enquiry" ────────────────────────────────────────────
 // Someone filling in a booking form is a stranger who might book. Quote

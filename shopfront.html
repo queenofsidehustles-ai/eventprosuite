@@ -541,6 +541,9 @@ async function init(){
 
   // Store global payment link fallback
   window.storePaymentLink = d.paymentLink || '';
+  // A connected Stripe is the preferred path. The pasted link stays as a
+  // fallback so shops already selling that way keep working untouched.
+  window.shopConnectReady = d.stripeConnectReady === true;
 
   // Apply subscriber's brand colors if set
   const bc = {primary:d.brandColor||'',...(d.brandColors||{})};
@@ -568,6 +571,12 @@ async function init(){
   // Check for Stripe success redirect
   const success=params.get('success'),productId=params.get('product');
   if(success==='1'&&productId) setTimeout(()=>showSuccess(productId),600);
+
+  // Coming back from a connected-Stripe checkout. The session is verified with
+  // Stripe on the server before anything is delivered — the old path handed
+  // over the file to anyone who arrived at the success URL, typed or not.
+  const purchase=params.get('purchase');
+  if(purchase&&purchase!=='cancelled') setTimeout(()=>completePurchase(purchase),400);
 
   buildFilters();
   renderProducts();
@@ -720,7 +729,7 @@ function renderProducts(){
       : '#';
 
     let btn;
-    if(p.price>0 && effectiveLink) btn=`<button class="${pfx}-buy" onclick="event.stopPropagation();startCheckout('${p.id}')">Buy Now</button>`;
+    if(p.price>0 && (effectiveLink||window.shopConnectReady===true)) btn=`<button class="${pfx}-buy" onclick="event.stopPropagation();startCheckout('${p.id}')">Buy Now</button>`;
     else if(p.price===0&&p.file_url) btn=`<button class="${pfx}-buy free" onclick="event.stopPropagation();startCheckout('${p.id}')">Get Free</button>`;
     else btn=`<span class="${pfx}-buy soon">Coming Soon</span>`;
 
@@ -807,13 +816,28 @@ async function submitCheckout(){
     document.getElementById('checkoutOverlay').classList.remove('open');
     await autoSendEmail(email,p);
     await showSuccess(checkoutProductId);
+  }else if(window.shopConnectReady===true){
+    // The seller's own connected Stripe, charging this product's real price.
+    // No pasted link, and nothing to keep in step when a price changes.
+    try{
+      const r=await fetch('/api/send-quote-email',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({kind:'create-product-checkout',productId:p.id,buyerEmail:email})
+      });
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.url)throw new Error(d.error||'Could not start checkout');
+      window.location.href=d.url;
+    }catch(e){
+      btn.disabled=false;btn.textContent='Continue to Checkout →';
+      errEl.textContent=e.message||'Could not start checkout. Please try again.';
+    }
   }else if(effectiveLink){
     const storeBase=encodeURIComponent(location.href.split('?')[0]+'?uid='+ownerId+'&success=1&product=');
     const buyUrl=effectiveLink+(effectiveLink.includes('?')?'&':'?')+'success_url='+storeBase+p.id;
     window.location.href=buyUrl+'&prefilled_email='+encodeURIComponent(email);
   }else{
     btn.disabled=false;btn.textContent='Continue to Checkout →';
-    errEl.textContent='No payment link set for this product yet.';
+    errEl.textContent='This shop has not finished setting up payments yet. Please contact the seller.';
   }
 }
 
@@ -825,6 +849,34 @@ async function autoSendEmail(email,p){
       body:JSON.stringify({customerEmail:email,customerName:'',productName:p.name,downloadUrl:p.file_url,instructions:p.instructions||null,sellerName:sellerBizName}),
     });
   }catch(_){}
+}
+
+
+async function completePurchase(sessionId){
+  const pid=localStorage.getItem('pbh_checkout_product')||'';
+  const statusMsg=document.getElementById('emailStatusMsg');
+  document.getElementById('successOverlay').classList.add('open');
+  if(statusMsg){statusMsg.style.display='block';statusMsg.textContent='Confirming your payment…';}
+  try{
+    const r=await fetch('/api/send-quote-email',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({kind:'complete-product-purchase',sessionId,productId:pid})
+    });
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'We could not confirm that payment');
+    localStorage.removeItem('pbh_checkout_product');
+    localStorage.removeItem('pbh_checkout_email');
+    if(statusMsg)statusMsg.textContent=d.email
+      ? '✓ Paid — your download link is on its way to '+d.email
+      : '✓ Paid — your download is ready';
+    if(d.fileUrl){
+      const a=document.getElementById('downloadBtn');
+      if(a){a.href=d.fileUrl;a.style.display='';}
+    }
+  }catch(e){
+    if(statusMsg)statusMsg.textContent=(e.message||'Something went wrong')+'. If you were charged, contact the seller and they can send your files.';
+  }
+  history.replaceState({},'',location.pathname+'?uid='+ownerId);
 }
 
 async function showSuccess(productId){

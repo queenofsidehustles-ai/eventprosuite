@@ -988,6 +988,19 @@ function renderProducts(){
   // Say plainly when products exist but nobody can buy them. Without this the
   // owner sees a full shop here and customers see "Coming Soon", with nothing
   // connecting the two.
+  // Two of four live shops were showing customers "Coming Soon" on every
+  // product, because taking payment needs a connected Stripe or a pasted link
+  // and nothing said so. A shop that cannot be bought from should say so to
+  // its owner, loudly, before its customers find out instead.
+  const canTakeMoney=!!(currentProfileData.stripeConnectReady===true||currentProfileData.paymentLink);
+  const liveCount=products.filter(p=>p.active).length;
+  const payNotice=(!canTakeMoney&&liveCount)?`<div style="background:#FDECEC;border:1px solid #E9A8A8;border-radius:12px;padding:1rem 1.15rem;margin-bottom:1rem;font-size:.9rem;color:#7A2E2E;line-height:1.6">
+      <strong>Nobody can buy from your shop yet.</strong>
+      Your ${liveCount} live ${liveCount===1?'product shows':'products show'} customers a "Coming Soon" button, because your shop has no way to take payment.
+      <div style="margin-top:.7rem">
+        <button class="btn-edit" style="font-weight:800" onclick="window.location.href='profile.html?focus=payments'">Connect Stripe to start selling</button>
+      </div>
+    </div>`:'';
   const dupes=duplicatesToRemove().length;
   const dupeNotice=dupes?`<div style="background:#FDF4F3;border:1px solid #F0C4BE;border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-size:.88rem;color:#7A3B33;line-height:1.55;display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
       <span style="flex:1;min-width:220px"><strong>${dupes} duplicate ${dupes===1?'product':'products'}.</strong>
@@ -1000,7 +1013,7 @@ function renderProducts(){
       Customers cannot see or buy ${hidden===1?'it':'them'} yet — your shop page will say "Coming Soon" until at least one is published.
       Hit <strong>Publish</strong> on the ${hidden===1?'one':'ones'} you are ready to sell.
     </div>`:'';
-  grid.innerHTML=dupeNotice+notice+`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
+  grid.innerHTML=payNotice+dupeNotice+notice+`<div class="products-grid">${products.map(p=>productCard(p)).join('')}</div>`;
 }
 
 function productCard(p){

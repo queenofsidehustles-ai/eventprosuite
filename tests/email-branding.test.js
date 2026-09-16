@@ -14,8 +14,11 @@ const app = read('app.html');
 // name is ours to set — and that is what an inbox actually shows.
 assert.match(api, /function senderFrom\(bizName, fallbackFrom\)/);
 assert.match(api, /from: senderFrom\(bizName, FROM_EMAIL\)/);
-// Both customer-facing emails: the quote and the booking confirmation.
-assert.equal((api.match(/from: senderFrom\(/g) || []).length, 2);
+// Every customer-facing email: the quote, the booking confirmation, and a
+// printable delivered after purchase. All three come from the business the
+// customer bought from, not from the platform.
+assert.equal((api.match(/from: senderFrom\(/g) || []).length, 3);
+assert.match(api, /from: senderFrom\(shop, FROM_EMAIL\)/);
 // The "you just got booked" alert goes TO the owner and stays branded as the
 // Hub, because that is what it is.
 assert.match(api, /just booked[\s\S]{0,200}/);
