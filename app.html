@@ -529,6 +529,7 @@
           <button type="button" class="tiny-btn" id="copyBtn">📋 Copy text</button>
           <button type="button" class="tiny-btn btn-primary" style="color:#fff;border:none" id="saveQuoteBtn">💾 Save Quote</button>
           <button type="button" class="tiny-btn" id="shareQuoteBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then click to email to client">📧 Email to Client</button>
+          <button type="button" class="tiny-btn" id="copyQuoteLinkBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then copy a ready-to-send message with the quote link">🔗 Copy Link</button>
         </div>
       </div>
       <div class="preview-body" id="fullPreview"></div>
@@ -904,6 +905,7 @@ async function saveQuote() {
       .eq('id', _sourceBookingId);
     if (linkErr) console.warn('Could not link quote to booking:', linkErr);
   }
+  enableCopyLinkButton();
   const shareBtn = $('shareQuoteBtn');
   const hasEmail = !!$('clientEmail').value.trim();
   const hasPhone = !!$('clientPhone').value.trim();
@@ -925,10 +927,120 @@ function ownerReplyEmail() {
   return pd.contactEmail || pd.bizEmail || (currentUser && currentUser.email) || '';
 }
 
+/* ── SHARING A QUOTE BY LINK ─────────────────────────────────────────
+   Email is not a reliable delivery channel for a quote. It lands in spam,
+   in Promotions, or nowhere at all, and the owner finds out days later when
+   the client says "I never got it". The quote link is the fallback that
+   always works: the owner copies a finished message and pastes it into a
+   text, WhatsApp, Instagram DM — anywhere the client already talks to her.
+
+   view-quote.html is public by UUID (see fix-quote-public-access-2026-09-04.sql)
+   and carries the same Accept button as the emailed copy, so a quote opened
+   from a pasted link can be approved exactly like one opened from an email. */
+
+function quoteLinkFor(id) {
+  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+  return base + 'view-quote.html?id=' + id;
+}
+
+function fmtLongDate(d) {
+  if (!d) return '';
+  // Date-only strings are parsed as UTC and would render as the day before in
+  // any timezone behind it, so anchor them to local midnight.
+  const dt = new Date(String(d).length <= 10 ? d + 'T00:00:00' : d);
+  return isNaN(dt) ? '' : dt.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+}
+
+/* The message the owner pastes. Written to be sent as-is: it opens with the
+   client's name, says what it is, states the total, and puts the link on its
+   own line so every phone turns it into a tap target. */
+function quoteTextMessage(o) {
+  const grandFmt = '$' + parseFloat(o.grand || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const detail = [o.eventType, o.eventTheme, fmtLongDate(o.eventDate)].filter(Boolean).join(' \u00b7 ');
+  // Built by pushing rather than by filtering a fixed list: the blank lines
+  // are load-bearing (they are what stops a text message reading as a wall)
+  // and a filter that drops a missing theme drops them too.
+  const lines = ['Hi ' + (o.clientName || 'there') + '!', ''];
+  lines.push('Your party quote from ' + (o.bizName || 'us') + ' is ready.');
+  if (detail) lines.push(detail);
+  lines.push('Total: ' + grandFmt, '', 'View & approve here:', o.link);
+  if (o.expiryDate) lines.push('', 'Valid until ' + fmtLongDate(o.expiryDate) + '.');
+  return lines.join('\n');
+}
+
+/* navigator.clipboard is unavailable on http:// origins and in some in-app
+   browsers, and can reject when the page is not focused. Each fallback is a
+   real one — the owner always ends up with something she can paste. */
+async function copyToClipboard(text, okMsg) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      toast(okMsg);
+      return true;
+    }
+    throw new Error('clipboard unavailable');
+  } catch (e) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) { toast(okMsg); return true; }
+      throw new Error('execCommand failed');
+    } catch (e2) {
+      prompt('Copy this and send it to your client:', text);
+      return false;
+    }
+  }
+}
+
+// Preview panel → Copy Link. Reads the form, so it always reflects what is
+// on screen, and requires a save because the link needs the saved quote's id.
+function copyQuoteLink() {
+  if (!_lastSavedQuoteId) { toast('Save the quote first'); return; }
+  const { grand } = totals();
+  const msg = quoteTextMessage({
+    clientName: $('clientName').value.trim(),
+    bizName:    $('businessName').value.trim(),
+    eventType:  $('eventType').value.trim(),
+    eventTheme: $('eventTheme').value.trim(),
+    eventDate:  $('eventDate').value,
+    expiryDate: $('expiryDate').value,
+    grand,
+    link: quoteLinkFor(_lastSavedQuoteId)
+  });
+  copyToClipboard(msg, '\u2713 Message copied \u2014 paste it into a text to your client');
+}
+
+// My Quotes → Copy Link, for a quote that was already sent. Rebuilt from the
+// stored quote rather than the form, so it works without reopening anything.
+function copySavedQuoteLink(id) {
+  const q = (_savedQuotesCache || []).find(x => x.id === id);
+  if (!q) { toast('Quote not found \u2014 reopen My Quotes'); return; }
+  const qd = q.quote_data || {};
+  const msg = quoteTextMessage({
+    clientName: qd.clientName || q.client_name,
+    bizName:    qd.businessName || '',
+    eventType:  qd.eventType || q.event_type || '',
+    eventTheme: qd.eventTheme || '',
+    eventDate:  qd.eventDate || q.event_date || '',
+    expiryDate: qd.expiryDate || '',
+    // baseGrand is the pre-upgrade total; a resent link quotes the same
+    // amount the customer was originally shown.
+    grand: qd.baseGrand != null ? qd.baseGrand : (qd.grand != null ? qd.grand : q.total_amount),
+    link: quoteLinkFor(q.id)
+  });
+  copyToClipboard(msg, '\u2713 Message copied \u2014 paste it into a text to your client');
+}
+
 async function shareQuote() {
   if (!_lastSavedQuoteId) { toast('Save the quote first'); return; }
-  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
-  const link = base + 'view-quote.html?id=' + _lastSavedQuoteId;
+  const link = quoteLinkFor(_lastSavedQuoteId);
 
   const clientEmail = $('clientEmail').value.trim();
   const clientName  = $('clientName').value.trim() || 'there';
@@ -1010,6 +1122,24 @@ async function shareQuote() {
   }
 }
 
+let _savedQuotesCache = [];
+
+/* Whether the customer has opened the link, so an unanswered quote reads as
+   "she never saw it" or "she saw it and hasn't replied" — two different
+   follow-ups. Written by mark_quote_viewed() when the link is opened; see
+   migrations/20260918_quote_viewed_at.sql.
+
+   Until that migration is run the column is absent from the row entirely,
+   which is not the same as "not opened" — so that case shows nothing rather
+   than telling her every quote was ignored. */
+function quoteOpenedLabel(q) {
+  if (!('viewed_at' in q)) return '';
+  if (!q.viewed_at) return ' · ○ Not opened yet';
+  const d = new Date(q.viewed_at);
+  return ' · ✓ Opened ' + d.toLocaleDateString() + ' ' +
+         d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+}
+
 async function loadSavedQuotes() {
   if (!currentUser) return [];
   const { data, error } = await sb
@@ -1018,7 +1148,8 @@ async function loadSavedQuotes() {
     .eq('user_id', currentUser.id)
     .order('created_at', { ascending: false });
   if (error) { console.error(error); return []; }
-  return data || [];
+  _savedQuotesCache = data || [];
+  return _savedQuotesCache;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1897,6 +2028,7 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'copyBtn') { copyQuoteText(); return; }
   if (t.id === 'saveQuoteBtn') { await saveQuote(); return; }
   if (t.id === 'shareQuoteBtn') { shareQuote(); return; }
+  if (t.id === 'copyQuoteLinkBtn') { copyQuoteLink(); return; }
   if (t.id === 'downloadPdfBtn') { downloadPdf(); return; }
 
   const dep = t.closest('[data-deposit]'); if (dep) { state.selectedDepositTier = Number(dep.dataset.deposit); renderLive(); renderPreview(); return; }
@@ -2094,9 +2226,10 @@ async function openQuotesModal() {
     <div class="saved-quote">
       <div class="saved-quote-info">
         <strong>${escapeHtml(q.client_name)} · ${escapeHtml(q.event_type || 'Event')}</strong>
-        <small>${money(q.total_amount)} · ${new Date(q.created_at).toLocaleDateString()}</small>
+        <small>${money(q.total_amount)} · ${new Date(q.created_at).toLocaleDateString()}${quoteOpenedLabel(q)}</small>
       </div>
       <div class="saved-quote-actions">
+        <button class="tiny-btn" onclick="copySavedQuoteLink('${q.id}')" title="Copy a ready-to-send message with this quote’s link">🔗 Copy Link</button>
         <button class="tiny-btn" onclick='loadQuote(${JSON.stringify(q.quote_data).replace(/'/g, "\\'")})'>Load</button>
       </div>
     </div>
@@ -2142,7 +2275,16 @@ async function prefillFromSavedQuote() {
 
 // Kept in step with saveQuote, so a reopened quote offers the same choices as
 // one just saved.
+function enableCopyLinkButton() {
+  const btn = $('copyQuoteLinkBtn');
+  if (!btn) return;
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'auto';
+  btn.title = 'Copy a ready-to-send message with this quote\u2019s link';
+}
+
 function enableShareButton() {
+  enableCopyLinkButton();
   const shareBtn = $('shareQuoteBtn');
   if (!shareBtn) return;
   const hasEmail = !!$('clientEmail').value.trim();

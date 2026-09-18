@@ -241,6 +241,12 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     }
     const q = Array.isArray(data)?data[0]:data;
     if(!q){ showError(); return; }
+    // Tell the owner her link was opened. Fire-and-forget: a quote must still
+    // render if this fails, and it fails for every owner who has not yet run
+    // migrations/20260918_quote_viewed_at.sql.
+    sb.rpc('mark_quote_viewed',{quote_id:id})
+      .then(({error:mvErr})=>{ if(mvErr) console.warn('Could not mark quote viewed:',mvErr.message); })
+      .catch(()=>{});
     return loadPublicProfile(sb, q.user_id)
       .then(p=>render(q,(p&&p.profile_data)||{},p));
   }).catch(e=>{ console.error(e); showError(); });
