@@ -708,12 +708,20 @@ async function handleBookingDeposit(res, event, session, config) {
       return res.status(409).json({ received: false, error: 'Deposit payment is not complete', eventId });
     }
 
+    // A customer who paid the whole quote up front owes nothing, so leaving her
+    // on 'deposit-paid' would put her in the owner's chase-the-balance list and
+    // she would be asked for money she has already paid. Buy-now-pay-later
+    // lands here routinely — the provider pays the owner in full on day one,
+    // whatever instalments the customer arranged with Klarna or Affirm.
+    const paidInFull = session.metadata?.pay_mode === 'full';
+    const paidStatus = paidInFull ? 'confirmed' : 'deposit-paid';
+
     const updateRes = await fetch(
       `${SUPABASE_URL}/rest/v1/bookings?id=eq.${encodeURIComponent(bookingId)}` +
       `&owner_id=eq.${encodeURIComponent(ownerId)}`,
       {
         method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
-        body: JSON.stringify({ status: 'deposit-paid', deposit_due_at: null, deposit_reminder_sent: null }),
+        body: JSON.stringify({ status: paidStatus, deposit_due_at: null, deposit_reminder_sent: null }),
       }
     );
     if (!updateRes.ok) throw new Error('Booking payment status could not be updated');
@@ -724,7 +732,7 @@ async function handleBookingDeposit(res, event, session, config) {
         `&user_id=eq.${encodeURIComponent(ownerId)}`,
         {
           method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
-          body: JSON.stringify({ status: 'deposit-paid' }),
+          body: JSON.stringify({ status: paidStatus }),
         }
       ).catch(() => {});
     }
@@ -766,8 +774,8 @@ async function handleBookingDeposit(res, event, session, config) {
     }
 
     return res.json({
-      received: true, eventId, bookingId, status: 'deposit-paid',
-      contractSent, contractExisting,
+      received: true, eventId, bookingId, status: paidStatus,
+      paidInFull, contractSent, contractExisting,
     });
   } catch (e) {
     console.error('Deposit automation failed', { eventId, bookingId, error: e.message });

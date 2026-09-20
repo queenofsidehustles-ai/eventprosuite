@@ -15,7 +15,7 @@ const site = read('mywebsite.html');
 // A sliding scale computed only in the browser is a number the customer could
 // edit before paying.
 assert.match(api, /function slidingDepositPct\(policy, eventDate\)/);
-const checkout = /const total = parseFloat\(String\(booking\.service_price[\s\S]*?const cents = Math\.round\(deposit \* 100\);/.exec(api);
+const checkout = /const total = parseFloat\(String\(booking\.service_price[\s\S]*?const cents = Math\.round\(amount \* 100\);/.exec(api);
 assert.ok(checkout, 'the deposit calculation is missing');
 assert.match(checkout[0], /slidingDepositPct\(quote\.quote_data\?\.depositPolicy, booking\.event_date\)/);
 // It reads the policy off the quote and the date off the booking — both
@@ -23,6 +23,13 @@ assert.match(checkout[0], /slidingDepositPct\(quote\.quote_data\?\.depositPolicy
 assert.doesNotMatch(checkout[0], /req\.body/);
 // The deposit can never exceed the total.
 assert.match(checkout[0], /Math\.min\(Math\.round\(total \* slidingPct\) \/ 100, total\)/);
+
+// ── Pay-in-full may pick the amount, never invent one ───────────────────
+// The request chooses BETWEEN two figures the server worked out for itself.
+// If this ever becomes an amount read from the body, a customer can set her
+// own price — so the charged figure must stay a choice of those two.
+assert.match(checkout[0], /const full = payMode === 'full';/);
+assert.match(checkout[0], /const amount = full \? total : deposit;/);
 
 // ── The rule itself ─────────────────────────────────────────────────────
 const ctx = {}; vm.createContext(ctx);

@@ -82,7 +82,9 @@ module.exports = async function handler(req, res) {
 
   // Standard kids party clauses
   const clauses = {
-    paymentText: depositAmt > 0
+    paymentText: depositAmt > 0 && totalPrice > 0 && depositAmt >= totalPrice - 0.005
+      ? `Payment of $${totalPrice.toFixed(2)} has been received in full. Nothing further is due.`
+      : depositAmt > 0
       ? `A deposit of $${depositAmt.toFixed(2)} has been paid to reserve your event date. The remaining balance of $${Math.max(totalPrice - depositAmt, 0).toFixed(2)} is due on the event date.`
       : `Full payment of $${totalPrice.toFixed(2)} is due on the event date. We accept cash, Zelle, CashApp, and credit/debit card.`,
     depositText: 'Deposits are non-refundable. If you need to reschedule, please contact us at least 14 days before your event and your deposit will be applied to a future booking within 12 months.',

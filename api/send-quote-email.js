@@ -63,6 +63,9 @@ module.exports = async function handler(req, res) {
   if ((req.body || {}).kind === 'stripe-connect-status') {
     return stripeConnectStatus(req, res);
   }
+  if ((req.body || {}).kind === 'quote-payment-options') {
+    return quotePaymentOptions(req, res);
+  }
   if ((req.body || {}).kind === 'create-deposit-checkout') {
     return createDepositCheckout(req, res);
   }
@@ -535,8 +538,95 @@ async function stripeConnectStatus(req, res) {
   }
 }
 
+/* What the quote page may advertise about paying over time.
+   ─────────────────────────────────────────────────────────────────────
+   Buy-now-pay-later only helps if the customer learns about it while she is
+   deciding, not after she has already committed at checkout. So the quote
+   page has to say "4 payments of $198.75" up front.
+
+   The awkward part is knowing WHICH plans to promise. Klarna, Affirm and
+   Afterpay are enabled per business in each owner's own Stripe dashboard, and
+   promising a plan the owner has not switched on sends the customer to a
+   checkout that does not offer it — worse than saying nothing.
+
+   So the truth is read from Stripe here, on the server, where the secret key
+   and the connected account id already live. The page gets back a list of
+   method names and a publishable key: enough for Stripe's messaging element
+   to quote real lender terms, and nothing that identifies the account.
+   stripeConnectAccountId stays off the wire — see
+   migrations/20260914_lock_down_profiles.sql and the exposure test. */
+const BNPL_METHODS = ['klarna', 'affirm', 'afterpay_clearpay'];
+
+/* Which pay-over-time methods this business can actually take right now.
+   `available` is what Stripe allows the account; display_preference.value is
+   the owner's own dashboard switch. Both have to agree.
+
+   Returns [] on any failure, and every caller treats that as "advertise
+   nothing, change nothing" — so a Stripe outage costs a payment option, never
+   a booking. */
+async function enabledBnplMethods(accountId) {
+  try {
+    const configs = await stripeGet('/v1/payment_method_configurations', accountId);
+    const list = Array.isArray(configs.data) ? configs.data : [];
+    const active = list.find(c => c.active !== false && c.is_default === true)
+                || list.find(c => c.active !== false);
+    if (!active) return [];
+    return BNPL_METHODS.filter(name => {
+      const entry = active[name];
+      return !!entry && entry.available !== false && entry.display_preference?.value !== 'off';
+    });
+  } catch (e) {
+    console.warn('Could not read payment methods for', accountId, e.message);
+    return [];
+  }
+}
+
+async function quotePaymentOptions(req, res) {
+  const { quoteId } = req.body || {};
+  if (!quoteId) return res.status(400).json({ error: 'quoteId is required' });
+  const publishableKey = env('STRIPE_PUBLISHABLE_KEY');
+  // Every failure below returns an empty method list rather than an error. A
+  // quote must still render and still be bookable when payment-plan messaging
+  // cannot be worked out — it is an enhancement, not a dependency.
+  const quiet = extra => res.json({ methods: [], publishableKey: '', ...extra });
+  const { key, headers } = serviceConfig();
+  if (!key || !publishableKey) return quiet();
+  try {
+    const quoteRes = await fetch(
+      `${SUPA_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}` +
+      '&select=id,user_id,total_amount,quote_data&limit=1', { headers }
+    );
+    const quotes = await quoteRes.json().catch(() => []);
+    const quote = Array.isArray(quotes) ? quotes[0] : null;
+    if (!quoteRes.ok || !quote) return quiet();
+
+    const profile = await getOwnerProfile(quote.user_id);
+    const pd = profile.profile_data || {};
+    if (!pd.stripeConnectAccountId || pd.stripeConnectReady !== true || pd.depositProfile !== 'connected') {
+      return quiet();
+    }
+
+    const methods = await enabledBnplMethods(pd.stripeConnectAccountId);
+
+    return res.json({
+      methods,
+      publishableKey: methods.length ? publishableKey : '',
+      currency: (/^[a-z]{3}$/i.test(pd.currency || '') ? pd.currency : 'usd').toUpperCase(),
+      country: /^[a-z]{2}$/i.test(pd.country || '') ? pd.country.toUpperCase() : 'US',
+    });
+  } catch (e) {
+    console.warn('Payment plan options unavailable', e.message);
+    return quiet();
+  }
+}
+
 async function createDepositCheckout(req, res) {
-  const { bookingId, quoteId, clientEmail } = req.body || {};
+  // payMode 'full' charges the whole quote instead of the deposit. It exists
+  // for buy-now-pay-later: financing a deposit leaves the customer owing a
+  // balance she still has to find later, which is the confusing half of BNPL.
+  // Financing the whole booking is the version that actually helps her, and
+  // the owner is paid in full either way.
+  const { bookingId, quoteId, clientEmail, payMode } = req.body || {};
   if (!bookingId || !quoteId || !clientEmail) {
     return res.status(400).json({ error: 'Booking, quote, and email are required' });
   }
@@ -571,8 +661,13 @@ async function createDepositCheckout(req, res) {
     const deposit = slidingPct != null
       ? Math.min(Math.round(total * slidingPct) / 100, total)
       : Math.min(Number.isFinite(selected) && selected > 0 ? selected : total * 0.5, total);
-    const cents = Math.round(deposit * 100);
-    if (cents < 50) return res.status(409).json({ error: 'The deposit amount is too low for card checkout' });
+    // 'full' is read from the request, but the AMOUNT never is — it is still
+    // the server's own total. The browser chooses which of two server-computed
+    // figures to charge, and cannot invent a third.
+    const full = payMode === 'full';
+    const amount = full ? total : deposit;
+    const cents = Math.round(amount * 100);
+    if (cents < 50) return res.status(409).json({ error: 'That amount is too low for card checkout' });
 
     const profile = await getOwnerProfile(booking.owner_id);
     const pd = profile.profile_data || {};
@@ -582,26 +677,52 @@ async function createDepositCheckout(req, res) {
     const currency = /^[a-z]{3}$/i.test(pd.currency || '') ? pd.currency.toLowerCase() : 'usd';
     const success = `https://partybizhub.com/view-quote.html?id=${encodeURIComponent(quoteId)}&deposit=success`;
     const cancel = `https://partybizhub.com/view-quote.html?id=${encodeURIComponent(quoteId)}&deposit=cancelled`;
+    // Klarna, Affirm and Afterpay are deliberately NOT listed as
+    // payment_method_types. Naming any type at all switches the session out of
+    // dynamic payment methods and would pin every business to this hard-coded
+    // list — so each owner's own Stripe dashboard decides what appears, and
+    // enabling a new method never needs a deploy.
+    //
+    // Afterpay is the exception that costs something: Checkout will not offer
+    // it unless a shipping address is collected, because that is how Afterpay
+    // reads the customer's country. That address step is asked of EVERY
+    // customer, card payers included, so it is only added for the businesses
+    // that actually have Afterpay switched on — the rest keep the shorter
+    // checkout they have today. It is not wasted on a party business anyway:
+    // it is where the setup is delivered.
+    const country = /^[a-z]{2}$/i.test(pd.country || '') ? pd.country.toUpperCase() : 'US';
+    const wantsAfterpay = (await enabledBnplMethods(pd.stripeConnectAccountId)).includes('afterpay_clearpay');
     const session = await stripeFormRequest('/v1/checkout/sessions', {
       mode: 'payment',
       customer_email: booking.client_email,
       client_reference_id: booking.id,
       success_url: success,
       cancel_url: cancel,
+      ...(wantsAfterpay ? { 'shipping_address_collection[allowed_countries][0]': country } : {}),
       'line_items[0][quantity]': '1',
       'line_items[0][price_data][currency]': currency,
       'line_items[0][price_data][unit_amount]': String(cents),
-      'line_items[0][price_data][product_data][name]': `Deposit for ${booking.service_name || 'party booking'}`,
+      'line_items[0][price_data][product_data][name]': full
+        ? `${booking.service_name || 'Party booking'} — paid in full`
+        : `Deposit for ${booking.service_name || 'party booking'}`,
       'metadata[kind]': 'booking_deposit',
       'metadata[booking_id]': booking.id,
       'metadata[owner_id]': booking.owner_id,
       'metadata[quote_id]': quoteId,
+      // Still the amount this session must collect, whichever mode it is in.
+      // The webhook checks the payment against it, so it stays one key.
       'metadata[deposit_amount_cents]': String(cents),
+      'metadata[pay_mode]': full ? 'full' : 'deposit',
       'payment_intent_data[metadata][kind]': 'booking_deposit',
       'payment_intent_data[metadata][booking_id]': booking.id,
       'payment_intent_data[metadata][owner_id]': booking.owner_id,
+      'payment_intent_data[metadata][pay_mode]': full ? 'full' : 'deposit',
     }, pd.stripeConnectAccountId);
-    return res.json({ url: session.url, automatic: true, depositAmount: deposit });
+    return res.json({
+      url: session.url, automatic: true,
+      payMode: full ? 'full' : 'deposit',
+      amount, depositAmount: deposit, total,
+    });
   } catch (e) {
     return res.status(502).json({ error: e.message });
   }

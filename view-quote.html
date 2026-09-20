@@ -88,6 +88,15 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
 .btn-book:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06)}
 .btn-book:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .pay-note{font-size:.85rem;color:#9B89A8;text-align:center;margin-top:.9rem;line-height:1.6}
+.pay-choice{display:grid;gap:.6rem;margin-top:1.3rem}
+.pay-opt{display:block;position:relative;border:1.5px solid #E7E0EE;border-radius:12px;padding:.85rem 1rem .85rem 2.6rem;cursor:pointer;transition:border-color .15s,background .15s}
+.pay-opt:hover{border-color:#C9B8D8}
+.pay-opt.selected{border-color:var(--pay-brand,#6D28D9);background:#FBF8FE}
+.pay-opt input{position:absolute;left:1rem;top:1.15rem;accent-color:var(--pay-brand,#6D28D9)}
+.pay-opt-main{display:block;font-size:.95rem;font-weight:600;color:#2E2438}
+.pay-opt-sub{display:block;font-size:.8rem;color:#9B89A8;margin-top:.15rem}
+.pay-plan{margin-top:.8rem}
+.pay-plan:empty{display:none}
 .form-err{display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;border-radius:10px;padding:.8rem 1rem;font-size:.88rem;margin-top:1rem;line-height:1.55}
 .form-err.show{display:block}
 
@@ -135,6 +144,14 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
   const SUPA_ANON = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
   const sb = window.supabase.createClient(SUPA_URL, SUPA_ANON);
 
+  // Which amount the customer chose to pay now. Read when the booking is
+  // created, set by the pay-choice radios, and reset per quote. Lives out here
+  // because the choice is made during render() and read by the book handler.
+  let selectedPayMode = 'deposit';
+  // Set once the Stripe messaging element is mounted, so the quoted
+  // instalments follow the amount when add-ons change it.
+  let updatePayPlanAmount = null;
+
   const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmt = n => '$'+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const fmtDate = d => {if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'})};
@@ -163,6 +180,59 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
   // never the API keys, entitlements or internal pricing that also live there.
   // The direct read is kept as a fallback purely so this page keeps working in
   // the window between deploying and running the migration.
+  /* "or 4 interest-free payments of $198.75" — from Stripe, not from us.
+     ─────────────────────────────────────────────────────────────────────
+     The instalment terms belong to Klarna, Affirm and Afterpay and differ by
+     amount, country and shopper. Working them out here would mean publishing
+     a credit offer we are not the ones making, so Stripe's messaging element
+     renders it instead and stays correct when a lender changes its terms.
+
+     Everything is conditional: no configured key, no enabled methods, a
+     blocked script or a thrown error all end with an empty div and a quote
+     that books exactly as before. */
+  async function startPayPlanMessaging(quoteId, amountNow){
+    const slot = document.getElementById('payPlanMsg');
+    if(!slot) return;
+    try{
+      const r = await fetch('/api/send-quote-email',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({kind:'quote-payment-options',quoteId})
+      });
+      const opts = await r.json().catch(()=>({}));
+      if(!r.ok || !opts.publishableKey || !Array.isArray(opts.methods) || !opts.methods.length) return;
+
+      await new Promise((resolve,reject)=>{
+        if(window.Stripe) return resolve();
+        const tag = document.createElement('script');
+        tag.src = 'https://js.stripe.com/v3/';
+        tag.onload = resolve; tag.onerror = () => reject(new Error('Stripe.js blocked'));
+        document.head.appendChild(tag);
+      });
+
+      // Stripe wants the smallest currency unit, and it rejects a zero or
+      // fractional amount — so a quote still being priced renders nothing
+      // rather than an error.
+      const cents = v => Math.round((Number(v)||0)*100);
+      const start = cents(amountNow());
+      if(start < 1) return;
+
+      const elements = window.Stripe(opts.publishableKey).elements();
+      const el = elements.create('paymentMethodMessaging',{
+        amount: start,
+        currency: opts.currency || 'USD',
+        countryCode: opts.country || 'US',
+        paymentMethodTypes: opts.methods,
+      });
+      el.mount('#payPlanMsg');
+      updatePayPlanAmount = value => {
+        const next = cents(value);
+        if(next >= 1) el.update({ amount: next });
+      };
+    }catch(e){
+      console.warn('Payment plan messaging unavailable:', e.message);
+    }
+  }
+
   async function loadPublicProfile(client, id){
     try{
       const { data, error } = await client.rpc('get_public_profile', { p_id: id });
@@ -403,6 +473,25 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
 
     <div class="form-err" id="formErr"></div>
 
+    ${pd.depositProfile==='connected'&&pd.stripeConnectReady===true?`
+    <div class="pay-choice" id="payChoice" style="--pay-brand:${brand}">
+      <label class="pay-opt selected" data-pay-opt="deposit">
+        <input type="radio" name="payMode" value="deposit" checked>
+        <span class="pay-opt-main">Pay <span id="payDepAmt">${fmt(depAmt)}</span> deposit now</span>
+        <span class="pay-opt-sub" id="payDepSub">${fmt(balance)} due ${esc(pd.paymentTerms||'before your event')}</span>
+      </label>
+      <label class="pay-opt" data-pay-opt="full">
+        <input type="radio" name="payMode" value="full">
+        <span class="pay-opt-main">Pay <span id="payFullAmt">${fmt(grand)}</span> in full</span>
+        <span class="pay-opt-sub">Nothing left to pay on the day</span>
+      </label>
+    </div>`:''}
+
+    <!-- Stripe's own messaging element renders here when the business has a
+         pay-over-time method switched on. Left empty otherwise, and .pay-plan
+         collapses, so nothing promises instalments that do not exist. -->
+    <div class="pay-plan" id="payPlanMsg"></div>
+
     <button class="btn-book" id="bookBtn" style="background:${brand};color:${onBrand}">
       Book this party <span>&rarr;</span>
     </button>
@@ -446,8 +535,35 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         const values = { customerGrand:current.grand, addonTotal:current.addOnTotal, updatedGrand:current.grand };
         Object.entries(values).forEach(([id,value])=>{ const el=document.getElementById(id); if(el)el.textContent=fmt(value); });
         const split=document.getElementById('customerSplit'); if(split)split.textContent=`${fmt(current.depAmt)} deposit to book · ${fmt(current.balance)} on the day`;
-        const note=document.getElementById('payNote'); if(note)note.innerHTML=`Next step is a ${fmt(current.depAmt)} deposit to hold your spot.<br>The remaining ${fmt(current.balance)} is due ${esc(pd.paymentTerms||'before your event')}.`;
+        const payingFull = selectedPayMode === 'full';
+        const note=document.getElementById('payNote');
+        if(note)note.innerHTML = payingFull
+          ? `You'll pay ${fmt(current.grand)} now. Nothing further is due.`
+          : `Next step is a ${fmt(current.depAmt)} deposit to hold your spot.<br>The remaining ${fmt(current.balance)} is due ${esc(pd.paymentTerms||'before your event')}.`;
+        const depAmtEl=document.getElementById('payDepAmt');  if(depAmtEl)depAmtEl.textContent=fmt(current.depAmt);
+        const depSubEl=document.getElementById('payDepSub');  if(depSubEl)depSubEl.textContent=`${fmt(current.balance)} due ${pd.paymentTerms||'before your event'}`;
+        const fullAmtEl=document.getElementById('payFullAmt');if(fullAmtEl)fullAmtEl.textContent=fmt(current.grand);
+        // Add-ons move the total, so the "4 payments of X" has to move with it
+        // or it quotes instalments for a price nobody is being charged.
+        if(updatePayPlanAmount)updatePayPlanAmount(payingFull?current.grand:current.depAmt);
       };
+
+      document.querySelectorAll('[data-pay-opt]').forEach(opt=>{
+        opt.addEventListener('change',()=>{
+          selectedPayMode = opt.dataset.payOpt === 'full' ? 'full' : 'deposit';
+          document.querySelectorAll('[data-pay-opt]').forEach(o=>o.classList.toggle('selected',o===opt));
+          const btn=document.getElementById('bookBtn');
+          if(btn&&!btn.disabled)btn.innerHTML = selectedPayMode==='full'
+            ? 'Book & pay in full <span>&rarr;</span>'
+            : 'Book this party <span>&rarr;</span>';
+          refreshPricing();
+        });
+      });
+
+      startPayPlanMessaging(q.id, () => {
+        const current = pricing();
+        return selectedPayMode === 'full' ? current.grand : current.depAmt;
+      });
       document.querySelectorAll('[data-customer-addon]').forEach(box=>box.addEventListener('change',()=>{
         const index=Number(box.dataset.customerAddon); const row=document.querySelector(`[data-customer-addon-row="${index}"]`);
         if(box.checked){ const qty=document.querySelector(`[data-customer-addon-qty="${index}"]`); selected.set(index,qty?(Number(qty.value)||defaultQty(addOns[index])):defaultQty(addOns[index])); row&&row.classList.add('selected'); }
@@ -568,7 +684,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
             method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
               kind:'create-deposit-checkout',bookingId:effectiveBookingId,
-              quoteId:q.id,clientEmail:email
+              quoteId:q.id,clientEmail:email,payMode:selectedPayMode
             })
           });
           const checkout=await checkoutRes.json().catch(()=>({}));
