@@ -109,8 +109,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
     <div id="fullySignedBanner" class="signed-banner" style="display:none">
       <div class="icon">✓</div>
       <div>
-        <strong>Fully signed</strong>
-        <span>Both parties have signed this contract. You can download a copy for your records below.</span>
+        <strong id="signedBannerTitle">Fully signed</strong>
+        <span id="signedBannerNote">Both parties have signed this contract. You can download a copy for your records below.</span>
       </div>
     </div>
 
@@ -277,11 +277,15 @@ function renderContract(){
     $('vendorSigDisplay').innerHTML='<p style="color:var(--muted);font-size:.88rem;font-style:italic">Vendor has not signed yet.</p>';
   }
 
-  // If already fully signed, hide sign panel + show banner
+  // If already signed, hide sign panel + show banner
   if(c.client_signature){
     $('sigCard').style.display='none';
     $('postSignCard').style.display='block';
     $('fullySignedBanner').style.display='flex';
+    if(!c.vendor_signature){
+      $('signedBannerTitle').textContent='Signed';
+      $('signedBannerNote').textContent='We have your signature. You can download a copy for your records below.';
+    }
   }
 }
 
@@ -326,12 +330,21 @@ async function submitSignature(){
   btn.textContent='Signing...';
 
   try{
-    const status=contract.vendor_signature?'Fully Signed':'Vendor Signed';
+    const status=contract.vendor_signature?'Fully Signed':'Client Signed';
     const{error}=await sb.from('contracts').update({client_signature:sig,status,signed_at:new Date().toISOString()}).eq('sign_token',contract.sign_token);
     if(error)throw error;
     contract.client_signature=sig;
     contract.status=status;
     showToast('✓ Contract signed successfully');
+
+    // This page has always told the customer "the vendor has also been
+    // notified". Nothing sent that notification, so the sentence was untrue.
+    // Fire-and-forget: a signature that saved must never be undone by an
+    // email that did not send, and the server will not send it twice.
+    fetch('/api/send-quote-email',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({kind:'contract-signed',signToken:contract.sign_token})
+    }).catch(e=>console.warn('Could not notify the vendor:',e));
     $('sigCard').style.display='none';
     $('postSignCard').style.display='block';
     $('fullySignedBanner').style.display='flex';

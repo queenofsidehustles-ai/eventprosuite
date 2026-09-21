@@ -737,6 +737,19 @@ async function handleBookingDeposit(res, event, session, config) {
       ).catch(() => {});
     }
 
+    // The balance terms the customer already agreed to on her quote. Read
+    // here rather than guessed in the contract, so the contract cannot promise
+    // a different date from the quote she accepted.
+    let quoteData = {};
+    if (quoteId) {
+      const qRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/saved_quotes?id=eq.${encodeURIComponent(quoteId)}` +
+        `&user_id=eq.${encodeURIComponent(ownerId)}&select=quote_data&limit=1`, { headers }
+      ).catch(() => null);
+      const rows = qRes && qRes.ok ? await qRes.json().catch(() => []) : [];
+      quoteData = (Array.isArray(rows) && rows[0] && rows[0].quote_data) || {};
+    }
+
     let contractSent = false;
     let contractExisting = false;
     if (pd.autoContract !== false && booking.client_email && booking.event_date) {
@@ -765,6 +778,7 @@ async function handleBookingDeposit(res, event, session, config) {
             bizEmail: pd.contactEmail || pd.bizEmail || '',
             bizPhone: pd.contactPhone || pd.bizPhone || '',
             depositAmountPaid: expectedCents / 100,
+            balanceDueDays: balanceDueDaysFrom(pd, quoteData),
           }),
         });
         const contract = await contractRes.json().catch(() => ({}));
@@ -1056,4 +1070,61 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
   } catch (e) {
     return res.status(200).json({ sent: false, note: 'Email error: ' + e.message });
   }
+}
+
+
+/* When the remaining balance is due.
+   ─────────────────────────────────────────────────────────────────────
+   One number, `balanceDueDays`: whole days BEFORE the event, 0 meaning on
+   the day itself. The quote may override the business default, because the
+   terms genuinely differ per client — 48 hours for one, a week for another.
+
+   This replaces three separate sentences that disagreed: the quote page said
+   "before your event", the contract said "on the event date", and the
+   reminder emails said "before the event". Everything now says the same
+   thing, and states the actual date wherever there is one to state.
+
+   Mirrored in the browser and on the server on purpose — the same reason
+   slidingDepositPct is. The server's copy is the one that writes contracts;
+   the browser's only describes them. */
+function balanceDueDaysFrom(profileData, quoteData) {
+  const pick = value => {
+    // Number(null) is 0, and 0 is a real answer here ("on the day of your
+    // event"), so emptiness must be rejected BEFORE the numeric check.
+    // Otherwise a quote saved as "use my default" — which stores null —
+    // silently resolves to day-of, which is the common case.
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 && n <= 365 ? Math.round(n) : null;
+  };
+  const override = pick((quoteData || {}).balanceDueDays);
+  if (override !== null) return override;
+  return pick((profileData || {}).balanceDueDays);
+}
+
+// The phrase a customer reads. Falls back to whatever legacy paymentTerms
+// text an owner already had, and then to the old vague wording, so a business
+// that has never opened the new setting reads exactly as it did before.
+function balanceDuePhrase(profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null) return (profileData || {}).paymentTerms || 'before your event';
+  if (days === 0) return 'on the day of your event';
+  if (days === 1) return '24 hours before your event';
+  if (days === 2) return '48 hours before your event';
+  if (days === 7) return '1 week before your event';
+  if (days === 14) return '2 weeks before your event';
+  if (days % 7 === 0) return (days / 7) + ' weeks before your event';
+  return days + ' days before your event';
+}
+
+// The actual calendar date, when the event date is known. Returned as
+// YYYY-MM-DD so it can go straight into a date column.
+function balanceDueDate(eventDate, profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null || !eventDate) return null;
+  const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00:00' : eventDate);
+  if (isNaN(ev)) return null;
+  ev.setDate(ev.getDate() - days);
+  const pad = n => String(n).padStart(2, '0');
+  return ev.getFullYear() + '-' + pad(ev.getMonth() + 1) + '-' + pad(ev.getDate());
 }

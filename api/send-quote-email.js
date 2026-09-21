@@ -63,6 +63,9 @@ module.exports = async function handler(req, res) {
   if ((req.body || {}).kind === 'stripe-connect-status') {
     return stripeConnectStatus(req, res);
   }
+  if ((req.body || {}).kind === 'contract-signed') {
+    return notifyContractSigned(req, res, RESEND_KEY, FROM_EMAIL);
+  }
   if ((req.body || {}).kind === 'quote-payment-options') {
     return quotePaymentOptions(req, res);
   }
@@ -578,6 +581,123 @@ async function enabledBnplMethods(accountId) {
   } catch (e) {
     console.warn('Could not read payment methods for', accountId, e.message);
     return [];
+  }
+}
+
+/* Tell the owner her contract came back signed.
+   ─────────────────────────────────────────────────────────────────────
+   sign-contract.html has always told the customer "the vendor has also been
+   notified" while notifying nobody, so that sentence was simply untrue.
+
+   The caller proves nothing except that it holds the signing token, which is
+   the customer's own link — so the token is all this trusts, and it is used
+   only to look up one contract with the service key. Everything in the email
+   comes from that row, never from the request, or a stranger with a token
+   could put their own words in an email from us.
+
+   owner_notified_at makes it once-only: reloading the signed page, or a retry
+   after a flaky response, cannot send a second email. */
+async function notifyContractSigned(req, res, RESEND_KEY, FROM_EMAIL) {
+  const { signToken } = req.body || {};
+  if (!signToken) return res.status(400).json({ error: 'signToken is required' });
+  const { key, headers } = serviceConfig();
+  if (!key) return res.status(500).json({ error: 'Contract notifications are not configured' });
+  try {
+    const cRes = await fetch(
+      `${SUPA_URL}/rest/v1/contracts?sign_token=eq.${encodeURIComponent(signToken)}` +
+      '&select=id,user_id,client_name,client_email,event_date,total_price,deposit_amount,' +
+      'balance_due,status,client_signature,signed_at,owner_notified_at&limit=1',
+      { headers }
+    );
+    const rows = await cRes.json().catch(() => []);
+    const c = Array.isArray(rows) ? rows[0] : null;
+    if (!cRes.ok || !c) return res.status(404).json({ error: 'Contract not found' });
+    // Only a contract that really has a signature on it, and only once.
+    if (!c.client_signature) return res.status(409).json({ error: 'This contract is not signed' });
+    if (c.owner_notified_at) return res.json({ notified: false, reason: 'already notified' });
+
+    // Claim the notification BEFORE sending. Two clicks arriving together
+    // would otherwise both find it unsent and both send.
+    const claim = await fetch(
+      `${SUPA_URL}/rest/v1/contracts?id=eq.${encodeURIComponent(c.id)}&owner_notified_at=is.null`,
+      { method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
+        body: JSON.stringify({ owner_notified_at: new Date().toISOString() }) }
+    );
+    const claimed = await claim.json().catch(() => []);
+    if (!claim.ok || !Array.isArray(claimed) || !claimed.length) {
+      return res.json({ notified: false, reason: 'already notified' });
+    }
+
+    const profile = await getOwnerProfile(c.user_id);
+    const pd = profile.profile_data || {};
+    const to = validEmail(pd.contactEmail) || validEmail(pd.bizEmail) || validEmail(profile.email);
+    if (!to) return res.json({ notified: false, reason: 'no owner email on file' });
+    if (!RESEND_KEY) return res.json({ notified: false, reason: 'email is not configured' });
+
+    // Declared here like every other email builder in this file does it.
+    // Client names come from a form, and they land in HTML.
+    const esc = v => String(v == null ? '' : v)
+      .replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+    const money = v => {
+      const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.]/g, ''));
+      return Number.isFinite(n) && n > 0 ? '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+    };
+    const longDate = d => {
+      if (!d) return '';
+      const dt = new Date(String(d).length <= 10 ? d + 'T00:00:00' : d);
+      return isNaN(dt) ? '' : dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    };
+    const total = money(c.total_price);
+    const paid = money(c.deposit_amount);
+    const balance = (() => {
+      const t = parseFloat(String(c.total_price || '0').replace(/[^0-9.]/g, '')) || 0;
+      const d = parseFloat(String(c.deposit_amount || '0').replace(/[^0-9.]/g, '')) || 0;
+      return money(Math.max(t - d, 0));
+    })();
+    const row = (k, v) => v ? `<tr><td style="padding:6px 14px 6px 0;color:#8a7a96;font-size:13px">${k}</td><td style="padding:6px 0;font-size:14px;color:#1F1A24;font-weight:600">${esc(v)}</td></tr>` : '';
+
+    const emailRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        // This one goes TO the owner, so it stays branded as the Hub. Only
+        // customer-facing mail wears the business's name — see senderFrom.
+        from: FROM_EMAIL,
+        to,
+        subject: `✅ ${c.client_name || 'Your client'} signed the contract`,
+        html: `
+        <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:30px 24px;color:#1F1A24">
+          <h2 style="font-size:20px;margin:0 0 6px">Contract signed ✅</h2>
+          <p style="color:#6C6473;font-size:15px;line-height:1.6;margin:0 0 18px">
+            <strong>${esc(c.client_name || 'Your client')}</strong> has signed their contract.
+          </p>
+          <table style="border-collapse:collapse;margin-bottom:20px">
+            ${row('Client', c.client_name)}
+            ${row('Email', c.client_email)}
+            ${row('Event date', longDate(c.event_date))}
+            ${row('Total', total)}
+            ${row('Deposit paid', paid)}
+            ${row('Balance', balance)}
+            ${row('Balance due', longDate(c.balance_due))}
+          </table>
+          <p style="margin:0 0 18px">
+            <a href="https://partybizhub.com/contract.html" style="background:#6D28D9;color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">Open Contract Center →</a>
+          </p>
+          <p style="font-size:12px;color:#9B89A8;margin:0">You are receiving this because a contract you sent was signed.</p>
+        </div>`,
+      }),
+    });
+    if (!emailRes.ok) {
+      const detail = await emailRes.json().catch(() => ({}));
+      console.error('Signed-contract notice failed', detail);
+      // The claim stays set. A missed email is recoverable from Contract
+      // Center, which now shows the signature; a loop of retries is not.
+      return res.json({ notified: false, reason: 'email failed' });
+    }
+    return res.json({ notified: true, to });
+  } catch (e) {
+    console.error('Signed-contract notice error', e.message);
+    return res.status(502).json({ error: e.message });
   }
 }
 

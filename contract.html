@@ -475,11 +475,13 @@ function renderContracts(){
     grid.innerHTML=`<div class="contract-card new" onclick="newContract()"><div style="font-size:2.5rem;margin-bottom:.4rem">+</div><div>Create your first contract</div></div>`;
     return;
   }
-  const statusClass=s=>s==='Sent to Client'?'Sent':s==='Vendor Signed'?'Vendor':s==='Fully Signed'?'Fully':'Draft';
+  const SIGNED_STATUSES=['Fully Signed','Client Signed','Vendor Signed'];
+  const isSignedStatus=s=>SIGNED_STATUSES.includes(s);
+  const statusClass=s=>s==='Sent to Client'?'Sent':s==='Vendor Signed'?'Vendor':(s==='Fully Signed'||s==='Client Signed')?'Fully':'Draft';
   grid.innerHTML=contracts.map(c=>{
     const dt=c.event_date?new Date(c.event_date+'T00:00').toLocaleDateString():'No date set';
-    const isSigned=c.status==='Fully Signed';
-    const signedNote=isSigned?`<div style="margin-top:.7rem;font-size:.78rem;color:#1E8C5A;font-weight:600">✅ Fully signed — click to download PDF</div>`:'';
+    const isSigned=isSignedStatus(c.status);
+    const signedNote=isSigned?`<div style="margin-top:.7rem;font-size:.78rem;color:#1E8C5A;font-weight:600">✅ Signed — click to download PDF</div>`:'';
     const resendLink=c.sign_token&&c.status==='Sent to Client'?`<div style="margin-top:.5rem"><button class="btn btn-outline" style="font-size:.72rem;padding:.3rem .65rem" onclick="event.stopPropagation();resendLink('${c.sign_token}','${(c.client_email||'').replace(/'/g,'')}')">📧 Resend Link</button></div>`:'';
     return `<div class="contract-card" onclick="openContract('${c.id}')">
       <span class="contract-status ${statusClass(c.status||'Draft')}">${c.status||'Draft'}</span>
@@ -549,7 +551,7 @@ function openContract(id){
   $('listView').style.display='none';
   $('wizardView').classList.add('active');
   // Go to step 6 for signed contracts so PDF download is immediately available
-  goStep(c.status==='Fully Signed'||c.status==='Vendor Signed'?6:1);
+  goStep(isSignedStatus(c.status)?6:1);
 }
 
 async function resendLink(token, clientEmail){
@@ -574,7 +576,7 @@ function goStep(n){
   if(n===5)renderReview();
   if(n===6){
     setupSignatureCanvas();
-    const isSigned=currentContract&&currentContract.status==='Fully Signed';
+    const isSigned=currentContract&&isSignedStatus(currentContract.status);
     $('signedBanner').style.display=isSigned?'block':'none';
   }
   window.scrollTo({top:0,behavior:'smooth'});

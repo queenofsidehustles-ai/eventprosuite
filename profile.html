@@ -290,6 +290,22 @@ input,select,textarea{font:inherit}
       <div class="field-help">Automatic Stripe deposits remove the need to match payments or mark deposits paid by hand.</div>
     </div>
 
+    <!-- Until this existed, the quote said the balance was due "before your
+         event", the contract said "on the event date", and the reminder emails
+         said something else again. One setting now drives all three. -->
+    <div class="field">
+      <label>Final payment due</label>
+      <select id="balanceDueDays">
+        <option value="0">On the day of the event</option>
+        <option value="1">24 hours before</option>
+        <option value="2">48 hours before</option>
+        <option value="7">1 week before</option>
+        <option value="14">2 weeks before</option>
+        <option value="30">30 days before</option>
+      </select>
+      <div class="field-help">When the remaining balance is due after the deposit. Shown on every quote and written into every contract. You can change it on an individual quote in the Quote Builder.</div>
+    </div>
+
     <!-- How much to ask for, and when the rest is due. This is a business
          policy, but it used to live only inside the website builder — so
          anyone who brought their own website had nowhere to set it and
@@ -584,6 +600,8 @@ async function init(){
     if(pd.taxRate)$('taxRate').value=pd.taxRate;
     if(pd.taxLabel)$('taxLabel').value=pd.taxLabel;
     if(pd.depositProfile)$('depositProfile').value=pd.depositProfile;
+    // 0 is a real choice, so an explicit null check rather than a falsy one.
+    if(pd.balanceDueDays!==undefined&&pd.balanceDueDays!==null)$('balanceDueDays').value=String(pd.balanceDueDays);
     if(pd.stripe100)$('stripe100').value=pd.stripe100;
     if(pd.stripe250)$('stripe250').value=pd.stripe250;
     if(pd.stripe500)$('stripe500').value=pd.stripe500;
@@ -972,6 +990,7 @@ async function saveProfile(){
       taxRate:$('taxRate').value,
       taxLabel:$('taxLabel').value,
       depositProfile:$('depositProfile').value,
+      balanceDueDays:Number($('balanceDueDays').value),
       stripe100:$('stripe100').value,
       stripe250:$('stripe250').value,
       stripe500:$('stripe500').value,

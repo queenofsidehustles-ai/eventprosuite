@@ -42,11 +42,28 @@ async function supabasePatch(table, id, body) {
   });
 }
 
-async function sendEmail({ to, clientName, bizName, eventDate, stripeLink, daysUntil, fromEmail }) {
+async function sendEmail({ to, clientName, bizName, eventDate, stripeLink, daysUntil, fromEmail, balanceDue }) {
   const apiKey = env('RESEND_API_KEY');
   if (!apiKey) return { ok: false, reason: 'no RESEND_API_KEY' };
 
   const formatted = new Date(eventDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  // "due before the event" told the customer nothing she could act on, and
+  // disagreed with the contract, which used to say the event date. Both now
+  // come from the same rule, so this states the date the owner actually set.
+  // A reminder can land after that date — the cron fires 14 and 7 days out
+  // whatever the terms are — so an overdue balance says so rather than
+  // cheerfully calling itself upcoming.
+  const dueDate = balanceDue ? new Date(balanceDue + 'T00:00:00') : null;
+  const dueFmt = dueDate && !isNaN(dueDate)
+    ? dueDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    : '';
+  const overdue = dueDate && !isNaN(dueDate) && dueDate < new Date(new Date().toDateString());
+  const dueSentence = !dueFmt
+    ? 'your <strong>remaining balance is due</strong> before the event'
+    : overdue
+    ? `your <strong>remaining balance was due on ${dueFmt}</strong>`
+    : `your <strong>remaining balance is due by ${dueFmt}</strong>`;
+
   const payLine = stripeLink
     ? `<p style="margin:18px 0"><a href="${stripeLink}" style="background:#6D28D9;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">Pay My Balance Now →</a></p>`
     : '<p style="color:#6C6473;font-size:14px">Please contact us to arrange your final payment.</p>';
@@ -66,7 +83,7 @@ async function sendEmail({ to, clientName, bizName, eventDate, stripeLink, daysU
             on <strong>${formatted}</strong>. We can't wait to make it amazing!
           </p>
           <p style="font-size:15px;line-height:1.6;margin-top:16px">
-            This is a friendly reminder that your <strong>remaining balance is due</strong> before the event.
+            This is a friendly reminder that ${dueSentence}.
             Please use the button below to complete your payment:
           </p>
           ${payLine}
@@ -139,9 +156,20 @@ module.exports = async function handler(req, res) {
     const eventDate = new Date(booking.event_date);
     const daysUntil = Math.round((eventDate - today) / (1000 * 60 * 60 * 24));
 
+    // The terms the customer agreed to on her quote, falling back to the
+    // business default — the same resolution the contract used.
+    let reminderQuote = {};
+    if (booking.quote_id) {
+      const rows = await supabaseGet(
+        `saved_quotes?id=eq.${booking.quote_id}&select=quote_data&limit=1`
+      ).catch(() => []);
+      reminderQuote = (Array.isArray(rows) && rows[0] && rows[0].quote_data) || {};
+    }
+
     const result = await sendEmail({
       to: booking.client_email,
       clientName: booking.client_name,
+      balanceDue: balanceDueDate(booking.event_date, pd, reminderQuote),
       bizName,
       eventDate: booking.event_date,
       stripeLink,
@@ -430,4 +458,61 @@ async function sendDepositNudge(booking, pd, due) {
     console.error('Deposit nudge failed:', e.message);
     return false;
   }
+}
+
+
+/* When the remaining balance is due.
+   ─────────────────────────────────────────────────────────────────────
+   One number, `balanceDueDays`: whole days BEFORE the event, 0 meaning on
+   the day itself. The quote may override the business default, because the
+   terms genuinely differ per client — 48 hours for one, a week for another.
+
+   This replaces three separate sentences that disagreed: the quote page said
+   "before your event", the contract said "on the event date", and the
+   reminder emails said "before the event". Everything now says the same
+   thing, and states the actual date wherever there is one to state.
+
+   Mirrored in the browser and on the server on purpose — the same reason
+   slidingDepositPct is. The server's copy is the one that writes contracts;
+   the browser's only describes them. */
+function balanceDueDaysFrom(profileData, quoteData) {
+  const pick = value => {
+    // Number(null) is 0, and 0 is a real answer here ("on the day of your
+    // event"), so emptiness must be rejected BEFORE the numeric check.
+    // Otherwise a quote saved as "use my default" — which stores null —
+    // silently resolves to day-of, which is the common case.
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 && n <= 365 ? Math.round(n) : null;
+  };
+  const override = pick((quoteData || {}).balanceDueDays);
+  if (override !== null) return override;
+  return pick((profileData || {}).balanceDueDays);
+}
+
+// The phrase a customer reads. Falls back to whatever legacy paymentTerms
+// text an owner already had, and then to the old vague wording, so a business
+// that has never opened the new setting reads exactly as it did before.
+function balanceDuePhrase(profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null) return (profileData || {}).paymentTerms || 'before your event';
+  if (days === 0) return 'on the day of your event';
+  if (days === 1) return '24 hours before your event';
+  if (days === 2) return '48 hours before your event';
+  if (days === 7) return '1 week before your event';
+  if (days === 14) return '2 weeks before your event';
+  if (days % 7 === 0) return (days / 7) + ' weeks before your event';
+  return days + ' days before your event';
+}
+
+// The actual calendar date, when the event date is known. Returned as
+// YYYY-MM-DD so it can go straight into a date column.
+function balanceDueDate(eventDate, profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null || !eventDate) return null;
+  const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00:00' : eventDate);
+  if (isNaN(ev)) return null;
+  ev.setDate(ev.getDate() - days);
+  const pad = n => String(n).padStart(2, '0');
+  return ev.getFullYear() + '-' + pad(ev.getMonth() + 1) + '-' + pad(ev.getDate());
 }

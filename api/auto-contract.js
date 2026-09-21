@@ -15,6 +15,9 @@ module.exports = async function handler(req, res) {
     numKids, duration,
     bizName, bizEmail, bizPhone,
     depositUpfront, depositAmountPaid,
+    // Days before the event that the balance falls due, already resolved by
+    // the caller from the business default and any per-quote override.
+    balanceDueDays,
   } = req.body || {};
 
   if (!ownerUID || !clientEmail || !eventDate) {
@@ -78,15 +81,22 @@ module.exports = async function handler(req, res) {
   // Due dates
   const today = new Date().toISOString().split('T')[0];
   const depositDue = today;
-  const balance = eventDate;
+  // Was hard-coded to the event date, which contradicted the quote the
+  // customer had already agreed to. Falls back to the event date only when the
+  // business has not set a rule, so nothing changes for anyone who hasn't.
+  const balance = balanceDueDate(eventDate, { balanceDueDays }, null) || eventDate;
+  const balanceWhen = balance === eventDate
+    ? 'on the event date'
+    : 'by ' + new Date(balance + 'T00:00:00').toLocaleDateString('en-US',
+        { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   // Standard kids party clauses
   const clauses = {
     paymentText: depositAmt > 0 && totalPrice > 0 && depositAmt >= totalPrice - 0.005
       ? `Payment of $${totalPrice.toFixed(2)} has been received in full. Nothing further is due.`
       : depositAmt > 0
-      ? `A deposit of $${depositAmt.toFixed(2)} has been paid to reserve your event date. The remaining balance of $${Math.max(totalPrice - depositAmt, 0).toFixed(2)} is due on the event date.`
-      : `Full payment of $${totalPrice.toFixed(2)} is due on the event date. We accept cash, Zelle, CashApp, and credit/debit card.`,
+      ? `A deposit of $${depositAmt.toFixed(2)} has been paid to reserve your event date. The remaining balance of $${Math.max(totalPrice - depositAmt, 0).toFixed(2)} is due ${balanceWhen}.`
+      : `Full payment of $${totalPrice.toFixed(2)} is due ${balanceWhen}. We accept cash, Zelle, CashApp, and credit/debit card.`,
     depositText: 'Deposits are non-refundable. If you need to reschedule, please contact us at least 14 days before your event and your deposit will be applied to a future booking within 12 months.',
     cancellationText: 'Cancellations made 14+ days before the event receive a full refund minus the deposit. Cancellations made fewer than 14 days before the event forfeit the deposit. Cancellations within 72 hours of the event forfeit all payments made.',
     liabilityText: 'Client agrees to provide a safe, accessible setup area. Service Provider is not liable for injuries resulting from rough play, improper use of equipment, or hazardous venue conditions. Client assumes full responsibility for the behavior and safety of all guests.',
@@ -206,3 +216,60 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
     note: emailSent ? null : (RESEND_KEY ? 'Email delivery may have failed.' : 'Add RESEND_API_KEY to Vercel env vars to enable email sending.'),
   });
 };
+
+
+/* When the remaining balance is due.
+   ─────────────────────────────────────────────────────────────────────
+   One number, `balanceDueDays`: whole days BEFORE the event, 0 meaning on
+   the day itself. The quote may override the business default, because the
+   terms genuinely differ per client — 48 hours for one, a week for another.
+
+   This replaces three separate sentences that disagreed: the quote page said
+   "before your event", the contract said "on the event date", and the
+   reminder emails said "before the event". Everything now says the same
+   thing, and states the actual date wherever there is one to state.
+
+   Mirrored in the browser and on the server on purpose — the same reason
+   slidingDepositPct is. The server's copy is the one that writes contracts;
+   the browser's only describes them. */
+function balanceDueDaysFrom(profileData, quoteData) {
+  const pick = value => {
+    // Number(null) is 0, and 0 is a real answer here ("on the day of your
+    // event"), so emptiness must be rejected BEFORE the numeric check.
+    // Otherwise a quote saved as "use my default" — which stores null —
+    // silently resolves to day-of, which is the common case.
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 && n <= 365 ? Math.round(n) : null;
+  };
+  const override = pick((quoteData || {}).balanceDueDays);
+  if (override !== null) return override;
+  return pick((profileData || {}).balanceDueDays);
+}
+
+// The phrase a customer reads. Falls back to whatever legacy paymentTerms
+// text an owner already had, and then to the old vague wording, so a business
+// that has never opened the new setting reads exactly as it did before.
+function balanceDuePhrase(profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null) return (profileData || {}).paymentTerms || 'before your event';
+  if (days === 0) return 'on the day of your event';
+  if (days === 1) return '24 hours before your event';
+  if (days === 2) return '48 hours before your event';
+  if (days === 7) return '1 week before your event';
+  if (days === 14) return '2 weeks before your event';
+  if (days % 7 === 0) return (days / 7) + ' weeks before your event';
+  return days + ' days before your event';
+}
+
+// The actual calendar date, when the event date is known. Returned as
+// YYYY-MM-DD so it can go straight into a date column.
+function balanceDueDate(eventDate, profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null || !eventDate) return null;
+  const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00:00' : eventDate);
+  if (isNaN(ev)) return null;
+  ev.setDate(ev.getDate() - days);
+  const pad = n => String(n).padStart(2, '0');
+  return ev.getFullYear() + '-' + pad(ev.getMonth() + 1) + '-' + pad(ev.getDate());
+}

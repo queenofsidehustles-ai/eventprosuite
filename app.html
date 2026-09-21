@@ -412,6 +412,20 @@
         <div class="field"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
         <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
         <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
+        <!-- Terms differ per client — 48 hours for one, a week for another —
+             so this overrides the Business Profile default for THIS quote
+             only. Blank means "use my default", which is what most do. -->
+        <div class="field"><label>Final payment due</label>
+          <select id="balanceDueDays">
+            <option value="">Use my default</option>
+            <option value="0">On the day of the event</option>
+            <option value="1">24 hours before</option>
+            <option value="2">48 hours before</option>
+            <option value="7">1 week before</option>
+            <option value="14">2 weeks before</option>
+            <option value="30">30 days before</option>
+          </select>
+        </div>
         <div class="field full"><label>Theme / customization <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label><input id="eventTheme" placeholder="e.g. Pink and gold Barbie theme with personalized birthday details"/></div>
         <div class="field full"><label>Event notes (visible on quote)</label><textarea id="eventNotes" placeholder="Delivery time, setup requirements, special touches..."></textarea></div>
       </div>
@@ -888,6 +902,8 @@ async function saveQuote() {
       eventTheme: $('eventTheme').value.trim(),
       eventDate: $('eventDate').value,
       expiryDate: $('expiryDate').value,
+      balanceDueDays: $('balanceDueDays') && $('balanceDueDays').value !== ''
+        ? Number($('balanceDueDays').value) : null,
       eventNotes: $('eventNotes').value,
       selectedDepositTier: state.selectedDepositTier,
       sourceBookingId: _sourceBookingId
@@ -2389,6 +2405,11 @@ function loadQuote(data) {
   if (data.eventTheme) $('eventTheme').value = data.eventTheme;
   if (data.eventDate) $('eventDate').value = data.eventDate;
   if (data.expiryDate) $('expiryDate').value = data.expiryDate;
+  // 0 means "on the day", so this cannot be a truthiness check, and a quote
+  // saved before the setting existed must come back as "use my default"
+  // rather than silently reading as day-of.
+  if ($('balanceDueDays')) $('balanceDueDays').value =
+    (data.balanceDueDays === null || data.balanceDueDays === undefined) ? '' : String(data.balanceDueDays);
   if (data.eventNotes) $('eventNotes').value = data.eventNotes;
   if (data.selectedDepositTier) state.selectedDepositTier = data.selectedDepositTier;
   refreshAll();

@@ -190,6 +190,62 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
      Everything is conditional: no configured key, no enabled methods, a
      blocked script or a thrown error all end with an empty div and a quote
      that books exactly as before. */
+/* When the remaining balance is due.
+   ─────────────────────────────────────────────────────────────────────
+   One number, `balanceDueDays`: whole days BEFORE the event, 0 meaning on
+   the day itself. The quote may override the business default, because the
+   terms genuinely differ per client — 48 hours for one, a week for another.
+
+   This replaces three separate sentences that disagreed: the quote page said
+   "before your event", the contract said "on the event date", and the
+   reminder emails said "before the event". Everything now says the same
+   thing, and states the actual date wherever there is one to state.
+
+   Mirrored in the browser and on the server on purpose — the same reason
+   slidingDepositPct is. The server's copy is the one that writes contracts;
+   the browser's only describes them. */
+function balanceDueDaysFrom(profileData, quoteData) {
+  const pick = value => {
+    // Number(null) is 0, and 0 is a real answer here ("on the day of your
+    // event"), so emptiness must be rejected BEFORE the numeric check.
+    // Otherwise a quote saved as "use my default" — which stores null —
+    // silently resolves to day-of, which is the common case.
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 && n <= 365 ? Math.round(n) : null;
+  };
+  const override = pick((quoteData || {}).balanceDueDays);
+  if (override !== null) return override;
+  return pick((profileData || {}).balanceDueDays);
+}
+
+// The phrase a customer reads. Falls back to whatever legacy paymentTerms
+// text an owner already had, and then to the old vague wording, so a business
+// that has never opened the new setting reads exactly as it did before.
+function balanceDuePhrase(profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null) return (profileData || {}).paymentTerms || 'before your event';
+  if (days === 0) return 'on the day of your event';
+  if (days === 1) return '24 hours before your event';
+  if (days === 2) return '48 hours before your event';
+  if (days === 7) return '1 week before your event';
+  if (days === 14) return '2 weeks before your event';
+  if (days % 7 === 0) return (days / 7) + ' weeks before your event';
+  return days + ' days before your event';
+}
+
+// The actual calendar date, when the event date is known. Returned as
+// YYYY-MM-DD so it can go straight into a date column.
+function balanceDueDate(eventDate, profileData, quoteData) {
+  const days = balanceDueDaysFrom(profileData, quoteData);
+  if (days === null || !eventDate) return null;
+  const ev = new Date(String(eventDate).length <= 10 ? eventDate + 'T00:00:00' : eventDate);
+  if (isNaN(ev)) return null;
+  ev.setDate(ev.getDate() - days);
+  const pad = n => String(n).padStart(2, '0');
+  return ev.getFullYear() + '-' + pad(ev.getMonth() + 1) + '-' + pad(ev.getDate());
+}
+
   async function startPayPlanMessaging(quoteId, amountNow){
     const slot = document.getElementById('payPlanMsg');
     if(!slot) return;
@@ -478,7 +534,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
       <label class="pay-opt selected" data-pay-opt="deposit">
         <input type="radio" name="payMode" value="deposit" checked>
         <span class="pay-opt-main">Pay <span id="payDepAmt">${fmt(depAmt)}</span> deposit now</span>
-        <span class="pay-opt-sub" id="payDepSub">${fmt(balance)} due ${esc(pd.paymentTerms||'before your event')}</span>
+        <span class="pay-opt-sub" id="payDepSub">${fmt(balance)} due ${esc(balanceDuePhrase(pd, qd))}</span>
       </label>
       <label class="pay-opt" data-pay-opt="full">
         <input type="radio" name="payMode" value="full">
@@ -495,7 +551,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
     <button class="btn-book" id="bookBtn" style="background:${brand};color:${onBrand}">
       Book this party <span>&rarr;</span>
     </button>
-    <p class="pay-note" id="payNote">Next step is a ${fmt(depAmt)} deposit to hold your spot.<br>The remaining ${fmt(balance)} is due ${esc(pd.paymentTerms||'before your event')}.</p>
+    <p class="pay-note" id="payNote">Next step is a ${fmt(depAmt)} deposit to hold your spot.<br>The remaining ${fmt(balance)} is due ${esc(balanceDuePhrase(pd, qd))}.</p>
   </div>
 
   <div class="card" id="confirmCard">
@@ -539,9 +595,9 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         const note=document.getElementById('payNote');
         if(note)note.innerHTML = payingFull
           ? `You'll pay ${fmt(current.grand)} now. Nothing further is due.`
-          : `Next step is a ${fmt(current.depAmt)} deposit to hold your spot.<br>The remaining ${fmt(current.balance)} is due ${esc(pd.paymentTerms||'before your event')}.`;
+          : `Next step is a ${fmt(current.depAmt)} deposit to hold your spot.<br>The remaining ${fmt(current.balance)} is due ${esc(balanceDuePhrase(pd, qd))}.`;
         const depAmtEl=document.getElementById('payDepAmt');  if(depAmtEl)depAmtEl.textContent=fmt(current.depAmt);
-        const depSubEl=document.getElementById('payDepSub');  if(depSubEl)depSubEl.textContent=`${fmt(current.balance)} due ${pd.paymentTerms||'before your event'}`;
+        const depSubEl=document.getElementById('payDepSub');  if(depSubEl)depSubEl.textContent=`${fmt(current.balance)} due ${balanceDuePhrase(pd, qd)}`;
         const fullAmtEl=document.getElementById('payFullAmt');if(fullAmtEl)fullAmtEl.textContent=fmt(current.grand);
         // Add-ons move the total, so the "4 payments of X" has to move with it
         // or it quotes instalments for a price nobody is being charged.
@@ -574,7 +630,8 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         const index=Number(input.dataset.customerAddonQty); if(selected.has(index))selected.set(index,Math.max(1,Math.min(100,Number(input.value)||1))); refreshPricing();
       }));
       refreshPricing();
-      wireBooking(q, pd, {baseGrand:grand, depAmt, balance, bizName, brand, pricing});
+      wireBooking(q, pd, {baseGrand:grand, depAmt, balance, bizName, brand, pricing,
+        balanceWhen: balanceDuePhrase(pd, qd)});
     }
   }
 
@@ -715,7 +772,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
           balance:      currentPricing.balance,
           depositLink:  depositLink,
           depositDueAt: payload.deposit_due_at,
-          paymentTerms: pd.paymentTerms || ''
+          paymentTerms: ctx.balanceWhen || ''
         })
       }).catch(e => console.error('Confirmation email failed:', e));
 
@@ -745,7 +802,7 @@ input.invalid,textarea.invalid{border-color:#DC2626;box-shadow:0 0 0 3px rgba(22
         <p>We'll hold it for you until <strong>${esc(dueTxt)}</strong>. If the
            ${'$'+ctx.depAmt.toFixed(2)} deposit isn't paid by then, the date goes back
            on our calendar. The remaining $${ctx.balance.toFixed(2)} is due
-           ${esc(pd.paymentTerms||'before your event')}.</p>
+           ${esc(ctx.balanceWhen||'before your event')}.</p>
         ${depositLink
           ? `<a href="${esc(depositLink)}" target="_blank" rel="noopener" class="btn-stripe">Pay $${ctx.depAmt.toFixed(2)} deposit &rarr;</a>`
           : `<p style="margin:0;font-weight:700;color:#7a5a00">We'll email your deposit instructions shortly — check ${esc(email)}.</p>`}
