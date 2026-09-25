@@ -477,18 +477,32 @@ function renderContracts(){
   }
   const SIGNED_STATUSES=['Fully Signed','Client Signed','Vendor Signed'];
   const isSignedStatus=s=>SIGNED_STATUSES.includes(s);
+  /* When the contract actually reached the client, and when they signed.
+     'Sent to Client' used to be written whether or not the email left the
+     building, so a contract that silently failed looked exactly like one
+     sitting in someone's inbox. email_sent_at and email_error say which.
+     A row from before the column existed says nothing rather than guessing. */
+  const whenLine=c=>{
+    const fmt=v=>{const d=new Date(v);return isNaN(d)?'':d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})};
+    const bits=[];
+    if(c.email_error) bits.push(`<span style="color:#C23B5E">⚠️ Not delivered — ${String(c.email_error).replace(/</g,'&lt;').slice(0,90)}</span>`);
+    else if(c.email_sent_at) bits.push(`✉️ Sent ${fmt(c.email_sent_at)}`);
+    if(c.signed_at) bits.push(`<span style="color:#1E8C5A">✅ Signed ${fmt(c.signed_at)}</span>`);
+    return bits.length?`<div class="contract-meta" style="margin-top:.35rem">${bits.join(' · ')}</div>`:'';
+  };
   const statusClass=s=>s==='Sent to Client'?'Sent':s==='Vendor Signed'?'Vendor':(s==='Fully Signed'||s==='Client Signed')?'Fully':'Draft';
   grid.innerHTML=contracts.map(c=>{
     const dt=c.event_date?new Date(c.event_date+'T00:00').toLocaleDateString():'No date set';
     const isSigned=isSignedStatus(c.status);
     const signedNote=isSigned?`<div style="margin-top:.7rem;font-size:.78rem;color:#1E8C5A;font-weight:600">✅ Signed — click to download PDF</div>`:'';
+    const sentLine=whenLine(c);
     const resendLink=c.sign_token&&c.status==='Sent to Client'?`<div style="margin-top:.5rem"><button class="btn btn-outline" style="font-size:.72rem;padding:.3rem .65rem" onclick="event.stopPropagation();resendLink('${c.sign_token}','${(c.client_email||'').replace(/'/g,'')}')">📧 Resend Link</button></div>`:'';
     return `<div class="contract-card" onclick="openContract('${c.id}')">
       <span class="contract-status ${statusClass(c.status||'Draft')}">${c.status||'Draft'}</span>
       <div class="contract-client" style="margin-top:.5rem">${(c.client_name||'Untitled').replace(/</g,'&lt;')}</div>
       <div class="contract-meta">${dt} · ${(c.contract_type||'service_agreement').replace(/_/g,' ')}</div>
       <div class="contract-meta"><strong>$${parseFloat(c.total_price||0).toFixed(2)}</strong> total${c.deposit_amount?` · $${parseFloat(c.deposit_amount).toFixed(2)} deposit`:''}</div>
-      ${signedNote}${resendLink}
+      ${sentLine}${signedNote}${resendLink}
     </div>`;
   }).join('')+`<div class="contract-card new" onclick="newContract()"><div style="font-size:2.5rem;margin-bottom:.4rem">+</div><div>New Contract</div></div>`;
 }

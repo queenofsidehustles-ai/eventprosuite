@@ -216,10 +216,16 @@ async function init(){
   const token=params.get('t');
   if(!token){showError('No contract token in the link. Make sure you opened the full URL your vendor sent.');return}
   try{
-    const{data,error}=await sb.from('contracts').select('*').eq('sign_token',token).maybeSingle();
+    // contracts is owner-only under RLS, so this page cannot read the table:
+    // it went through it until September, which meant anyone holding the
+    // public anon key could list every contract on the platform. The token
+    // is a random UUID, so this returns exactly the one contract it names.
+    // See migrations/20260926_lock_down_contracts.sql.
+    const{data,error}=await sb.rpc('get_contract_for_signing',{p_token:token});
     if(error){console.error('Fetch error:',error);showError('Could not load this contract. Error: '+error.message);return}
-    if(!data){showError('This signing link is invalid or has been revoked.');return}
-    contract=data;
+    const row=Array.isArray(data)?data[0]:data;
+    if(!row){showError('This signing link is invalid or has been revoked.');return}
+    contract=row;
     renderContract();
     $('loadingView').style.display='none';
     $('contractView').style.display='block';
@@ -330,11 +336,16 @@ async function submitSignature(){
   btn.textContent='Signing...';
 
   try{
-    const status=contract.vendor_signature?'Fully Signed':'Client Signed';
-    const{error}=await sb.from('contracts').update({client_signature:sig,status,signed_at:new Date().toISOString()}).eq('sign_token',contract.sign_token);
+    // The function decides the status and refuses a contract that is already
+    // signed, so a link that leaks cannot overwrite a signature.
+    const{data:signed,error}=await sb.rpc('sign_contract_with_token',{
+      p_token:String(contract.sign_token), p_signature:sig
+    });
     if(error)throw error;
-    contract.client_signature=sig;
-    contract.status=status;
+    const row=Array.isArray(signed)?signed[0]:signed;
+    if(!row)throw new Error('This contract has already been signed');
+    contract.client_signature=row.client_signature;
+    contract.status=row.status;
     showToast('✓ Contract signed successfully');
 
     // This page has always told the customer "the vendor has also been

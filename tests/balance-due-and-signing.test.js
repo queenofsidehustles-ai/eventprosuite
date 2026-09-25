@@ -106,7 +106,12 @@ assert.match(migration, /'balanceDueDays'/);
 // signature, so a customer signing one filed it as 'Vendor Signed', and
 // Contract Center looked for exactly 'Fully Signed' and found nothing.
 assert.doesNotMatch(sign, /vendor_signature\?'Fully Signed':'Vendor Signed'/);
-assert.match(sign, /vendor_signature\?'Fully Signed':'Client Signed'/);
+// The label is now decided by sign_contract_with_token rather than by the
+// browser — see migrations/20260926_lock_down_contracts.sql. Same guarantee:
+// a customer signing an automatic contract is recorded as the CLIENT signing.
+assert.match(read('migrations/20260926_lock_down_contracts.sql'),
+  /then 'Fully Signed' else 'Client Signed'/);
+assert.doesNotMatch(sign, /status:'(Fully|Client|Vendor) Signed'/);
 assert.match(center, /SIGNED_STATUSES=\['Fully Signed','Client Signed','Vendor Signed'\]/);
 assert.doesNotMatch(center, /status==='Fully Signed'\|\|/);
 // Rows already written with the wrong label are corrected.

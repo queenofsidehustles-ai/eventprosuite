@@ -130,16 +130,21 @@ module.exports = async function handler(req, res) {
     created_at: new Date().toISOString(),
   };
 
-  // Try to save contract to DB — non-fatal if table doesn't exist yet
+  // Try to save contract to DB — non-fatal if table doesn't exist yet.
+  // The id comes back so the send result can be written onto the same row.
+  let contractId = null;
   try {
-    const insertRes = await fetch(`${SUPA_URL}/rest/v1/contracts`, {
+    const insertRes = await fetch(`${SUPA_URL}/rest/v1/contracts?select=id`, {
       method: 'POST',
-      headers: { ...adminHeaders, 'Prefer': 'return=minimal' },
+      headers: { ...adminHeaders, 'Prefer': 'return=representation' },
       body: JSON.stringify(contractPayload),
     });
     if (!insertRes.ok) {
       const errText = await insertRes.text();
       console.warn('Contract DB insert skipped:', errText.slice(0, 200));
+    } else {
+      const rows = await insertRes.json().catch(() => []);
+      contractId = (Array.isArray(rows) ? rows[0] : rows)?.id || null;
     }
   } catch (e) {
     console.warn('Contract DB error (non-fatal):', e.message);
@@ -147,6 +152,7 @@ module.exports = async function handler(req, res) {
 
   // Send signing email via Resend (non-fatal if no key)
   let emailSent = false;
+  let emailError = null;
   if (RESEND_KEY && clientEmail) {
     const clientFirst = (clientName || 'there').split(' ')[0];
     const formattedDate = new Date(eventDate + 'T00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -206,7 +212,41 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
         }),
       });
       emailSent = emailRes.ok;
-    } catch (_) { /* non-fatal */ }
+      if (!emailSent) {
+        const detail = await emailRes.json().catch(() => ({}));
+        emailError = detail.message || detail.error || ('Resend returned ' + emailRes.status);
+      }
+    } catch (e) { emailError = e.message || 'Could not reach the email service'; }
+  } else if (!RESEND_KEY) {
+    emailError = 'Email is not configured (RESEND_API_KEY missing)';
+  } else if (!clientEmail) {
+    emailError = 'No client email on the booking';
+  }
+
+  /* Write down whether the contract actually went out.
+     ───────────────────────────────────────────────────────────────────
+     status was set to 'Sent to Client' whether or not the email left the
+     building, so a contract that silently failed looked exactly like one
+     sitting in the customer's inbox — and the owner had no way to tell which
+     she was looking at, or when it was sent.
+
+     Best effort: a contract that exists but is missing its send record is
+     still a contract, and this must never undo the send. Needs
+     migrations/20260926_lock_down_contracts.sql. */
+  if (contractId) {
+    try {
+      await fetch(`${SUPA_URL}/rest/v1/contracts?id=eq.${encodeURIComponent(contractId)}`, {
+        method: 'PATCH',
+        headers: { ...adminHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          email_sent_at: emailSent ? new Date().toISOString() : null,
+          email_error: emailSent ? null : (emailError || 'Unknown email failure'),
+          status: emailSent ? 'Sent to Client' : 'Draft',
+        }),
+      });
+    } catch (e) {
+      console.warn('Could not record the contract send:', e.message);
+    }
   }
 
   return res.json({
