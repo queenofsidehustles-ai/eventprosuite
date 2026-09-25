@@ -62,4 +62,17 @@ assert.match(loader, /enableShareButton\(\);/);
 // Read from the list already in memory, not refetched into an attribute.
 assert.match(loader, /_savedQuotesCache \|\| \[\]/);
 
+// ── And there is a way to reach the list at all ─────────────────────────
+// The "My saved quotes" modal and its loader had been in app.html all along
+// with NOTHING calling openQuotesModal — the menu that held the link was gone
+// from the markup. Every saved quote was unreachable from the one page that
+// lists them, which is why a quote already sent could not be found or edited.
+assert.match(app, /id="openQuotesBtn"/);
+assert.match(app, /if \(t\.id === 'openQuotesBtn'\) \{ await openQuotesModal\(\); return; \}/);
+// Reachable from the sidebar too, since that is where someone looks first.
+const nav = read('nav.js');
+assert.match(nav, /href: 'app\.html\?quotes=1'[^}]*label: 'My Quotes'/);
+// …which means the builder has to honour that link on arrival.
+assert.match(app, /if \(params\.get\('quotes'\)\) \{ openQuotesModal\(\); return; \}/);
+
 console.log('edit saved quote tests passed');

@@ -12,6 +12,9 @@
     { section: 'Build & Book', kppsOnly: true },
     { id: 'mywebsite',  href: 'mywebsite.html',  icon: '🌐', label: 'My Website',       kppsOnly: true },
     { id: 'app',        href: 'app.html',         icon: '📄', label: 'Quote Builder',    kppsOnly: true },
+    // Saved quotes were only reachable from a modal nothing opened, so a quote
+    // already sent could not be found again, let alone edited.
+    { id: 'quotes',     href: 'app.html?quotes=1', icon: '📁', label: 'My Quotes',        kppsOnly: true },
     { id: 'contract',   href: 'contract.html',    icon: '📝', label: 'Contract',         kppsOnly: true },
     { section: 'Run Your Events', kppsOnly: true },
     { id: 'prep',       href: 'prep.html',        icon: '📋', label: 'Event Checklist',  kppsOnly: true },

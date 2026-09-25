@@ -411,7 +411,10 @@
           <h2 class="panel-title">Quote details</h2>
           <div class="panel-sub">Who this quote is for. Fill these in for every new quote. Your brand and Stripe settings come automatically from your <a href="profile.html" style="color:var(--brand);font-weight:600">business profile</a>.</div>
         </div>
-        <div class="section-badge">Step 1 · Client</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button type="button" class="tiny-btn" id="openQuotesBtn" title="Open a quote you already saved">📁 My Quotes</button>
+          <div class="section-badge">Step 1 · Client</div>
+        </div>
       </div>
 
       <div class="form-grid">
@@ -2159,6 +2162,7 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'customPackageBtn') { const item = customItem(); if (item) { pkg(state.activePackageId).items.push(item); clearCustom(); await savePackages(); refreshAll(); } return; }
   if (t.id === 'printBtn') { window.print(); return; }
   if (t.id === 'copyBtn') { copyQuoteText(); return; }
+  if (t.id === 'openQuotesBtn') { await openQuotesModal(); return; }
   if (t.id === 'saveQuoteBtn') { await saveQuote(); return; }
   if (t.id === 'saveAsNewBtn') { await saveQuote({ asNew: true }); return; }
   if (t.id === 'shareQuoteBtn') { shareQuote(); return; }
@@ -2449,6 +2453,7 @@ async function prefillFromBooking() {
     if (params.get('client') || params.get('event')) refreshAll();
   }
 
+  if (params.get('quotes')) { openQuotesModal(); return; }
   if (await prefillFromSavedQuote()) return;
   await prefillFromBooking(params.get('booking'));
 }
