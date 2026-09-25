@@ -17,6 +17,19 @@ const migration = read('migrations/20260926_lock_down_contracts.sql');
 // signature images, for all 23 businesses. profiles and saved_quotes were
 // locked down in September; this table was missed.
 assert.match(migration, /alter table public\.contracts enable row level security;/);
+
+// Turning RLS on and adding strict policies was NOT enough: Postgres OR's
+// policies together, so the permissive one the table already had kept
+// granting every row. The follow-up drops every policy by looking them up
+// instead of guessing names, then recreates only the owner-only four.
+const followup = read('migrations/20260926b_contracts_drop_legacy_policies.sql');
+assert.match(followup, /from pg_policies/);
+assert.match(followup, /drop policy if exists %I on public\.contracts/);
+assert.match(followup, /raise notice 'dropping contracts policy: %'/);
+['select', 'insert', 'update', 'delete'].forEach(action => {
+  assert.match(followup, new RegExp('create policy contracts_owner_' + action, 'i'),
+    'the follow-up must put back the owner policy for ' + action);
+});
 ['select', 'insert', 'update', 'delete'].forEach(action => {
   assert.match(migration, new RegExp('create policy contracts_owner_' + action, 'i'),
     'missing owner-only policy for ' + action);
