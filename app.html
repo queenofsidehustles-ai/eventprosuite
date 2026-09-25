@@ -551,6 +551,7 @@
           <button type="button" class="tiny-btn" id="printBtn">🖨 Print</button>
           <button type="button" class="tiny-btn" id="copyBtn">📋 Copy text</button>
           <button type="button" class="tiny-btn btn-primary" style="color:#fff;border:none" id="saveQuoteBtn">💾 Save Quote</button>
+          <button type="button" class="tiny-btn" id="saveAsNewBtn" style="display:none" title="File this as a separate quote instead of changing the one you opened">➕ Save as new</button>
           <button type="button" class="tiny-btn" id="shareQuoteBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then click to email to client">📧 Email to Client</button>
           <button type="button" class="tiny-btn" id="copyQuoteLinkBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then copy a ready-to-send message with the quote link">🔗 Copy Link</button>
         </div>
@@ -885,7 +886,7 @@ let _lastSavedQuoteId = null;
 // so saving the quote can move that inquiry along the pipeline.
 let _sourceBookingId = null;
 
-async function saveQuote() {
+async function saveQuote(opts) {
   if (!currentUser) return;
   const { items, subtotal, tax, grand } = totals();
   if (!items.length) { toast('Add at least one item first'); return; }
@@ -919,9 +920,29 @@ async function saveQuote() {
     },
     created_at: new Date().toISOString()
   };
-  const { data, error } = await sb.from('saved_quotes').insert(payload).select('id').single();
+  /* A quote that has been saved already has a link, and that link may be sat
+     in a customer's text messages. Editing it and filing a SECOND quote would
+     leave her reading the old one for ever, so saving writes over the quote
+     that is open. "Save as new" is there for the other case — an old quote
+     used as the starting point for a different customer. */
+  const editingId = (opts && opts.asNew) ? null : _lastSavedQuoteId;
+  let data, error;
+  if (editingId) {
+    // created_at is left alone: this is the same quote, edited, not a new one.
+    const { created_at, ...changes } = payload;
+    ({ data, error } = await sb.from('saved_quotes')
+      .update(changes).eq('id', editingId).eq('user_id', currentUser.id)
+      .select('id').single());
+    // The row may have been deleted from another device. Falling back to an
+    // insert is better than telling her the save failed and losing the edit.
+    if (error) { console.warn('Update failed, saving as a new quote:', error); }
+  }
+  if (!editingId || error) {
+    ({ data, error } = await sb.from('saved_quotes').insert(payload).select('id').single());
+  }
   if (error) { console.error(error); toast('Save failed'); return; }
   _lastSavedQuoteId = data.id;
+  markEditingSavedQuote(true);
 
   // This quote answers an inquiry, so that booking is no longer unanswered.
   if (_sourceBookingId) {
@@ -942,9 +963,13 @@ async function saveQuote() {
     shareBtn.style.opacity = '1';
     shareBtn.style.pointerEvents = 'auto';
   }
+  // An update says so, because "saved" on an edit leaves her wondering whether
+  // she has just created a second quote.
+  const savedWord = editingId && !error ? '✓ Quote updated — the link you already sent now shows this'
+                                        : '✓ Quote saved';
   toast(hasEmail || hasPhone
-    ? '✓ Quote saved — now click "' + shareBtn.textContent.replace(/^\S+\s/, '') + '"'
-    : '✓ Quote saved — add an email or phone, or click Copy Link');
+    ? savedWord + ' — now click "' + shareBtn.textContent.replace(/^\S+\s/, '') + '"'
+    : savedWord + ' — add an email or phone, or click Copy Link');
 }
 
 function ownerReplyEmail() {
@@ -2135,6 +2160,7 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'printBtn') { window.print(); return; }
   if (t.id === 'copyBtn') { copyQuoteText(); return; }
   if (t.id === 'saveQuoteBtn') { await saveQuote(); return; }
+  if (t.id === 'saveAsNewBtn') { await saveQuote({ asNew: true }); return; }
   if (t.id === 'shareQuoteBtn') { shareQuote(); return; }
   if (t.id === 'copyQuoteLinkBtn') { copyQuoteLink(); return; }
   if (t.id === 'downloadPdfBtn') { downloadPdf(); return; }
@@ -2338,7 +2364,7 @@ async function openQuotesModal() {
       </div>
       <div class="saved-quote-actions">
         <button class="tiny-btn" onclick="copySavedQuoteLink('${q.id}')" title="Copy a ready-to-send message with this quote’s link">🔗 Copy Link</button>
-        <button class="tiny-btn" onclick='loadQuote(${JSON.stringify(q.quote_data).replace(/'/g, "\\'")})'>Load</button>
+        <button class="tiny-btn" onclick="loadSavedQuote('${q.id}')">Load</button>
       </div>
     </div>
   `).join('');
@@ -2378,8 +2404,10 @@ async function prefillFromSavedQuote(explicitId) {
   }
 
   loadQuote(data.quote_data || {});
-  // It already exists, so it can be sent without saving again.
+  // It already exists, so it can be sent without saving again, and saving
+  // updates it rather than filing a duplicate.
   _lastSavedQuoteId = data.id;
+  markEditingSavedQuote(true);
   if ((data.quote_data || {}).sourceBookingId) _sourceBookingId = data.quote_data.sourceBookingId;
   enableShareButton();
   toast('✓ Reopened — edit and save, or send it as it is');
@@ -2498,6 +2526,43 @@ async function prefillFromBooking(bookingId, opts) {
   refreshAll();
   toast(`✓ Loaded ${b.client_name || 'booking'} — adjust for travel and extras, then save`);
   return true;
+}
+
+/* Open a saved quote for editing.
+   ─────────────────────────────────────────────────────────────────────
+   The whole quote used to be JSON.stringify'd into the button's onclick
+   attribute, with apostrophes "escaped" as \' — which HTML does not honour.
+   The attribute is delimited by single quotes, so the FIRST apostrophe in the
+   data ended it, and the handler was truncated mid-string into a syntax
+   error. Any quote for a client called O'Brien, themed "Stormy's Bear Fashion
+   Show", or with a note about "Children's styling table", had a dead Load
+   button that opened an empty form.
+
+   Only the id goes in the attribute now, and the quote is read from the list
+   already in memory. */
+function loadSavedQuote(id) {
+  const q = (_savedQuotesCache || []).find(x => String(x.id) === String(id));
+  if (!q) { toast('That quote is no longer in the list — reopen My Quotes'); return; }
+  loadQuote(q.quote_data || {});
+  // Editing an existing quote, not starting a new one: Save updates this row,
+  // and it can be sent again without saving first.
+  _lastSavedQuoteId = q.id;
+  enableShareButton();
+  markEditingSavedQuote(true);
+  toast('✓ Opened — edit it, then Update Quote');
+}
+
+/* Whether Save writes over the quote that is open, or files a new one.
+   A quote already sent has a link the customer may be holding, so editing it
+   and saving must change what that link shows — filing a second quote would
+   leave her looking at the old one for ever. Reopening therefore switches the
+   button to Update, and "Save as new" stays available for the other case:
+   using an old quote as the starting point for a different customer. */
+function markEditingSavedQuote(editing) {
+  const save = $('saveQuoteBtn');
+  const asNew = $('saveAsNewBtn');
+  if (save) save.textContent = editing ? '💾 Update Quote' : '💾 Save Quote';
+  if (asNew) asNew.style.display = editing ? '' : 'none';
 }
 
 function loadQuote(data) {
