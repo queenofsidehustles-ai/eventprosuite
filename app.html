@@ -279,8 +279,8 @@
   .included-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 26px;color:var(--ink);font-size:13px;line-height:1.5}
   .included-list li{position:relative;padding-left:19px}
   .included-list li::before{content:'✓';position:absolute;left:0;top:0;color:var(--user-primary);font-weight:900}
-  .invoice-side{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:16px;align-items:start}
-  .invoice-side-stack{display:flex;flex-direction:column;gap:14px}
+  .invoice-side{display:flex;justify-content:flex-end;gap:16px;margin-top:16px;align-items:flex-start}
+  .invoice-side-stack{display:flex;flex-direction:column;gap:14px;width:340px;max-width:100%}
   .totals-card,.payment-card,.notes-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
   .totals-card{background:linear-gradient(180deg,#fff,#fdfbfe)}
   .totals-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
@@ -296,13 +296,22 @@
   .payment-note{margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.55}
   .notes-card strong{display:block;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:700}
   .notes-card div{font-size:13.5px;line-height:1.7;color:var(--ink)}
+  /* Event notes carry the detail of the day — what is included, what is set
+     up, what the children take home. Squeezed into the narrow column beside
+     the totals they became one unreadable ribbon that spilled down a second
+     page, so they get the full width and their own bullets. */
+  .notes-card.notes-full{margin-top:16px}
+  .notes-list{margin:0;padding-left:1.15em;font-size:13.5px;line-height:1.7;color:var(--ink)}
+  .notes-list li{margin:0 0 4px}
+  .notes-list li::marker{color:var(--mauve)}
+  .notes-list li:last-child{margin-bottom:0}
   @media(max-width:760px){
     .proposal-item-head{display:grid;gap:14px;padding:16px}
     .proposal-item-total{justify-content:space-between;width:100%}
     .proposal-total-field label{text-align:left}
     .proposal-inclusions{padding:16px}
     .included-list{grid-template-columns:1fr}
-    .invoice-side{grid-template-columns:1fr}
+    .invoice-side{display:block}
   }
 
   /* MODAL (My Quotes) */
@@ -2009,10 +2018,6 @@ function renderPreview() {
           ${optionalRows}
         </div>
         <div class="invoice-side">
-          <div class="notes-card">
-            <strong>Event notes</strong>
-            <div>${escapeHtml($('eventNotes').value || 'No additional notes added.')}</div>
-          </div>
           <div class="invoice-side-stack">
             <div class="totals-card">
               <div class="totals-row"><span>Subtotal</span><span>${money(subtotal)}</span></div>
@@ -2027,9 +2032,36 @@ function renderPreview() {
             </div>
           </div>
         </div>
+        ${notesBlock($('eventNotes').value)}
       </div>
     </div>
   `;
+}
+
+/* Event notes, the way they were typed.
+   ─────────────────────────────────────────────────────────────────────
+   The notes went into the page as one escaped blob, and HTML collapses the
+   line breaks — so a carefully listed set of details ("One pre-stuffed teddy
+   bear for each child", "Seating for up to 10 children", …) came out as a
+   single run-on sentence with the items jammed end to end.
+
+   Each line becomes a bullet. A single line stays a plain paragraph, because
+   one bullet on its own looks like a mistake. Blank lines are dropped so
+   double-spaced typing does not leave empty bullets, and a leading -, • or *
+   is stripped so notes already typed as a list are not bulleted twice. */
+function notesToHtml(text) {
+  const lines = String(text || '')
+    .split(/\r?\n/)
+    .map(line => line.replace(/^\s*[-•*·]\s*/, '').trim())
+    .filter(Boolean);
+  if (!lines.length) return '<div>No additional notes added.</div>';
+  if (lines.length === 1) return `<div>${escapeHtml(lines[0])}</div>`;
+  return `<ul class="notes-list">${lines.map(l => `<li>${escapeHtml(l)}</li>`).join('')}</ul>`;
+}
+
+function notesBlock(text) {
+  if (!String(text || '').trim()) return '';
+  return `<div class="notes-card notes-full"><strong>Event notes</strong>${notesToHtml(text)}</div>`;
 }
 
 function refreshAll() {
