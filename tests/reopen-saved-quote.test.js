@@ -13,10 +13,18 @@ const dash = read('dashboard.html');
 // Builder reads only `booking`, so those were dropped on the floor and the
 // form came up blank — no client name, no line items, nothing. Bookings
 // worked; saved quotes did not, which is a difference no user can see.
-assert.match(dash, /app\.html\?quote=' \+ encodeURIComponent\(q\.id\)/);
+// The link is now built by quoteBuilderHref, which picks ?quote= or ?booking=
+// from the row's own type rather than its status — but the guarantee is the
+// same one this test has always made: a saved quote is reopened BY ID, never
+// by loose client/event/date parameters the Quote Builder does not read.
+assert.match(dash, /function quoteBuilderHref\(q\)/);
+assert.match(dash, /'app\.html\?' \+ key \+ '=' \+ encodeURIComponent\(q\.id\)/);
+assert.match(dash, /window\.location\.href = quoteBuilderHref\(q\);/);
 assert.doesNotMatch(dash, /params\.set\('client', q\.client_name\)/);
 
-assert.match(app, /async function prefillFromSavedQuote\(\)/);
+// Takes an optional id now, so a ?booking= link carrying a quote id can be
+// rescued rather than answered with a blank form.
+assert.match(app, /async function prefillFromSavedQuote\(explicitId\)/);
 assert.match(app, /new URLSearchParams\(location\.search\)\.get\('quote'\)/);
 // Loaded whole from storage, not rebuilt from a few fields.
 assert.match(app, /loadQuote\(data\.quote_data \|\| \{\}\)/);

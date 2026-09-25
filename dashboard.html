@@ -593,6 +593,24 @@ function rawBooking(q) {
   return q && q._source === 'booking' ? (q._raw || {}) : (q || {});
 }
 
+/* Which id a row carries decides the link, NOT what its status says.
+   ─────────────────────────────────────────────────────────────────────
+   Every "Send Quote →" button used to be built from the status alone:
+   status 'inquiry' meant app.html?booking=<id>. But the status modal lets any
+   row be set to "Inquiry — just asking around", including a SAVED QUOTE, and a
+   saved quote's id is not a booking id. The Quote Builder then looked it up in
+   bookings, found nothing, and said "Could not load that booking — starting a
+   blank quote" — a button called Send Quote that answered by throwing the
+   quote away. The same applies to 'expired'.
+
+   A booking id goes to ?booking=, a quote id goes to ?quote=, whatever the
+   status happens to be. */
+function quoteBuilderHref(q) {
+  if (!q || !q.id) return 'app.html';
+  const key = q._source === 'booking' ? 'booking' : 'quote';
+  return 'app.html?' + key + '=' + encodeURIComponent(q.id);
+}
+
 /* The balance terms for a booking, as agreed on its quote.
    A booking made from a quote carries quote_id, and that quote may override
    the business default — so the contract quotes the same date the customer
@@ -698,8 +716,8 @@ function nextActionFor(q) {
   const prep = prepFor(q);
   const encodedId = encodeURIComponent(q.id);
   const actions = {
-    'inquiry': { priority: 1, label: 'Send Quote →', note: 'A customer is waiting for your offer.', href: `app.html?booking=${encodedId}` },
-    'expired': { priority: 2, label: 'Refresh Quote →', note: 'Their previous date hold expired. Follow up with a fresh offer.', href: `app.html?booking=${encodedId}` },
+    'inquiry': { priority: 1, label: 'Send Quote →', note: 'A customer is waiting for your offer.', href: quoteBuilderHref(q) },
+    'expired': { priority: 2, label: 'Refresh Quote →', note: 'Their previous date hold expired. Follow up with a fresh offer.', href: quoteBuilderHref(q) },
     'quote-sent': { priority: 3, label: 'Review Quote →', note: 'Follow up and move this customer toward their deposit.', href: quoteId ? `view-quote.html?id=${encodeURIComponent(quoteId)}` : 'app.html' },
     'awaiting-deposit': { priority: 1, label: 'Deposit Paid', note: 'Confirm payment to send the contract automatically.', fn: `quickStatus('${q.id}','deposit-paid')` },
     'deposit-paid': { priority: 2, label: 'Review Contract →', note: contractFor(q) ? 'The contract is ready in Contract Center.' : 'The deposit is paid. Check that the contract was sent.', href: 'contract.html' },
@@ -821,13 +839,13 @@ function renderBookings() {
     const nextAction = {
       // Inquiries carry their booking id across, so the Quote Builder opens
       // prefilled instead of blank — no retyping what the customer already gave us.
-      'inquiry':          {label:'Send Quote →', href:`app.html?booking=${encodeURIComponent(q.id)}`},
+      'inquiry':          {label:'Send Quote →', href:quoteBuilderHref(q)},
       'quote-sent':       {label:'Mark Deposit Paid', fn:`quickStatus('${q.id}','deposit-paid')`},
       'awaiting-deposit': {label:'Mark Deposit Paid', fn:`quickStatus('${q.id}','deposit-paid')`},
       'deposit-paid':     {label:'Confirm Booking', fn:`quickStatus('${q.id}','confirmed')`},
       'confirmed':        {label:'Mark Complete ✓', fn:`quickStatus('${q.id}','complete')`},
       'complete':         null,
-      'expired':          {label:'Send Quote →', href:`app.html?booking=${encodeURIComponent(q.id)}`},
+      'expired':          {label:'Send Quote →', href:quoteBuilderHref(q)},
     }[status];
     const quickBtn = nextAction
       ? nextAction.href
@@ -1017,17 +1035,11 @@ async function maybeCreateProfitRecord(itemId) {
 function goToQuoteBuilder() {
   const q = allQuotes.find(x => String(x.id) === String(activeId));
   closeModal();
-  if (q && q._source === 'booking') {
-    window.location.href = 'app.html?booking=' + encodeURIComponent(q.id);
-  } else if (q) {
-    // A saved quote is reopened by id so the whole thing comes back — line
-    // items, add-ons, notes, the lot. This used to pass client/event/date as
-    // loose query parameters that the Quote Builder never read, so clicking a
-    // saved quote opened an empty form with the client name missing.
-    window.location.href = 'app.html?quote=' + encodeURIComponent(q.id);
-  } else {
-    window.location.href = 'app.html';
-  }
+  // A saved quote is reopened by id so the whole thing comes back — line
+  // items, add-ons, notes, the lot. This used to pass client/event/date as
+  // loose query parameters that the Quote Builder never read, so clicking a
+  // saved quote opened an empty form with the client name missing.
+  window.location.href = quoteBuilderHref(q);
 }
 
 function closeModal() {

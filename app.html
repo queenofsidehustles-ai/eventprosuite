@@ -1030,7 +1030,8 @@ function copyQuoteLink() {
     grand,
     link: quoteLinkFor(_lastSavedQuoteId)
   });
-  copyToClipboard(msg, '\u2713 Message copied \u2014 paste it into a text to your client');
+  copyToClipboard(msg, '\u2713 Message copied \u2014 paste it into a text to your client')
+    .then(ok => recordSendEvent(_lastSavedQuoteId, { channel: 'link', ok }));
 }
 
 // My Quotes → Copy Link, for a quote that was already sent. Rebuilt from the
@@ -1051,7 +1052,57 @@ function copySavedQuoteLink(id) {
     grand: qd.baseGrand != null ? qd.baseGrand : (qd.grand != null ? qd.grand : q.total_amount),
     link: quoteLinkFor(q.id)
   });
-  copyToClipboard(msg, '\u2713 Message copied \u2014 paste it into a text to your client');
+  copyToClipboard(msg, '\u2713 Message copied \u2014 paste it into a text to your client')
+    .then(ok => recordSendEvent(q.id, { channel: 'link', ok }));
+}
+
+/* Write down that a quote was sent.
+   ─────────────────────────────────────────────────────────────────────
+   The result of a send lived in a toast for a few seconds and nowhere else,
+   so an hour later "did that quote go?" could only be answered by sending it
+   again and watching. Each attempt is appended to the quote instead — the
+   failures too, because a failed send is exactly what you need to see.
+
+   Appended read-modify-write rather than through an RPC: this is the owner's
+   own row, and saved_quotes is already owner-only under RLS. It never blocks
+   or reverses the send — the quote did go out whether or not we wrote it down.
+
+   Needs migrations/20260925_quote_send_log.sql. Without it the column does not
+   exist, the write fails, and everything else carries on unchanged. */
+async function recordSendEvent(quoteId, event) {
+  if (!quoteId || !currentUser) return;
+  try {
+    const { data, error } = await sb.from('saved_quotes')
+      .select('send_events').eq('id', quoteId).eq('user_id', currentUser.id).maybeSingle();
+    if (error) throw error;
+    const events = Array.isArray(data && data.send_events) ? data.send_events : [];
+    // Trimmed so one quote resent many times cannot grow without limit.
+    const next = [...events, { at: new Date().toISOString(), ...event }].slice(-20);
+    const { error: upErr } = await sb.from('saved_quotes')
+      .update({ send_events: next }).eq('id', quoteId).eq('user_id', currentUser.id);
+    if (upErr) throw upErr;
+    const cached = (_savedQuotesCache || []).find(q => q.id === quoteId);
+    if (cached) cached.send_events = next;
+  } catch (e) {
+    console.warn('Could not record the send on this quote:', e.message || e);
+  }
+}
+
+// The one line that answers "has this gone out, and did it work?"
+function quoteSendLabel(q) {
+  if (!('send_events' in q)) return '';
+  const events = Array.isArray(q.send_events) ? q.send_events : [];
+  if (!events.length) return ' · ⚫ Not sent yet';
+  const last = events[events.length - 1];
+  const when = (() => {
+    const d = new Date(last.at);
+    return isNaN(d) ? '' : d.toLocaleDateString() + ' ' +
+      d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  })();
+  const how = last.channel === 'text' ? 'Texted' : last.channel === 'link' ? 'Link copied' : 'Emailed';
+  // A failure is the thing worth seeing, so it says why rather than just how.
+  if (last.ok === false) return ` · ⚠️ ${how === 'Link copied' ? 'Copy' : how.replace(/ed$/, '')} failed ${when}${last.note ? ' — ' + last.note : ''}`;
+  return ` · ✉️ ${how} ${when}`;
 }
 
 async function shareQuote() {
@@ -1123,12 +1174,21 @@ async function shareQuote() {
     if (clientPhone) bits.push(d.texted ? '✅ Texted to ' + clientPhone : '⚠️ Text failed: ' + (d.textNote || 'unknown'));
     toast(bits.join('  ·  '));
 
+    // Written down per channel, successes and failures alike, so the answer
+    // outlives the toast.
+    if (clientEmail) await recordSendEvent(_lastSavedQuoteId, { channel:'email', ok:!!d.sent,   to:clientEmail, note:d.sent  ?null:(d.note    ||'unknown') });
+    if (clientPhone) await recordSendEvent(_lastSavedQuoteId, { channel:'text',  ok:!!d.texted, to:clientPhone, note:d.texted?null:(d.textNote||'unknown') });
+
     // Email is the only channel with a manual fallback worth offering.
     if (clientEmail && !d.sent && !d.texted) {
       setTimeout(() => { window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body; }, 1600);
     }
   } catch (e) {
     console.error(e);
+    await recordSendEvent(_lastSavedQuoteId, {
+      channel: clientEmail ? 'email' : 'text', ok: false,
+      to: clientEmail || clientPhone, note: 'Could not reach the server',
+    });
     if (clientEmail) {
       window.location.href = 'mailto:' + clientEmail + '?subject=' + subject + '&body=' + body;
     } else {
@@ -2242,7 +2302,7 @@ async function openQuotesModal() {
     <div class="saved-quote">
       <div class="saved-quote-info">
         <strong>${escapeHtml(q.client_name)} · ${escapeHtml(q.event_type || 'Event')}</strong>
-        <small>${money(q.total_amount)} · ${new Date(q.created_at).toLocaleDateString()}${quoteOpenedLabel(q)}</small>
+        <small>${money(q.total_amount)} · ${new Date(q.created_at).toLocaleDateString()}${quoteSendLabel(q)}${quoteOpenedLabel(q)}</small>
       </div>
       <div class="saved-quote-actions">
         <button class="tiny-btn" onclick="copySavedQuoteLink('${q.id}')" title="Copy a ready-to-send message with this quote’s link">🔗 Copy Link</button>
@@ -2267,14 +2327,19 @@ function closeQuotesModal(e) {
 // the quote, so it is loaded whole rather than rebuilt from a few query
 // parameters — which is what used to happen, and why the form came up empty
 // with no client name on it.
-async function prefillFromSavedQuote() {
-  const quoteId = new URLSearchParams(location.search).get('quote');
+async function prefillFromSavedQuote(explicitId) {
+  const quoteId = explicitId || new URLSearchParams(location.search).get('quote');
   if (!quoteId || !currentUser) return false;
 
   const { data, error } = await sb.from('saved_quotes')
     .select('id,quote_data').eq('id', quoteId).eq('user_id', currentUser.id).maybeSingle();
 
   if (error || !data) {
+    // The id might be a BOOKING id that arrived on a ?quote= link — an old
+    // bookmark, or a link built before the dashboard routed these by row type.
+    // Answering a Send Quote button by discarding the quote is the worst
+    // possible reply, so the other table is tried before giving up.
+    if (await prefillFromBooking(quoteId, { silent: true })) return true;
     console.warn('Could not reopen that quote:', error);
     toast('Could not open that quote — starting a blank one');
     return false;
@@ -2325,19 +2390,28 @@ async function prefillFromBooking() {
   }
 
   if (await prefillFromSavedQuote()) return;
+  await prefillFromBooking(params.get('booking'));
+}
 
-  const bookingId = params.get('booking');
-  if (!bookingId || !currentUser) return;
-  _sourceBookingId = bookingId;
+/* Fill the form from an inquiry. `silent` is used when this is a second guess
+   at an id that did not resolve as a quote — a failed guess must not tell the
+   owner anything, because the first attempt will report the real outcome. */
+async function prefillFromBooking(bookingId, opts) {
+  const silent = !!(opts && opts.silent);
+  if (!bookingId || !currentUser) return false;
 
   const { data: b, error } = await sb.from('bookings')
     .select('*').eq('id', bookingId).eq('owner_id', currentUser.id).maybeSingle();
 
   if (error || !b) {
+    if (silent) return false;
+    // Same courtesy in the other direction: a quote id on a ?booking= link.
+    if (await prefillFromSavedQuote(bookingId)) return true;
     console.warn('Could not load booking for prefill:', error);
     toast('Could not load that booking — starting a blank quote');
-    return;
+    return false;
   }
+  _sourceBookingId = bookingId;
 
   if ($('clientName')  && b.client_name)   $('clientName').value  = b.client_name;
   if ($('clientEmail') && b.client_email)  $('clientEmail').value = b.client_email;
@@ -2391,6 +2465,7 @@ async function prefillFromBooking() {
 
   refreshAll();
   toast(`✓ Loaded ${b.client_name || 'booking'} — adjust for travel and extras, then save`);
+  return true;
 }
 
 function loadQuote(data) {
