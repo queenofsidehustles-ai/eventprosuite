@@ -173,7 +173,25 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const taggedCRM        = metaProduct === 'crm' || metaProduct === 'hub';
 
   // Party Biz Hub CRM — a recurring subscription, unless the link says otherwise.
-  const isCRMSub = taggedCRM || (sessionMode === 'subscription' && !taggedKpps && !taggedPrintables);
+  /* The KPPS payment plan is a SUBSCRIPTION, and so is the Hub membership.
+     Told apart by the instalment amount, because they cannot be told apart by
+     shape — and a `product` tag cannot be relied on here: Stripe's Dashboard
+     has no metadata field when you build a payment link, so a link made the
+     only way the Dashboard allows arrives carrying nothing.
+
+     Without this, every instalment payment for KPPS was classified as the
+     monthly Hub plan, and a customer paying $69 towards the Kids Party Profit
+     System would have been given Hub access and never the thing she bought.
+
+     Same figure instalmentPlanSize() uses to close the plan after the third
+     payment, so the two cannot disagree. Change the plan price and you must
+     set KPPS_PLAN_AMOUNT_CENTS in Vercel — both halves read it. */
+  const KPPS_PLAN_CENTS = parseInt(env('KPPS_PLAN_AMOUNT_CENTS') || '6900', 10);
+  const looksLikeKppsPlan = sessionMode === 'subscription' && KPPS_PLAN_CENTS > 0 &&
+    (amountTotal === KPPS_PLAN_CENTS || amountSubtotal === KPPS_PLAN_CENTS);
+
+  const isCRMSub = taggedCRM ||
+    (sessionMode === 'subscription' && !taggedKpps && !taggedPrintables && !looksLikeKppsPlan);
 
   // Prices change. Recognising a purchase only by its amount means the next
   // price change silently stops granting access, so the order of preference is:
@@ -190,6 +208,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   const KPPS_AMOUNTS = new Set([19700, 40000, 49700, ...envAmounts(env('KPPS_PRICE_CENTS'))]);
   const isKPPS = !isCRMSub && (
     taggedKpps ||
+    looksLikeKppsPlan ||
     KPPS_AMOUNTS.has(amountSubtotal) || KPPS_AMOUNTS.has(amountTotal)
   );
 
@@ -620,17 +639,34 @@ async function handleInstalmentInvoice(res, event, { RESEND_KEY, FROM_EMAIL }) {
     return res.json({ received: true, note: `Instalment ${paidCount} of ${planSize} paid` });
   }
 
-  // Paid in full. Cancel immediately so no fourth payment is ever taken.
-  const cancelRes = await fetch('https://api.stripe.com/v1/subscriptions/' + encodeURIComponent(subId), {
-    method: 'DELETE',
-    headers: { Authorization: 'Bearer ' + STRIPE_KEY },
-  });
-  if (!cancelRes.ok) {
-    const detail = await cancelRes.json().catch(() => ({}));
-    console.error('PLAN PAID IN FULL BUT COULD NOT BE CANCELLED — cancel it by hand in Stripe', {
-      subId, detail: detail.error?.message || cancelRes.status,
+  /* Paid in full. Cancel so no fourth payment is ever taken.
+
+     Stripe's own "Limit the number of payments" on a payment link ends the
+     subscription itself, so on those links it is already over by the time
+     this runs. That is the belt-and-braces working, not a failure — the two
+     mechanisms must not shout at each other about agreeing. Only a
+     subscription still live and still billable is worth an alarm. */
+  let alreadyOver = sub.status === 'canceled' || sub.status === 'incomplete_expired';
+  if (!alreadyOver) {
+    const cancelRes = await fetch('https://api.stripe.com/v1/subscriptions/' + encodeURIComponent(subId), {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + STRIPE_KEY },
     });
-    return res.json({ received: true, note: 'Paid in full, cancel failed' });
+    if (!cancelRes.ok) {
+      const detail = await cancelRes.json().catch(() => ({}));
+      const message = detail.error?.message || String(cancelRes.status);
+      // Stripe says "No such subscription" or "already canceled" when its own
+      // payment limit got there first. Nothing is owed and nothing is wrong.
+      alreadyOver = /no such subscription|already cancell?ed|resource_missing/i.test(
+        message + ' ' + (detail.error?.code || '')
+      );
+      if (!alreadyOver) {
+        console.error('PLAN PAID IN FULL BUT COULD NOT BE CANCELLED — cancel it by hand in Stripe', {
+          subId, detail: message,
+        });
+        return res.json({ received: true, note: 'Paid in full, cancel failed' });
+      }
+    }
   }
 
   const to = invoice.customer_email || (sub.metadata && sub.metadata.customer_email) || '';
@@ -660,7 +696,10 @@ async function handleInstalmentInvoice(res, event, { RESEND_KEY, FROM_EMAIL }) {
     } catch (e) { console.error('Plan-complete email failed:', e); }
   }
 
-  return res.json({ received: true, note: `Plan complete after ${paidCount} payments — subscription cancelled` });
+  return res.json({
+    received: true,
+    note: `Plan complete after ${paidCount} payments — subscription ${alreadyOver ? 'had already ended' : 'cancelled'}`,
+  });
 }
 
 async function handleBookingDeposit(res, event, session, config) {

@@ -21,9 +21,13 @@ assert.match(webhook, /profilePayload\.has_printables_access = true/);
 
 // Every purchase shape the webhook recognises must still reach that grant.
 // A tagged product beats the subscription default. Without this a KPPS
-// payment plan billed as monthly instalments would grant Hub access instead of
-// KPPS, and the buyer would never get what they paid for.
-assert.match(webhook, /const isCRMSub = taggedCRM \|\| \(sessionMode === 'subscription' && !taggedKpps && !taggedPrintables\)/);
+// payment plan billed as instalments would grant Hub access instead of KPPS,
+// and the buyer would never get what they paid for.
+//
+// The instalment amount now beats it too: Stripe's Dashboard has no metadata
+// field when you build a payment link, so a plan link made the only way the
+// Dashboard allows arrives with no tag at all. See tests/kpps-payment-plan.
+assert.match(webhook, /const isCRMSub = taggedCRM \|\|\n\s+\(sessionMode === 'subscription' && !taggedKpps && !taggedPrintables && !looksLikeKppsPlan\)/);
 assert.match(webhook, /const taggedKpps\s+= metaProduct === 'kpps'/);
 assert.match(webhook, /metaProduct === 'kpps'/);
 // Recognition prefers a metadata tag, then an env-var amount, then the
