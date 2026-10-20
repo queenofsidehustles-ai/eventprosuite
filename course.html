@@ -136,7 +136,7 @@ const ADMIN_EMAIL='ggkidsspa@gmail.com';
 const COMMUNITY_URL='https://www.skool.com/queen-of-side-hustles-academy-5720';
 
 // ── Course content ─────────────────────────────────────────────────────
-// Days 0–7 are live. Later days show in the list as "coming soon" until written.
+// Days 0–14 are live. Later days show in the list as "coming soon" until written.
 // video: paste an unlisted YouTube link to show the video; leave '' to show the script note.
 const DAYS=[
   {n:0,title:'Start Here: Hobby or Business?',
@@ -261,8 +261,98 @@ const DAYS=[
    notes:[{key:'structure',label:"I'm starting as: sole proprietor, DBA or LLC",input:true}],
    extra:{label:'Ask AI what my state requires',href:'assistant.html'},
    doIt:{label:'Connect Stripe',href:'profile.html#paymentSetup',hint:'Stripe can pay out to your personal account to start. Your business email and phone go in Business Profile too.'}},
+  {n:8,title:'Publish Your Website',
+   why:"Today you go from “starting a business” to “now booking.” Your website and booking page give every post, message and QR code somewhere to send parents.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   list:{label:'Your site needs just 5 things',items:['Your name and one-sentence promise (Day 3)','Your package, what\'s included and your price (Days 4–5)','Photos: your setup, supplies or AI-inspired images labeled “AI-inspired.” Real party photos replace them after Day 10.','Your booking button','Your city and how to reach you']},
+   callout:'<b>Done beats perfect.</b> Your site will get better after the practice party. Publish today anyway.<br><br>Your Hub website link works right away. Connecting the domain you bought on Day 3 is optional and can come later.<br><br><b>Waitlist idea:</b> “Booking opens for [month]. Join the waitlist for first pick of dates.” A little scarcity helps parents decide.',
+   time:'about 45 min',
+   checklist:["Watch (or read) today's lesson",'Fill in my website: promise, package, price, photos, contact','Check it on my phone','Publish my website and booking page','Public step: post “Now booking!” with my link (and a waitlist if dates are limited)'],
+   notes:[{key:'siteLink',label:'My website link',input:true}],
+   extra:{label:'Write my “Now booking” post',href:'content.html'},
+   doIt:{label:'Open My Website',href:'mywebsite.html',hint:'Your package and profile fill in automatically.'}},
+  {n:9,title:'Test Your Booking Flow',
+   why:"Find the broken step before a real parent does. Today you walk through booking exactly as a mom would, from first click to signed contract.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['Step','What to check'],rows:[
+     ['1. Booking page','Loads fast on a phone? Is the price clear?'],
+     ['2. Quote','Right package, add-ons and total? Your name and promise at the top?'],
+     ['3. Contract','Your Day 6 rules show? Photo permission is there?'],
+     ['4. Deposit','The payment link opens? (Pay $1 or ask a friend, then refund it in Stripe.)'],
+     ['5. Your reply','Do you know what you\'ll text a parent right after they book?']]},
+   callout:'<b>Ask a friend to book as a test.</b> Watch where she hesitates. Anything confusing to her will confuse a busy mom too.',
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Book a test party on my own booking page','Send myself the quote and contract','Test the deposit link','Ask one friend to try it and tell me what was confusing','Fix anything that felt off'],
+   notes:[{key:'fixes',label:'What I fixed (or still need to fix)'}],
+   doIt:{label:'Open Quotes',href:'app.html?quotes=1',hint:'Delete your test quote when you\'re done.'}},
+  {n:10,title:'Practice Party',
+   why:"This is where it becomes real. You'll find your rhythm, get real photos and a testimonial, and walk away confident you can do this for a paying family.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   list:{label:'Party-day game plan',items:['<b>Day before:</b> pack from your Event Checklist and pack by theme, in one bin per theme.','<b>Arrive early:</b> 45–60 minutes to set up calmly.','<b>Photos first:</b> shoot the full setup before guests arrive, then candid moments, only of kids whose parents said yes.','<b>Table sign:</b> a small sign with a QR code to your booking page. “Loved this party? Book yours.”','<b>Before you leave:</b> ask the host for a 2-sentence testimonial while she\'s happy.']},
+   callout:'<b>Make a QR code free in Canva</b> (search “QR code” in Apps). Point it to your booking page.<br><br><b>After the party:</b> AI can brighten your phone photos and turn one party into a week of posts. Real photos don\'t need a label; anything AI-made does.<br><br>Did the family cover supplies? Keep your reusable pieces in a labeled bin. That\'s your first theme kit.',
+   time:'party + 20 min',
+   checklist:["Watch (or read) today's lesson",'Pack from my Event Checklist the day before','Run my practice party','Take setup photos and permission-approved party photos','Put out my QR table sign','Get a testimonial from the host','Public step: post my favorite photos'],
+   notes:[{key:'lessons',label:'What went well, and what I\'ll change'},{key:'testimonial',label:'My testimonial (copy it word for word)'}],
+   extra:{label:'Make my QR code in Canva',href:'https://www.canva.com/qr-code-generator/'},
+   doIt:{label:'Open my Event Checklist',href:'prep.html',hint:'Add your photos to your website tonight. They replace any AI-inspired images.'}},
+  {n:11,title:'Founding Families Offer',
+   why:"People book what they can see. With real photos and a testimonial, a small launch offer gives your first families a reason to book now instead of “someday.”",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['Your offer','Example'],rows:[
+     ['Who','The first 5 founding families'],
+     ['What they get','A free add-on (like goodie bags), not a price cut. Your price stays your price.'],
+     ['Deadline','Book by [date, about 2 weeks out]'],
+     ['How to claim','Your booking link, or reply “FOUNDING”']]},
+   callout:'<b>Start with one well-connected mom.</b> The friend who knows everyone at school or church. One great party in front of her circle spreads by word of mouth.<br><br><b>Let AI draft it:</b> Content Studio writes the post, and PartyGenius drafts a personal note to that mom. Read it, make it sound like you, then send.',
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Write my founding families offer (bonus, deadline, how to claim)','Add it to my website','Invite one well-connected mom personally','Public step: post the offer with my real photos and share it in my 3 local groups'],
+   notes:[{key:'offer',label:'My founding families offer'},{key:'connector',label:'The well-connected mom I invited'}],
+   extra:{label:'Draft my note to a connected mom',href:'assistant.html'},
+   doIt:{label:'Write my offer post',href:'content.html',hint:'Check each group\'s rules before you post.'}},
+  {n:12,title:'Your Circle',
+   why:"Your first bookings almost always come from people who already know you. A personal text works better than any ad.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   callout:'<b>Text it like this (make it yours):</b><br><i>“Hi [name]! I just launched my [party] business 🎉 I\'m offering founding families a free [bonus] this month. Know anyone with a birthday coming up? Here\'s my page: [link]”</i><br><br><b>Speed wins parties.</b> When someone asks about prices, reply within the hour. Save your answer as a text shortcut, or let AI draft a reply you can send in seconds.',
+   list:{label:'Who to text (aim for 10)',items:['Moms from school, church, work or the gym','Family with young kids or grandkids','Friends who post their kids\' parties','Your hairstylist, nail tech or anyone who talks to lots of moms']},
+   time:'about 40 min',
+   checklist:["Watch (or read) today's lesson",'List 10 people in my circle','Send 10 personal texts (not a group text)','Save my quick reply for price questions','Answer every reply the same day'],
+   notes:[{key:'circle',label:'My 10 people, and who replied'}],
+   extra:{label:'Draft my quick reply with AI',href:'assistant.html'},
+   doIt:{label:'Open my message templates',href:'content.html',hint:'Personal beats polished. Use their name.'}},
+  {n:13,title:'Local Outreach',
+   why:"Moms trust local. Today you show up where parents already are, and you start a birthday list that books parties for years.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['Move','How'],rows:[
+     ['Google Business Profile','Free. It puts you on Google Maps when locals search “kids party near me.”'],
+     ['2 partners','A party store, daycare, toy shop, cake maker or photographer. Offer to share each other\'s work.'],
+     ['Birthday list','A free form for name, kid\'s name and birthday, behind a QR code. Use it at parties, school fairs and expos with a small giveaway.'],
+     ['Value post','A helpful tip in a mom group (“5 ways to make an at-home party feel special”), not an ad']]},
+   callout:'<b>Why the birthday list matters:</b> every entry is a future party. Reach out 6–8 weeks before each birthday with a friendly note and your booking link.<br><br><b>Let AI draft your partner pitch:</b> short, local and about what\'s in it for them.',
+   time:'about 40 min',
+   checklist:["Watch (or read) today's lesson",'Start my Google Business Profile','Contact 2 local partners','Make my birthday-list form and its QR code','Public step: share a value post in a mom group'],
+   notes:[{key:'partners',label:'The 2 partners I contacted'},{key:'formLink',label:'My birthday-list form link',input:true}],
+   links:[{group:'Free tools',items:[
+     {label:'Google Business Profile',href:'https://www.google.com/business/',note:'Get found on Google Maps and Search'},
+     {label:'Google Forms',href:'https://docs.google.com/forms/',note:'Make your birthday-list form'},
+     {label:'Canva QR code generator',href:'https://www.canva.com/qr-code-generator/',note:'Turn your form link into a QR code'}]}],
+   extra:{label:'Draft my partner pitch with AI',href:'assistant.html'},
+   doIt:{label:'Write my value post',href:'content.html',hint:'Check each group\'s rules before you post.'}},
+  {n:14,title:'Follow Up + Celebrate',
+   why:"Most bookings happen on the follow-up, not the first message. Today you close every loop, set a simple 30-day rhythm, and celebrate how far you've come.",
+   video:'',videoNote:'A celebration video from Monica is coming soon. Read today\'s lesson below.',
+   table:{head:['Your 30-day rhythm','What to do'],rows:[
+     ['Every day (10 min)','Answer messages fast. One small post or story.'],
+     ['Every week','Follow up with anyone who asked but didn\'t book. Share one photo or tip in a local group.'],
+     ['After every party','Thank-you text, review request, photos to the family (with permission)'],
+     ['Every month','Birthday-list reminders. Check your Get Legit tracker.']]},
+   callout:'<b>Follow-up text:</b> <i>“Hi [name]! Just checking in. I still have a couple of [month] dates open. Want me to hold one for [child]?”</i><br><br><b>No booking yet? That\'s normal.</b> You built a real business in 14 days. Keep the rhythm, and your first booking is coming.',
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Follow up with every lead and every “maybe”','Put my 30-day rhythm on my calendar','Ask my practice-party family for a Google review','Public step: share my win in the community'],
+   notes:[{key:'win',label:'My biggest win from these 14 days'},{key:'next30',label:'My goal for the next 30 days'}],
+   extra:{label:'Share my win in the community',href:COMMUNITY_URL},
+   doIt:{label:'Open my Dashboard',href:'dashboard.html',hint:'Your Get Legit tracker stays here. Keep checking items off.'}},
 ];
-const UPCOMING=['Publish Your Website','Test Your Booking Flow','Practice Party','Founding Families Offer','Your Circle','Local Outreach','Follow Up + Celebrate'];
+const UPCOMING=[];
 
 // Get Legit tracker: opens with Day 7, never blocks a day. Saved in Day 7's notes.
 const LEGIT=[
@@ -310,7 +400,7 @@ function renderProgress(){
   document.getElementById('clBarFill').style.width=Math.round(done/15*100)+'%';
   document.getElementById('clBar').setAttribute('aria-valuenow',done);
   document.getElementById('clProgressText').textContent=done===0?'Day 0 of 14':`${done} of 15 days done`;
-  document.getElementById('clProgressSub').textContent=next?`Up next: Day ${next.n} — ${next.title}`:`Days 0–${DAYS.length-1} done! The next days are on their way.`;
+  document.getElementById('clProgressSub').textContent=next?`Up next: Day ${next.n} — ${next.title}`:'You finished your 14-Day Launch! 🎉 Keep your 30-day rhythm going.';
 }
 function renderDays(){
   const all=[...DAYS.map(d=>({n:d.n,title:d.title,live:true})),...UPCOMING.map((t,i)=>({n:i+DAYS.length,title:t,live:false}))];
@@ -347,7 +437,7 @@ function renderLesson(){
       <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
       ${notes}
       <div class="cl-saved" id="clSaved"></div>
-      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished Days 0–'+(DAYS.length-1)+'. The next days are on their way.'}</div></div>
+      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished your 14-Day Launch! Share your win in the community. We\'re cheering for you.'}</div></div>
       <div class="cl-actions">${doIt}${doneBtn}</div>
       ${d.doIt&&d.doIt.hint?`<div class="cl-hint">${esc(d.doIt.hint)}</div>`:''}
       ${!isDone(current)?`<div class="cl-hint" id="clTickHint" ${allChecked?'style="display:none"':''}>Tick every box to finish today.</div>`:''}
