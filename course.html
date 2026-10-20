@@ -46,6 +46,7 @@
 .cl-check{display:flex;flex-direction:column;gap:8px}
 .cl-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #EDE5F5;border-radius:14px;cursor:pointer;font-size:15px;line-height:1.45;transition:background .15s,border-color .15s}
 .cl-item:hover{background:#FBF8FE}
+.cl-legit{border-top:1.5px dashed #EDE5F5}
 .cl-item input{width:20px;height:20px;margin-top:1px;accent-color:#D115AE;flex-shrink:0;cursor:pointer}
 .cl-item.checked{background:#FDF0FA;border-color:#F3B4E3}
 .cl-item.checked span{color:#6B5F7A;text-decoration:line-through}
@@ -217,18 +218,27 @@ const DAYS=[
    checklist:["Watch (or read) today's lesson",'Choose my deposit and balance rules','Choose my cancellation and reschedule rules','Add the photo permission line','Save it all in my Contract','Send a test contract to myself'],
    notes:[{key:'policies',label:'Anything special about my policies'}],
    doIt:{label:'Set up my contract',href:'contract.html',hint:'Want more wording? The Founder Backend Vault in the Library has full policy templates.'}},
-  {n:7,title:'Get Legit + Get Paid',
-   why:"Setting up properly protects you and your family, and it makes parents comfortable paying you online. Today is paperwork day. Put on some music and knock it out.",
+  {n:7,title:'Get Paid',
+   why:"Your booking page goes live tomorrow, so today parents need a way to pay you. This is quick, and you don't need an LLC to do it.",
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
-   list:{label:'Your Get Legit checklist',items:['<b>Business structure:</b> many start as a sole proprietor. An LLC keeps business and personal separate. Ask a local accountant which fits you.','<b>EIN (tax ID):</b> free from the IRS at irs.gov. Never pay a website for it.','<b>Local license:</b> check your city or county, plus any rules for your party type (food, bounce houses).','<b>Liability insurance:</b> you work with kids. Get a quote for party or event coverage. Rentals often need their own.','<b>Business bank account:</b> keep party money separate, and snap a photo of every receipt.','<b>Business email and phone:</b> like hello@yourbusiness.com and a free Google Voice number.']},
-   callout:'<b>Let AI map it out:</b> ask PartyGenius “What do I need to legally start a kids party business in [city, state]?” You\'ll get a plain-English starting list. Rules vary by state, so confirm with your city\'s website or a local pro.<br><br><b>You don\'t have to finish it all today.</b> An LLC or bank appointment can take days. Start each one, then check the box.<br><br>This is general information, not legal or tax advice.',
-   time:'about 50 min',
-   checklist:["Watch (or read) today's lesson",'Start my setup: choose my structure and get my free EIN','Check my city or county license rules','Request 1 liability insurance quote','Open a business bank account (or book the appointment)','Set up my business email and phone','Connect Stripe so parents can pay deposits online'],
-   notes:[{key:'legit',label:'My legit to-do list: what\'s done, what\'s pending'}],
+   list:{label:"Start simple: you don't need an LLC to throw parties",items:['<b>Sole proprietor:</b> the simplest start. If you work for yourself under your own name, you already are one.','<b>DBA (“doing business as”):</b> lets a sole proprietor use a business name, like “Beary Best Friends Parties.” Many counties or states ask you to register it. It\'s usually quick and low cost.','<b>EIN (tax ID):</b> free at irs.gov in about 10 minutes. Sole proprietors can get one too, so you never hand out your Social Security number. Never pay a website for it.','<b>LLC:</b> keeps business and personal separate. It\'s a smart move as you grow, hire help or add rentals, but you don\'t need one to start.']},
+   callout:'<b>Don\'t let paperwork stall you.</b> You can book and throw parties now as a sole proprietor. An LLC can come later when you\'re ready to scale.<br><br>The rest (insurance, license, bank account) lives in your <b>Get Legit tracker</b> below. Each item has a deadline that matches the real risk, and it never blocks your next day.<br><br>Rules vary by state and city. This is general information, not legal or tax advice. A local accountant can tell you what fits.',
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Get my free EIN (sole proprietors can too)','Set up my business email and phone','Connect Stripe so parents can pay deposits online','Public step: post a “booking opens tomorrow 👀” teaser story'],
+   notes:[{key:'structure',label:"I'm starting as: sole proprietor, DBA or LLC",input:true}],
    extra:{label:'Ask AI what my state requires',href:'assistant.html'},
-   doIt:{label:'Connect Stripe',href:'profile.html#paymentSetup',hint:'Your business email and phone go in Business Profile too.'}},
+   doIt:{label:'Connect Stripe',href:'profile.html#paymentSetup',hint:'Stripe can pay out to your personal account to start. Your business email and phone go in Business Profile too.'}},
 ];
 const UPCOMING=['Publish Your Website','Test Your Booking Flow','Practice Party','Founding Families Offer','Your Circle','Local Outreach','Follow Up + Celebrate'];
+
+// Get Legit tracker: opens with Day 7, never blocks a day. Saved in Day 7's notes.
+const LEGIT=[
+  {k:'insurance',t:'Get liability insurance (or at least a quote)',by:'Before your practice party (Day 10)'},
+  {k:'structure',t:'Decide: sole proprietor, DBA or LLC',by:'Before your first paid party'},
+  {k:'dba',t:'Register your DBA if you use a business name',by:'Before your first paid party'},
+  {k:'license',t:'Check your city or county business license rules',by:'Before your first paid party'},
+  {k:'bank',t:'Open a business bank account',by:'Within your first month'},
+  {k:'receipts',t:'Start a receipts folder (a phone photo of each one works)',by:'Today'}];
 
 // ── State ──────────────────────────────────────────────────────────────
 let currentUser=null, progress={}, current=0, storageMode='db';
@@ -306,8 +316,16 @@ function renderLesson(){
       <div class="cl-actions">${doIt}${doneBtn}</div>
       ${d.doIt&&d.doIt.hint?`<div class="cl-hint">${esc(d.doIt.hint)}</div>`:''}
       ${!isDone(current)?`<div class="cl-hint" id="clTickHint" ${allChecked?'style="display:none"':''}>Tick every box to finish today.</div>`:''}
-    </div>`;
+    </div>${current>=7?legitCard():''}`;
 }
+function legitCard(){
+  const L=(dayState(7).notes.legit)||{};
+  const done=LEGIT.filter(x=>L[x.k]).length;
+  return `<div class="cl-body cl-legit"><div class="cl-section-label">🛡️ Your Get Legit tracker · ${done} of ${LEGIT.length}</div>
+    <div class="cl-hint" style="margin-top:-6px">Work on these alongside your days. They never block the next day.</div>
+    <div class="cl-check">${LEGIT.map(x=>`<label class="cl-item${L[x.k]?' checked':''}"><input type="checkbox" ${L[x.k]?'checked':''} onchange="toggleLegit('${x.k}',this.checked)"/><span>${esc(x.t)}<span class="cl-hint" style="display:block">${esc(x.by)}</span></span></label>`).join('')}</div></div>`;
+}
+function toggleLegit(k,on){const s=dayState(7);s.notes.legit=Object.assign({},s.notes.legit,{[k]:on});queueSave(7);renderLesson()}
 let justFinished=null;
 function renderAll(){renderProgress();renderDays();renderLesson()}
 function openDay(n){if(!unlocked(n))return;current=n;justFinished=null;renderAll();document.getElementById('clLesson').scrollIntoView({behavior:'smooth',block:'start'})}
