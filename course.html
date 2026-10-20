@@ -370,7 +370,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function toast(m){const t=document.getElementById('clToast');t.textContent=m;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2600)}
 const dayState=n=>progress[n]||(progress[n]={checklist:[],notes:{},completed_at:null});
 const isDone=n=>!!(progress[n]&&progress[n].completed_at);
-const unlocked=n=>n===0||isDone(n-1)||isDone(n);
+let previewAll=false; // admin preview: every day open
+const unlocked=n=>previewAll||n===0||isDone(n-1)||isDone(n);
 
 async function loadProgress(){
   try{
@@ -498,6 +499,8 @@ async function init(){
   if(typeof initNavSignout==='function')initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html'});
   const isStudent=(p&&p.has_kpps_access===true)||session.user.email===ADMIN_EMAIL;
   if(!isStudent){renderLocked();return}
+  previewAll=session.user.email===ADMIN_EMAIL;
+  if(previewAll)toast('Admin preview: every day is open. Students unlock one day at a time.');
   await loadProgress();
   const firstOpen=DAYS.find(d=>!isDone(d.n));
   current=firstOpen?firstOpen.n:DAYS.length-1;
