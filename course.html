@@ -188,6 +188,10 @@ const QUIZ_URL='https://partybusinesscoach.com/plan';
 const KPPS_URL='https://partybusinesscoach.com/';
 const ADMIN_EMAIL='ggkidsspa@gmail.com';
 // Until the Hub community opens, introductions happen in Skool.
+// Monica's 15-minute marketing masterclass (online + local). Paste the unlisted YouTube link here.
+const MARKETING_VIDEO='';
+// Accept a normal YouTube link (watch, youtu.be, shorts) and turn it into an embed link.
+const toEmbed=u=>{u=String(u||'').trim();const m=u.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/);return m?'https://www.youtube.com/embed/'+m[1]+'?rel=0':u};
 const COMMUNITY_URL='https://www.skool.com/queen-of-side-hustles-academy-5720';
 
 // ── Course content ─────────────────────────────────────────────────────
@@ -363,6 +367,7 @@ const DAYS=[
    extra:{label:'Make my QR code in Canva',href:'https://www.canva.com/qr-code-generator/'},
    doIt:{label:'Open my Event Checklist',href:'prep.html',hint:'Add your photos to your website tonight. They replace any AI-inspired images.'}},
   {n:11,title:'Founding Families Offer',
+   masterclass:'main',
    ai:[{label:'Write my founding families post',prompt:"Write a short post for my founding families offer: the first 5 families to book a {party} party with {name} get [free bonus] if they book by [date]. Warm and humble, with a clear way to claim.",save:'offer'},{label:'Note to a well-connected mom',prompt:"Write a personal, text-length note to [her name], a mom who knows lots of families, telling her I launched {name} and inviting her to be one of my founding families."}],
    why:"People book what they can see. With real photos and a testimonial, a small launch offer gives your first families a reason to book now instead of “someday.”",
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
@@ -387,6 +392,7 @@ const DAYS=[
    notes:[{key:'circle',label:'My 10 people, and who replied'}],
    doIt:{label:'Open my message templates',href:'content.html',hint:'Personal beats polished. Use their name.'}},
   {n:13,title:'Local Outreach',
+   masterclass:'rewatch',
    ai:[{label:'Partner pitch',prompt:"Write a short, friendly message to a local [party store / daycare / photographer] in {city} suggesting we share each other's work. My business: {name}, a {party} business. Focus on what's in it for them."},{label:'Value post for a mom group',prompt:"Write a helpful post for a local mom group: 5 easy ways to make an at-home birthday party feel special. Not an ad. End with a soft line that I host {party} parties in {city}."}],
    why:"Moms trust local. Today you show up where parents already are, and you start a birthday list that books parties for years.",
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
@@ -405,6 +411,7 @@ const DAYS=[
      {label:'Canva QR code generator',href:'https://www.canva.com/qr-code-generator/',note:'Turn your form link into a QR code'}]}],
    doIt:{label:'Write my value post',href:'content.html',hint:'Check each group\'s rules before you post.'}},
   {n:14,title:'Follow Up + Celebrate',
+   masterclass:'rewatch',
    ai:[{label:'Follow-up text',prompt:"Write a short, friendly follow-up text for a parent who asked about a {party} party but hasn't booked. Mention I have a couple of dates open next month."},{label:'Ask for a Google review',prompt:"Write a short thank-you text asking my practice-party family to leave a Google review for {name}, with a line on what to mention."}],
    why:"Most bookings happen on the follow-up, not the first message. Today you close every loop, set a simple 30-day rhythm, and celebrate how far you've come.",
    video:'',videoNote:'A celebration video from Monica is coming soon. Read today\'s lesson below.',
@@ -492,8 +499,11 @@ function renderDays(){
 }
 function renderLesson(){
   const d=DAYS[current], s=dayState(current);
+  const mc=d.masterclass&&MARKETING_VIDEO?(d.masterclass==='main'
+    ?`<div class="cl-mc"><div class="cl-section-label">🎥 Watch first: Marketing masterclass (15 min)</div><div class="cl-hint" style="margin:-4px 0 10px">How to market your party business online and locally. The next four days put it into action.</div><div class="cl-video"><iframe src="${esc(toEmbed(MARKETING_VIDEO))}" title="Marketing masterclass" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div></div>`
+    :`<div class="cl-mypb">🎥 Want a refresher? <button class="cl-pb-btn" onclick="openDay(11)">Rewatch the marketing masterclass</button></div>`):'';
   const video=d.video
-    ?`<div class="cl-video"><iframe src="${esc(d.video)}" title="Day ${d.n} video" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
+    ?`<div class="cl-video"><iframe src="${esc(toEmbed(d.video))}" title="Day ${d.n} video" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
     :`<div class="cl-video cl-video-soon"><b>🎬 Video coming soon</b>${esc(d.videoNote)}</div>`;
   const table=d.table?`<table class="cl-table">${d.table.head.some(Boolean)?`<thead><tr>${d.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${d.table.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0&&!d.table.head[0]?'<b>'+esc(c)+'</b>':esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'';
   const list=d.list?`<div><div class="cl-section-label">${esc(d.list.label)}</div><ul class="cl-list">${d.list.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`:'';
@@ -515,7 +525,7 @@ function renderLesson(){
     <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14${d.time?' · '+esc(d.time):''}</div><h2 class="cl-title">${esc(d.title)}</h2></div>
     <div class="cl-body">
       <p class="cl-why">${esc(d.why)}</p>
-      ${video}${myPbHtml}${table}${list}${pbHtml}${callout}${nameCheck}${aiHtml}${linksHtml}
+      ${video}${mc}${myPbHtml}${table}${list}${pbHtml}${callout}${nameCheck}${aiHtml}${linksHtml}
       <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
       ${notes}
       <div class="cl-saved" id="clSaved"></div>
