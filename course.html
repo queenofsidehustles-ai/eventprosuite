@@ -46,6 +46,9 @@
 .cl-check{display:flex;flex-direction:column;gap:8px}
 .cl-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #EDE5F5;border-radius:14px;cursor:pointer;font-size:15px;line-height:1.45;transition:background .15s,border-color .15s}
 .cl-item:hover{background:#FBF8FE}
+.cl-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cl-chip{padding:7px 12px;border-radius:999px;background:#fff;border:1.5px solid #E7D6A0;color:#5B21B6;font-weight:700;font-size:13px;text-decoration:none}
+.cl-chip:hover{border-color:#D115AE}
 .cl-links{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.cl-links{grid-template-columns:1fr}}
 .cl-link-group{display:flex;flex-direction:column;gap:6px}
@@ -176,8 +179,18 @@ const DAYS=[
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    callout:'<b>The formula:</b> I help <b>[who]</b> get <b>[result]</b> without <b>[pain]</b>.<br><br><i>Example: “I help Orlando moms throw magical teddy bear parties without the stress of planning it themselves.”</i><br><br><b>Your AI brand kit (about 15 minutes):</b> open Canva and use its AI to make a simple logo with your name, then pick 2 brand colors and 1 font. Use them on everything so you look established from day one.<br><br><b>AI rule we live by:</b> AI images are welcome, but always label them <b>“AI-inspired”</b> in the picture or caption, every time. Parents book what\'s real, so your real party photos stay your proof. And no AI characters that look like licensed ones.',
    list:{label:'Choosing your name',items:['Easy to say and easy to spell','Hints at your party','Free on Instagram, TikTok and Facebook — and as a web address — before you commit']},
+   nameCheck:true,
+   links:[
+     {group:'Check your social handles',items:[
+       {label:'Instagram',href:'https://www.instagram.com/',note:'Search your name, or sign up to see if the handle is free'},
+       {label:'TikTok',href:'https://www.tiktok.com/signup',note:'Sign up and try your handle'},
+       {label:'Facebook business page',href:'https://www.facebook.com/pages/create',note:'Create your page, then claim your page username'},
+       {label:'YouTube',href:'https://www.youtube.com/',note:'Handles look like @yourname'}]},
+     {group:'Grab your website address (domain)',items:[
+       {label:'Namecheap',href:'https://www.namecheap.com/',note:'Search your name. A .com is often under $20 a year; check the renewal price too.'},
+       {label:'GoDaddy',href:'https://www.godaddy.com/domains',note:'Same idea. Skip the extras they offer at checkout.'}]}],
    time:'about 45 min',
-   checklist:["Watch (or read) today's lesson",'Choose my business name','Check it\'s free on Instagram, TikTok, Facebook and as a web address','Write my one-sentence promise','Save both in Business Profile','Make my brand kit: logo, 2 colors, 1 font (label any AI images “AI-inspired”)','Public step: update my social bio with my name, promise and city'],
+   checklist:["Watch (or read) today's lesson",'Choose my business name','Check it\'s free on Instagram, TikTok, Facebook and as a web address (use the quick-check buttons)','Buy my domain (or decide to wait)','Write my one-sentence promise','Save both in Business Profile','Make my brand kit: logo, 2 colors, 1 font (label any AI images “AI-inspired”)','Public step: update my social bio with my name, promise and city'],
    notes:[{key:'businessName',label:'My business name',input:true},{key:'promise',label:'My one-sentence promise'}],
    doIt:{label:'Save it in Business Profile',href:'profile.html',hint:'A professional email and business phone come on Day 7, with payments.'},
    extra:{label:'Make my brand kit in Canva',href:'https://www.canva.com/'}},
@@ -232,7 +245,7 @@ const DAYS=[
    callout:'<b>Don\'t let paperwork stall you.</b> You can book and throw parties now as a sole proprietor. An LLC can come later when you\'re ready to scale.<br><br>The rest (insurance, license, bank account) lives in your <b>Get Legit tracker</b> below. Each item has a deadline that matches the real risk, and it never blocks your next day.<br><br>Rules vary by state and city. This is general information, not legal or tax advice. A local accountant can tell you what fits.',
    links:[
      {group:'Business email',items:[
-       {label:'Zoho Mail (free plan)',href:'https://www.zoho.com/mail/zohomail-pricing.html',note:'Free for up to 5 users with your own domain'},
+       {label:'Zoho Mail (free plan)',href:'https://www.zoho.com/mail/zohomail-pricing.html',note:'Free for up to 5 users. Uses the domain you got on Day 3.'},
        {label:'Google Workspace',href:'https://workspace.google.com/pricing',note:'Paid monthly; Gmail with your business name'}]},
      {group:'Business phone',items:[
        {label:'Google Voice',href:'https://voice.google.com',note:'A free second number with a personal Google account'},
@@ -316,6 +329,7 @@ function renderLesson(){
     :`<div class="cl-video cl-video-soon"><b>🎬 Video coming soon</b>${esc(d.videoNote)}</div>`;
   const table=d.table?`<table class="cl-table">${d.table.head.some(Boolean)?`<thead><tr>${d.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${d.table.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0&&!d.table.head[0]?'<b>'+esc(c)+'</b>':esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'';
   const list=d.list?`<div><div class="cl-section-label">${esc(d.list.label)}</div><ul class="cl-list">${d.list.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`:'';
+  const nameCheck=d.nameCheck?`<div class="cl-callout" id="clNameCheck">${nameCheckHtml(s.notes.businessName)}</div>`:'';
   const linksHtml=d.links?`<div><div class="cl-section-label">Helpful links</div><div class="cl-links">${d.links.map(g=>`<div class="cl-link-group"><div class="cl-link-head">${esc(g.group)}</div>${g.items.map(l=>`<a class="cl-link" href="${esc(l.href)}" target="_blank" rel="noopener"><b>${esc(l.label)} ↗</b><span>${esc(l.note)}</span></a>`).join('')}</div>`).join('')}</div></div>`:'';
   const callout=d.callout?`<div class="cl-callout">${d.callout}</div>`:'';
   const checks=d.checklist.map((t,i)=>{const on=!!s.checklist[i];const pub=t.startsWith('Public step:');const txt=pub?'<b style="color:#C0129F">📣 Public step:</b> '+esc(t.slice(12).trim()):esc(t);return `<label class="cl-item${on?' checked':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleCheck(${i},this.checked)"/><span>${txt}</span></label>`}).join('');
@@ -329,7 +343,7 @@ function renderLesson(){
     <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14${d.time?' · '+esc(d.time):''}</div><h2 class="cl-title">${esc(d.title)}</h2></div>
     <div class="cl-body">
       <p class="cl-why">${esc(d.why)}</p>
-      ${video}${table}${list}${linksHtml}${callout}
+      ${video}${table}${list}${callout}${nameCheck}${linksHtml}
       <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
       ${notes}
       <div class="cl-saved" id="clSaved"></div>
@@ -347,6 +361,13 @@ function legitCard(){
     <div class="cl-check">${LEGIT.map(x=>`<label class="cl-item${L[x.k]?' checked':''}"><input type="checkbox" ${L[x.k]?'checked':''} onchange="toggleLegit('${x.k}',this.checked)"/><span>${esc(x.t)}<span class="cl-hint" style="display:block">${esc(x.by)}</span></span></label>`).join('')}</div></div>`;
 }
 function toggleLegit(k,on){const s=dayState(7);s.notes.legit=Object.assign({},s.notes.legit,{[k]:on});queueSave(7);renderLesson()}
+function nameCheckHtml(name){
+  const h=String(name||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+  if(!h)return '<b>Quick check:</b> type your business name in “Your notes” below, and one-tap check buttons will appear here.';
+  const q=encodeURIComponent(h+'.com');
+  const L=[['Instagram','https://www.instagram.com/'+h+'/'],['TikTok','https://www.tiktok.com/@'+h],['Facebook','https://www.facebook.com/'+h],['YouTube','https://www.youtube.com/@'+h],['Namecheap: '+h+'.com','https://www.namecheap.com/domains/registration/results/?domain='+q],['GoDaddy: '+h+'.com','https://www.godaddy.com/domainsearch/find?domainToCheck='+q]];
+  return `<b>Quick check for “${esc(h)}”:</b> tap each one. If the profile page loads, that name is taken; if it says the page isn't available, it's likely free. The domain buttons show if ${esc(h)}.com is open.<div class="cl-chips">${L.map(([t,u])=>`<a class="cl-chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('')}</div>`;
+}
 let justFinished=null;
 function renderAll(){renderProgress();renderDays();renderLesson()}
 function openDay(n){if(!unlocked(n))return;current=n;justFinished=null;renderAll();document.getElementById('clLesson').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -358,7 +379,7 @@ function toggleCheck(i,on){
   if(btn)btn.disabled=!all;
   const hint=document.getElementById('clTickHint');if(hint)hint.style.display=all?'none':'';
 }
-function setNote(k,v){dayState(current).notes[k]=v;queueSave(current)}
+function setNote(k,v){dayState(current).notes[k]=v;queueSave(current);if(k==='businessName'){const el=document.getElementById('clNameCheck');if(el)el.innerHTML=nameCheckHtml(v)}}
 async function completeDay(){
   const s=dayState(current);
   if(!DAYS[current].checklist.every((_,i)=>s.checklist[i]))return;
