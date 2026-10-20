@@ -121,6 +121,8 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const QUIZ_URL='https://partybusinesscoach.com/plan';
 const KPPS_URL='https://partybusinesscoach.com/';
 const ADMIN_EMAIL='ggkidsspa@gmail.com';
+// Until the Hub community opens, introductions happen in Skool.
+const COMMUNITY_URL='https://www.skool.com/queen-of-side-hustles-academy-5720';
 
 // ── Course content ─────────────────────────────────────────────────────
 // Days 0–3 are live. Later days show in the list as "coming soon" until written.
@@ -134,15 +136,19 @@ const DAYS=[
      ["I don't know what to charge",'I price with math and value'],
      ['I feel bad asking for a deposit','Deposits protect my time and my business'],
      ["Maybe I'm not ready yet",'I start before I feel ready and learn as I go']]},
-   checklist:['Watch (or read) today\'s welcome','Answer: am I treating this like a hobby or a business right now?','Answer: what\'s one belief about money or charging that\'s holding me back?','Answer: what does my business look like in 90 days if I fully commit?','Review my Launch Plan from the quiz (or take it now)'],
-   notes:[{key:'hobbyOrBusiness',label:'Right now, am I treating this like a hobby or a business?'},{key:'moneyBelief',label:'One belief about money or charging that\'s holding me back'},{key:'ninetyDays',label:'My business in 90 days, if I fully commit'}],
+   time:'about 20 min',
+   checklist:['Watch (or read) today\'s welcome','Answer my 3 mindset questions below','Review my Launch Plan from the quiz (or take it now)','Pick my launch date: the day I\'ll post “now booking” (about 8 days from today)','Tell one person I\'m starting, and when','Introduce myself in the community: name, city, and the party I\'m thinking about'],
+   notes:[{key:'hobbyOrBusiness',label:'Right now, am I treating this like a hobby or a business?'},{key:'moneyBelief',label:'One belief about money or charging that\'s holding me back'},{key:'ninetyDays',label:'My business in 90 days, if I fully commit'},{key:'launchDate',label:'My launch date',input:true,type:'date'}],
+   extra:{label:'Introduce yourself in the community',href:COMMUNITY_URL},
    doIt:{label:'Open my Launch Plan',href:QUIZ_URL,newTab:true,hint:'Took the quiz already? Your plan is in your email. If not, it takes 90 seconds.'}},
   {n:1,title:'Pick Your One Party',
    why:"Starting narrow isn't limiting — it's the fastest way to get booked. One party type means one shopping list, one package and one clear message. You can add more after your first bookings.",
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    list:{label:'Choose from your 16 services',items:['<b>Build & Craft:</b> Stuff-A-Bear, DIY Craft, Paint & Sip, Slime / Science','<b>Spa & Glam:</b> Mobile Spa, Face Paint & Balloons','<b>Sleepovers & Movie Nights:</b> Slumber Parties, Teepee Setups, Outdoor Movie Nights','<b>Rentals & Stations:</b> Bounce House, Soft Play, Photo Booth, Food Cart, Candy / Dessert Station','<b>Other:</b> Event Coordinator, or something of your own']},
    callout:'Your Launch Plan already suggested a starter party based on your time and budget. Start there. Thinking about a rental (bounce house, soft play, photo booth)? Check the startup cost against your budget first.',
-   checklist:["Watch (or read) today's lesson",'Choose my one starter party',"Read the first 2 pages of that party's playbook",'Save my party type in Business Profile'],
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Choose my one starter party',"Read the first 2 pages of that party's playbook",'Save my party type in Business Profile','Public step: post “I\'m starting a [party] business in [city]!”'],
+   extra:{label:'Write my “I\'m starting” post',href:'content.html'},
    notes:[{key:'party',label:'My one starter party',input:true}],
    doIt:{label:'Save it in Business Profile',href:'profile.html',hint:'Your party type fills in your website, packages and quotes later — enter it once.'}},
   {n:2,title:'Know Who Pays You',
@@ -153,7 +159,8 @@ const DAYS=[
      ['What she wants',"A beautiful, stress-free party her child remembers and she's proud to share"],
      ['What she fears','Wasting money, a vendor who flakes, a party that disappoints'],
      ['Where she is','Local Facebook mom groups, Instagram, Google “kids party near me”']]},
-   checklist:["Watch (or read) today's lesson",'Write one sentence describing my ideal client','Find 3 local mom or events groups (and join them)','Look up 3 local businesses offering my party: prices and what they\'re missing','Ask one mom: “What would matter most to you when booking a kids party?”'],
+   time:'about 40 min',
+   checklist:["Watch (or read) today's lesson",'Write one sentence describing my ideal client','Public step: find and join 3 local mom or events groups','Look up 3 local businesses offering my party: prices and what they\'re missing','Ask one mom: “What would matter most to you when booking a kids party?”'],
    notes:[{key:'idealClient',label:'My ideal client, in one sentence'},{key:'groups',label:'3 local groups I joined'},{key:'competitors',label:'3 local competitors: prices + what they\'re missing'}],
    doIt:null},
   {n:3,title:'Name It + Your Promise',
@@ -161,11 +168,12 @@ const DAYS=[
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    callout:'<b>The formula:</b> I help <b>[who]</b> get <b>[result]</b> without <b>[pain]</b>.<br><br><i>Example: “I help Orlando moms throw magical teddy bear parties without the stress of planning it themselves.”</i>',
    list:{label:'Choosing your name',items:['Easy to say and easy to spell','Hints at your party','Free on Instagram, TikTok and Facebook — and as a web address — before you commit']},
-   checklist:["Watch (or read) today's lesson",'Choose my business name','Check it\'s free on Instagram, TikTok, Facebook and as a web address','Write my one-sentence promise','Save both in Business Profile'],
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Choose my business name','Check it\'s free on Instagram, TikTok, Facebook and as a web address','Write my one-sentence promise','Save both in Business Profile','Public step: update my social bio with my name, promise and city'],
    notes:[{key:'businessName',label:'My business name',input:true},{key:'promise',label:'My one-sentence promise'}],
    doIt:{label:'Save it in Business Profile',href:'profile.html',hint:'A professional email and business phone come on Day 7, with payments.'}},
 ];
-const UPCOMING=['Build Your First Package','Price It With Math','Protect Your Time','Get Paid','Publish Your Website','Test Your Booking Flow','Practice Party','Get Seen','Founding Families + Your Circle','Local Outreach','Follow Up + Celebrate'];
+const UPCOMING=['Build Your First Package','Price It With Math','Protect Your Time','Get Paid','Publish Your Website','Test Your Booking Flow','Practice Party','Founding Families Offer','Your Circle','Local Outreach','Follow Up + Celebrate'];
 
 // ── State ──────────────────────────────────────────────────────────────
 let currentUser=null, progress={}, current=0, storageMode='db';
@@ -224,15 +232,15 @@ function renderLesson(){
   const table=d.table?`<table class="cl-table">${d.table.head.some(Boolean)?`<thead><tr>${d.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${d.table.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0&&!d.table.head[0]?'<b>'+esc(c)+'</b>':esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'';
   const list=d.list?`<div><div class="cl-section-label">${esc(d.list.label)}</div><ul class="cl-list">${d.list.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`:'';
   const callout=d.callout?`<div class="cl-callout">${d.callout}</div>`:'';
-  const checks=d.checklist.map((t,i)=>{const on=!!s.checklist[i];return `<label class="cl-item${on?' checked':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleCheck(${i},this.checked)"/><span>${esc(t)}</span></label>`}).join('');
-  const notes=d.notes?`<div><div class="cl-section-label">Your notes</div><div class="cl-notes">${d.notes.map(f=>`<label>${esc(f.label)}${f.input?`<input type="text" maxlength="160" value="${esc(s.notes[f.key]||'')}" oninput="setNote('${f.key}',this.value)"/>`:`<textarea maxlength="1200" oninput="setNote('${f.key}',this.value)">${esc(s.notes[f.key]||'')}</textarea>`}</label>`).join('')}</div></div>`:'';
+  const checks=d.checklist.map((t,i)=>{const on=!!s.checklist[i];const pub=t.startsWith('Public step:');const txt=pub?'<b style="color:#C0129F">📣 Public step:</b> '+esc(t.slice(12).trim()):esc(t);return `<label class="cl-item${on?' checked':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleCheck(${i},this.checked)"/><span>${txt}</span></label>`}).join('');
+  const notes=d.notes?`<div><div class="cl-section-label">Your notes</div><div class="cl-notes">${d.notes.map(f=>`<label>${esc(f.label)}${f.input?`<input type="${f.type||'text'}" maxlength="160" value="${esc(s.notes[f.key]||'')}" oninput="setNote('${f.key}',this.value)"/>`:`<textarea maxlength="1200" oninput="setNote('${f.key}',this.value)">${esc(s.notes[f.key]||'')}</textarea>`}</label>`).join('')}</div></div>`:'';
   const allChecked=d.checklist.every((_,i)=>s.checklist[i]);
-  const doIt=d.doIt?`<a class="cl-btn cl-btn-do" href="${esc(d.doIt.href)}" ${d.doIt.newTab?'target="_blank" rel="noopener"':''}>${esc(d.doIt.label)} →</a>`:'';
+  const doIt=(d.doIt?`<a class="cl-btn cl-btn-do" href="${esc(d.doIt.href)}" ${d.doIt.newTab?'target="_blank" rel="noopener"':''}>${esc(d.doIt.label)} →</a>`:'')+(d.extra?`<a class="cl-btn cl-btn-ghost" href="${esc(d.extra.href)}" target="_blank" rel="noopener">${esc(d.extra.label)} →</a>`:'');
   const doneBtn=isDone(current)
     ?`<button class="cl-btn cl-btn-ghost" onclick="${current<DAYS.length-1?`openDay(${current+1})`:'renderAll()'}">${current<DAYS.length-1?'Go to Day '+(current+1)+' →':'✓ Day complete'}</button>`
     :`<button class="cl-btn cl-btn-done" id="clDoneBtn" ${allChecked?'':'disabled'} onclick="completeDay()">Mark Day ${d.n} complete</button>`;
   document.getElementById('clLesson').innerHTML=`
-    <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14</div><h2 class="cl-title">${esc(d.title)}</h2></div>
+    <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14${d.time?' · '+esc(d.time):''}</div><h2 class="cl-title">${esc(d.title)}</h2></div>
     <div class="cl-body">
       <p class="cl-why">${esc(d.why)}</p>
       ${video}${table}${list}${callout}
