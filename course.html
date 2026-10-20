@@ -46,6 +46,13 @@
 .cl-check{display:flex;flex-direction:column;gap:8px}
 .cl-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #EDE5F5;border-radius:14px;cursor:pointer;font-size:15px;line-height:1.45;transition:background .15s,border-color .15s}
 .cl-item:hover{background:#FBF8FE}
+.cl-links{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.cl-links{grid-template-columns:1fr}}
+.cl-link-group{display:flex;flex-direction:column;gap:6px}
+.cl-link-head{font-size:13px;font-weight:700;color:#1A1020}
+.cl-link{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1.5px solid #EDE5F5;border-radius:12px;text-decoration:none;color:#5B21B6;background:#fff}
+.cl-link:hover{border-color:#D115AE}
+.cl-link span{font-size:13px;color:#6B5F7A}
 .cl-legit{border-top:1.5px dashed #EDE5F5}
 .cl-item input{width:20px;height:20px;margin-top:1px;accent-color:#D115AE;flex-shrink:0;cursor:pointer}
 .cl-item.checked{background:#FDF0FA;border-color:#F3B4E3}
@@ -223,6 +230,19 @@ const DAYS=[
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    list:{label:"Start simple: you don't need an LLC to throw parties",items:['<b>Sole proprietor:</b> the simplest start. If you work for yourself under your own name, you already are one.','<b>DBA (“doing business as”):</b> lets a sole proprietor use a business name, like “Beary Best Friends Parties.” Many counties or states ask you to register it. It\'s usually quick and low cost.','<b>EIN (tax ID):</b> free at irs.gov in about 10 minutes. Sole proprietors can get one too, so you never hand out your Social Security number. Never pay a website for it.','<b>LLC:</b> keeps business and personal separate. It\'s a smart move as you grow, hire help or add rentals, but you don\'t need one to start.']},
    callout:'<b>Don\'t let paperwork stall you.</b> You can book and throw parties now as a sole proprietor. An LLC can come later when you\'re ready to scale.<br><br>The rest (insurance, license, bank account) lives in your <b>Get Legit tracker</b> below. Each item has a deadline that matches the real risk, and it never blocks your next day.<br><br>Rules vary by state and city. This is general information, not legal or tax advice. A local accountant can tell you what fits.',
+   links:[
+     {group:'Business email',items:[
+       {label:'Zoho Mail (free plan)',href:'https://www.zoho.com/mail/zohomail-pricing.html',note:'Free for up to 5 users with your own domain'},
+       {label:'Google Workspace',href:'https://workspace.google.com/pricing',note:'Paid monthly; Gmail with your business name'}]},
+     {group:'Business phone',items:[
+       {label:'Google Voice',href:'https://voice.google.com',note:'A free second number with a personal Google account'},
+       {label:'Quo (formerly OpenPhone)',href:'https://www.quo.com',note:'Paid; built for businesses, easy to share with a helper later'}]},
+     {group:'Payments',items:[
+       {label:'Create your Stripe account',href:'https://dashboard.stripe.com/register',note:'Then click “Connect Stripe” below to link it to your Hub'}]},
+     {group:'Get legit',items:[
+       {label:'Get your free EIN (IRS)',href:'https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number',note:'Official IRS site. It\'s always free.'},
+       {label:'Find your state\'s business registration office',href:'https://www.sba.gov/counseling/launch-your-business/state-registration-lookup/',note:'Pick your state to reach its Secretary of State or registration site (for a DBA or LLC)'},
+       {label:'DBA and registration basics (SBA)',href:'https://www.sba.gov/business-guide/launch-your-business/register-your-business',note:'Plain-English guide to DBAs, LLCs and what your state may need'}]}],
    time:'about 30 min',
    checklist:["Watch (or read) today's lesson",'Get my free EIN (sole proprietors can too)','Set up my business email and phone','Connect Stripe so parents can pay deposits online','Public step: post a “booking opens tomorrow 👀” teaser story'],
    notes:[{key:'structure',label:"I'm starting as: sole proprietor, DBA or LLC",input:true}],
@@ -296,6 +316,7 @@ function renderLesson(){
     :`<div class="cl-video cl-video-soon"><b>🎬 Video coming soon</b>${esc(d.videoNote)}</div>`;
   const table=d.table?`<table class="cl-table">${d.table.head.some(Boolean)?`<thead><tr>${d.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${d.table.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0&&!d.table.head[0]?'<b>'+esc(c)+'</b>':esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'';
   const list=d.list?`<div><div class="cl-section-label">${esc(d.list.label)}</div><ul class="cl-list">${d.list.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`:'';
+  const linksHtml=d.links?`<div><div class="cl-section-label">Helpful links</div><div class="cl-links">${d.links.map(g=>`<div class="cl-link-group"><div class="cl-link-head">${esc(g.group)}</div>${g.items.map(l=>`<a class="cl-link" href="${esc(l.href)}" target="_blank" rel="noopener"><b>${esc(l.label)} ↗</b><span>${esc(l.note)}</span></a>`).join('')}</div>`).join('')}</div></div>`:'';
   const callout=d.callout?`<div class="cl-callout">${d.callout}</div>`:'';
   const checks=d.checklist.map((t,i)=>{const on=!!s.checklist[i];const pub=t.startsWith('Public step:');const txt=pub?'<b style="color:#C0129F">📣 Public step:</b> '+esc(t.slice(12).trim()):esc(t);return `<label class="cl-item${on?' checked':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleCheck(${i},this.checked)"/><span>${txt}</span></label>`}).join('');
   const notes=d.notes?`<div><div class="cl-section-label">Your notes</div><div class="cl-notes">${d.notes.map(f=>`<label>${esc(f.label)}${f.input?`<input type="${f.type||'text'}" maxlength="160" value="${esc(s.notes[f.key]||'')}" oninput="setNote('${f.key}',this.value)"/>`:`<textarea maxlength="1200" oninput="setNote('${f.key}',this.value)">${esc(s.notes[f.key]||'')}</textarea>`}</label>`).join('')}</div></div>`:'';
@@ -308,7 +329,7 @@ function renderLesson(){
     <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14${d.time?' · '+esc(d.time):''}</div><h2 class="cl-title">${esc(d.title)}</h2></div>
     <div class="cl-body">
       <p class="cl-why">${esc(d.why)}</p>
-      ${video}${table}${list}${callout}
+      ${video}${table}${list}${linksHtml}${callout}
       <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
       ${notes}
       <div class="cl-saved" id="clSaved"></div>
