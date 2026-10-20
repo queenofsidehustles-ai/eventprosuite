@@ -459,6 +459,8 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
 .domain-help{margin-top:.8rem;background:#fff;border:1.5px solid var(--border, #EDE5F5);border-radius:12px;padding:.8rem 1rem;font-size:.86rem}
 .domain-help summary{cursor:pointer;font-weight:700;color:#5B21B6}
 .domain-help p{margin:.6rem 0 0;line-height:1.6}
+.wb-deposit-summary{background:#F4EEFC;border-radius:12px;padding:.8rem 1rem;font-size:.86rem;line-height:1.6;color:#2A1340}
+.wb-deposit-summary a{color:#5B21B6;font-weight:700}
 </style>
 </head>
 <body>
@@ -976,6 +978,9 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
             </div>
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--line)">
               <div style="font-size:.74rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Deposit &amp; payment policy</div>
+              <!-- Deposit rules live in My Business only, so quotes, contracts, the booking page and this site always agree. -->
+              <div class="wb-deposit-summary" id="wbDepositSummary">Loading your deposit rules…</div>
+              <div id="wbDepositFields" style="display:none">
               <div class="grid-2">
                 <div class="field">
                   <label>Deposit percent</label>
@@ -1023,7 +1028,8 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
                   <div class="field-help" style="margin-top:.2rem">Anything further out uses the flat percent above. Leave a row blank to skip it.</div>
                 </div>
               </div>
-            </div>
+                          </div>
+</div>
           </div>
         </div>
 
@@ -1626,6 +1632,7 @@ async function prefillFromHub(){
     packagesData=[{tier:'Signature',name:String(n(4).packageName).trim(),price:price,kids:'12',duration:'2 hrs',included:String(n(4).included||'').trim()}];
     renderPackages();evaluateSection('packages');filled.push('package');
   }
+  applyProfileDepositRules(pd);
   updateLogoTextPreview&&updateLogoTextPreview();
   if(filled.length){
     const note=document.createElement('div');
@@ -1641,6 +1648,25 @@ async function prefillFromHub(){
     }
     if($('businessName').value.trim())debouncedSave();
   }
+}
+
+// Deposit rules come from My Business. The hidden fields keep the site preview working.
+function applyProfileDepositRules(pd){
+  // Older accounts set these in the website builder; fall back to that, the same way quotes do.
+  const bd=(currentBuild&&currentBuild.booking_data)||{};
+  if(!(Number(pd.depositPct)>0)&&Number(bd.depositPct)>0){pd={...pd,depositPct:bd.depositPct,depositSliding:pd.depositSliding===true||bd.depositSliding===true,depositLadder:(pd.depositLadder&&pd.depositLadder.length)?pd.depositLadder:bd.depositLadder}}
+  const pct=Number(pd.depositPct)>0?Number(pd.depositPct):50;
+  const due=pd.balanceDueDays!=null&&pd.balanceDueDays!==''?Number(pd.balanceDueDays):7;
+  if($('bookingDepositPct'))$('bookingDepositPct').value=pct;
+  if($('bookingBalanceDays'))$('bookingBalanceDays').value=due||1;
+  const ladder=Array.isArray(pd.depositLadder)?pd.depositLadder:[];
+  if($('bookingDepositSliding')){
+    $('bookingDepositSliding').checked=pd.depositSliding===true;
+    [0,1,2].forEach(i=>{const r=ladder[i]||{};if($('ladderDays'+(i+1)))$('ladderDays'+(i+1)).value=r.withinDays||'';if($('ladderPct'+(i+1)))$('ladderPct'+(i+1)).value=r.pct||''});
+  }
+  const dueText={0:'on the day of the event',1:'24 hours before',2:'48 hours before',7:'1 week before',14:'2 weeks before',30:'30 days before'}[due]||(due+' days before');
+  const el=$('wbDepositSummary');
+  if(el)el.innerHTML=`<b>Deposit:</b> ${pct}% to hold the date${pd.depositSliding===true?' (more for last-minute bookings)':''} · <b>Balance due:</b> ${dueText}<br><a href="profile.html#paymentSetup">Change these in My Business →</a> They update your quotes, contracts and booking page too.`;
 }
 let lastProfileSync='';
 async function syncProfileBasics(){

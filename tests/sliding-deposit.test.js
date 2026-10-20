@@ -80,13 +80,16 @@ assert.match(app, /function depositPolicyFrom\(profileData, bookingData\)/);
 assert.match(app, /depositPolicyFrom\(currentProfile && currentProfile\.profile_data, ownerBuildRow && ownerBuildRow\.booking_data\)/);
 const profileHtml = read('profile.html');
 assert.match(profileHtml, /id="depositPct"/);
-assert.match(profileHtml, /id="balanceDays"/);
+// One "final payment due" setting (balanceDueDays) drives quotes, contracts
+// and reminders; the second, unused balance field is gone.
+assert.match(profileHtml, /id="balanceDueDays"/);
+assert.doesNotMatch(profileHtml, /id="balanceDays"/);
 assert.match(profileHtml, /id="depositSliding"/);
 assert.match(profileHtml, /depositLadder:collectDepositLadder\(\)/);
 // The builder's value is still read as a fallback, so nobody who set it there
 // loses it — but nothing is written back to that row.
 assert.match(profileHtml, /currentBuildBookingData/);
-assert.match(profileHtml, /from\('website_builds'\)\.select\('booking_data'\)/);
+assert.match(profileHtml, /from\('website_builds'\)\.select\('booking_data,last_published_at'\)/);
 
 // Profile wins over builder, and a profile percent with sliding off is
 // respected rather than inheriting the builder's ladder.

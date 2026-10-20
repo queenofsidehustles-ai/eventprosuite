@@ -270,7 +270,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,
         <div class="clause-title"><span class="icon">💳</span>Payment schedule</div>
         <div class="clause-desc">When payments are due.</div>
         <select id="clausePayment" onchange="updateClausePreview('Payment')">
-          <option value="50-50">50% deposit + 50% balance on event day (default)</option>
+          <option value="profile">My deposit settings from My Business (recommended)</option>
+          <option value="50-50">50% deposit + 50% balance on event day</option>
           <option value="25-75-balance">25% deposit + 50% (14 days out) + 25% day-of</option>
           <option value="full-upfront">100% upfront at booking</option>
           <option value="30-day">50% deposit + 50% due 30 days before event</option>
@@ -392,6 +393,7 @@ const CLAUSE_TEXT={
     custom:''
   },
   Payment:{
+    profile:'',
     '50-50':'A 50% non-refundable deposit is due at contract signing to secure the date. The remaining 50% balance is due on the event day before services begin. Payment may be made by Stripe, Zelle, or other methods agreed upon in writing.',
     '25-75-balance':'25% is due at contract signing. An additional 50% is due 14 days before the event date. The final 25% is due on the event day before services begin.',
     'full-upfront':'100% of the total price is due at contract signing to secure the event date. No further payments are required.',
@@ -513,7 +515,7 @@ function newContract(){
   $('contractType').value='service_agreement';
   $('clauseDeposit').value='standard';
   $('clauseCancellation').value='tiered';
-  $('clausePayment').value='50-50';
+  $('clausePayment').value='profile';
   $('clauseLiability').value='standard';
   $('clauseWeather').value='reschedule';
   sigStrokes=[];
@@ -608,7 +610,7 @@ function updateClausePreview(key){
     return;
   }
   if(custom)custom.style.display='none';
-  const text=CLAUSE_TEXT[key][selected]||'';
+  const text=(key==='Payment'&&selected==='profile')?profilePaymentText():(CLAUSE_TEXT[key][selected]||'');
   preview.innerHTML='<strong>Preview:</strong>'+text;
 }
 
@@ -618,7 +620,21 @@ function getClauseText(key){
     const customEl=$('clause'+key+'Custom');
     return customEl?customEl.value||'(not specified)':'(no preset)';
   }
+  if(key==='Payment'&&selected==='profile')return profilePaymentText();
   return CLAUSE_TEXT[key][selected]||'';
+}
+// Written from the same settings quotes and reminders use, so the contract always matches.
+function profilePaymentText(){
+  const pd=currentProfile||{};
+  const pct=Number(pd.depositPct)>0?Number(pd.depositPct):50;
+  const d=pd.balanceDueDays!=null&&pd.balanceDueDays!==''?Number(pd.balanceDueDays):0;
+  const due=d===0?'on the event day before services begin':d===1?'24 hours before the event':d===2?'48 hours before the event':(d+' days before the event date');
+  const ladder=pd.depositSliding===true&&Array.isArray(pd.depositLadder)?pd.depositLadder.filter(r=>r&&Number(r.withinDays)>0&&Number(r.pct)>0).sort((a,b)=>a.withinDays-b.withinDays):[];
+  const extra=ladder.length?' For events booked closer to the date, a larger deposit applies: '+ladder.map(r=>r.pct+'% if booked within '+r.withinDays+' days').join('; ')+'.':'';
+  const rest=100-pct;
+  return pct>=100
+    ?'100% of the total price is due at contract signing to secure the event date.'+extra
+    :`A ${pct}% non-refundable deposit is due at contract signing to secure the date. The remaining ${rest}% balance is due ${due}.${extra} Payment may be made by Stripe or other methods agreed upon in writing.`;
 }
 
 function renderReview(){

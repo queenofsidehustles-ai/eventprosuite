@@ -1063,7 +1063,16 @@ function showConfirmation(clientEmail, id) {
   // Deposit logic
   const depositUpfront = profileData.depositUpfront === true;
 
-  if (depositUpfront) {
+  // With connected Stripe, the exact deposit (her deposit %) is charged from
+  // the quote link, so the fixed-amount links are never shown here.
+  const exactDeposits = profileData.depositProfile === 'connected' && profileData.stripeConnectReady === true;
+  if (depositUpfront && exactDeposits) {
+    document.getElementById('depositBox').classList.remove('hidden');
+    document.getElementById('depositLink').style.display = 'none';
+    document.getElementById('depositDesc').textContent =
+      `Your quote is on its way to ${clientEmail}. It includes a secure link to pay your deposit and hold your date.`;
+    document.getElementById('noDepositMsg').classList.add('hidden');
+  } else if (depositUpfront) {
     // Pick stripe link by price
     const price = parseFloat((selectedService.price || '0').toString().replace(/[^0-9.]/g, '')) || 0;
     const stripeLink = pickStripeLink(price);

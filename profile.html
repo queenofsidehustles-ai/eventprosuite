@@ -310,17 +310,13 @@ input,select,textarea{font:inherit}
          policy, but it used to live only inside the website builder — so
          anyone who brought their own website had nowhere to set it and
          silently got 50%. It belongs here, next to how deposits are collected. -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+    <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1.2rem;max-width:320px">
       <div class="field">
         <label>Deposit percent</label>
         <input type="number" id="depositPct" min="1" max="100" step="1" placeholder="50"/>
         <div class="field-help">% of the quote due to hold the date. Most use 50%.</div>
       </div>
-      <div class="field">
-        <label>Balance due (days before event)</label>
-        <input type="number" id="balanceDays" min="1" max="90" step="1" placeholder="7"/>
-        <div class="field-help">When the rest is due. Most use 7 or 14 days.</div>
-      </div>
+
     </div>
 
     <div style="margin-bottom:1.4rem;padding:.9rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:var(--cream,#FCFAFD)">
@@ -474,8 +470,8 @@ input,select,textarea{font:inherit}
     <div>
       <div style="font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">Your Services (shown on booking form)</div>
       <div id="servicesList" style="margin-bottom:.8rem"></div>
-      <button class="btn btn-outline" onclick="openServiceModal()" style="font-size:.82rem">+ Add a Service</button>
-      <div class="field-help" style="margin-top:.4rem">Add your real packages so clients can choose the right offer. If this is empty, the booking page will show one safe custom-inquiry option instead of services you do not offer.</div>
+      <button class="btn btn-outline" id="addServiceBtn" onclick="openServiceModal()" style="font-size:.82rem">+ Add a Service</button>
+      <div class="field-help" id="servicesHelp" style="margin-top:.4rem">Add your real packages so clients can choose the right offer. If this is empty, the booking page will show one safe custom-inquiry option instead of services you do not offer.</div>
     </div>
 
     <!-- Add Service Modal -->
@@ -568,6 +564,7 @@ input,select,textarea{font:inherit}
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let websitePublished=false;
 let currentUser=null,currentSession=null,logoDataURL=null,bookingServices=[],depositUpfrontEnabled=false;
 let stripeConnectedAccountId='';
 // Contract auto-send. Defaults to ON so existing accounts keep today's behaviour;
@@ -588,9 +585,10 @@ async function init(){
     // Only so an owner who set a deposit percent in the website builder keeps
     // seeing it here. Nothing is written back to that row.
     try{
-      const{data:build}=await sb.from('website_builds').select('booking_data')
+      const{data:build}=await sb.from('website_builds').select('booking_data,last_published_at')
         .eq('user_id',currentUser.id).order('updated_at',{ascending:false}).limit(1).maybeSingle();
       currentBuildBookingData=(build&&build.booking_data)||null;
+      websitePublished=!!(build&&build.last_published_at);
     }catch(e){ currentBuildBookingData=null; }
 
     if(pd.businessName)$('businessName').value=pd.businessName;
@@ -613,7 +611,6 @@ async function init(){
     // rather than showing them a blank box and quietly losing their setting.
     const bd=(currentBuildBookingData&&typeof currentBuildBookingData==='object')?currentBuildBookingData:{};
     if($('depositPct'))$('depositPct').value=pd.depositPct||bd.depositPct||'';
-    if($('balanceDays'))$('balanceDays').value=pd.balanceDays||bd.balanceDays||'';
     if($('depositSliding')){
       $('depositSliding').checked = (pd.depositSliding===true)||(bd.depositSliding===true);
       const rows=Array.isArray(pd.depositLadder)&&pd.depositLadder.length?pd.depositLadder
@@ -829,6 +826,15 @@ function applyContractToggleUI(on){
 /* ── Services ── */
 function renderServices(){
   const list=$('servicesList');
+  // With a published Hub website, the booking form shows the website's packages
+  // (Publish keeps them in sync), so editing a second list here would be undone.
+  const addBtn=document.getElementById('addServiceBtn');const help=document.getElementById('servicesHelp');
+  if(websitePublished){
+    if(addBtn)addBtn.style.display='none';
+    if(help)help.innerHTML='These come from your website packages. To change them, edit your packages in <a href="mywebsite.html" style="color:var(--brand);font-weight:700">Website &amp; Booking</a> and publish.';
+    list.innerHTML=bookingServices.length?bookingServices.map(s=>`<div style="padding:.7rem;background:var(--cream);border-radius:10px;margin-bottom:.5rem;border:1px solid var(--line)"><div style="font-weight:600;font-size:.88rem;color:var(--plum-900)">${esc(s.name)}</div>${s.price?`<div style="font-size:.75rem;color:var(--muted)">$${esc(String(s.price))}${s.duration?' · '+esc(s.duration):''}</div>`:''}</div>`).join(''):'<div style="font-size:.8rem;color:var(--muted)">Publish your website to show your packages here.</div>';
+    return;
+  }
   if(!bookingServices.length){list.innerHTML='<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No services added yet. Your booking page will accept a custom inquiry without advertising the wrong services.</div>';return}
   list.innerHTML=bookingServices.map((s,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:.7rem;background:var(--cream);border-radius:10px;margin-bottom:.5rem;border:1px solid var(--line)">
@@ -1001,7 +1007,6 @@ async function saveProfile(){
       contactPhone,
       contactEmail,
       depositPct:$('depositPct')?($('depositPct').value.trim()||''):'',
-      balanceDays:$('balanceDays')?($('balanceDays').value.trim()||''):'',
       depositSliding:$('depositSliding')?!!$('depositSliding').checked:false,
       depositLadder:collectDepositLadder(),
       bookingServices:bookingServices,
