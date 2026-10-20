@@ -15,7 +15,7 @@
   },
   "crons": [
     {
-      "path": "/api/send-reminders?secret=pbh-cron",
+      "path": "/api/send-reminders",
       "schedule": "0 10 * * *"
     }
   ],

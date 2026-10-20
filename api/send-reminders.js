@@ -104,9 +104,16 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Simple auth: require a secret header or param so random people can't trigger it
-  const secret = env('CRON_SECRET') || 'pbh-cron';
-  const provided = req.headers['x-cron-secret'] || req.query.secret;
+  // Only Vercel Cron may run this. When CRON_SECRET is set in Vercel's
+  // environment, Vercel sends it automatically as "Authorization: Bearer <secret>".
+  // The secret never appears in the code or in vercel.json.
+  const secret = env('CRON_SECRET');
+  if (!secret) {
+    console.error('send-reminders: CRON_SECRET is not set in Vercel, so reminders are paused.');
+    return res.status(500).json({ error: 'Reminders are not configured' });
+  }
+  const auth = String(req.headers['authorization'] || '');
+  const provided = auth.startsWith('Bearer ') ? auth.slice(7).trim() : String(req.headers['x-cron-secret'] || '').trim();
   if (provided !== secret) return res.status(401).json({ error: 'Unauthorized' });
 
   if (!SUPA_KEY) {
