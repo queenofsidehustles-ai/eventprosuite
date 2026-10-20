@@ -24,7 +24,35 @@
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
 
 /* Guided launch path */
-.launch-card{display:none;margin-bottom:24px;padding:22px;background:linear-gradient(135deg,#fff 0%,rgba(109,40,217,.045) 100%);border:1.5px solid rgba(109,40,217,.18);border-radius:18px;box-shadow:0 8px 30px rgba(76,29,149,.06)}
+.launch-card{display:none;margin-bottom:18px;padding:0;background:linear-gradient(135deg,#fff 0%,rgba(109,40,217,.045) 100%);border:1.5px solid rgba(109,40,217,.18);border-radius:18px;box-shadow:0 8px 30px rgba(76,29,149,.06)}
+
+.home-continue{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:14px;padding:20px 22px;border-radius:18px;background:linear-gradient(135deg,#4C1D95,#7C3AED 60%,#C026D3);color:#fff;box-shadow:0 12px 32px rgba(76,29,149,.22)}
+.home-continue .launch-kicker{color:rgba(255,255,255,.75)}
+.home-continue-title{font-size:1.25rem;font-weight:800;line-height:1.25;margin:2px 0 10px}
+.home-continue-track{height:7px;background:rgba(255,255,255,.22);border-radius:999px;overflow:hidden;max-width:420px}
+.home-continue-bar{height:100%;width:0;background:#fff;border-radius:inherit;transition:width .3s}
+.home-continue-sub{font-size:.8rem;color:rgba(255,255,255,.8);margin-top:7px}
+.home-continue-btn{background:#fff!important;color:#4C1D95!important;border-color:#fff!important;font-weight:800;height:44px;padding:0 20px;flex-shrink:0}
+.home-shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.home-shortcut{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#fff;border:1.5px solid var(--border);border-radius:14px;text-decoration:none;color:var(--plum-900);font-weight:700;font-size:.9rem;transition:border-color .15s,transform .15s}
+.home-shortcut span{font-size:1.2rem}
+.home-shortcut:hover{border-color:var(--brand);transform:translateY(-1px)}
+.launch-toggle{width:100%;display:flex;align-items:center;gap:12px;padding:14px 18px;background:none;border:none;font-family:inherit;cursor:pointer;text-align:left}
+.launch-toggle-main{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.launch-toggle .launch-title{margin:0;font-size:.98rem}
+.launch-toggle-next a{color:var(--brand);font-weight:700;text-decoration:none}
+.launch-toggle-next{flex:1;min-width:0;font-size:.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.launch-caret{color:var(--text-subtle);transition:transform .15s}
+.launch-card.open .launch-caret{transform:rotate(180deg)}
+.launch-details{display:none;padding:0 18px 18px}
+.launch-card.open .launch-details{display:block}
+.grow-card{margin-bottom:18px;padding:14px 18px;border:1.5px solid var(--border);border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.grow-card .btn{flex-shrink:0;border:1.5px solid var(--brand);color:var(--brand);background:#fff;height:34px;padding:0 14px;font-weight:700}
+.grow-card strong{display:block;font-size:.92rem;color:var(--plum-900)}
+.grow-card span{display:block;font-size:.8rem;color:var(--text-muted);margin-top:2px}
+.home-guide{font-size:.8rem;color:var(--text-muted);margin:-4px 0 18px}
+.home-guide a{color:var(--brand);font-weight:700;text-decoration:none}
+@media(max-width:760px){.home-shortcuts{grid-template-columns:1fr 1fr}.home-continue{flex-direction:column;align-items:stretch}.home-continue-btn{justify-content:center}.launch-toggle-next{display:none}}
 .launch-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}
 .launch-kicker{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--brand);margin-bottom:5px}
 .launch-title{font-size:1.12rem;font-weight:800;color:var(--plum-900);margin-bottom:4px}
@@ -45,7 +73,7 @@
 .launch-action-copy strong{display:block;font-size:.86rem;margin-bottom:3px}.launch-action-copy span{display:block;font-size:.74rem;line-height:1.4;color:rgba(255,255,255,.72)}
 .launch-action .btn{flex-shrink:0;background:#fff;color:var(--plum-900);border-color:#fff}
 @media(max-width:760px){.launch-steps{grid-template-columns:1fr 1fr}.launch-action{align-items:flex-start;flex-direction:column}.launch-action .btn{width:100%;justify-content:center}}
-@media(max-width:480px){.launch-card{padding:17px}.launch-head{flex-direction:column;gap:10px}.launch-steps{grid-template-columns:1fr}}
+@media(max-width:480px){.launch-head{flex-direction:column;gap:10px}.launch-steps{grid-template-columns:1fr}}
 
 /* Operational next actions */
 .next-panel{margin-bottom:24px;border:1.5px solid rgba(109,40,217,.18);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 8px 28px rgba(76,29,149,.05)}
@@ -197,28 +225,45 @@
       </div>
 
       <!-- Quick guide link -->
-      <div style="margin-bottom:1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <a href="guide.html" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.8rem;font-weight:700;color:var(--brand);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">📖 Quick Start Guide</a>
-        <a href="assistant.html" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.8rem;font-weight:700;color:var(--brand);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">🤖 PartyGenius AI</a>
-        <span style="font-size:.78rem;color:var(--text-muted)">New here? The guide walks through every feature in plain English.</span>
+      <!-- Continue the 14-Day Launch: one clear next step instead of a grid of tiles -->
+      <section class="home-continue" id="homeContinue" style="display:none">
+        <div class="home-continue-copy">
+          <div class="launch-kicker" id="homeContinueKicker">Your 14-Day Launch</div>
+          <h2 class="home-continue-title" id="homeContinueTitle">Continue your launch</h2>
+          <div class="home-continue-track"><div class="home-continue-bar" id="homeContinueBar"></div></div>
+          <div class="home-continue-sub" id="homeContinueSub"></div>
+        </div>
+        <a class="btn home-continue-btn" id="homeContinueBtn" href="course.html">Continue →</a>
+      </section>
+
+      <div class="home-shortcuts" id="homeShortcuts">
+        <a class="home-shortcut" href="app.html"><span>📄</span>New Quote</a>
+        <a class="home-shortcut" href="mywebsite.html"><span>🌐</span>My Website</a>
+        <a class="home-shortcut" href="prep.html"><span>📋</span>Upcoming Events</a>
+        <a class="home-shortcut" href="app.html?quotes=1"><span>📁</span>My Quotes</a>
       </div>
 
-      <!-- Existing work is detected automatically. Nothing here writes to student data. -->
+      <!-- Setup checklist: collapsed to one line; open it for the details. Nothing here writes data. -->
       <section id="launchCard" class="launch-card" aria-labelledby="launchTitle">
-        <div class="launch-head">
-          <div>
-            <div class="launch-kicker">Your guided setup</div>
-            <h2 class="launch-title" id="launchTitle">Launch My Business</h2>
-            <p class="launch-sub" id="launchSub">Your saved work is already here. Complete the next step when you are ready.</p>
+        <button type="button" class="launch-toggle" id="launchToggle" aria-expanded="false" onclick="toggleLaunchCard()">
+          <span class="launch-toggle-main"><span class="launch-title" id="launchTitle">Setup checklist</span><span class="launch-count" id="launchCount">Checking…</span></span>
+          <span class="launch-toggle-next" id="launchNext"></span>
+          <span class="launch-caret">▾</span>
+        </button>
+        <div class="launch-details" id="launchDetails">
+          <p class="launch-sub" id="launchSub">Your saved work is already here. Tap any step to review it.</p>
+          <div class="launch-track" role="progressbar" aria-label="Business launch progress" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" id="launchTrack">
+            <div class="launch-bar" id="launchBar"></div>
           </div>
-          <div class="launch-count" id="launchCount">Checking your progress…</div>
+          <div class="launch-steps" id="launchSteps"></div>
+          <div class="launch-action" id="launchAction"></div>
         </div>
-        <div class="launch-track" role="progressbar" aria-label="Business launch progress" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" id="launchTrack">
-          <div class="launch-bar" id="launchBar"></div>
-        </div>
-        <div class="launch-steps" id="launchSteps"></div>
-        <div class="launch-action" id="launchAction"></div>
       </section>
+
+      <!-- Printables: a Grow activity, kept out of the launch checklist -->
+      <section class="grow-card" id="growCard" style="display:none"></section>
+
+      <p class="home-guide">New here? <a href="guide.html">📖 Quick Start Guide</a> walks through every tool in plain English.</p>
 
       <section class="next-panel" id="nextPanel" aria-labelledby="nextTitle">
         <div class="next-panel-head">
@@ -355,6 +400,7 @@ async function boot() {
       hasPrintables: profile?.has_kpps_access === true || profile?.has_printables_access === true
     };
     currentStoreSlug = profile?.store_slug || '';
+    renderContinueCard(session.user.id, profile?.has_kpps_access === true || session.user.email === 'ggkidsspa@gmail.com');
     const bizName = pd.businessName || '';
     const display = bizName || session.user.email.split('@')[0];
 
@@ -464,17 +510,29 @@ async function loadData() {
   });
 }
 
+function toggleLaunchCard(force){
+  const card=$('launchCard');const open=typeof force==='boolean'?force:!card.classList.contains('open');
+  card.classList.toggle('open',open);$('launchToggle').setAttribute('aria-expanded',String(open));
+  try{localStorage.setItem('pbh_home_checklist_open',open?'1':'0')}catch(_){}
+}
 function renderLaunchProgress(data){
   const evaluator=window.PBHLaunchProgress&&window.PBHLaunchProgress.evaluateLaunchProgress;
   if(!evaluator)return;
   const progress=evaluator(data);
+  // Printables steps are a Grow activity, so they get their own small card.
+  const GROW_IDS=['printable','store'];
+  const core=progress.steps.filter(st=>!GROW_IDS.includes(st.id));
+  const grow=progress.steps.filter(st=>GROW_IDS.includes(st.id));
+  const done=core.filter(st=>st.done).length;
+  const next=core.find(st=>!st.done);
   const card=$('launchCard');
-  $('launchCount').textContent=`${progress.completed} of ${progress.total} ready`;
-  $('launchBar').style.width=`${progress.percent}%`;
-  $('launchTrack').setAttribute('aria-valuemax',String(progress.total));
-  $('launchTrack').setAttribute('aria-valuenow',String(progress.completed));
-  $('launchSteps').innerHTML=progress.steps.map((step,index)=>{
-    const state=step.done?'done':(progress.nextStep&&step.id===progress.nextStep.id?'next':'');
+  $('launchCount').textContent=next?`${done} of ${core.length} done`:'✓ All set';
+  $('launchNext').innerHTML=next?`Next: <a href="${next.href}" onclick="event.stopPropagation()">${next.title} →</a>`:'Your customer path is ready.';
+  $('launchBar').style.width=`${Math.round(done/Math.max(core.length,1)*100)}%`;
+  $('launchTrack').setAttribute('aria-valuemax',String(core.length));
+  $('launchTrack').setAttribute('aria-valuenow',String(done));
+  $('launchSteps').innerHTML=core.map((step,index)=>{
+    const state=step.done?'done':(next&&step.id===next.id?'next':'');
     const marker=step.done?'✓':String(index+1);
     const note=step.done?'Saved. Tap to review.':step.description;
     return `<a href="${step.href}" class="launch-step ${state}">
@@ -482,15 +540,45 @@ function renderLaunchProgress(data){
       <span class="launch-step-copy"><span class="launch-step-title">${step.title}</span><span class="launch-step-note">${note}</span></span>
     </a>`;
   }).join('');
-
-  if(progress.complete){
-    $('launchSub').textContent='Your customer path is ready. Your saved setup can still be reviewed or updated at any time.';
-    $('launchAction').innerHTML=`<div class="launch-action-copy"><strong>🎉 Your business is ready for customers</strong><span>Review your live experience whenever you make a change.</span></div><a class="btn btn-sm" href="mywebsite.html">Review setup →</a>`;
-  }else{
-    const next=progress.nextStep;
-    $('launchAction').innerHTML=`<div class="launch-action-copy"><strong>Next: ${next.title}</strong><span>${next.description} Everything you already saved will stay in place.</span></div><a class="btn btn-sm" href="${next.href}">${next.action} →</a>`;
-  }
+  $('launchAction').innerHTML=next
+    ?`<div class="launch-action-copy"><strong>Next: ${next.title}</strong><span>${next.description} Everything you already saved will stay in place.</span></div><a class="btn btn-sm" href="${next.href}">${next.action} →</a>`
+    :`<div class="launch-action-copy"><strong>🎉 Your business is ready for customers</strong><span>Review your live experience whenever you make a change.</span></div><a class="btn btn-sm" href="mywebsite.html">Review setup →</a>`;
+  let keepOpen=false;try{keepOpen=localStorage.getItem('pbh_home_checklist_open')==='1'}catch(_){}
+  toggleLaunchCard(keepOpen);
   card.style.display='block';
+  // Grow card for printables
+  const gc=$('growCard');
+  if(grow.length){
+    const gNext=grow.find(st=>!st.done);
+    gc.innerHTML=gNext
+      ?`<div><strong>🎨 Party Printables: ${grow.filter(st=>st.done).length} of ${grow.length} done</strong><span>Next: ${gNext.title}. An extra income stream whenever you're ready.</span></div><a class="btn btn-sm" href="${gNext.href}">${gNext.action} →</a>`
+      :`<div><strong>🎨 Your printable store is live</strong><span>Share your store link and add new packs anytime.</span></div><a class="btn btn-sm" href="store.html">Open store →</a>`;
+    gc.style.display='flex';
+  }
+}
+
+// Continue card: the next day of the 14-Day Launch
+const LAUNCH_DAY_TITLES=['Start Here: Hobby or Business?','Pick Your One Party','Know Who Pays You','Name It + Your Promise','Build Your First Package','Price It With Math','Protect Your Time','Get Paid','Publish Your Website','Test Your Booking Flow','Practice Party','Founding Families Offer','Your Circle','Local Outreach','Follow Up + Celebrate'];
+async function renderContinueCard(userId,isStudent){
+  if(!isStudent)return;
+  let rows=[];
+  try{const{data}=await sb.from('course_progress').select('day,completed_at').eq('user_id',userId);rows=data||[]}catch(_){}
+  const done=new Set(rows.filter(r=>r.completed_at&&r.day<=14).map(r=>r.day));
+  const nextDay=LAUNCH_DAY_TITLES.findIndex((_,i)=>!done.has(i));
+  const count=done.size;
+  $('homeContinueBar').style.width=Math.round(count/15*100)+'%';
+  if(nextDay===-1){
+    $('homeContinueKicker').textContent='Your 14-Day Launch';
+    $('homeContinueTitle').textContent='You finished your launch 🎉';
+    $('homeContinueSub').textContent='Keep your 30-day rhythm going. Your notebook and tracker are always there.';
+    $('homeContinueBtn').textContent='Open my notebook →';
+  }else{
+    $('homeContinueKicker').textContent=count?`Your 14-Day Launch · ${count} of 15 days done`:'Your 14-Day Launch';
+    $('homeContinueTitle').textContent=`${count?'Continue':'Start'}: Day ${nextDay} — ${LAUNCH_DAY_TITLES[nextDay]}`;
+    $('homeContinueSub').textContent=count?'One small step today. The button opens right where you left off.':'About 20 minutes to start. One small step a day.';
+    $('homeContinueBtn').textContent=(count?'Continue':'Start')+' →';
+  }
+  $('homeContinue').style.display='flex';
 }
 
 /* ── STATUS ──────────────────────────────────────────────────────────
