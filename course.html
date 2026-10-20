@@ -531,7 +531,7 @@ async function openPlaybook(key){
   const w=window.open('','_blank');
   if(w)w.document.write('<p style="font-family:sans-serif;padding:24px">Opening your playbook…</p>');
   try{
-    const r=await fetch('/api/playbook?name='+encodeURIComponent(key),{headers:{Authorization:'Bearer '+(await authToken())}});
+    const r=await fetch('/api/chat?playbook='+encodeURIComponent(key),{headers:{Authorization:'Bearer '+(await authToken())}});
     if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Could not open the playbook');
     const url=URL.createObjectURL(await r.blob());
     if(w)w.location.href=url;else window.location.href=url;
@@ -574,7 +574,7 @@ async function coachSend(){
   if(!q||coach.busy)return;
   coach.msgs.push({role:'user',content:q});box.value='';coach.busy=true;renderCoach();
   try{
-    const r=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(await authToken())},body:JSON.stringify({messages:coach.msgs.slice(-8)})});
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(await authToken())},body:JSON.stringify({mode:'coach',messages:coach.msgs.slice(-8)})});
     const j=await r.json().catch(()=>({}));
     coach.msgs.push({role:'assistant',content:r.ok&&j.reply?j.reply:(j.error||'The coach is busy right now. Try again in a minute.')});
   }catch(_){coach.msgs.push({role:'assistant',content:'Could not reach the coach. Check your connection and try again.'})}

@@ -8,10 +8,19 @@ STRICT RULES:
 - Give specific, usable answers — not generic platitudes
 - Party Biz Hub tools that exist: Quote Builder (builds price quotes, NO image creation), Contract Builder, Profit Calculator, Event Checklist, Vendor Directory, My Website builder. Do NOT claim any tool does something it doesn't — never mention image generation as a feature`;
 
+const coachHandler = require('./_coach');
+const playbookHandler = require('./_playbook');
+
+// One function serves three things (Vercel plan limit on function count):
+//   GET  /api/chat?playbook=Name  -> course playbook PDF (students only)
+//   POST /api/chat {mode:'coach'} -> 14-Day Launch Party Coach (students only)
+//   POST /api/chat {messages}     -> PartyGenius assistant (unchanged)
 module.exports = async function handler(req, res) {
+  if (req.method === 'GET' && req.query && req.query.playbook) return playbookHandler(req, res);
+  if (req.method === 'POST' && req.body && req.body.mode === 'coach') return coachHandler(req, res);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

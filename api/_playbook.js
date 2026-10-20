@@ -3,7 +3,7 @@ const PLAYBOOKS = require('./_playbooks');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  const key = String((req.query && req.query.name) || '');
+  const key = String((req.query && (req.query.playbook || req.query.name)) || '');
   if (!Object.prototype.hasOwnProperty.call(PLAYBOOKS, key)) return res.status(404).json({ error: 'Playbook not found' });
   const check = await requireStudent(req);
   if (check.error) return res.status(check.status).json({ error: check.error });
