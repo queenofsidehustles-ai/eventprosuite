@@ -125,7 +125,7 @@ const ADMIN_EMAIL='ggkidsspa@gmail.com';
 const COMMUNITY_URL='https://www.skool.com/queen-of-side-hustles-academy-5720';
 
 // ── Course content ─────────────────────────────────────────────────────
-// Days 0–3 are live. Later days show in the list as "coming soon" until written.
+// Days 0–7 are live. Later days show in the list as "coming soon" until written.
 // video: paste an unlisted YouTube link to show the video; leave '' to show the script note.
 const DAYS=[
   {n:0,title:'Start Here: Hobby or Business?',
@@ -173,8 +173,62 @@ const DAYS=[
    notes:[{key:'businessName',label:'My business name',input:true},{key:'promise',label:'My one-sentence promise'}],
    doIt:{label:'Save it in Business Profile',href:'profile.html',hint:'A professional email and business phone come on Day 7, with payments.'},
    extra:{label:'Make my brand kit in Canva',href:'https://www.canva.com/'}},
+  {n:4,title:'Build Your First Package',
+   why:"Parents don't want to design a party. They want to pick one. One clear package makes saying yes easy, and it gives you one shopping list. More packages come after your first bookings.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['Your package','Example: teddy bear party'],rows:[
+     ['Guest count','12 kids (supplies come in dozens), plus a set fee for each extra child'],
+     ['Party length','2 hours'],
+     ["What's included",'A bear and outfit for each child, birth certificates, setup and cleanup'],
+     ['Your theme name','Your own name, like “Beary Best Friends Bash.” Never a character name.'],
+     ['Add-ons (up to 3)','Extra outfits, goodie bags, a photo backdrop']]},
+   callout:'<b>Your practice party (Day 10): set the date today.</b><br><b>The plan:</b> host a practice party for a friend or family member so you get real photos, a testimonial and a dry run.<br><b>Optional extra:</b> if the family wants to help, they cover the supplies and you keep the reusable pieces. You end Day 10 with photos <i>and</i> starter gear.<br><br><b>Sell the add-on before you buy it.</b> List your add-ons now. Buy the gear when the first one is paid for.<br><br><b>Let AI write it:</b> ask PartyGenius for 3 theme names and a short package description in your voice. Pick what sounds like you.',
+   time:'about 40 min',
+   checklist:["Watch (or read) today's lesson",'Name my package and set the guest count (12 + an extra-child fee)',"List what's included",'Add up to 3 add-ons','Save my package in the Quote Builder','Public step: invite a family to my practice party and set the date for Day 10'],
+   notes:[{key:'packageName',label:'My package name',input:true},{key:'included',label:"What's included"},{key:'addons',label:'My add-ons'},{key:'practiceParty',label:'Practice party: which family, what date, and which option'}],
+   extra:{label:'Write my package menu with AI',href:'assistant.html'},
+   doIt:{label:'Build my package',href:'app.html',hint:'Put in a placeholder price for now. Day 5 sets the real one.'}},
+  {n:5,title:'Price It With Math',
+   why:"Guessing leads to undercharging and burnout. Today three quick checks give you a price you can say out loud without flinching.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['Check','How it works'],rows:[
+     ['1. Your costs','Supplies per party, plus gas and any helper'],
+     ['2. Pay yourself first','Monthly income goal ÷ parties you want each month = what each party must pay you. Decide how many hours one party may take.'],
+     ['3. The venue check','What a local play place charges for 12 kids. A custom party at home, done for her, is worth more than that.'],
+     ['Your price','Costs + your pay + about 25% profit, then sanity-check it against the venue and your Day 2 competitors']]},
+   callout:'<b>Example:</b> supplies $120. Pay goal $1,200 a month ÷ 8 parties = $150 a party. ($120 + $150) × 1.25 = $337.50, so round up to <b>$345</b>. A play place nearby charges $300 for 12 kids at their location. Yours comes to her, is fully themed, and she does nothing. Your price makes sense.<br><br><b>Let AI do the homework:</b> ask PartyGenius what kids party venues in your city charge for 12 kids, then confirm on their websites.',
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Add up my supply cost per party','Set my pay-yourself-first number','Do the venue check (1–2 local play places)','Run my numbers in the Profit Calculator and save the final price on my package','Public step: post a behind-the-scenes peek (supply shopping or a sneak peek of my setup)'],
+   notes:[{key:'cost',label:'My cost per party',input:true},{key:'payGoal',label:'Monthly goal ÷ parties = my pay per party',input:true},{key:'venue',label:'Venue check: who, and what they charge'},{key:'price',label:'My price',input:true}],
+   extra:{label:'Write my behind-the-scenes post',href:'content.html'},
+   doIt:{label:'Open the Profit Calculator',href:'profit.html',hint:'Then update your package price in the Quote Builder.'}},
+  {n:6,title:'Protect Your Time',
+   why:"Deposits and clear rules aren't rude. They're what professionals do. They protect your weekends, and they help parents trust you.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['Policy','Starter rule (adjust it to you)'],rows:[
+     ['Deposit','50%, non-refundable, holds the date'],
+     ['Balance','Due 48 hours before the party'],
+     ['Cancellation','The deposit is kept. Cancel 14+ days out and it can move to a new date once.'],
+     ['Reschedule','One free reschedule with 14 days\' notice'],
+     ['Weather or illness','Decide now and write it down, so you only decide once'],
+     ['Photo permission','The parent checks yes or no to posting photos of their child. No yes, no faces.']]},
+   callout:'<b>Why photo permission matters:</b> your photos are your best marketing, but they\'re of other people\'s children. Ask every time, in writing.<br><br>This is starter wording, not legal advice. Have a local professional look at your contract when you can.',
+   time:'about 30 min',
+   checklist:["Watch (or read) today's lesson",'Choose my deposit and balance rules','Choose my cancellation and reschedule rules','Add the photo permission line','Save it all in my Contract','Send a test contract to myself'],
+   notes:[{key:'policies',label:'Anything special about my policies'}],
+   doIt:{label:'Set up my contract',href:'contract.html',hint:'Want more wording? The Founder Backend Vault in the Library has full policy templates.'}},
+  {n:7,title:'Get Legit + Get Paid',
+   why:"Setting up properly protects you and your family, and it makes parents comfortable paying you online. Today is paperwork day. Put on some music and knock it out.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   list:{label:'Your Get Legit checklist',items:['<b>Business structure:</b> many start as a sole proprietor. An LLC keeps business and personal separate. Ask a local accountant which fits you.','<b>EIN (tax ID):</b> free from the IRS at irs.gov. Never pay a website for it.','<b>Local license:</b> check your city or county, plus any rules for your party type (food, bounce houses).','<b>Liability insurance:</b> you work with kids. Get a quote for party or event coverage. Rentals often need their own.','<b>Business bank account:</b> keep party money separate, and snap a photo of every receipt.','<b>Business email and phone:</b> like hello@yourbusiness.com and a free Google Voice number.']},
+   callout:'<b>Let AI map it out:</b> ask PartyGenius “What do I need to legally start a kids party business in [city, state]?” You\'ll get a plain-English starting list. Rules vary by state, so confirm with your city\'s website or a local pro.<br><br><b>You don\'t have to finish it all today.</b> An LLC or bank appointment can take days. Start each one, then check the box.<br><br>This is general information, not legal or tax advice.',
+   time:'about 50 min',
+   checklist:["Watch (or read) today's lesson",'Start my setup: choose my structure and get my free EIN','Check my city or county license rules','Request 1 liability insurance quote','Open a business bank account (or book the appointment)','Set up my business email and phone','Connect Stripe so parents can pay deposits online'],
+   notes:[{key:'legit',label:'My legit to-do list: what\'s done, what\'s pending'}],
+   extra:{label:'Ask AI what my state requires',href:'assistant.html'},
+   doIt:{label:'Connect Stripe',href:'profile.html#paymentSetup',hint:'Your business email and phone go in Business Profile too.'}},
 ];
-const UPCOMING=['Build Your First Package','Price It With Math','Protect Your Time','Get Legit + Get Paid','Publish Your Website','Test Your Booking Flow','Practice Party','Founding Families Offer','Your Circle','Local Outreach','Follow Up + Celebrate'];
+const UPCOMING=['Publish Your Website','Test Your Booking Flow','Practice Party','Founding Families Offer','Your Circle','Local Outreach','Follow Up + Celebrate'];
 
 // ── State ──────────────────────────────────────────────────────────────
 let currentUser=null, progress={}, current=0, storageMode='db';
@@ -213,10 +267,10 @@ function renderProgress(){
   document.getElementById('clBarFill').style.width=Math.round(done/15*100)+'%';
   document.getElementById('clBar').setAttribute('aria-valuenow',done);
   document.getElementById('clProgressText').textContent=done===0?'Day 0 of 14':`${done} of 15 days done`;
-  document.getElementById('clProgressSub').textContent=next?`Up next: Day ${next.n} — ${next.title}`:'Days 0–3 done! The next days are on their way.';
+  document.getElementById('clProgressSub').textContent=next?`Up next: Day ${next.n} — ${next.title}`:`Days 0–${DAYS.length-1} done! The next days are on their way.`;
 }
 function renderDays(){
-  const all=[...DAYS.map(d=>({n:d.n,title:d.title,live:true})),...UPCOMING.map((t,i)=>({n:i+4,title:t,live:false}))];
+  const all=[...DAYS.map(d=>({n:d.n,title:d.title,live:true})),...UPCOMING.map((t,i)=>({n:i+DAYS.length,title:t,live:false}))];
   document.getElementById('clDays').innerHTML=all.map(d=>{
     const can=d.live&&unlocked(d.n);
     const cls=['cl-day',d.n===current?'active':'',isDone(d.n)?'done':''].join(' ');
@@ -248,7 +302,7 @@ function renderLesson(){
       <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
       ${notes}
       <div class="cl-saved" id="clSaved"></div>
-      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished Days 0–3. The next days are on their way.'}</div></div>
+      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished Days 0–'+(DAYS.length-1)+'. The next days are on their way.'}</div></div>
       <div class="cl-actions">${doIt}${doneBtn}</div>
       ${d.doIt&&d.doIt.hint?`<div class="cl-hint">${esc(d.doIt.hint)}</div>`:''}
       ${!isDone(current)?`<div class="cl-hint" id="clTickHint" ${allChecked?'style="display:none"':''}>Tick every box to finish today.</div>`:''}
