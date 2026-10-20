@@ -4,30 +4,34 @@
  */
 (function () {
   // PPP-only users see these items locked. KPPS users see everything.
+  // Simplified menu: 6 top-level items. Groups open to show their tools.
+  // kppsOnly items are hidden for Printables-only customers.
   const PAGES = [
-    { id: 'dashboard',  href: 'dashboard.html',  icon: '🏠', label: 'Home' },
-    { section: 'Start Here' },
-    { id: 'course',     href: 'course.html',     icon: '🚀', label: 'Your 14-Day Launch' },
-    { id: 'store',      href: 'store.html',      icon: '🎨', label: 'Party Printables' },
-    { id: 'profile',    href: 'profile.html',    icon: '⚙',  label: 'Business Profile' },
-    { section: 'Build & Book', kppsOnly: true },
-    { id: 'mywebsite',  href: 'mywebsite.html',  icon: '🌐', label: 'My Website',       kppsOnly: true },
-    { id: 'app',        href: 'app.html',         icon: '📄', label: 'Quote Builder',    kppsOnly: true },
-    // Saved quotes were only reachable from a modal nothing opened, so a quote
-    // already sent could not be found again, let alone edited.
-    { id: 'quotes',     href: 'app.html?quotes=1', icon: '📁', label: 'My Quotes',        kppsOnly: true },
-    { id: 'contract',   href: 'contract.html',    icon: '📝', label: 'Contract',         kppsOnly: true },
-    { section: 'Run Your Events', kppsOnly: true },
-    { id: 'prep',       href: 'prep.html',        icon: '📋', label: 'Event Checklist',  kppsOnly: true },
-    { id: 'profit',     href: 'profit.html',      icon: '💰', label: 'Profit Calc',      kppsOnly: true },
-    { id: 'vendors',    href: 'vendors.html',     icon: '🤝', label: 'Vendors',          kppsOnly: true },
-    { section: 'Market & Sell' },
-    { id: 'content',    href: 'content.html',     icon: '📱', label: 'Content Studio',   kppsOnly: true },
-    { id: 'assistant',  href: 'assistant.html',   icon: '🤖', label: 'PartyGenius AI',   kppsOnly: true },
+    { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
+    { id: 'course',    href: 'course.html',    icon: '🚀', label: '14-Day Launch' },
+    { id: 'profile',   href: 'profile.html',   icon: '💼', label: 'My Business' },
+    { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'Website & Booking', kppsOnly: true },
+    { group: 'clients', icon: '🎉', label: 'Clients & Quotes', kppsOnly: true, children: [
+      { id: 'app',      href: 'app.html',          icon: '📄', label: 'New Quote' },
+      { id: 'quotes',   href: 'app.html?quotes=1', icon: '📁', label: 'My Quotes' },
+      { id: 'contract', href: 'contract.html',     icon: '📝', label: 'Contracts' },
+      { id: 'prep',     href: 'prep.html',         icon: '📋', label: 'Event Checklist' },
+      { id: 'profit',   href: 'profit.html',       icon: '💰', label: 'Profit Calculator' },
+      { id: 'vendors',  href: 'vendors.html',      icon: '🤝', label: 'Vendors' },
+    ]},
+    { group: 'grow', icon: '📈', label: 'Grow', children: [
+      { id: 'store',     href: 'store.html',     icon: '🎨', label: 'Party Printables' },
+      { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio', kppsOnly: true },
+      { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI', kppsOnly: true },
+    ]},
   ];
   // Quick Start Guide and Marketing Guide live inside the Party Profit Printables tabs — not in the sidebar
 
   const filename = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
+  // My Quotes shares app.html with the Quote Builder; tell them apart by ?quotes=1
+  const currentId = (filename === 'app' && /[?&]quotes=1/.test(window.location.search)) ? 'quotes' : filename;
+  const GROUP_KEY = 'pbh_nav_groups';
+  function openGroups(){ try { return JSON.parse(localStorage.getItem(GROUP_KEY) || '{}'); } catch (_) { return {}; } }
 
   function isPPPOnly() {
     // Set by each page after auth — 'printables' = PPP only, anything else = full KPPS access
@@ -36,14 +40,27 @@
 
   function build() {
     const locked = isPPPOnly();
-    const visiblePages = locked ? PAGES.filter(p => !p.kppsOnly) : PAGES;
-    const items = visiblePages.map(p => {
-      if (p.section) return `<div class="snav-section">${p.section}</div>`;
-      const active = filename === p.id ? ' active' : '';
-      return `<a href="${p.href}" class="snav-item${active}" title="${p.label}">
+    const keep = p => !(locked && p.kppsOnly);
+    const link = (p, child) => `<a href="${p.href}" class="snav-item${child ? ' snav-child' : ''}${currentId === p.id ? ' active' : ''}" title="${p.label}">
         <span class="snav-icon">${p.icon}</span>
         <span class="snav-label">${p.label}</span>
       </a>`;
+    const groupsOpen = openGroups();
+    const items = PAGES.filter(keep).map(p => {
+      if (!p.group) return link(p, false);
+      const kids = p.children.filter(keep);
+      if (!kids.length) return '';
+      if (kids.length === 1) return link(kids[0], false);
+      const hasActive = kids.some(k => k.id === currentId);
+      const open = hasActive || groupsOpen[p.group];
+      return `<div class="snav-group${open ? ' open' : ''}${hasActive ? ' has-active' : ''}" data-group="${p.group}">
+        <button type="button" class="snav-item snav-group-btn" title="${p.label}" data-first="${kids[0].href}">
+          <span class="snav-icon">${p.icon}</span>
+          <span class="snav-label">${p.label}</span>
+          <span class="snav-caret">▾</span>
+        </button>
+        <div class="snav-children">${kids.map(k => link(k, true)).join('')}</div>
+      </div>`;
     }).join('') + (locked ? `<button class="snav-item snav-upgrade" onclick="showUpgradePrompt()">
       <span class="snav-icon">✨</span><span class="snav-label">Unlock Full System</span>
     </button>` : '');
@@ -93,6 +110,13 @@
     st.textContent = `
       .sidebar-collapse{display:none;margin-left:auto;border:none;background:transparent;color:inherit;opacity:.65;font-size:18px;font-weight:800;width:30px;height:30px;border-radius:8px;cursor:pointer;line-height:1}
       .sidebar-collapse:hover{opacity:1;background:rgba(124,58,237,.08)}
+      .snav-group-btn{width:100%;border:none;background:transparent;font-family:inherit;cursor:pointer;text-align:left}
+      .snav-caret{font-size:11px;opacity:.6;transition:transform .15s ease}
+      .snav-group.open .snav-caret{transform:rotate(180deg)}
+      .snav-children{display:none;flex-direction:column;gap:2px;margin:2px 0 6px}
+      .snav-group.open .snav-children{display:flex}
+      .snav-child{padding-left:22px!important;font-size:12.5px!important}
+      .snav-group.has-active>.snav-group-btn{font-weight:700}
       @media(min-width:901px){
         .sidebar-collapse{display:inline-flex;align-items:center;justify-content:center}
         .pbh-sidebar{transition:width .18s ease}
@@ -100,7 +124,8 @@
         .pbh-sidebar.collapsed .sidebar-brand{justify-content:center;padding-left:6px;padding-right:6px;flex-direction:column;gap:6px}
         .pbh-sidebar.collapsed .sidebar-brand img{height:28px;width:28px;object-fit:cover;object-position:left}
         .pbh-sidebar.collapsed .sidebar-collapse{margin-left:0;transform:rotate(180deg)}
-        .pbh-sidebar.collapsed .snav-label,.pbh-sidebar.collapsed .snav-section,.pbh-sidebar.collapsed .sidebar-user-info{display:none}
+        .pbh-sidebar.collapsed .snav-label,.pbh-sidebar.collapsed .snav-section,.pbh-sidebar.collapsed .sidebar-user-info,.pbh-sidebar.collapsed .snav-caret{display:none}
+        .pbh-sidebar.collapsed .snav-children{display:none!important}
         .pbh-sidebar.collapsed .snav-item{justify-content:center;padding-left:0;padding-right:0}
         .pbh-sidebar.collapsed .sidebar-user{justify-content:center}
       }`;
@@ -122,6 +147,21 @@
     });
   }
 
+
+  // Groups open and close; in the icon-only menu a group jumps to its first tool.
+  function wireGroups(mount) {
+    mount.querySelectorAll('.snav-group-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (mount.classList.contains('collapsed')) { window.location.href = btn.dataset.first; return; }
+        const g = btn.parentElement;
+        const open = !g.classList.contains('open');
+        g.classList.toggle('open', open);
+        const st = openGroups(); st[g.dataset.group] = open;
+        try { localStorage.setItem(GROUP_KEY, JSON.stringify(st)); } catch (_) {}
+      });
+    });
+  }
+
   function init() {
     const mount = document.getElementById('pbhSidebar');
     if (!mount) return;
@@ -138,6 +178,7 @@
     if (overlay)   overlay.addEventListener('click', close);
     if (closeBtn)  closeBtn.addEventListener('click', close);
     wireCollapse(mount);
+    wireGroups(mount);
 
     addFloatingSignout();
   }
@@ -165,6 +206,7 @@
     if (overlay)   overlay.addEventListener('click', close);
     if (closeBtn)  closeBtn.addEventListener('click', close);
     wireCollapse(mount);
+    wireGroups(mount);
     autoDetectAdmin();
   };
 
