@@ -16,10 +16,14 @@ const downloads = read('downloads.html');
 assert.doesNotMatch(nav, /downloads\.html/);
 assert.doesNotMatch(nav, /label: 'Party Profit Printables'/);
 assert.match(nav, /label: 'Party Printables'/);
-// It sits in Start Here, because for a $67 buyer it is the whole product.
-const startHere = /\{ section: 'Start Here' \}[\s\S]*?\{ section: 'Build & Book'/.exec(nav);
-assert.ok(startHere, 'the Start Here section is missing');
-assert.match(startHere[0], /Party Printables/);
+// It lives in Grow. For a $67 Printables-only buyer the other Grow tools are
+// hidden, and a group with one item shows as a plain top-level link, so the
+// product is still one click from the menu.
+const grow = /\{ group: 'grow'[\s\S]*?\]\}/.exec(nav);
+assert.ok(grow, 'the Grow group is missing');
+assert.match(grow[0], /id: 'store'[^}]*label: 'Party Printables'/);
+assert.doesNotMatch(/\{ id: 'store'[^}]*\}/.exec(grow[0])[0], /kppsOnly/, 'Printables buyers must see Party Printables');
+assert.match(nav, /if \(kids\.length === 1\) return link\(kids\[0\], false\)/);
 
 // Old links must not break — they are in sent emails and bookmarks.
 assert.match(downloads, /store\.html#templates/);
