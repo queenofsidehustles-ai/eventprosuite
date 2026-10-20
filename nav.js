@@ -40,7 +40,7 @@
     const items = visiblePages.map(p => {
       if (p.section) return `<div class="snav-section">${p.section}</div>`;
       const active = filename === p.id ? ' active' : '';
-      return `<a href="${p.href}" class="snav-item${active}">
+      return `<a href="${p.href}" class="snav-item${active}" title="${p.label}">
         <span class="snav-icon">${p.icon}</span>
         <span class="snav-label">${p.label}</span>
       </a>`;
@@ -51,6 +51,7 @@
     return `<div class="sidebar-inner">
       <div class="sidebar-brand">
         <a href="dashboard.html"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
+        <button class="sidebar-collapse" id="sidebarCollapse" type="button" aria-label="Collapse menu" title="Collapse menu">«</button>
         <button class="sidebar-close" id="sidebarClose" aria-label="Close">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -82,6 +83,45 @@
     document.body.appendChild(btn);
   }
 
+
+  // Desktop: collapse the sidebar to icons for more room. Remembered per browser.
+  const COLLAPSE_KEY = 'pbh_nav_collapsed';
+  function injectCollapseCss() {
+    if (document.getElementById('pbhCollapseCss')) return;
+    const st = document.createElement('style');
+    st.id = 'pbhCollapseCss';
+    st.textContent = `
+      .sidebar-collapse{display:none;margin-left:auto;border:none;background:transparent;color:inherit;opacity:.65;font-size:18px;font-weight:800;width:30px;height:30px;border-radius:8px;cursor:pointer;line-height:1}
+      .sidebar-collapse:hover{opacity:1;background:rgba(124,58,237,.08)}
+      @media(min-width:901px){
+        .sidebar-collapse{display:inline-flex;align-items:center;justify-content:center}
+        .pbh-sidebar{transition:width .18s ease}
+        .pbh-sidebar.collapsed{width:68px}
+        .pbh-sidebar.collapsed .sidebar-brand{justify-content:center;padding-left:6px;padding-right:6px;flex-direction:column;gap:6px}
+        .pbh-sidebar.collapsed .sidebar-brand img{height:28px;width:28px;object-fit:cover;object-position:left}
+        .pbh-sidebar.collapsed .sidebar-collapse{margin-left:0;transform:rotate(180deg)}
+        .pbh-sidebar.collapsed .snav-label,.pbh-sidebar.collapsed .snav-section,.pbh-sidebar.collapsed .sidebar-user-info{display:none}
+        .pbh-sidebar.collapsed .snav-item{justify-content:center;padding-left:0;padding-right:0}
+        .pbh-sidebar.collapsed .sidebar-user{justify-content:center}
+      }`;
+    document.head.appendChild(st);
+  }
+  function wireCollapse(mount) {
+    injectCollapseCss();
+    let on = false;
+    try { on = localStorage.getItem(COLLAPSE_KEY) === '1'; } catch (_) {}
+    mount.classList.toggle('collapsed', on);
+    const btn = document.getElementById('sidebarCollapse');
+    const label = () => { const c = mount.classList.contains('collapsed'); if (btn) { btn.title = c ? 'Expand menu' : 'Collapse menu'; btn.setAttribute('aria-label', btn.title); } };
+    label();
+    if (btn) btn.addEventListener('click', () => {
+      const c = !mount.classList.contains('collapsed');
+      mount.classList.toggle('collapsed', c);
+      try { localStorage.setItem(COLLAPSE_KEY, c ? '1' : '0'); } catch (_) {}
+      label();
+    });
+  }
+
   function init() {
     const mount = document.getElementById('pbhSidebar');
     if (!mount) return;
@@ -97,6 +137,7 @@
     if (hamburger) hamburger.addEventListener('click', open);
     if (overlay)   overlay.addEventListener('click', close);
     if (closeBtn)  closeBtn.addEventListener('click', close);
+    wireCollapse(mount);
 
     addFloatingSignout();
   }
@@ -123,6 +164,7 @@
     if (hamburger) hamburger.addEventListener('click', open);
     if (overlay)   overlay.addEventListener('click', close);
     if (closeBtn)  closeBtn.addEventListener('click', close);
+    wireCollapse(mount);
     autoDetectAdmin();
   };
 
