@@ -18,7 +18,9 @@ const nav = read('nav.js');
 assert.match(dashboard, /productsRes/);
 assert.match(dashboard, /hasPrintables/);
 assert.match(dashboard, /storeSlug: currentStoreSlug/);
-assert.match(dashboard, /aria-valuemax',String\(progress\.total\)/);
+// The bar's max follows the real number of launch steps (printables steps
+// now live in their own Grow card, so the checklist counts the core steps).
+assert.match(dashboard, /aria-valuemax',String\(core\.length\)/);
 
 // Payment help lands on the actual payment section and describes the current
 // deposit-to-contract workflow accurately.

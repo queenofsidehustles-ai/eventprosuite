@@ -351,10 +351,101 @@
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--plum-900);color:#fff;padding:12px 22px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);z-index:200;opacity:0;transition:all .3s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* VIEW TABS: Send a quote | Manage packages & add-ons */
+  .qb-tabs{display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:var(--shadow-sm);align-self:flex-start;max-width:100%}
+  .qb-tab{flex:1 1 auto;border:none;background:transparent;border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:700;color:var(--muted);white-space:nowrap;transition:all .18s}
+  .qb-tab:hover{color:var(--plum-900);background:rgba(230,162,190,.12)}
+  .qb-tab.active{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:0 6px 16px rgba(90,52,118,.28)}
+  .qb-view{display:flex;flex-direction:column;gap:18px;min-width:0}
+  .qb-view[hidden]{display:none}
+  @media(max-width:520px){
+    .qb-tabs{align-self:stretch}
+    .qb-tab{padding:10px 8px;font-size:12.5px;white-space:normal;line-height:1.25}
+  }
+
+  /* NUMBERED STEP HEADINGS */
+  .step-head{display:flex;gap:12px;align-items:flex-start;min-width:0;flex:1 1 260px}
+  .step-num{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--brand),var(--pink));color:#fff;font-weight:800;font-size:15px;box-shadow:0 6px 14px rgba(90,52,118,.22)}
+  .field label .opt{font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0}
+
+  /* "More details" fold inside step 1 */
+  .more-details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .more-details>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-weight:700;font-size:13.5px;color:var(--plum-800);padding:4px 0}
+  .more-details>summary::-webkit-details-marker{display:none}
+  .more-details>summary small{font-weight:500;color:var(--muted);font-size:12px}
+  .more-caret{display:inline-block;transition:transform .18s}
+  .more-details[open] .more-caret{transform:rotate(90deg)}
+  .more-details>.form-grid{margin-top:12px}
+  #quoteDetailsPanel .form-grid{align-items:end}
+
+  /* STEP 2: package cards + add-on ticks */
+  .pick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+  .pick-card{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:16px 16px 14px;background:linear-gradient(180deg,#fff,#FCFAFD);display:flex;flex-direction:column;gap:6px;min-width:0;color:var(--ink);transition:all .18s}
+  .pick-card:hover{border-color:var(--mauve);box-shadow:var(--shadow-sm)}
+  .pick-card.selected{border-color:var(--brand);background:linear-gradient(180deg,#fff,rgba(244,239,248,.9));box-shadow:0 12px 28px rgba(90,52,118,.14)}
+  .pick-card .pick-tick{position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:50%;border:1.5px solid #C9BED0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;background:#fff}
+  .pick-card.selected .pick-tick{background:linear-gradient(135deg,var(--brand),var(--pink));border-color:transparent}
+  .pick-card .package-tier{align-self:flex-start;padding:4px 10px;font-size:10px}
+  .pick-card strong.pick-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--plum-900);line-height:1.3;padding-right:28px;overflow-wrap:anywhere}
+  .pick-card .pick-desc{font-size:12.5px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .pick-card .pick-price{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;color:var(--plum-900)}
+  .pick-card .pick-price small{font-size:11.5px;font-weight:600;color:var(--muted)}
+  .pick-card.no-price{opacity:.7}
+  .pick-empty{border:1px dashed #CDB8DE;border-radius:18px;padding:20px;background:#FCFAFD;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+  .pick-empty strong{font-family:'Playfair Display',serif;font-size:18px;color:var(--plum-900)}
+  .pick-empty span{font-size:13.5px;color:var(--muted);line-height:1.6;max-width:560px}
+  .pick-addons{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .pick-sub-head{margin-bottom:10px}
+  .pick-sub-head strong{display:block;font-size:14px;color:var(--plum-900)}
+  .pick-sub-head span{display:block;font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:2px}
+  .addon-pick-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+  .addon-pick{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;font-size:13px;transition:all .15s}
+  .addon-pick:hover{border-color:var(--mauve)}
+  .addon-pick.on{border-color:#CDB8DE;background:linear-gradient(135deg,#fff,#F6F0FA)}
+  .addon-pick input{width:18px;height:18px;margin:0;accent-color:var(--brand);cursor:pointer}
+  .addon-pick span{min-width:0;overflow-wrap:anywhere;line-height:1.35}
+  .addon-pick em{font-style:normal;font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .addon-more{margin-top:8px}
+  .addon-more>summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--plum-800);padding:6px 0}
+  .addon-more>.addon-pick-list{margin-top:6px}
+  .pick-total{margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(201,162,39,.12),rgba(230,162,190,.1));border:1px solid rgba(201,162,39,.22)}
+  .pick-total span{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+  .pick-total strong{font-size:20px;color:var(--plum-900)}
+  @media(max-width:520px){.addon-pick em{white-space:normal;text-align:right;max-width:90px}}
+
+  /* STEP 3: send menu + More menu */
+  .preview-actions{align-items:center}
+  .send-wrap{position:relative}
+  .pop-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:230px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);padding:6px;display:flex;flex-direction:column;gap:2px}
+  .send-pop{display:none;min-width:260px}
+  .send-pop.open{display:flex;animation:menuIn .18s ease}
+  .pop-item{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:10px;padding:11px 12px;font-size:13.5px;font-weight:600;color:var(--ink)}
+  .pop-item:hover{background:var(--cream)}
+  .pop-note{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 12px 4px}
+  .pop-hint{font-size:11.5px;color:var(--muted);line-height:1.5;padding:6px 12px 6px;border-top:1px solid var(--line);margin-top:4px}
+  .more-menu{position:relative}
+  .more-menu>summary{list-style:none;cursor:pointer;display:inline-block}
+  .more-menu>summary::-webkit-details-marker{display:none}
+  @media(max-width:600px){
+    .preview-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .preview-actions .send-wrap{grid-column:1/-1;order:-1}
+    .preview-actions .send-wrap .btn,.preview-actions>.btn{width:100%}
+    .more-menu>summary{width:100%;text-align:center;padding:11px 12px;border-radius:12px;font-size:13.5px}
+    .pop-menu{left:0;right:auto;min-width:0;width:100%}
+    .more-menu .pop-menu{left:auto;right:0;width:220px}
+  }
+
+  /* MANAGE VIEW */
+  .manage-intro{padding:14px 18px;border-radius:16px;background:linear-gradient(135deg,rgba(201,162,39,.12),rgba(230,162,190,.12));border:1px solid rgba(201,162,39,.25);font-size:13.5px;color:var(--muted);line-height:1.6}
+  .manage-intro strong{display:block;color:var(--plum-900);font-size:15px}
+  .link-btn{border:none;background:none;padding:0;color:var(--brand);font-weight:700;text-decoration:underline;cursor:pointer}
+  .addon-col-labels{padding-left:38px;margin-bottom:-4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:10.5px}
+  @media(max-width:980px){.addon-col-labels{display:none}}
+
   /* PRINT */
   @media print{
     body{background:#fff}
-    .topnav,.side-rail,.workspace>.panel,.preview-head,.help-launcher,.help-panel{display:none !important}
+    .topnav,.side-rail,.workspace>.panel,.qb-tabs,.profile-banner,#manageView,#sendView>.panel,.preview-head,.help-launcher,.help-panel{display:none !important}
     .app-layout{grid-template-columns:1fr;padding:0}
     .preview-card{border:none;box-shadow:none}
     .preview-body{padding:0}
@@ -394,6 +485,13 @@
 
   <div class="workspace">
 
+    <!-- VIEW SWITCH: sending a quote is the everyday job; building packages is
+         a once-in-a-while job, so it lives behind its own tab (app.html#manage). -->
+    <div class="qb-tabs" id="viewTabs" role="tablist" aria-label="Quote Builder sections">
+      <button type="button" class="qb-tab active" id="tabSend" data-view="send" role="tab" aria-selected="true">✉️ Send a quote</button>
+      <button type="button" class="qb-tab" id="tabManage" data-view="manage" role="tab" aria-selected="false">🎁 Manage packages &amp; add-ons</button>
+    </div>
+
     <!-- PROFILE INCOMPLETE BANNER (shown only if business profile not set up) -->
     <div class="profile-banner" id="profileBanner" style="display:none">
       <div class="pb-icon">⚠</div>
@@ -403,45 +501,6 @@
       </div>
       <a href="profile.html" class="btn btn-primary">Open Business Profile →</a>
     </div>
-
-    <!-- PANEL 1: QUOTE DETAILS (per-client info only) -->
-    <section class="panel" id="quoteDetailsPanel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">Quote details</h2>
-          <div class="panel-sub">Who this quote is for. Fill these in for every new quote. Your brand and Stripe settings come automatically from your <a href="profile.html" style="color:var(--brand);font-weight:600">business profile</a>.</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <button type="button" class="tiny-btn" id="openQuotesBtn" title="Open a quote you already saved">📁 My Quotes</button>
-          <div class="section-badge">Step 1 · Client</div>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <div class="field"><label>Client name</label><input id="clientName" placeholder="e.g. Sarah Johnson"/></div>
-        <div class="field"><label>Client email <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label><input id="clientEmail" type="email" placeholder="sarah@example.com"/></div>
-        <div class="field"><label>Client phone <span style="font-weight:400;color:var(--text-muted)">(to text the quote)</span></label><input id="clientPhone" type="tel" placeholder="(407) 555-0123"/></div>
-        <div class="field"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
-        <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
-        <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
-        <!-- Terms differ per client — 48 hours for one, a week for another —
-             so this overrides the Business Profile default for THIS quote
-             only. Blank means "use my default", which is what most do. -->
-        <div class="field"><label>Final payment due</label>
-          <select id="balanceDueDays">
-            <option value="">Use my default</option>
-            <option value="0">On the day of the event</option>
-            <option value="1">24 hours before</option>
-            <option value="2">48 hours before</option>
-            <option value="7">1 week before</option>
-            <option value="14">2 weeks before</option>
-            <option value="30">30 days before</option>
-          </select>
-        </div>
-        <div class="field full"><label>Theme / customization <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label><input id="eventTheme" placeholder="e.g. Pink and gold Barbie theme with personalized birthday details"/></div>
-        <div class="field full"><label>Event notes (visible on quote)</label><textarea id="eventNotes" placeholder="Delivery time, setup requirements, special touches..."></textarea></div>
-      </div>
-    </section>
 
     <!-- HIDDEN FIELDS: Profile data loaded from Supabase. Kept in DOM so existing JS keeps working. -->
     <div style="display:none" aria-hidden="true">
@@ -462,15 +521,135 @@
       <div id="brandRowName"></div>
     </div>
 
+    <!-- ═════════════ VIEW A: SEND A QUOTE ═════════════ -->
+    <div class="qb-view" id="sendView">
 
-    <!-- PANEL 2: OFFER / PACKAGE BUILDER -->
-    <section class="panel package-panel collapsed" id="packagePanel">
+    <!-- STEP 1: WHO & WHEN (per-client info only) -->
+    <section class="panel" id="quoteDetailsPanel">
+      <div class="panel-header">
+        <div class="step-head">
+          <span class="step-num">1</span>
+          <div>
+            <h2 class="panel-title">Who &amp; when</h2>
+            <div class="panel-sub">Who this quote is for. Your logo, colors and deposit links come from your <a href="profile.html" style="color:var(--brand);font-weight:600">business profile</a>.</div>
+          </div>
+        </div>
+        <button type="button" class="tiny-btn" id="openQuotesBtn" title="Open a quote you already saved">📁 My Quotes</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="field"><label>Client name</label><input id="clientName" placeholder="e.g. Sarah Johnson"/></div>
+        <div class="field"><label>Client phone <span class="opt">(to text the quote)</span></label><input id="clientPhone" type="tel" placeholder="(407) 555-0123"/></div>
+        <div class="field"><label>Client email <span class="opt">(optional)</span></label><input id="clientEmail" type="email" placeholder="sarah@example.com"/></div>
+        <div class="field"><label>Event date</label><input id="eventDate" type="date"/></div>
+        <div class="field half"><label>Event type</label><input id="eventType" placeholder="e.g. 5th Birthday · Princess Theme"/></div>
+      </div>
+
+      <details class="more-details" id="moreDetails">
+        <summary>More details <span class="more-caret">▸</span> <small>theme, notes, expiry, final payment</small></summary>
+        <div class="form-grid">
+          <div class="field full"><label>Theme / customization <span class="opt">(optional)</span></label><input id="eventTheme" placeholder="e.g. Pink and gold Barbie theme with personalized birthday details"/></div>
+          <div class="field full"><label>Event notes (visible on quote)</label><textarea id="eventNotes" placeholder="Delivery time, setup requirements, special touches..."></textarea></div>
+          <div class="field"><label>Quote expiration</label><input id="expiryDate" type="date"/></div>
+          <!-- Terms differ per client — 48 hours for one, a week for another —
+               so this overrides the Business Profile default for THIS quote
+               only. Blank means "use my default", which is what most do. -->
+          <div class="field"><label>Final payment due</label>
+            <select id="balanceDueDays">
+              <option value="">Use my default</option>
+              <option value="0">On the day of the event</option>
+              <option value="1">24 hours before</option>
+              <option value="2">48 hours before</option>
+              <option value="7">1 week before</option>
+              <option value="14">2 weeks before</option>
+              <option value="30">30 days before</option>
+            </select>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- STEP 2: PICK A PACKAGE (+ optional add-ons) -->
+    <section class="panel" id="pickPackagePanel">
+      <div class="panel-header">
+        <div class="step-head">
+          <span class="step-num">2</span>
+          <div>
+            <h2 class="panel-title">Pick a package</h2>
+            <div class="panel-sub">Tap the package your client wants. Tap it again to take it off.</div>
+          </div>
+        </div>
+        <button type="button" class="tiny-btn" data-goto-view="manage">✏️ Edit packages</button>
+      </div>
+      <div class="pick-grid" id="pkgPickGrid"></div>
+
+      <div class="pick-addons" id="pickAddonsWrap">
+        <div class="pick-sub-head">
+          <strong>Optional add-ons</strong>
+          <span>Tick the extras your client can choose. They show on the quote as upgrades and are only added to the total if your client picks them.</span>
+        </div>
+        <div class="addon-pick-list" id="addonPickList"></div>
+      </div>
+
+      <div class="pick-total">
+        <span>Quote total</span>
+        <strong id="pickTotal">$0.00</strong>
+      </div>
+    </section>
+
+    <!-- STEP 3: REVIEW & SEND (luxury invoice preview) -->
+    <section class="preview-card" id="previewCard">
+      <div class="preview-head">
+        <div class="step-head">
+          <span class="step-num">3</span>
+          <div>
+            <h3>Review &amp; send</h3>
+            <p>This is exactly what your client will see.</p>
+          </div>
+        </div>
+        <div class="preview-actions">
+          <button type="button" class="btn btn-secondary" id="saveQuoteBtn">💾 Save Quote</button>
+          <div class="send-wrap">
+            <button type="button" class="btn btn-primary" id="sendToClientBtn" aria-haspopup="true" aria-expanded="false">Send to client ▾</button>
+            <div class="pop-menu send-pop" id="sendOptions" role="menu">
+              <div class="pop-note" id="sendOptionsNote">Pick how to send it:</div>
+              <button type="button" class="pop-item" id="shareQuoteBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then click to email to client">📧 Email to Client</button>
+              <button type="button" class="pop-item" id="copyQuoteLinkBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then copy a ready-to-send message with the quote link">🔗 Copy Link</button>
+              <div class="pop-hint">Changed something after saving? Tap <b>Update Quote</b> first so the link shows the latest.</div>
+            </div>
+          </div>
+          <details class="more-menu" id="moreMenu">
+            <summary class="tiny-btn">More ▾</summary>
+            <div class="pop-menu">
+              <button type="button" class="pop-item" id="downloadPdfBtn">📥 Download PDF</button>
+              <button type="button" class="pop-item" id="printBtn">🖨 Print</button>
+              <button type="button" class="pop-item" id="copyBtn">📋 Copy text</button>
+              <button type="button" class="pop-item" id="saveAsNewBtn" style="display:none" title="File this as a separate quote instead of changing the one you opened">➕ Save as new</button>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div class="preview-body" id="fullPreview"></div>
+    </section>
+
+    </div><!-- /sendView -->
+
+    <!-- ═════════════ VIEW B: MANAGE PACKAGES & ADD-ONS ═════════════ -->
+    <div class="qb-view" id="manageView" hidden>
+
+    <div class="manage-intro">
+      <strong>Set these up once — use them on every quote.</strong>
+      <span>Edit your packages and add-ons here, hit <b>Save</b>, then go back to <button type="button" class="link-btn" data-goto-view="send">Send a quote</button>.</span>
+    </div>
+
+    <!-- OFFER / PACKAGE BUILDER -->
+    <section class="panel package-panel" id="packagePanel">
       <div class="panel-header">
         <div>
           <h2 class="panel-title">Your signature packages</h2>
           <div class="panel-sub">Build your Basic · Mid · Premium offers once. Reuse them on every quote. Rename them, add or remove services, save — done.</div>
         </div>
-        <div class="section-badge">Step 2 · Offers</div>
+        <div class="section-badge">Packages</div>
       </div>
       <div class="toolbar">
         <span><strong>KPPS blueprint flow:</strong> Build three tiers. Fill them with services below. Push the active offer into your client's quote with one click.</span>
@@ -486,14 +665,14 @@
       <div class="package-grid" id="packageGrid"></div>
     </section>
 
-    <!-- PANEL 3: SERVICE CATALOG -->
-    <section class="panel">
+    <!-- SERVICE CATALOG -->
+    <section class="panel" id="catalogPanel">
       <div class="panel-header">
         <div>
           <h2 class="panel-title">Service catalog · 80+ party services</h2>
           <div class="panel-sub">Click the check to add to your quote. Suggested U.S. market rates are built in — edit quantity or price anywhere you like.</div>
         </div>
-        <div class="section-badge">Step 3 · Build Quote</div>
+        <div class="section-badge">Services</div>
       </div>
       <div class="helper">
         <span><strong>Tip:</strong> Click the check once to add. Click again to remove. "Add to Active Offer" drops it into the package you're building.</span>
@@ -517,20 +696,20 @@
       </div>
     </section>
 
-    <!-- PANEL 4: OPTIONAL ADD-ONS -->
+    <!-- OPTIONAL ADD-ONS LIBRARY -->
     <section class="panel" id="addonsPanel">
       <div class="panel-header">
         <div>
           <h2 class="panel-title">Optional add-ons</h2>
           <div class="panel-sub">Check the upgrades you want the customer to see. They stay outside the original quote until the customer selects them, then their total updates instantly.</div>
         </div>
-        <div class="section-badge">Step 4 · Upsells</div>
+        <div class="section-badge">Upsells</div>
       </div>
       <div class="addon-toolbar">
         <span><strong>Reusable library:</strong> Set how many guests or items each price covers, pick whether that price is a total or per guest, then save it for every future quote.</span>
         <button type="button" class="tiny-btn" id="saveAddonLibraryBtn">Save add-on library</button>
       </div>
-      <div class="addon-row-hint" style="padding-left:38px;margin-bottom:-4px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:10.5px">Offer · Name · Description · Covers · Price · Pricing</div>
+      <div class="addon-row-hint addon-col-labels">Offer · Name · Description · Covers · Price · Pricing</div>
       <div class="addon-list" id="addonLibrary"></div>
       <div class="addon-custom">
         <div class="field"><label>New add-on</label><input id="newAddonName" placeholder="e.g. Matching pajamas"/></div>
@@ -542,25 +721,7 @@
       </div>
     </section>
 
-    <!-- PANEL 5: LUXURY INVOICE PREVIEW -->
-    <section class="preview-card" id="previewCard">
-      <div class="preview-head">
-        <div>
-          <h3>Luxury invoice preview</h3>
-          <p>Live view your client will see. Also generates your PDF when you click Download.</p>
-        </div>
-        <div class="preview-actions">
-          <button type="button" class="tiny-btn" id="downloadPdfBtn">📥 Download PDF</button>
-          <button type="button" class="tiny-btn" id="printBtn">🖨 Print</button>
-          <button type="button" class="tiny-btn" id="copyBtn">📋 Copy text</button>
-          <button type="button" class="tiny-btn btn-primary" style="color:#fff;border:none" id="saveQuoteBtn">💾 Save Quote</button>
-          <button type="button" class="tiny-btn" id="saveAsNewBtn" style="display:none" title="File this as a separate quote instead of changing the one you opened">➕ Save as new</button>
-          <button type="button" class="tiny-btn" id="shareQuoteBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then click to email to client">📧 Email to Client</button>
-          <button type="button" class="tiny-btn" id="copyQuoteLinkBtn" style="opacity:.4;pointer-events:none" title="Save the quote first, then copy a ready-to-send message with the quote link">🔗 Copy Link</button>
-        </div>
-      </div>
-      <div class="preview-body" id="fullPreview"></div>
-    </section>
+    </div><!-- /manageView -->
 
   </div>
 
@@ -762,7 +923,7 @@ async function checkAuth() {
     if ($('userAvatar')) $('userAvatar').textContent = displayName.charAt(0).toUpperCase();
     setNavUser(displayName);
 
-    await prefillFromBooking();
+    await prefillFromUrl();
   } catch (e) {
     console.error('Profile setup error (non-fatal):', e);
     if (!currentProfile) currentProfile = { id: currentUser.id, email: currentUser.email };
@@ -788,6 +949,7 @@ async function checkAuth() {
     state.activePackageId = (state.packages[0] || {}).id || 'mid';
   }
 
+  showView(viewFromHash(), { fromHash: true, noScroll: true });
   refreshAll();
 
   // Runs at most once per owner; a no-op for everyone already on flat pricing.
@@ -1957,6 +2119,7 @@ function renderLive() {
   $('taxVal').textContent = money(tax);
   $('taxLabelLive').textContent = t.mode === 'none' ? 'Tax' : t.label;
   $('grandVal').textContent = money(grand);
+  if ($('pickTotal')) $('pickTotal').textContent = money(grand);
   $('liveMini').innerHTML = items.length
     ? items.map((it, idx) => {
         const incs = normalizeInclusions(it.inclusions);
@@ -2101,8 +2264,167 @@ function refreshAll() {
   renderPackages();
   renderCatalog();
   renderAddonLibrary();
+  renderPackagePicker();
   renderLive();
   renderPreview();
+}
+
+// ─────────────────────────────────────────────────────────────
+// SEND-A-QUOTE FLOW (step 2 pickers) + VIEW SWITCHING
+// The package editor, catalog and add-on library moved to the "Manage
+// packages & add-ons" view. Step 2 is the everyday shortcut on top of the
+// same state: a tap on a package card does what "Use active offer in quote"
+// does, and an add-on tick is the same data-addon-toggle the library uses.
+// ─────────────────────────────────────────────────────────────
+
+// Packages worth offering as a card: real ones with a price line on them.
+function pickablePackages() {
+  if (packagesAreUntouchedDefaults(state.packages)) return [];
+  return state.packages.filter(p => p && Array.isArray(p.items) && p.items.length);
+}
+
+// A quote line that stands for "the package" (as opposed to an extra service),
+// so choosing a different card swaps it rather than stacking a second one.
+function isPackageLine(item) {
+  return !!(item && (item.fromPackage || item.category === 'Package' || item.category === 'From website booking'));
+}
+
+function packageIsInQuote(p) {
+  return state.quoteItems.some(item => item.fromPackage
+    ? item.fromPackage === p.id
+    : isPackageLine(item) && packageNamesMatch(cleanPackageDisplayName(item.name), cleanPackageDisplayName(p.name)));
+}
+
+function addPackageToQuote(p) {
+  p.items.forEach(i => state.quoteItems.push({ ...quoteItemFromPackageItem(i, p.inclusions || i.inclusions), fromPackage: p.id }));
+}
+
+function pickPackage(id) {
+  const p = pkg(id);
+  if (!p) return;
+  const wasPicked = packageIsInQuote(p);
+  // Take off whichever package is on the quote now; extras she added stay.
+  state.quoteItems = state.quoteItems.filter(item => !isPackageLine(item));
+  if (wasPicked) {
+    refreshAll();
+    toast(`${cleanPackageDisplayName(p.name)} taken off the quote`);
+    return;
+  }
+  state.activePackageId = p.id;
+  addPackageToQuote(p);
+  // Fill the event type from the package, unless she has typed her own.
+  const typed = $('eventType').value.trim();
+  if (!typed || state.packages.some(o => cleanPackageDisplayName(o.name) === typed)) $('eventType').value = cleanPackageDisplayName(p.name);
+  if ($('depositProfile').value !== 'manual') {
+    state.selectedDepositTier = depositRecommendation(totals().grand).tier;
+  }
+  refreshAll();
+  toast(`✓ ${cleanPackageDisplayName(p.name)} added to the quote`);
+}
+
+function renderPackagePicker() {
+  const grid = $('pkgPickGrid');
+  if (grid) {
+    const list = pickablePackages();
+    const html = list.length ? list.map(p => {
+      const on = packageIsInQuote(p);
+      const total = packageTotal(p.id);
+      return `<button type="button" class="pick-card ${on ? 'selected' : ''} ${total > 0 ? '' : 'no-price'}" data-pick-pkg="${escapeHtml(p.id)}" aria-pressed="${on}">
+        <span class="pick-tick">${on ? '✓' : ''}</span>
+        <span class="package-tier"><span class="dot"></span>${escapeHtml(p.tier || 'Package')}</span>
+        <strong class="pick-name">${escapeHtml(cleanPackageDisplayName(p.name))}</strong>
+        ${p.description ? `<span class="pick-desc">${escapeHtml(p.description)}</span>` : ''}
+        <span class="pick-price">${money(total)}${p.items.length > 1 ? ` <small>· ${p.items.length} items</small>` : ''}</span>
+      </button>`;
+    }).join('') : `<div class="pick-empty">
+        <strong>Let's add your packages first</strong>
+        <span>Set up your party packages once (name, price and what's included) and they'll show here as cards you can tap to quote in seconds.</span>
+        <button type="button" class="btn btn-primary" data-goto-view="manage">Set up my packages →</button>
+      </div>`;
+    // Only touch the DOM when something changed. Typing in step 1 and then
+    // tapping a card fires a change (and a re-render) between mousedown and
+    // mouseup; replacing the card there would swallow the tap.
+    if (grid._html !== html) { grid.innerHTML = html; grid._html = html; }
+  }
+  renderAddonPicker();
+}
+
+function renderAddonPicker() {
+  const box = $('addonPickList');
+  if (!box) return;
+  const offered = new Set(state.quoteAddons.map(a => a.id));
+  const row = addon => `<label class="addon-pick ${offered.has(addon.id) ? 'on' : ''}">
+      <input type="checkbox" data-addon-toggle="${escapeHtml(addon.id)}" ${offered.has(addon.id) ? 'checked' : ''}/>
+      <span>${escapeHtml(addon.name)}</span>
+      <em>${escapeHtml(addonPriceLabel(addon))}</em>
+    </label>`;
+  const lib = state.addonLibrary || [];
+  if (!lib.length) {
+    box._html = null;
+    box.innerHTML = `<div style="font-size:13px;color:var(--muted)">No add-ons yet. <button type="button" class="link-btn" data-goto-view="manage">Add some</button></div>`;
+    return;
+  }
+  const FIRST = 6;
+  const head = lib.slice(0, FIRST), rest = lib.slice(FIRST);
+  const restOpen = rest.some(a => offered.has(a.id)) || !!document.querySelector('#addonPickList .addon-more[open]');
+  const html = head.map(row).join('') + (rest.length
+    ? `<details class="addon-more" style="grid-column:1/-1" ${restOpen ? 'open' : ''}><summary>Show ${rest.length} more add-on${rest.length === 1 ? '' : 's'}</summary><div class="addon-pick-list">${rest.map(row).join('')}</div></details>`
+    : '');
+  if (box._html !== html) { box.innerHTML = html; box._html = html; }
+}
+
+function showView(name, opts) {
+  const manage = name === 'manage';
+  if ($('sendView')) $('sendView').hidden = manage;
+  if ($('manageView')) $('manageView').hidden = !manage;
+  document.querySelectorAll('#viewTabs [data-view]').forEach(b => {
+    const on = b.dataset.view === (manage ? 'manage' : 'send');
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  // Names or prices edited on the Manage side show on the cards straight away.
+  if (!manage) renderPackagePicker();
+  // Keep ?booking= / ?quote= / ?quotes= intact; only the hash changes.
+  if (!(opts && opts.fromHash)) {
+    const url = location.pathname + location.search + (manage ? '#manage' : '');
+    try { history.replaceState(null, '', url); } catch (e) {}
+  }
+  if (!(opts && opts.noScroll)) {
+    const ws = document.querySelector('.workspace');
+    if (ws && ws.getBoundingClientRect().top < 0) ws.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function viewFromHash() { return location.hash === '#manage' ? 'manage' : 'send'; }
+window.addEventListener('hashchange', () => showView(viewFromHash(), { fromHash: true }));
+
+// A quote opened with a theme or notes on it should not hide them behind the fold.
+function openMoreDetailsIfFilled() {
+  const d = $('moreDetails');
+  if (d && ($('eventTheme').value.trim() || $('eventNotes').value.trim() || $('balanceDueDays').value !== '')) d.open = true;
+}
+
+function toggleSendOptions(open) {
+  const menu = $('sendOptions'), btn = $('sendToClientBtn');
+  if (!menu) return;
+  const next = typeof open === 'boolean' ? open : !menu.classList.contains('open');
+  menu.classList.toggle('open', next);
+  if (btn) btn.setAttribute('aria-expanded', next ? 'true' : 'false');
+  if (next && $('sendOptionsNote')) {
+    const phone = $('clientPhone').value.trim(), email = $('clientEmail').value.trim();
+    $('sendOptionsNote').textContent = phone || email ? 'Pick how to send it:' : 'No phone or email yet — copy the link and paste it anywhere:';
+  }
+}
+
+// One button for the everyday case. Sending needs a saved quote (the link
+// points at it), so an unsaved quote is saved first, then the choices open.
+async function sendToClient() {
+  if ($('sendOptions').classList.contains('open')) { toggleSendOptions(false); return; }
+  if (!_lastSavedQuoteId) {
+    await saveQuote();
+    if (!_lastSavedQuoteId) return;
+  }
+  toggleSendOptions(true);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -2110,6 +2432,16 @@ function refreshAll() {
 // ─────────────────────────────────────────────────────────────
 document.addEventListener('click', async (e) => {
   const t = e.target;
+  // Pop-up menus in step 3 close on any click outside them, and the More menu
+  // closes once one of its items has been chosen.
+  if (!t.closest('.send-wrap')) toggleSendOptions(false);
+  const moreMenu = $('moreMenu');
+  if (moreMenu && moreMenu.open && (!t.closest('#moreMenu') || t.closest('#moreMenu .pop-item'))) moreMenu.open = false;
+  const viewBtn = t.closest('[data-view],[data-goto-view]');
+  if (viewBtn) { showView(viewBtn.dataset.view || viewBtn.dataset.gotoView); return; }
+  const pickBtn = t.closest('[data-pick-pkg]'); if (pickBtn) { pickPackage(pickBtn.dataset.pickPkg); return; }
+  if (t.closest('#sendToClientBtn')) { await sendToClient(); return; }
+  if (t.id === 'shareQuoteBtn' || t.id === 'copyQuoteLinkBtn') toggleSendOptions(false);
   if (t.id === 'saveBrandBtn') { await saveBrandProfile(); return; }
   if (t.id === 'expandOffersBtn') { $('packagePanel').classList.remove('collapsed'); return; }
   if (t.id === 'collapseOffersBtn') { $('packagePanel').classList.add('collapsed'); return; }
@@ -2129,7 +2461,7 @@ document.addEventListener('click', async (e) => {
     state.addonLibrary.push(addon);
     state.quoteAddons.push({ ...addon });
     $('newAddonName').value = ''; $('newAddonDescription').value = ''; $('newAddonPrice').value = ''; $('newAddonCoverage').value = ''; $('newAddonType').value = 'flat';
-    renderAddonLibrary(); renderPreview();
+    renderAddonLibrary(); renderAddonPicker(); renderPreview();
     toast('✓ Add-on added to this quote');
     return;
   }
@@ -2175,14 +2507,14 @@ document.addEventListener('click', async (e) => {
     if (!addon) return;
     const index = state.quoteAddons.findIndex(row => row.id === addon.id);
     if (index > -1) state.quoteAddons.splice(index, 1); else state.quoteAddons.push({ ...addon });
-    renderAddonLibrary(); renderPreview();
+    renderAddonLibrary(); renderAddonPicker(); renderPreview();
     return;
   }
   const addonDelete = t.closest('[data-addon-delete]'); if (addonDelete) {
     const addon = state.addonLibrary[Number(addonDelete.dataset.addonDelete)];
     if (addon) state.quoteAddons = state.quoteAddons.filter(row => row.id !== addon.id);
     state.addonLibrary.splice(Number(addonDelete.dataset.addonDelete), 1);
-    renderAddonLibrary(); renderPreview();
+    renderAddonLibrary(); renderAddonPicker(); renderPreview();
     return;
   }
   const cat = t.closest('[data-cat]'); if (cat) { const i = Number(cat.dataset.cat); state.catalog[i].open = !state.catalog[i].open; renderCatalog(); return; }
@@ -2442,7 +2774,11 @@ function enableShareButton() {
   shareBtn.style.pointerEvents = 'auto';
 }
 
-async function prefillFromBooking() {
+/* Reads the page address and opens what it asks for. This used to be a
+   second function also called prefillFromBooking, and the later definition
+   below silently replaced it, so ?quotes=1, ?quote= and ?booking= links all
+   opened a blank builder. It has its own name now. */
+async function prefillFromUrl() {
   // An old-style link carrying loose client/event/date parameters still opens
   // something useful rather than a blank form.
   const params = new URLSearchParams(location.search);
@@ -2528,6 +2864,7 @@ async function prefillFromBooking(bookingId, opts) {
     }
   }
 
+  openMoreDetailsIfFilled();
   refreshAll();
   toast(`✓ Loaded ${b.client_name || 'booking'} — adjust for travel and extras, then save`);
   return true;
@@ -2589,6 +2926,7 @@ function loadQuote(data) {
     (data.balanceDueDays === null || data.balanceDueDays === undefined) ? '' : String(data.balanceDueDays);
   if (data.eventNotes) $('eventNotes').value = data.eventNotes;
   if (data.selectedDepositTier) state.selectedDepositTier = data.selectedDepositTier;
+  openMoreDetailsIfFilled();
   refreshAll();
   closeQuotesModal();
   toast('✓ Quote loaded');
@@ -2598,12 +2936,12 @@ function loadQuote(data) {
 // HELP WIDGET
 // ─────────────────────────────────────────────────────────────
 const helpAnswers = {
-  logo: { q: 'Logo not showing?', a: 'Upload a PNG under "Your logo" in Step 1. Then click Save Brand Profile. Your logo appears on the invoice automatically.' },
-  colors: { q: 'Brand colors', a: 'Change "Primary brand color" in Step 1 to match your brand. It updates the invoice header instantly.' },
+  logo: { q: 'Logo not showing?', a: 'Upload your logo in your Business Profile (menu → My Business). It appears on every quote automatically.' },
+  colors: { q: 'Brand colors', a: 'Set your brand color in your Business Profile. Every quote header uses it automatically.' },
   deposit: { q: 'Deposit links', a: 'Paste your Stripe payment links into the $100/$250/$500/$1000 slots. Pick a tier in the sidebar. Your client taps "Pay Deposit" on the invoice.' },
-  packages: { q: 'Packages', a: 'Step 2. Expand offers. Rename Basic/Mid/Premium. Add services from the catalog using "→ Active Offer". Click "Use in quote" when ready.' },
-  pdf: { q: 'PDF download', a: 'Scroll to Luxury invoice preview → click "Download PDF". File saves with your client name + date.' },
-  save: { q: 'Save quote', a: 'Click "Save Quote" in the preview toolbar. Access it later via your profile chip → My Saved Quotes.' }
+  packages: { q: 'Packages', a: 'Tap "Manage packages & add-ons" at the top. Rename Basic/Mid/Premium, add services from the catalog using "→ Active Offer", then Save offers. Back on "Send a quote", tap a package card to put it on the quote.' },
+  pdf: { q: 'PDF download', a: 'Step 3 · Review & send → "More ▾" → Download PDF. File saves with your client name + date.' },
+  save: { q: 'Save quote', a: 'Click "Save Quote" in Step 3 (or just tap "Send to client" — it saves first). Find it later under 📁 My Quotes.' }
 };
 $('helpLauncher').addEventListener('click', () => {
   const isOpen = $('helpPanel').classList.toggle('open');
