@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Your 14-Day Launch | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css?v=6"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.cl-wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+.cl-progress{background:#fff;border:1.5px solid #EDE5F5;border-radius:18px;padding:18px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:1.25rem}
+.cl-progress-text{font-weight:700;color:#1A1020;font-size:15px}
+.cl-progress-sub{font-size:13px;color:#6B5F7A}
+.cl-bar{flex:1;min-width:180px;height:10px;border-radius:999px;background:#F1EAF8;overflow:hidden}
+.cl-bar i{display:block;height:100%;background:linear-gradient(90deg,#D115AE,#7559D4);border-radius:999px;transition:width .4s}
+.cl-grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:1.25rem;align-items:start}
+@media(max-width:860px){.cl-grid{grid-template-columns:1fr}}
+.cl-days{background:#fff;border:1.5px solid #EDE5F5;border-radius:18px;padding:8px;position:sticky;top:16px}
+@media(max-width:860px){.cl-days{position:static;display:flex;overflow-x:auto;gap:6px;padding:8px}}
+.cl-day{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:none;background:none;border-radius:12px;font-family:inherit;font-size:14px;color:#1A1020;text-align:left;cursor:pointer}
+@media(max-width:860px){.cl-day{flex:0 0 auto;width:auto;white-space:nowrap}}
+.cl-day:hover{background:#F7F1FB}
+.cl-day.active{background:#F3EDFD;font-weight:700}
+.cl-day[disabled]{color:#A99BB8;cursor:default;background:none}
+.cl-dot{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:#F1EAF8;color:#7559D4}
+.cl-day.done .cl-dot{background:#D115AE;color:#fff}
+.cl-day[disabled] .cl-dot{background:#F4F1F7;color:#B9AEC6}
+.cl-lesson{background:#fff;border:1.5px solid #EDE5F5;border-radius:20px;overflow:hidden}
+.cl-head{padding:26px 26px 18px;background:linear-gradient(150deg,#FDE6F6 0%,#E6DCFD 100%);border-bottom:3px solid #C9A227}
+.cl-eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7559D4}
+.cl-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.6vw,2.1rem);line-height:1.15;color:#2A1340;margin-top:6px}
+.cl-body{padding:22px 26px 28px;display:flex;flex-direction:column;gap:22px}
+.cl-why{font-size:16px;line-height:1.65;color:#2A1340}
+.cl-video{border-radius:14px;overflow:hidden;background:#1A1020;aspect-ratio:16/9}
+.cl-video iframe{width:100%;height:100%;border:0;display:block}
+.cl-video-soon{aspect-ratio:auto;background:#F3EDFD;border:1.5px dashed #CDBDF0;padding:18px 20px;color:#4C1D95;font-size:14px;line-height:1.6}
+.cl-video-soon b{display:block;font-size:15px;margin-bottom:4px}
+.cl-section-label{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7559D4;margin-bottom:10px}
+.cl-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;border:1.5px solid #EDE5F5;border-radius:14px;overflow:hidden}
+.cl-table th{background:#F7F1FB;text-align:left;padding:10px 14px;color:#4C1D95;font-weight:700}
+.cl-table td{padding:10px 14px;border-top:1px solid #F1EAF8;vertical-align:top;line-height:1.5}
+.cl-list{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.55;padding-left:1.1rem}
+.cl-callout{background:#FBF3DF;border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.6;color:#2A1340}
+.cl-check{display:flex;flex-direction:column;gap:8px}
+.cl-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #EDE5F5;border-radius:14px;cursor:pointer;font-size:15px;line-height:1.45;transition:background .15s,border-color .15s}
+.cl-item:hover{background:#FBF8FE}
+.cl-item input{width:20px;height:20px;margin-top:1px;accent-color:#D115AE;flex-shrink:0;cursor:pointer}
+.cl-item.checked{background:#FDF0FA;border-color:#F3B4E3}
+.cl-item.checked span{color:#6B5F7A;text-decoration:line-through}
+.cl-notes{display:flex;flex-direction:column;gap:14px}
+.cl-notes label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700;color:#2A1340}
+.cl-notes textarea,.cl-notes input{font-family:inherit;font-size:15px;padding:11px 13px;border:1.5px solid #DDD1E5;border-radius:12px;resize:vertical;min-height:46px;color:#1A1020;background:#fff}
+.cl-notes textarea{min-height:76px}
+.cl-notes textarea:focus,.cl-notes input:focus,.cl-item input:focus-visible,.cl-day:focus-visible,.cl-btn:focus-visible{outline:3px solid #C9A227;outline-offset:2px}
+.cl-saved{font-size:12px;color:#6B5F7A;font-weight:600;min-height:16px}
+.cl-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cl-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;font-family:inherit;font-size:15px;font-weight:800;border:none;cursor:pointer;text-decoration:none}
+.cl-btn-do{background:#7559D4;color:#fff}
+.cl-btn-do:hover{background:#5E43BE}
+.cl-btn-done{background:#D115AE;color:#fff;box-shadow:0 8px 22px rgba(209,21,174,.28)}
+.cl-btn-done:disabled{background:#E9DFF1;color:#9C8DAD;box-shadow:none;cursor:not-allowed}
+.cl-btn-ghost{background:#fff;color:#4C1D95;border:1.5px solid #DDD1E5}
+.cl-hint{font-size:13px;color:#6B5F7A}
+.cl-celebrate{display:none;text-align:center;padding:22px;border-radius:16px;background:linear-gradient(150deg,#D115AE,#7559D4);color:#fff}
+.cl-celebrate.show{display:block;animation:pop .35s ease}
+.cl-celebrate h3{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:4px}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.cl-locked{text-align:center;padding:40px 24px}
+.cl-locked h2{font-family:'Playfair Display',serif;font-size:1.7rem;color:#2A1340;margin:10px 0}
+.cl-locked p{color:#4B3F5C;max-width:520px;margin:0 auto 18px;line-height:1.6}
+.cl-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2A1340;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;display:none;z-index:2000}
+</style>
+</head>
+<body>
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading your launch…</div></div>
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="page-header">
+      <div class="page-header-inner">
+        <div class="page-eyebrow">✦ Kids Party Profit System</div>
+        <h1 class="page-title">Your 14-Day <span class="script">Launch</span></h1>
+        <p class="page-sub">One small step a day. A short video, a few boxes to tick, and one button that opens the tool you need.</p>
+      </div>
+    </div>
+
+    <div class="cl-wrap" id="clApp">
+      <div class="cl-progress">
+        <div>
+          <div class="cl-progress-text" id="clProgressText">Day 0 of 14</div>
+          <div class="cl-progress-sub" id="clProgressSub">Let's start with your mindset.</div>
+        </div>
+        <div class="cl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="15" id="clBar"><i id="clBarFill" style="width:0%"></i></div>
+      </div>
+      <div class="cl-grid">
+        <nav class="cl-days" id="clDays" aria-label="Course days"></nav>
+        <article class="cl-lesson" id="clLesson" aria-live="polite"></article>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cl-toast" id="clToast" role="status"></div>
+
+<script src="nav.js?v=6"></script>
+<script src="help-widget.js?v=6"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const QUIZ_URL='https://partybusinesscoach.com/plan';
+const KPPS_URL='https://partybusinesscoach.com/';
+const ADMIN_EMAIL='ggkidsspa@gmail.com';
+
+// ── Course content ─────────────────────────────────────────────────────
+// Days 0–3 are live. Later days show in the list as "coming soon" until written.
+// video: paste an unlisted YouTube link to show the video; leave '' to show the script note.
+const DAYS=[
+  {n:0,title:'Start Here: Hobby or Business?',
+   why:'How you think about this business decides how you price it, market it and show up for it. Women who treat it like a hobby end up undercharging and burning out. Today is one honest reset before we build anything.',
+   video:'',videoNote:'Your welcome video from Monica is coming soon. For now, read today\'s lesson below — it covers the same thing.',
+   table:{head:['A hobby thinks…','A business owner thinks…'],rows:[
+     ['I hope someone books me','I market consistently so clients find me'],
+     ["I don't know what to charge",'I price with math and value'],
+     ['I feel bad asking for a deposit','Deposits protect my time and my business'],
+     ["Maybe I'm not ready yet",'I start before I feel ready and learn as I go']]},
+   checklist:['Watch (or read) today\'s welcome','Answer: am I treating this like a hobby or a business right now?','Answer: what\'s one belief about money or charging that\'s holding me back?','Answer: what does my business look like in 90 days if I fully commit?','Review my Launch Plan from the quiz (or take it now)'],
+   notes:[{key:'hobbyOrBusiness',label:'Right now, am I treating this like a hobby or a business?'},{key:'moneyBelief',label:'One belief about money or charging that\'s holding me back'},{key:'ninetyDays',label:'My business in 90 days, if I fully commit'}],
+   doIt:{label:'Open my Launch Plan',href:QUIZ_URL,newTab:true,hint:'Took the quiz already? Your plan is in your email. If not, it takes 90 seconds.'}},
+  {n:1,title:'Pick Your One Party',
+   why:"Starting narrow isn't limiting — it's the fastest way to get booked. One party type means one shopping list, one package and one clear message. You can add more after your first bookings.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   list:{label:'Choose from your 16 services',items:['<b>Build & Craft:</b> Stuff-A-Bear, DIY Craft, Paint & Sip, Slime / Science','<b>Spa & Glam:</b> Mobile Spa, Face Paint & Balloons','<b>Sleepovers & Movie Nights:</b> Slumber Parties, Teepee Setups, Outdoor Movie Nights','<b>Rentals & Stations:</b> Bounce House, Soft Play, Photo Booth, Food Cart, Candy / Dessert Station','<b>Other:</b> Event Coordinator, or something of your own']},
+   callout:'Your Launch Plan already suggested a starter party based on your time and budget. Start there. Thinking about a rental (bounce house, soft play, photo booth)? Check the startup cost against your budget first.',
+   checklist:["Watch (or read) today's lesson",'Choose my one starter party',"Read the first 2 pages of that party's playbook",'Save my party type in Business Profile'],
+   notes:[{key:'party',label:'My one starter party',input:true}],
+   doIt:{label:'Save it in Business Profile',href:'profile.html',hint:'Your party type fills in your website, packages and quotes later — enter it once.'}},
+  {n:2,title:'Know Who Pays You',
+   why:"Your client isn't “everyone with kids.” When you know exactly who books, what she wants and what she fears, your posts and packages speak straight to her. A quick look at your local market shows you where she already hangs out.",
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   table:{head:['',''],rows:[
+     ['Who she is','A mom, about 28–45, working or at home, who wants a special party without the planning stress'],
+     ['What she wants',"A beautiful, stress-free party her child remembers and she's proud to share"],
+     ['What she fears','Wasting money, a vendor who flakes, a party that disappoints'],
+     ['Where she is','Local Facebook mom groups, Instagram, Google “kids party near me”']]},
+   checklist:["Watch (or read) today's lesson",'Write one sentence describing my ideal client','Find 3 local mom or events groups (and join them)','Look up 3 local businesses offering my party: prices and what they\'re missing','Ask one mom: “What would matter most to you when booking a kids party?”'],
+   notes:[{key:'idealClient',label:'My ideal client, in one sentence'},{key:'groups',label:'3 local groups I joined'},{key:'competitors',label:'3 local competitors: prices + what they\'re missing'}],
+   doIt:null},
+  {n:3,title:'Name It + Your Promise',
+   why:'A name and one clear sentence turn an idea into a business people can find and remember. Your promise becomes your bio, your website headline and the first line of every quote.',
+   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   callout:'<b>The formula:</b> I help <b>[who]</b> get <b>[result]</b> without <b>[pain]</b>.<br><br><i>Example: “I help Orlando moms throw magical teddy bear parties without the stress of planning it themselves.”</i>',
+   list:{label:'Choosing your name',items:['Easy to say and easy to spell','Hints at your party','Free on Instagram, TikTok and Facebook — and as a web address — before you commit']},
+   checklist:["Watch (or read) today's lesson",'Choose my business name','Check it\'s free on Instagram, TikTok, Facebook and as a web address','Write my one-sentence promise','Save both in Business Profile'],
+   notes:[{key:'businessName',label:'My business name',input:true},{key:'promise',label:'My one-sentence promise'}],
+   doIt:{label:'Save it in Business Profile',href:'profile.html',hint:'A professional email and business phone come on Day 7, with payments.'}},
+];
+const UPCOMING=['Build Your First Package','Price It With Math','Protect Your Time','Get Paid','Publish Your Website','Test Your Booking Flow','Practice Party','Get Seen','Founding Families + Your Circle','Local Outreach','Follow Up + Celebrate'];
+
+// ── State ──────────────────────────────────────────────────────────────
+let currentUser=null, progress={}, current=0, storageMode='db';
+const LS_KEY=()=>'pbh_course_'+(currentUser?currentUser.id:'anon');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){const t=document.getElementById('clToast');t.textContent=m;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2600)}
+const dayState=n=>progress[n]||(progress[n]={checklist:[],notes:{},completed_at:null});
+const isDone=n=>!!(progress[n]&&progress[n].completed_at);
+const unlocked=n=>n===0||isDone(n-1)||isDone(n);
+
+async function loadProgress(){
+  try{
+    const{data,error}=await sb.from('course_progress').select('day,checklist,notes,completed_at').eq('user_id',currentUser.id);
+    if(error)throw error;
+    (data||[]).forEach(r=>progress[r.day]={checklist:r.checklist||[],notes:r.notes||{},completed_at:r.completed_at});
+  }catch(e){
+    // Table not created yet: keep progress on this device so the course still works.
+    storageMode='local';
+    try{progress=JSON.parse(localStorage.getItem(LS_KEY())||'{}')}catch(_){progress={}}
+  }
+}
+let saveTimer=null;
+function queueSave(n){clearTimeout(saveTimer);setSaved('Saving…');saveTimer=setTimeout(()=>saveDay(n),500)}
+async function saveDay(n){
+  const s=dayState(n);
+  if(storageMode==='local'){try{localStorage.setItem(LS_KEY(),JSON.stringify(progress))}catch(_){}setSaved('Saved on this device');return}
+  const{error}=await sb.from('course_progress').upsert({user_id:currentUser.id,day:n,checklist:s.checklist,notes:s.notes,completed_at:s.completed_at,updated_at:new Date().toISOString()},{onConflict:'user_id,day'});
+  setSaved(error?'Could not save — check your connection':'Saved');
+}
+function setSaved(t){const el=document.getElementById('clSaved');if(el)el.textContent=t}
+
+// ── Rendering ──────────────────────────────────────────────────────────
+function renderProgress(){
+  const done=DAYS.filter(d=>isDone(d.n)).length;
+  const next=DAYS.find(d=>!isDone(d.n));
+  document.getElementById('clBarFill').style.width=Math.round(done/15*100)+'%';
+  document.getElementById('clBar').setAttribute('aria-valuenow',done);
+  document.getElementById('clProgressText').textContent=done===0?'Day 0 of 14':`${done} of 15 days done`;
+  document.getElementById('clProgressSub').textContent=next?`Up next: Day ${next.n} — ${next.title}`:'Days 0–3 done! The next days are on their way.';
+}
+function renderDays(){
+  const all=[...DAYS.map(d=>({n:d.n,title:d.title,live:true})),...UPCOMING.map((t,i)=>({n:i+4,title:t,live:false}))];
+  document.getElementById('clDays').innerHTML=all.map(d=>{
+    const can=d.live&&unlocked(d.n);
+    const cls=['cl-day',d.n===current?'active':'',isDone(d.n)?'done':''].join(' ');
+    const mark=isDone(d.n)?'✓':d.n;
+    const sub=d.live?(can?'':' · after Day '+(d.n-1)):' · coming soon';
+    return `<button class="${cls}" ${can?`onclick="openDay(${d.n})"`:'disabled'} ${d.n===current?'aria-current="step"':''}><span class="cl-dot">${mark}</span><span>Day ${d.n}: ${esc(d.title)}<span class="cl-hint">${sub}</span></span></button>`;
+  }).join('');
+}
+function renderLesson(){
+  const d=DAYS[current], s=dayState(current);
+  const video=d.video
+    ?`<div class="cl-video"><iframe src="${esc(d.video)}" title="Day ${d.n} video" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
+    :`<div class="cl-video cl-video-soon"><b>🎬 Video coming soon</b>${esc(d.videoNote)}</div>`;
+  const table=d.table?`<table class="cl-table">${d.table.head.some(Boolean)?`<thead><tr>${d.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${d.table.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0&&!d.table.head[0]?'<b>'+esc(c)+'</b>':esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'';
+  const list=d.list?`<div><div class="cl-section-label">${esc(d.list.label)}</div><ul class="cl-list">${d.list.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`:'';
+  const callout=d.callout?`<div class="cl-callout">${d.callout}</div>`:'';
+  const checks=d.checklist.map((t,i)=>{const on=!!s.checklist[i];return `<label class="cl-item${on?' checked':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleCheck(${i},this.checked)"/><span>${esc(t)}</span></label>`}).join('');
+  const notes=d.notes?`<div><div class="cl-section-label">Your notes</div><div class="cl-notes">${d.notes.map(f=>`<label>${esc(f.label)}${f.input?`<input type="text" maxlength="160" value="${esc(s.notes[f.key]||'')}" oninput="setNote('${f.key}',this.value)"/>`:`<textarea maxlength="1200" oninput="setNote('${f.key}',this.value)">${esc(s.notes[f.key]||'')}</textarea>`}</label>`).join('')}</div></div>`:'';
+  const allChecked=d.checklist.every((_,i)=>s.checklist[i]);
+  const doIt=d.doIt?`<a class="cl-btn cl-btn-do" href="${esc(d.doIt.href)}" ${d.doIt.newTab?'target="_blank" rel="noopener"':''}>${esc(d.doIt.label)} →</a>`:'';
+  const doneBtn=isDone(current)
+    ?`<button class="cl-btn cl-btn-ghost" onclick="${current<DAYS.length-1?`openDay(${current+1})`:'renderAll()'}">${current<DAYS.length-1?'Go to Day '+(current+1)+' →':'✓ Day complete'}</button>`
+    :`<button class="cl-btn cl-btn-done" id="clDoneBtn" ${allChecked?'':'disabled'} onclick="completeDay()">Mark Day ${d.n} complete</button>`;
+  document.getElementById('clLesson').innerHTML=`
+    <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14</div><h2 class="cl-title">${esc(d.title)}</h2></div>
+    <div class="cl-body">
+      <p class="cl-why">${esc(d.why)}</p>
+      ${video}${table}${list}${callout}
+      <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
+      ${notes}
+      <div class="cl-saved" id="clSaved"></div>
+      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished Days 0–3. The next days are on their way.'}</div></div>
+      <div class="cl-actions">${doIt}${doneBtn}</div>
+      ${d.doIt&&d.doIt.hint?`<div class="cl-hint">${esc(d.doIt.hint)}</div>`:''}
+      ${!isDone(current)?`<div class="cl-hint" id="clTickHint" ${allChecked?'style="display:none"':''}>Tick every box to finish today.</div>`:''}
+    </div>`;
+}
+let justFinished=null;
+function renderAll(){renderProgress();renderDays();renderLesson()}
+function openDay(n){if(!unlocked(n))return;current=n;justFinished=null;renderAll();document.getElementById('clLesson').scrollIntoView({behavior:'smooth',block:'start'})}
+function toggleCheck(i,on){
+  const s=dayState(current);s.checklist[i]=on;queueSave(current);
+  const items=document.querySelectorAll('.cl-item');if(items[i])items[i].classList.toggle('checked',on);
+  const btn=document.getElementById('clDoneBtn');
+  const all=DAYS[current].checklist.every((_,k)=>s.checklist[k]);
+  if(btn)btn.disabled=!all;
+  const hint=document.getElementById('clTickHint');if(hint)hint.style.display=all?'none':'';
+}
+function setNote(k,v){dayState(current).notes[k]=v;queueSave(current)}
+async function completeDay(){
+  const s=dayState(current);
+  if(!DAYS[current].checklist.every((_,i)=>s.checklist[i]))return;
+  s.completed_at=new Date().toISOString();justFinished=current;
+  await saveDay(current);renderAll();
+  toast('Day '+current+' complete 🎉');
+}
+
+function renderLocked(){
+  document.getElementById('clApp').innerHTML=`<div class="cl-lesson"><div class="cl-locked"><div style="font-size:44px">🚀</div><h2>Your 14-Day Launch is part of the Kids Party Profit System</h2><p>Step-by-step lessons, a launch checklist for every day, and coaching that takes you from idea to your first booking. Your Party Biz Hub tools keep working either way.</p><a class="cl-btn cl-btn-done" href="${KPPS_URL}" target="_blank" rel="noopener">See Kids Party Profit System</a></div></div>`;
+}
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+  let p=null;
+  try{({data:p}=await sb.from('profiles').select('has_paid,has_kpps_access,has_printables_access,profile_data,full_name').eq('id',session.user.id).single())}catch(_){}
+  if(p&&p.has_paid===false){await sb.auth.signOut();window.location.href='login.html';return}
+  const name=(p&&p.profile_data&&p.profile_data.businessName)||p?.full_name||(session.user.email||'user').split('@')[0];
+  setNavUser(name);
+  if(p&&p.has_kpps_access!==true&&p.has_printables_access===true&&typeof setNavPlan==='function')setNavPlan('printables');
+  document.getElementById('authGate').style.display='none';
+  document.getElementById('pbhLayout').style.display='flex';
+  setTimeout(()=>setNavUser(name),300);
+  if(typeof initNavSignout==='function')initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html'});
+  const isStudent=(p&&p.has_kpps_access===true)||session.user.email===ADMIN_EMAIL;
+  if(!isStudent){renderLocked();return}
+  await loadProgress();
+  const firstOpen=DAYS.find(d=>!isDone(d.n));
+  current=firstOpen?firstOpen.n:DAYS.length-1;
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>

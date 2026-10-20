@@ -7,6 +7,7 @@
   const PAGES = [
     { id: 'dashboard',  href: 'dashboard.html',  icon: '🏠', label: 'Home' },
     { section: 'Start Here' },
+    { id: 'course',     href: 'course.html',     icon: '🚀', label: 'Your 14-Day Launch' },
     { id: 'store',      href: 'store.html',      icon: '🎨', label: 'Party Printables' },
     { id: 'profile',    href: 'profile.html',    icon: '⚙',  label: 'Business Profile' },
     { section: 'Build & Book', kppsOnly: true },
