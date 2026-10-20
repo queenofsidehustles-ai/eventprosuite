@@ -81,6 +81,14 @@
 .coach-foot{border-top:1.5px solid #EDE5F5;padding:12px 18px 16px;display:flex;flex-direction:column;gap:8px}
 .coach-foot textarea{font-family:inherit;font-size:14.5px;padding:11px 13px;border:1.5px solid #DDD1E5;border-radius:12px;resize:vertical;min-height:96px}
 .coach-note{font-size:12px;color:#6B5F7A;text-align:center}
+.cl-nb-btn{margin-left:auto;font-family:inherit;font-size:14px;font-weight:800;padding:10px 16px;border-radius:999px;border:1.5px solid #DDD1E5;background:#fff;color:#4C1D95;cursor:pointer}
+.cl-nb-btn:hover{border-color:#D115AE}
+.nb-sec{display:flex;flex-direction:column;gap:8px}
+.nb-h{font-weight:800;font-size:14px;color:#2A1340;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nb-go{font-family:inherit;font-size:12px;font-weight:700;border:none;background:none;color:#6D28D9;cursor:pointer}
+.nb-item{background:#F8F4FC;border-radius:12px;padding:10px 12px}
+.nb-label{font-size:12px;font-weight:700;color:#6B5F7A;margin-bottom:4px}
+.nb-text{white-space:pre-wrap;font-size:14px;line-height:1.5;color:#1A1020}
 .cl-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .cl-chip{padding:7px 12px;border-radius:999px;background:#fff;border:1.5px solid #E7D6A0;color:#5B21B6;font-weight:700;font-size:13px;text-decoration:none}
 .cl-chip:hover{border-color:#D115AE}
@@ -148,6 +156,7 @@
           <div class="cl-progress-sub" id="clProgressSub">Let's start with your mindset.</div>
         </div>
         <div class="cl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="15" id="clBar"><i id="clBarFill" style="width:0%"></i></div>
+        <button class="cl-nb-btn" type="button" onclick="openNotebook()">📓 My Notebook</button>
       </div>
       <div class="cl-grid">
         <nav class="cl-days" id="clDays" aria-label="Course days"></nav>
@@ -157,7 +166,11 @@
   </div>
 </div>
 <div class="cl-toast" id="clToast" role="status"></div>
-<div class="coach-scrim" id="coachScrim" onclick="closeCoach()"></div>
+<aside class="coach-drawer" id="nbDrawer" aria-label="My Notebook">
+  <div class="coach-top"><div><div class="coach-title">📓 My Notebook</div><div class="coach-by">Everything you've written and saved, in one place</div></div><div><button class="coach-x" onclick="copyNotebook()" title="Copy all">⧉</button><button class="coach-x" onclick="closeNotebook()" aria-label="Close">✕</button></div></div>
+  <div class="coach-msgs nb-body" id="nbBody"></div>
+</aside>
+<div class="coach-scrim" id="coachScrim" onclick="closeCoach();closeNotebook()"></div>
 <aside class="coach-drawer" id="coachDrawer" aria-label="Party Coach">
   <div class="coach-top"><div><div class="coach-title">✨ Party Coach</div><div class="coach-by">Powered by Claude</div></div><div><button class="coach-x" onclick="newCoachChat()" title="Start over">↺</button><button class="coach-x" onclick="closeCoach()" aria-label="Close">✕</button></div></div>
   <div class="coach-msgs" id="coachMsgs"></div>
@@ -221,7 +234,7 @@ const DAYS=[
    notes:[{key:'city',label:'My city or area',input:true},{key:'idealClient',label:'My ideal client, in one sentence'},{key:'groups',label:'3 local groups I joined'},{key:'competitors',label:'3 local competitors: prices + what they\'re missing'}],
    doIt:null},
   {n:3,title:'Name It + Your Promise',
-   ai:[{label:'3 business name ideas',prompt:"Give me 3 business name ideas for a {party} business in {city}. Easy to say and spell, hints at the party, no character or brand names."},{label:'Write my promise',prompt:"Write 3 one-sentence promises using: I help [who] get [result] without [pain]. My business: {party} in {city}. My ideal client: {client}.",save:'promise'},{label:'Write my social bio',prompt:"Write 3 options for my Instagram bio (under 150 characters each) using my business name {name}, my promise “{promise}” and my city {city}."}],
+   ai:[{label:'3 business name ideas',prompt:"Give me 3 distinctive business name ideas for a {party} business in {city}. Easy to say and spell, hints at the party, no character or brand names, and not common phrases other party businesses already use. My first name is [your first name], if it helps."},{label:'Write my promise',prompt:"Write 3 one-sentence promises using: I help [who] get [result] without [pain]. My business: {party} in {city}. My ideal client: {client}.",save:'promise'},{label:'Write my social bio',prompt:"Write 3 options for my Instagram bio (under 150 characters each) using my business name {name}, my promise “{promise}” and my city {city}."}],
    why:'A name and one clear sentence turn an idea into a business people can find and remember. Your promise becomes your bio, your website headline and the first line of every quote.',
    video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    callout:'<b>The formula:</b> I help <b>[who]</b> get <b>[result]</b> without <b>[pain]</b>.<br><br><i>Example: “I help Orlando moms throw magical teddy bear parties without the stress of planning it themselves.”</i><br><br><b>Your AI brand kit (about 15 minutes):</b> open Canva and use its AI to make a simple logo with your name, then pick 2 brand colors and 1 font. Use them on everything so you look established from day one.<br><br><b>AI rule we live by:</b> AI images are welcome, but always label them <b>“AI-inspired”</b> in the picture or caption, every time. Parents book what\'s real, so your real party photos stay your proof. And no AI characters that look like licensed ones.',
@@ -235,7 +248,9 @@ const DAYS=[
        {label:'YouTube',href:'https://www.youtube.com/',note:'Handles look like @yourname'}]},
      {group:'Grab your website address (domain)',items:[
        {label:'Namecheap',href:'https://www.namecheap.com/',note:'Search your name. A .com is often under $20 a year; check the renewal price too.'},
-       {label:'GoDaddy',href:'https://www.godaddy.com/domains',note:'Same idea. Skip the extras they offer at checkout.'}]}],
+       {label:'GoDaddy',href:'https://www.godaddy.com/domains',note:'Same idea. Skip the extras they offer at checkout.'}]},
+     {group:'Is the name already registered?',items:[
+       {label:'Find your state\'s business name search',href:'https://www.sba.gov/counseling/launch-your-business/state-registration-lookup/',note:'Pick your state, then search its business name database'}]}],
    time:'about 45 min',
    checklist:["Watch (or read) today's lesson",'Choose my business name','Check it\'s free on Instagram, TikTok, Facebook and as a web address (use the quick-check buttons)','Buy my domain (or decide to wait)','Write my one-sentence promise','Save both in Business Profile','Make my brand kit: logo, 2 colors, 1 font (label any AI images “AI-inspired”)','Public step: update my social bio with my name, promise and city'],
    notes:[{key:'businessName',label:'My business name',input:true},{key:'promise',label:'My one-sentence promise'}],
@@ -426,6 +441,7 @@ const LEGIT=[
 
 // ── State ──────────────────────────────────────────────────────────────
 let currentUser=null, progress={}, current=0, storageMode='db';
+const LAST_KEY=()=>'pbh_course_last_'+(currentUser?currentUser.id:'anon');
 const LS_KEY=()=>'pbh_course_'+(currentUser?currentUser.id:'anon');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(m){const t=document.getElementById('clToast');t.textContent=m;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2600)}
@@ -521,8 +537,9 @@ function nameCheckHtml(name){
   const h=String(name||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
   if(!h)return '<b>Quick check:</b> type your business name in “Your notes” below, and one-tap check buttons will appear here.';
   const q=encodeURIComponent(h+'.com');
-  const L=[['Instagram','https://www.instagram.com/'+h+'/'],['TikTok','https://www.tiktok.com/@'+h],['Facebook','https://www.facebook.com/'+h],['YouTube','https://www.youtube.com/@'+h],['Namecheap: '+h+'.com','https://www.namecheap.com/domains/registration/results/?domain='+q],['GoDaddy: '+h+'.com','https://www.godaddy.com/domainsearch/find?domainToCheck='+q]];
-  return `<b>Quick check for “${esc(h)}”:</b> tap each one. If the profile page loads, that name is taken; if it says the page isn't available, it's likely free. The domain buttons show if ${esc(h)}.com is open.<div class="cl-chips">${L.map(([t,u])=>`<a class="cl-chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('')}</div>`;
+  const city=((progress[2]||{}).notes||{}).city||'';
+  const L=[['Google: is it taken?','https://www.google.com/search?q='+encodeURIComponent('"'+String(name).trim()+'" '+city+' party')],['Instagram','https://www.instagram.com/'+h+'/'],['TikTok','https://www.tiktok.com/@'+h],['Facebook','https://www.facebook.com/'+h],['YouTube','https://www.youtube.com/@'+h],['Namecheap: '+h+'.com','https://www.namecheap.com/domains/registration/results/?domain='+q],['GoDaddy: '+h+'.com','https://www.godaddy.com/domainsearch/find?domainToCheck='+q]];
+  return `<b>Quick check for “${esc(h)}”:</b> tap each one. Start with Google to see if a business near you already uses it. If a profile page loads, that name is taken; if it says the page isn't available, it's likely free. The domain buttons show if ${esc(h)}.com is open.<div class="cl-chips">${L.map(([t,u])=>`<a class="cl-chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('')}</div>`;
 }
 
 // ── Playbooks ──
@@ -543,7 +560,7 @@ function pickParty(key){
 }
 
 // ── Party Coach (Claude) ──
-let coach={msgs:[],save:null,day:null,busy:false};
+let coach={msgs:[],save:null,day:null,busy:false,label:''};
 function fillPrompt(t){
   const n=k=>((progress[k]||{}).notes)||{};
   const v={party:n(1).party,city:n(2).city,client:n(2).idealClient,name:n(3).businessName,promise:n(3).promise,package:n(4).packageName,price:n(5).price};
@@ -552,7 +569,7 @@ function fillPrompt(t){
 }
 function openCoach(i){
   const d=DAYS[current],a=d&&d.ai&&d.ai[i];
-  coach.save=a&&a.save?a.save:null;coach.day=current;
+  coach.save=a&&a.save?a.save:null;coach.day=current;coach.label=a?a.label:'Party Coach';
   document.getElementById('coachDrawer').classList.add('open');
   document.getElementById('coachScrim').classList.add('show');
   const box=document.getElementById('coachInput');
@@ -566,7 +583,7 @@ function renderCoach(){
   if(!coach.msgs.length){el.innerHTML='<div class="coach-empty">Your sample prompt is below. Change anything in [brackets], then tap Ask.</div>';return}
   el.innerHTML=coach.msgs.map((m,i)=>m.role==='user'
     ?`<div class="coach-msg me">${esc(m.content)}</div>`
-    :`<div class="coach-msg bot">${esc(m.content)}<div class="coach-tools"><button onclick="copyCoach(${i})">Copy</button>${coach.save&&coach.day!==null?`<button onclick="saveCoach(${i})">Save to my notes</button>`:''}</div></div>`).join('')+(coach.busy?'<div class="coach-msg bot coach-typing">Writing…</div>':'');
+    :`<div class="coach-msg bot">${esc(m.content)}<div class="coach-tools"><button onclick="copyCoach(${i})">Copy</button>${coach.save&&coach.day!==null?`<button onclick="saveCoach(${i})">Save to today's notes</button>`:''}<button onclick="saveToNotebook(${i})">📓 Save to notebook</button></div></div>`).join('')+(coach.busy?'<div class="coach-msg bot coach-typing">Writing…</div>':'');
   el.scrollTop=el.scrollHeight;
 }
 async function coachSend(){
@@ -587,9 +604,46 @@ function saveCoach(i){
   if(current===coach.day)renderLesson();toast('Saved to your notes');
 }
 function newCoachChat(){coach.msgs=[];renderCoach()}
+
+// ── My Notebook: every note from every day + coach answers she saved (stored as day 30) ──
+const NB_DAY=30;
+function saveToNotebook(i){
+  const st=dayState(NB_DAY);const list=Array.isArray(st.notes.saved)?st.notes.saved:[];
+  list.unshift({text:coach.msgs[i].content.slice(0,3000),day:coach.day,label:coach.label||'Party Coach',at:new Date().toISOString()});
+  st.notes.saved=list.slice(0,100);queueSave(NB_DAY);toast('Saved to your notebook 📓');
+}
+function deleteSaved(k){const st=dayState(NB_DAY);(st.notes.saved||[]).splice(k,1);queueSave(NB_DAY);renderNotebook()}
+function notebookSections(){
+  const out=[];
+  DAYS.forEach(d=>{
+    const n=(progress[d.n]||{}).notes||{};
+    const items=(d.notes||[]).filter(f=>String(n[f.key]||'').trim()).map(f=>({label:f.label,text:String(n[f.key])}));
+    if(items.length)out.push({title:'Day '+d.n+': '+d.title,day:d.n,items});
+  });
+  return out;
+}
+function renderNotebook(){
+  const secs=notebookSections();
+  const saved=((progress[NB_DAY]||{}).notes||{}).saved||[];
+  const L=((progress[7]||{}).notes||{}).legit||{};
+  const legitDone=LEGIT.filter(x=>L[x.k]).length;
+  let h='';
+  if(saved.length)h+=`<div class="nb-sec"><div class="nb-h">✨ Saved from your coach</div>${saved.map((x,k)=>`<div class="nb-item"><div class="nb-label">${esc(x.label)}${x.day!=null?' · Day '+x.day:''}</div><div class="nb-text">${esc(x.text)}</div><div class="coach-tools"><button onclick="navigator.clipboard&&navigator.clipboard.writeText(${esc(JSON.stringify(x.text))}).then(()=>toast('Copied'))">Copy</button><button onclick="deleteSaved(${k})">Remove</button></div></div>`).join('')}</div>`;
+  h+=secs.map(sec=>`<div class="nb-sec"><div class="nb-h">${esc(sec.title)} <button class="nb-go" onclick="closeNotebook();openDay(${sec.day})">Open day →</button></div>${sec.items.map(it=>`<div class="nb-item"><div class="nb-label">${esc(it.label)}</div><div class="nb-text">${esc(it.text)}</div></div>`).join('')}</div>`).join('');
+  if(unlocked(7))h+=`<div class="nb-sec"><div class="nb-h">🛡️ Get Legit tracker: ${legitDone} of ${LEGIT.length} done</div></div>`;
+  if(!h)h='<div class="coach-empty">Your notebook is empty for now. Everything you type in “Your notes,” and any coach answer you save, shows up here.</div>';
+  document.getElementById('nbBody').innerHTML=h;
+}
+function openNotebook(){closeCoach();renderNotebook();document.getElementById('nbDrawer').classList.add('open');document.getElementById('coachScrim').classList.add('show')}
+function closeNotebook(){const d=document.getElementById('nbDrawer');if(d)d.classList.remove('open');if(!document.getElementById('coachDrawer').classList.contains('open'))document.getElementById('coachScrim').classList.remove('show')}
+function copyNotebook(){
+  const saved=((progress[NB_DAY]||{}).notes||{}).saved||[];
+  const txt=[...saved.map(x=>x.label+'\n'+x.text),...notebookSections().map(sec=>sec.title+'\n'+sec.items.map(it=>it.label+': '+it.text).join('\n'))].join('\n\n');
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Notebook copied'),()=>toast('Could not copy'));
+}
 let justFinished=null;
 function renderAll(){renderProgress();renderDays();renderLesson()}
-function openDay(n){if(!unlocked(n))return;current=n;justFinished=null;renderAll();document.getElementById('clLesson').scrollIntoView({behavior:'smooth',block:'start'})}
+function openDay(n){if(!unlocked(n))return;current=n;try{localStorage.setItem(LAST_KEY(),String(n))}catch(_){}justFinished=null;renderAll();document.getElementById('clLesson').scrollIntoView({behavior:'smooth',block:'start'})}
 function toggleCheck(i,on){
   const s=dayState(current);s.checklist[i]=on;queueSave(current);
   const items=document.querySelectorAll('.cl-item');if(items[i])items[i].classList.toggle('checked',on);
@@ -632,6 +686,9 @@ async function init(){
   await loadProgress();
   const firstOpen=DAYS.find(d=>!isDone(d.n));
   current=firstOpen?firstOpen.n:DAYS.length-1;
+  // Come back to the day she was on last time.
+  let last=null;try{last=parseInt(localStorage.getItem(LAST_KEY()),10)}catch(_){}
+  if(Number.isInteger(last)&&DAYS[last]&&unlocked(last))current=last;
   renderAll();
 }
 init();
