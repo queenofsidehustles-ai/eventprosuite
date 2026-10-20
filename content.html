@@ -660,7 +660,7 @@ async function generateContent(){
   try{
     const res=await fetch('/api/caption',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+(((await sb.auth.getSession()).data.session||{}).access_token||'')},
       body:JSON.stringify({hook,post_type:selectedType,platform:selectedPlatform,business_name:userBiz,city:userCity,niche:selectedNiche,mode:'single'})
     });
     const data=await res.json();
@@ -916,7 +916,7 @@ async function generateBatch(){
   try{
     const hook=focus||`variety of party business content for ${userBiz||'my party business'}`;
     const res=await fetch('/api/caption',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(((await sb.auth.getSession()).data.session||{}).access_token||'')},
       body:JSON.stringify({hook,business_name:userBiz,city:userCity,niche:selectedNiche,mode:'batch'})
     });
     const data=await res.json();

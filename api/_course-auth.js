@@ -3,6 +3,20 @@ const SUPABASE_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
 const ADMIN_EMAIL = 'ggkidsspa@gmail.com';
 
+async function getUser(req) {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return null;
+  const u = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + token } });
+  return u.ok ? await u.json() : null;
+}
+
+// Any signed-in Hub user (KPPS or Printables).
+async function requireUser(req) {
+  const user = await getUser(req);
+  return user && user.id ? { user } : { error: 'Please sign in again.', status: 401 };
+}
+
 async function requireStudent(req) {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -16,4 +30,4 @@ async function requireStudent(req) {
   if (!rows[0] || rows[0].has_kpps_access !== true) return { error: 'This is part of the Kids Party Profit System.', status: 403 };
   return { user };
 }
-module.exports = { requireStudent };
+module.exports = { requireStudent, requireUser };

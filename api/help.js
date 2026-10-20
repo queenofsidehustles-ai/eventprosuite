@@ -1,3 +1,5 @@
+const { requireUser } = require('./_course-auth');
+
 const HELP_PROMPT = `You are the Party Biz Hub Help Assistant. You help users navigate and use the Party Biz Hub back office software. You ONLY answer questions about how to use Party Biz Hub features.
 
 PARTY BIZ HUB FEATURES & HOW THEY WORK:
@@ -73,13 +75,16 @@ RULES:
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured.' });
+
+  const check = await requireUser(req);
+  if (check.error) return res.status(check.status).json({ error: check.error });
 
   const { messages } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) {

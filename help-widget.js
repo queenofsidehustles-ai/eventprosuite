@@ -4,6 +4,10 @@
  * Injects a floating ? bubble + slide-in chat panel.
  */
 (function () {
+  // Signed-in user's token (the help endpoint requires login).
+  function hubToken() {
+    try { const t = JSON.parse(localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token') || 'null'); return (t && t.access_token) || ''; } catch (_) { return ''; }
+  }
   const ENDPOINT = '/api/help';
   const SUPPORT_EMAIL = 'queenofsidehustles@gmail.com';
 
@@ -166,7 +170,7 @@
     try {
       const res = await fetch(ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hubToken() },
         body: JSON.stringify({ messages: history })
       });
       removeTyping();

@@ -9,6 +9,7 @@ STRICT RULES:
 - Party Biz Hub tools that exist: Quote Builder (builds price quotes, NO image creation), Contract Builder, Profit Calculator, Event Checklist, Vendor Directory, My Website builder. Do NOT claim any tool does something it doesn't — never mention image generation as a feature`;
 
 const coachHandler = require('./_coach');
+const { requireStudent } = require('./_course-auth');
 const playbookHandler = require('./_playbook');
 
 // One function serves three things (Vercel plan limit on function count):
@@ -27,6 +28,10 @@ module.exports = async function handler(req, res) {
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'OPENROUTER_API_KEY not set on server.' });
+
+  // Only signed-in KPPS students can use PartyGenius (protects the AI bill).
+  const check = await requireStudent(req);
+  if (check.error) return res.status(check.status).json({ error: check.error });
 
   const { messages } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) {
