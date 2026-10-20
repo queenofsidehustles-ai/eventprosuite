@@ -158,6 +158,12 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     // Preview data always uses the current draft. Public sites use the last
     // published snapshot so autosave can never change a live site early.
     const snapshot=rawBuild&&rawBuild.booking_data&&rawBuild.booking_data._publishedSnapshot;
+    // Never show an unpublished draft to the public.
+    if(!_inline&&rawBuild&&!snapshot&&!rawBuild.last_published_at){
+      const es=document.getElementById('error-state');
+      if(es)es.innerHTML='<div style="font-size:44px">🎈</div><h2 style="font-family:Georgia,serif;color:#2A1340">This website is almost ready</h2><p style="color:#6B5F7A;max-width:420px">The owner is putting the finishing touches on it. Please check back soon.</p>';
+      showError();return;
+    }
     const wb=(!_inline&&snapshot&&typeof snapshot==='object')?snapshot:rawBuild;
     const brand_data   =(wb&&wb.brand_data)||{};
     const niche_data   =(wb&&wb.niche_data)||{};
@@ -180,7 +186,7 @@ button{font:inherit;cursor:pointer;border:none;background:none}
 
     const bizName   = first(brand_data.businessName,pd.businessName,full)||'Party Business';
     const tagline   = first(niche_data.tagline,brand_data.tagline,pd.tagline,'Creating unforgettable parties for your little ones.');
-    const logo      = first(brand_data.logoDataURL,pd.logo);
+    const logo      = first(brand_data.logoDataURL,pd.logoDataURL,pd.logo);
     const ownerName = first(about_data.ownerName,pd.ownerName,full)||bizName;
     const ownerBio  = first(about_data.bio,pd.ownerBio,bizName+' is dedicated to creating unforgettable kids parties.');
     const ownerPhoto= first(about_data.photoDataURL);
@@ -234,6 +240,8 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     contactWrap.innerHTML=buildContactSection(data,uid);
     if(footer)footer.parentNode.insertBefore(contactWrap,footer);
     else root.appendChild(contactWrap);
+    // Scripts added through innerHTML never run, so re-create them (makes the message form work).
+    contactWrap.querySelectorAll('script').forEach(old=>{const sc=document.createElement('script');sc.textContent=old.textContent;old.replaceWith(sc)});
 
     showContent();
   }).catch(()=>showError());

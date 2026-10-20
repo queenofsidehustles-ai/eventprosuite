@@ -518,9 +518,9 @@ function newContract(){
   $('clauseWeather').value='reschedule';
   sigStrokes=[];
   $('bizName').value=currentProfile.businessName||'';
-  $('bizEmail').value=currentProfile.businessEmail||'';
-  $('bizPhone').value=currentProfile.businessPhone||'';
-  $('bizAddress').value=currentProfile.businessAddress||'';
+  $('bizEmail').value=currentProfile.businessEmail||currentProfile.contactEmail||currentProfile.bizEmail||'';
+  $('bizPhone').value=currentProfile.businessPhone||currentProfile.contactPhone||'';
+  $('bizAddress').value=currentProfile.businessAddress||currentProfile.city||'';
   ['Deposit','Cancellation','Payment','Liability','Weather'].forEach(updateClausePreview);
   $('listView').style.display='none';
   $('wizardView').classList.add('active');
@@ -535,8 +535,8 @@ function openContract(id){
   $('contractNumber').value=c.contract_number||'';
   $('bizName').value=c.biz_name||currentProfile.businessName||'';
   $('bizOwner').value=c.biz_owner||'';
-  $('bizEmail').value=c.biz_email||currentProfile.businessEmail||'';
-  $('bizPhone').value=c.biz_phone||currentProfile.businessPhone||'';
+  $('bizEmail').value=c.biz_email||currentProfile.businessEmail||currentProfile.contactEmail||currentProfile.bizEmail||'';
+  $('bizPhone').value=c.biz_phone||currentProfile.businessPhone||currentProfile.contactPhone||'';
   $('bizAddress').value=c.biz_address||currentProfile.businessAddress||'';
   $('clientName').value=c.client_name||'';
   $('clientEmail').value=c.client_email||'';

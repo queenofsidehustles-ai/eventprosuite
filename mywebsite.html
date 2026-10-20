@@ -455,6 +455,10 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
 .tpl-preview-row{padding:10px 18px 16px;border-top:1px solid var(--line);display:flex}
 .tpl-preview-link{flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line-strong);background:transparent;color:var(--brand);font-size:.8rem;font-weight:700;text-align:center;cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.02em}
 .tpl-preview-link:hover{background:var(--cream);border-color:var(--brand);color:var(--plum-900);transform:translateY(-1px);box-shadow:0 4px 12px rgba(90,52,118,.12)}
+.prefill-note{background:#F4EEFC;border:1.5px solid #E4D3F7;color:#2A1340;border-radius:12px;padding:10px 14px;font-size:.88rem;margin:0 0 1rem}
+.domain-help{margin-top:.8rem;background:#fff;border:1.5px solid var(--border, #EDE5F5);border-radius:12px;padding:.8rem 1rem;font-size:.86rem}
+.domain-help summary{cursor:pointer;font-weight:700;color:#5B21B6}
+.domain-help p{margin:.6rem 0 0;line-height:1.6}
 </style>
 </head>
 <body>
@@ -672,7 +676,7 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
         </div>
 
         <!-- CLASSIC (KPPS Flagship) -->
-        <div class="tpl-tile" role="button" tabindex="0" data-template="classic" onclick="selectTemplate('classic')">
+        <div class="tpl-tile" role="button" tabindex="0" data-template="classic" style="display:none" onclick="selectTemplate('classic')">
           <div class="tpl-preview">
             <div class="tpl-classic-preview">
               <div class="tpl-classic-nav"><div class="tpl-classic-logo"></div><div class="tpl-classic-navbtn"></div></div>
@@ -902,7 +906,7 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
             <div class="acc-num req"><span>2</span></div>
             <div class="acc-title">
               <h3>Your packages <span class="req-badge">Required</span></h3>
-              <p>The 3 tiers clients can book — this is the heart of your site</p>
+              <p>The packages parents can book. One is perfect to start.</p>
             </div>
             <div class="acc-toggle">▼</div>
           </button>
@@ -997,7 +1001,7 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
                 </label>
                 <div class="field-help" style="margin:.35rem 0 0 2.2rem">Overrides the flat percent above for bookings inside these windows.</div>
 
-                <div id="depositLadderRows" style="display:none;margin-top:.8rem;display:grid;gap:.5rem">
+                <div id="depositLadderRows" style="display:none;margin-top:.8rem;gap:.5rem">
                   <div style="display:grid;grid-template-columns:auto 90px auto 80px;gap:.5rem;align-items:center;font-size:.82rem">
                     <span>Booked within</span>
                     <input type="number" id="ladderDays1" min="1" max="365" placeholder="14" oninput="onSectionInput('booking')"/>
@@ -1209,49 +1213,17 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
         <strong style="display:block;color:var(--success);margin-bottom:.55rem">✓ Your website is live</strong>
         <div class="publish-link-row"><input id="publishedLink" readonly/><button class="btn btn-outline" onclick="copyPublishedLink()">Copy link</button><button class="btn btn-primary" onclick="openPublishedWebsite()">Open website ↗</button></div>
       </div>
-
-      <!-- DEPLOY GUIDE -->
-      <div class="deploy-card advanced-site-section">
-        <h3>How to publish your site (60 seconds)</h3>
-        <p>Once you download the ZIP, here's how to take it live. No coding. No CLI. Just drag and drop.</p>
-        <div class="deploy-steps">
-          <div class="deploy-step">
-            <div class="deploy-step-num">1</div>
-            <div class="deploy-step-text">
-              <strong>Unzip the file you just downloaded</strong>
-              <small>Find <code style="background:var(--cream);padding:1px 5px;border-radius:4px;font-size:.92em">your-site.zip</code> in your Downloads folder. Double-click it — it expands into a folder with your <code>index.html</code> + a README. Your logo and photo are already baked in — no extra files to manage.</small>
-            </div>
-          </div>
-          <div class="deploy-step">
-            <div class="deploy-step-num">2</div>
-            <div class="deploy-step-text">
-              <strong>Go to Netlify Drop</strong>
-              <small>Open <a href="https://app.netlify.com/drop" target="_blank" rel="noopener">app.netlify.com/drop</a> in a new tab. (Free Netlify account — sign up in 30 seconds if you don't have one.)</small>
-            </div>
-          </div>
-          <div class="deploy-step">
-            <div class="deploy-step-num">3</div>
-            <div class="deploy-step-text">
-              <strong>Drag the unzipped folder onto the page</strong>
-              <small>Netlify will upload everything and give you a live URL within seconds. Your site is now public on the internet.</small>
-            </div>
-          </div>
-          <div class="deploy-step">
-            <div class="deploy-step-num">4</div>
-            <div class="deploy-step-text">
-              <strong>Add your custom domain (optional)</strong>
-              <small>If you bought your domain (like <code style="background:var(--cream);padding:1px 5px;border-radius:4px;font-size:.92em">yourbusiness.com</code>), hook it up in Netlify under Domain Settings. Full instructions are in the README inside your ZIP.</small>
-            </div>
-          </div>
-        </div>
-      </div>
+      <details class="domain-help">
+        <summary>Have your own domain (like yourbusiness.com)? Point it here →</summary>
+        <p>Copy your website link above, then set your domain to forward to it. It takes about 5 minutes, and can take up to 24–48 hours to start working.</p>
+        <p><b>Namecheap:</b> Domain List → Manage → Redirect Domain → paste your link → Save.<br><b>GoDaddy:</b> My Products → your domain → DNS → Forwarding → Add forwarding → paste your link → Save.</p>
+      </details>
 
       <div class="wizard-nav">
         <div class="wizard-nav-left">
           <button class="btn btn-outline" onclick="goToStep(3)">← Back to packages</button>
         </div>
         <div class="wizard-nav-right">
-          <button class="btn btn-gold advanced-site-section" id="downloadBtn" onclick="downloadSite()">⬇ Download Website ZIP</button>
         </div>
       </div>
     </div>
@@ -1332,7 +1304,7 @@ const NICHE_DEFAULTS={
     description:'Each child stuffs and dresses their own bear in a guided, hands-on experience. Perfect for ages 4-10. We bring everything — bears, outfits, stuffing station, and a birth certificate ceremony.',
     packages:[
       {tier:'Signature',name:'Cuddle Crew',price:'350',kids:'8',duration:'1.5 hrs',included:'8 build-a-bear kits\nStuffing station setup\nBear outfits (variety)\nBirth certificate ceremony\nBackdrop for photos'},
-      {tier:'Creative',name:'Bear Hug Premium',price:'550',kids:'12',duration:'2 hrs',included:'12 build-a-bear kits\nUpgraded outfits + accessories\nStuffing station setup\nBirth certificate ceremony\nThemed backdrop + balloon arch\nParty host on-site'},
+      {tier:'Creative',name:'Cuddle Deluxe',price:'550',kids:'12',duration:'2 hrs',included:'12 build-a-bear kits\nUpgraded outfits + accessories\nStuffing station setup\nBirth certificate ceremony\nThemed backdrop + balloon arch\nParty host on-site'},
       {tier:'Luxury',name:'Royal Cub Experience',price:'850',kids:'16',duration:'2.5 hrs',included:'16 build-a-bear kits\nLuxury outfits + crowns\nFull table styling\nBirth certificate + photo ceremony\nGrand themed backdrop + balloon installation\nDedicated host + photographer'}
     ]
   },
@@ -1522,6 +1494,7 @@ const PALETTES=[
 ];
 
 // ─── BOOT ─────────────────────────────────────────────────────────
+let hubProfile={};
 async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
@@ -1532,6 +1505,7 @@ async function init(){
   try{
     const{data:p}=await sb.from('profiles').select('profile_data,full_name,has_kpps_access,has_crm_access').eq('id',currentUser.id).maybeSingle();
     if(p){
+      hubProfile=p.profile_data||{};
       isKppsMember=p.has_kpps_access===true||p.has_crm_access===true;
       const display=(p.profile_data&&p.profile_data.businessName)||p.full_name||currentUser.email.split('@')[0];
       const uN=$('userChipText');if(uN)uN.textContent=display;
@@ -1569,6 +1543,8 @@ async function init(){
 
   // Load existing build (if any)
   await loadExistingBuild();
+  // Fill in anything she already entered in Business Profile or her 14-Day Launch
+  await prefillFromHub();
 
   // Wire live preview for brand step
   ['businessName','phone','email','city','tagline','customPrimary','customAccent'].forEach(id=>{
@@ -1608,6 +1584,83 @@ async function init(){
       const m=$('userMenu');if(m)m.classList.remove('open');
     }
   });
+}
+
+
+// ─── ONE SOURCE OF TRUTH ─────────────────────────────────────────
+// Business Profile owns the shared facts (name, phone, email, logo, city, tagline).
+// The website loads them from there and saves edits back, so both pages always match.
+const COURSE_PARTY_TO_NICHE={'stuff-a-bear':'bear','diy craft':'craft','paint & sip':'paint','slime / science':'slime','mobile spa':'spa','face paint & balloons':'facepaint','teepees & sleepovers':'teepee','outdoor movie night':'movie','bounce house':'bounce','soft play':'softplay','photo booth':'photo','food cart':'foodcart','candy / dessert station':'candy','party rentals':'custom','event coordinator':'coordinator'};
+async function prefillFromHub(){
+  const pd=hubProfile||{};
+  const notes={};
+  try{
+    const{data}=await sb.from('course_progress').select('day,notes').eq('user_id',currentUser.id).in('day',[1,2,3,4,5]);
+    (data||[]).forEach(r=>{notes[r.day]=r.notes||{}});
+  }catch(e){}
+  const n=d=>notes[d]||{};
+  const filled=[];
+  const put=(id,val,label,profileWins)=>{
+    const el=$(id);const v=String(val||'').trim();
+    if(!el||!v)return;
+    const cur=el.value.trim();
+    if(!cur||(profileWins&&cur!==v)){el.value=v;filled.push(label)}
+  };
+  put('businessName',pd.businessName||n(3).businessName,'business name',!!pd.businessName);
+  put('phone',pd.contactPhone,'phone',true);
+  put('email',pd.contactEmail||pd.bizEmail,'email',true);
+  put('city',pd.city||n(2).city,'city',!!pd.city);
+  put('tagline',pd.tagline||n(3).promise,'tagline',!!pd.tagline);
+  if(pd.logoDataURL&&pd.logoDataURL!==logoDataURL){logoDataURL=pd.logoDataURL;applyLogoPreview();filled.push('logo')}
+  // Party type from Day 1
+  const party=String(n(1).party||'').toLowerCase();
+  if(!selectedNiche&&COURSE_PARTY_TO_NICHE[party]){
+    _applyNicheSelection(COURSE_PARTY_TO_NICHE[party],false,false);
+    applyNicheDefaults(COURSE_PARTY_TO_NICHE[party]);applyNichePalette(COURSE_PARTY_TO_NICHE[party]);
+    markStepDone(1);filled.push('party type');
+  }
+  // Her own package from Days 4–5 beats the starter packages
+  const saved=currentBuild&&Array.isArray(currentBuild.packages_data)&&currentBuild.packages_data.length;
+  if(!saved&&n(4).packageName){
+    const price=String(n(5).price||'').replace(/[^0-9.]/g,'');
+    packagesData=[{tier:'Signature',name:String(n(4).packageName).trim(),price:price,kids:'12',duration:'2 hrs',included:String(n(4).included||'').trim()}];
+    renderPackages();evaluateSection('packages');filled.push('package');
+  }
+  updateLogoTextPreview&&updateLogoTextPreview();
+  if(filled.length){
+    const note=document.createElement('div');
+    note.className='prefill-note';
+    note.innerHTML='✨ We filled in your '+filled.join(', ')+' from your Business Profile and your 14-Day Launch. Change anything here and it updates everywhere.';
+    const host=$('mainContent');if(host)host.insertBefore(note,host.firstChild);
+    // Already have the basics? Skip ahead to confirming her offer.
+    if(selectedNiche&&$('businessName').value.trim()&&$('email').value.trim()){
+      applyReadyMadeDefaults();
+      ['niche','packages','booking'].forEach(evaluateSection);
+      markStepDone(1);markStepDone(2);unlockStep(2);unlockStep(3);goToStep(3);
+      note.innerHTML+=' <b>Check your package below, then preview and publish.</b>';
+    }
+    if($('businessName').value.trim())debouncedSave();
+  }
+}
+let lastProfileSync='';
+async function syncProfileBasics(){
+  const basics={
+    businessName:$('businessName').value.trim(),
+    contactPhone:$('phone').value.trim(),
+    contactEmail:$('email').value.trim(),
+    city:$('city').value.trim(),
+    tagline:$('tagline').value.trim(),
+    logoDataURL:logoDataURL||null
+  };
+  Object.keys(basics).forEach(k=>{if(!basics[k])delete basics[k]});
+  const sig=JSON.stringify(basics);
+  if(sig===lastProfileSync)return;
+  try{
+    const{data:existing}=await sb.from('profiles').select('profile_data').eq('id',currentUser.id).maybeSingle();
+    const pd={...((existing&&existing.profile_data)||{}),...basics};
+    const{error}=await sb.from('profiles').update({profile_data:pd,updated_at:new Date().toISOString()}).eq('id',currentUser.id);
+    if(!error){lastProfileSync=sig;hubProfile=pd}
+  }catch(e){console.error('Profile sync:',e)}
 }
 
 // ─── LOAD EXISTING BUILD ──────────────────────────────────────────
@@ -1804,7 +1857,9 @@ function renderNicheGrid(){
 
 // ─── TEMPLATE PICKER ─────────────────────────────────────────────
 let selectedTemplate='studio';
+// The Classic design only worked as a downloaded ZIP, so it's retired; anyone on it moves to Studio.
 function selectTemplate(tpl,save=true){
+  if(tpl==='classic')tpl='studio';
   selectedTemplate=tpl;
   document.querySelectorAll('.tpl-tile').forEach(t=>{
     t.classList.toggle('selected',t.dataset.template===tpl);
@@ -2221,6 +2276,7 @@ async function saveNow(){
     }
     if(result.error)throw result.error;
     currentBuild=result.data;
+    syncProfileBasics();
     $('autosaveBadge').classList.add('saved');
     $('autosaveBadge').innerHTML='<span class="dot"></span>Saved';
     return true;
@@ -2228,7 +2284,7 @@ async function saveNow(){
     const msg=e.message||e.code||'';
     console.error('Save error:',msg,e);
     const fk=msg.includes('foreign key')||msg.includes('violates')||msg.includes('profiles');
-    $('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>'+(fk?'Save failed — run SQL fix':'Save failed');
+    $('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>'+'Couldn\'t save. Check your connection and try again.';
     $('autosaveBadge').title=msg;
     return false;
   }
@@ -2576,7 +2632,7 @@ let currentPreviewMode='desktop';
 async function fetchTemplate(){
   if(cachedTemplate)return cachedTemplate;
   const res=await fetch('template.html',{cache:'no-store'});
-  if(!res.ok)throw new Error('Could not load template.html — make sure it is uploaded to your repo alongside mywebsite.html.');
+  if(!res.ok)throw new Error('The preview could not load. Refresh the page and try again.');
   cachedTemplate=await res.text();
   return cachedTemplate;
 }
@@ -2769,7 +2825,7 @@ function mergeIntoTemplate(templateHTML,cfg){
   const configJS='const CONFIG = '+JSON.stringify(cfg,null,2)+';';
   const configRegex=/\/\/ __CUSTOMIZER_CONFIG_START__[\s\S]*?\/\/ __CUSTOMIZER_CONFIG_END__/;
   if(!configRegex.test(out)){
-    throw new Error('Template is missing CUSTOMIZER markers. Re-upload template.html.');
+    throw new Error('The preview could not load. Refresh the page and try again.');
   }
   out=out.replace(configRegex,
     '// __CUSTOMIZER_CONFIG_START__\n'+configJS+'\n// __CUSTOMIZER_CONFIG_END__'
