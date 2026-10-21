@@ -378,14 +378,17 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
 .tpl-tag{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:4px;color:var(--plum-900);background:var(--cream);border:1px solid var(--line)}
 
 /* Template mini-previews */
-.tpl-luxe-preview{background:#0D0820;height:100%;display:flex;flex-direction:column;padding:14px}
-.tpl-luxe-nav{height:20px;background:rgba(255,255,255,.08);border-radius:4px;margin-bottom:10px;display:flex;align-items:center;padding:0 8px;gap:6px}
-.tpl-luxe-dot{width:6px;height:6px;border-radius:50%;background:rgba(212,174,82,.5)}
-.tpl-luxe-hero{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;background:radial-gradient(ellipse 80% 80% at 30% 60%,rgba(212,174,82,.1),transparent)}
-.tpl-luxe-line{height:4px;background:rgba(212,174,82,.7);border-radius:2px;margin-bottom:5px}
-.tpl-luxe-line:first-child{width:75%}
-.tpl-luxe-line:last-child{width:45%;background:rgba(212,174,82,.3)}
-.tpl-luxe-badge{width:60px;height:14px;border-radius:999px;background:rgba(212,174,82,.8);margin-bottom:10px}
+.tpl-luxe-preview{background:radial-gradient(80% 70% at 85% 35%,#F6DCE2 0%,transparent 65%),#FBF7F2;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.tpl-luxe-nav{height:20px;border-bottom:1px solid rgba(160,124,69,.3);display:flex;align-items:center;justify-content:space-between;padding:0 10px;flex-shrink:0}
+.tpl-luxe-navbiz{width:46px;height:7px;border-radius:2px;background:#2E2428;opacity:.75}
+.tpl-luxe-navbtn{width:28px;height:11px;border-radius:999px;background:var(--brand)}
+.tpl-luxe-hero{flex:1;display:flex;align-items:center;gap:10px;padding:10px 12px}
+.tpl-luxe-copy{flex:1;display:flex;flex-direction:column;gap:5px}
+.tpl-luxe-kick{width:50%;height:4px;border-radius:2px;background:#A07C45;opacity:.7}
+.tpl-luxe-h{height:11px;border-radius:2px;background:#2E2428}
+.tpl-luxe-h.short{width:70%}
+.tpl-luxe-btn{width:52px;height:14px;border-radius:999px;background:var(--brand);margin-top:4px}
+.tpl-luxe-arch{width:58px;height:74px;border-radius:999px 999px 3px 3px;background:linear-gradient(#F3D3DB,#FAEDEF);outline:1px solid #C9A96E;outline-offset:3px;display:flex;align-items:center;justify-content:center;color:#8C6A33;font-size:16px;flex-shrink:0}
 
 .tpl-pop-preview{background:#fff;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .tpl-pop-blob{position:absolute;width:120px;height:120px;border-radius:60% 40% 50% 50%;background:rgba(106,63,138,.12);top:-30px;right:-20px}
@@ -409,29 +412,31 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
 .tpl-studio-right{width:90px;background:rgba(106,63,138,.06);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:rgba(106,63,138,.08)}
 
 /* Garden + Bloom mini-preview styles */
-.tpl-garden-preview{background:#FAF7F2;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
-.tpl-garden-nav{height:20px;background:rgba(250,247,242,.96);border-bottom:1px solid #E8DDD0;display:flex;align-items:center;padding:0 10px;justify-content:space-between}
-.tpl-garden-navbiz{width:50px;height:8px;border-radius:3px;background:rgba(42,31,20,.55)}
-.tpl-garden-navbtn{width:30px;height:12px;border-radius:999px;background:rgba(106,63,138,.6)}
-.tpl-garden-hero{flex:1;position:relative;background:linear-gradient(135deg,rgba(42,31,20,.78),rgba(42,31,20,.45)),linear-gradient(135deg,#7a5c3a,#4a3020);display:flex;flex-direction:column;justify-content:flex-end;padding:12px}
-.tpl-garden-leaf{position:absolute;top:8px;right:10px;font-size:30px;opacity:.2;color:#C9A467}
-.tpl-garden-hl{width:80%;height:14px;border-radius:2px;background:rgba(255,255,255,.85);margin-bottom:6px;font-style:italic}
-.tpl-garden-sub{width:60%;height:8px;border-radius:2px;background:rgba(255,255,255,.45);margin-bottom:8px}
-.tpl-garden-btn{width:70px;height:16px;border-radius:999px;background:#C9A467}
+.tpl-garden-preview{background:#F7F0E4;height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.tpl-garden-nav{height:20px;border-bottom:1px solid rgba(44,42,32,.14);display:flex;align-items:center;padding:0 10px;justify-content:space-between;flex-shrink:0}
+.tpl-garden-navbiz{width:50px;height:8px;border-radius:3px;background:#2C2A20;opacity:.8}
+.tpl-garden-navbtn{width:30px;height:12px;border-radius:4px;background:var(--brand)}
+.tpl-garden-bunting{height:12px;flex-shrink:0;background:linear-gradient(135deg,transparent 50%,#F7F0E4 50%) 0 0/14px 12px,linear-gradient(225deg,transparent 50%,#F7F0E4 50%) 0 0/14px 12px,repeating-linear-gradient(90deg,var(--brand) 0 14px,#D9A441 14px 28px,#8E9C6E 28px 42px)}
+.tpl-garden-hero{flex:1;display:flex;align-items:center;gap:10px;padding:8px 12px 10px}
+.tpl-garden-copy{flex:1;display:flex;flex-direction:column;gap:5px}
+.tpl-garden-hl{height:12px;border-radius:2px;background:#2C2A20}
+.tpl-garden-hl.short{width:65%}
+.tpl-garden-sub{width:75%;height:6px;border-radius:2px;background:rgba(44,42,32,.35)}
+.tpl-garden-btn{width:56px;height:15px;border-radius:5px;background:var(--brand);margin-top:3px}
+.tpl-garden-blanket{width:66px;height:66px;border-radius:8px;transform:rotate(-6deg);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,rgba(106,63,138,.28) 50%,transparent 50%) 0 0/12px 12px,linear-gradient(rgba(106,63,138,.28) 50%,transparent 50%) 0 0/12px 12px,#EEE6F4}
+.tpl-garden-blanket span{width:34px;height:34px;border-radius:50%;background:#FFFBF4;display:block}
 
 .tpl-bloom-preview{background:#fff;height:100%;display:flex;flex-direction:column;overflow:hidden}
 .tpl-bloom-nav{height:18px;background:#fff;border-bottom:1.5px solid #EDE5F5;display:flex;align-items:center;padding:0 10px;justify-content:space-between;flex-shrink:0}
 .tpl-bloom-navbiz{width:45px;height:7px;border-radius:3px;background:rgba(26,16,32,.6)}
 .tpl-bloom-navbtn{width:28px;height:12px;border-radius:4px;background:var(--brand)}
-.tpl-bloom-hero{padding:12px 10px 10px;background:linear-gradient(150deg,var(--brand) 0%,var(--plum-900) 100%);display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;overflow:hidden;flex-shrink:0}
-.tpl-bloom-circle{position:absolute;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.07);top:-20px;right:-10px;pointer-events:none}
-.tpl-bloom-herotext{width:100px;height:12px;border-radius:3px;background:rgba(255,255,255,.85);position:relative;z-index:1}
-.tpl-bloom-herosub{width:75px;height:7px;border-radius:2px;background:rgba(255,255,255,.5);position:relative;z-index:1}
-.tpl-bloom-herobtn{width:65px;height:18px;border-radius:6px;background:#fff;position:relative;z-index:1}
-/* Stats band — visually distinct from Studio */
-.tpl-bloom-stats{display:flex;gap:0;background:linear-gradient(135deg,var(--brand),var(--plum-900));flex-shrink:0}
-.tpl-bloom-stat{flex:1;height:22px;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,.15)}
-.tpl-bloom-stat:last-child{border-right:none}
+.tpl-bloom-hero{padding:12px 12px 14px;background:linear-gradient(140deg,var(--brand) 0%,var(--plum-900) 100%);display:flex;flex-direction:column;align-items:flex-start;gap:5px;position:relative;overflow:hidden;flex-shrink:0}
+.tpl-bloom-circle{position:absolute;width:52px;height:52px;border-radius:50%;background:#fff;top:12px;right:14px;pointer-events:none;box-shadow:0 6px 14px rgba(0,0,0,.25)}
+.tpl-bloom-circle::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#FFD166;top:-6px;left:-10px}
+.tpl-bloom-circle::after{content:'';position:absolute;width:14px;height:14px;border-radius:4px;background:#7FE0C4;bottom:-4px;right:-8px;transform:rotate(18deg)}
+.tpl-bloom-herotext{width:92px;height:13px;border-radius:3px;background:#fff;position:relative;z-index:1}
+.tpl-bloom-herosub{width:70px;height:7px;border-radius:2px;background:rgba(255,255,255,.6);position:relative;z-index:1}
+.tpl-bloom-herobtn{width:56px;height:16px;border-radius:999px;background:#fff;position:relative;z-index:1;margin-top:2px}
 /* Steps row */
 .tpl-bloom-steps{display:flex;gap:4px;padding:6px 8px 6px;background:#FBF7FF;flex:1;align-items:center}
 .tpl-bloom-step{flex:1;height:28px;border-radius:6px;background:#EDE5F5;display:flex;align-items:center;justify-content:center}
@@ -562,18 +567,17 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
         <div class="tpl-tile" role="button" tabindex="0" data-template="luxe" onclick="selectTemplate('luxe')">
           <div class="tpl-preview">
             <div class="tpl-luxe-preview">
-              <div class="tpl-luxe-nav"><div class="tpl-luxe-dot"></div><div class="tpl-luxe-dot" style="opacity:.4"></div></div>
+              <div class="tpl-luxe-nav"><div class="tpl-luxe-navbiz"></div><div class="tpl-luxe-navbtn"></div></div>
               <div class="tpl-luxe-hero">
-                <div class="tpl-luxe-badge"></div>
-                <div class="tpl-luxe-line"></div>
-                <div class="tpl-luxe-line"></div>
+                <div class="tpl-luxe-copy"><div class="tpl-luxe-kick"></div><div class="tpl-luxe-h"></div><div class="tpl-luxe-h short"></div><div class="tpl-luxe-btn"></div></div>
+                <div class="tpl-luxe-arch">✦</div>
               </div>
             </div>
           </div>
           <div class="tpl-meta">
             <div class="tpl-meta-name">Luxe</div>
-            <div class="tpl-meta-desc">Dark, editorial, gold accents. For luxury and high-end party brands.</div>
-            <div class="tpl-meta-tags"><span class="tpl-tag">Dark</span><span class="tpl-tag">Editorial</span><span class="tpl-tag">Gold</span></div>
+            <div class="tpl-meta-desc">Soft and elegant: ivory, blush and champagne gold, with a spa-menu package list. Lovely for spa and teepee parties.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Light</span><span class="tpl-tag">Elegant</span><span class="tpl-tag">Spa</span></div>
           </div>
           <div class="tpl-preview-row">
             <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('luxe')">👁 Preview this style →</button>
@@ -634,18 +638,17 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
           <div class="tpl-preview">
             <div class="tpl-garden-preview">
               <div class="tpl-garden-nav"><div class="tpl-garden-navbiz"></div><div class="tpl-garden-navbtn"></div></div>
+              <div class="tpl-garden-bunting"></div>
               <div class="tpl-garden-hero">
-                <div class="tpl-garden-leaf">🌿</div>
-                <div class="tpl-garden-hl"></div>
-                <div class="tpl-garden-sub"></div>
-                <div class="tpl-garden-btn"></div>
+                <div class="tpl-garden-copy"><div class="tpl-garden-hl"></div><div class="tpl-garden-hl short"></div><div class="tpl-garden-sub"></div><div class="tpl-garden-btn"></div></div>
+                <div class="tpl-garden-blanket"><span></span></div>
               </div>
             </div>
           </div>
           <div class="tpl-meta">
             <div class="tpl-meta-name">Garden</div>
-            <div class="tpl-meta-desc">Warm cream & botanical. Elegant italic headings, earthy luxury vibe.</div>
-            <div class="tpl-meta-tags"><span class="tpl-tag">Earthy</span><span class="tpl-tag">Elegant</span><span class="tpl-tag">Botanical</span></div>
+            <div class="tpl-meta-desc">Warm boho picnic: linen, gingham in your brand color, bunting and ticket-style packages. Great for teepees, picnics and movie nights.</div>
+            <div class="tpl-meta-tags"><span class="tpl-tag">Boho</span><span class="tpl-tag">Warm</span><span class="tpl-tag">Picnic</span></div>
           </div>
           <div class="tpl-preview-row">
             <button class="tpl-preview-link" onclick="event.stopPropagation();previewTemplate('garden')">👁 Preview this style →</button>
@@ -663,13 +666,12 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
                 <div class="tpl-bloom-herosub"></div>
                 <div class="tpl-bloom-herobtn"></div>
               </div>
-              <div class="tpl-bloom-stats"><div class="tpl-bloom-stat"></div><div class="tpl-bloom-stat"></div><div class="tpl-bloom-stat"></div></div>
               <div class="tpl-bloom-steps"><div class="tpl-bloom-step"><div class="tpl-bloom-stepnum">1</div></div><div class="tpl-bloom-step"><div class="tpl-bloom-stepnum">2</div></div><div class="tpl-bloom-step"><div class="tpl-bloom-stepnum">3</div></div></div>
             </div>
           </div>
           <div class="tpl-meta">
             <div class="tpl-meta-name">Bloom</div>
-            <div class="tpl-meta-desc">Bold gradient hero, "How It Works" steps, stats band. Full-color, high energy.</div>
+            <div class="tpl-meta-desc">Bold color hero with playful sticker shapes, "How booking works" steps and big package cards. Full-color, high energy.</div>
             <div class="tpl-meta-tags"><span class="tpl-tag">Bold</span><span class="tpl-tag">Colorful</span><span class="tpl-tag">Steps</span></div>
           </div>
           <div class="tpl-preview-row">
