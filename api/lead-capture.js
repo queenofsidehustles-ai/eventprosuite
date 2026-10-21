@@ -1,6 +1,52 @@
-// POST /api/lead-capture
-// Adds lead to MailerLite + sends results email via Resend
+// /api/lead-capture
+//
+// Several jobs share this route because Vercel's plan allows only 12
+// serverless functions and /api is already at 12. Routed by `kind`:
+//
+//   (default)            POST — Party Biz Hub quiz lead: MailerLite + results email
+//   kind: 'birthday'     POST — a parent signs up for a birthday reminder on a
+//                        student's site. Inserted with the service key after
+//                        validation; nothing else happens (no owner email).
+//   kind: 'unsubscribe'  GET (or one-click POST) ?kind=unsubscribe&id=<birthday_list id>
+//                        — stops birthday reminders, returns a small HTML page.
+const engine = require('./_booking-engine');
+
+const env = name => String(process.env[name] || '').trim();
+const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const serviceKey = () => env('SUPABASE_SERVICE_ROLE_KEY') || env('SUPABASE_SERVICE_KEY');
+
+// Per instance only — enough to blunt a burst of junk from one place.
+const perIpOwner = engine.makeRateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
+const perIp = engine.makeRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 });
+
+function parseBody(req) {
+  const b = req.body;
+  if (b && typeof b === 'object') return b;
+  if (typeof b === 'string' && b.trim()) {
+    try { return JSON.parse(b); } catch (_) {
+      // A one-click unsubscribe POST arrives form-encoded.
+      return Object.fromEntries(new URLSearchParams(b));
+    }
+  }
+  return {};
+}
+
+function clientIp(req) {
+  const h = (req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip'])) || '';
+  return String(h).split(',')[0].trim() || (req.socket && req.socket.remoteAddress) || 'unknown';
+}
+
 module.exports = async (req, res) => {
+  const query = req.query || {};
+  const body = req.method === 'POST' ? parseBody(req) : {};
+  const kind = String(query.kind || body.kind || '').toLowerCase();
+
+  if (kind === 'unsubscribe') return unsubscribe(req, res, query.id || body.id);
+  if (kind === 'birthday') {
+    if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' });
+    return birthdaySignup(req, res, body);
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' });
 
   const {
@@ -183,3 +229,103 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,san
 
   return res.status(200).json({ ok: true, errors: errors.length ? errors : undefined });
 };
+
+
+// ── Birthday sign-up ────────────────────────────────────────────────────
+async function birthdaySignup(req, res, body) {
+  const check = engine.validateBirthdaySignup(body);
+  // A filled honeypot gets a normal-looking success so the bot moves on.
+  if (!check.ok && check.silent) return res.status(200).json({ ok: true });
+  if (!check.ok) return res.status(400).json({ ok: false, error: check.error });
+  const row = check.row;
+
+  const ip = clientIp(req);
+  if (!perIp(ip) || !perIpOwner(ip + '|' + row.owner_id)) {
+    return res.status(429).json({ ok: false, error: 'Too many sign-ups — please try again a little later' });
+  }
+
+  const KEY = serviceKey();
+  if (!KEY) return res.status(500).json({ ok: false, error: 'Sign-ups are not configured yet' });
+  const headers = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+
+  try {
+    const ownerRes = await fetch(
+      `${SUPA_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(row.owner_id)}&select=id&limit=1`, { headers }
+    );
+    const owners = await ownerRes.json().catch(() => []);
+    if (!ownerRes.ok || !Array.isArray(owners) || !owners.length) {
+      return res.status(404).json({ ok: false, error: 'Unknown business' });
+    }
+
+    // The same family signing up twice is one reminder, not two.
+    if (row.email) {
+      const dupRes = await fetch(
+        `${SUPA_URL}/rest/v1/birthday_list?owner_id=eq.${encodeURIComponent(row.owner_id)}` +
+        `&email=eq.${encodeURIComponent(row.email)}&birth_month=eq.${row.birth_month}&birth_day=eq.${row.birth_day}` +
+        `&select=id,child_name,unsubscribed`, { headers }
+      );
+      const dups = await dupRes.json().catch(() => []);
+      const same = Array.isArray(dups) && dups.find(d =>
+        String(d.child_name || '').toLowerCase() === String(row.child_name || '').toLowerCase());
+      if (same) {
+        // Signing up again is a fresh yes, so it undoes an earlier unsubscribe.
+        if (same.unsubscribed) {
+          await fetch(`${SUPA_URL}/rest/v1/birthday_list?id=eq.${encodeURIComponent(same.id)}`, {
+            method: 'PATCH', headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({ unsubscribed: false, consent: true }),
+          });
+        }
+        return res.status(200).json({ ok: true });
+      }
+    }
+
+    const ins = await fetch(`${SUPA_URL}/rest/v1/birthday_list`, {
+      method: 'POST', headers: { ...headers, Prefer: 'return=minimal' }, body: JSON.stringify(row),
+    });
+    if (!ins.ok) {
+      console.error('Birthday sign-up insert failed:', ins.status, await ins.text().catch(() => ''));
+      return res.status(500).json({ ok: false, error: 'Could not save right now — please try again' });
+    }
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('Birthday sign-up failed:', e);
+    return res.status(500).json({ ok: false, error: 'Could not save right now — please try again' });
+  }
+}
+
+// ── Unsubscribe ─────────────────────────────────────────────────────────
+function unsubPage(title, message) {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${engine.esc(title)}</title></head>
+<body style="margin:0;background:#f4f2f8;font-family:-apple-system,Segoe UI,Inter,Arial,sans-serif;color:#3a2a4a">
+<div style="max-width:440px;margin:64px auto;padding:0 16px">
+  <div style="background:#fff;border-radius:16px;padding:32px 28px;text-align:center">
+    <h1 style="margin:0 0 10px;font-size:22px">${engine.esc(title)}</h1>
+    <p style="margin:0;font-size:15px;line-height:1.7">${engine.esc(message)}</p>
+  </div>
+</div></body></html>`;
+}
+
+async function unsubscribe(req, res, id) {
+  const send = (status, title, message) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(status).send(unsubPage(title, message));
+  };
+  if (!engine.UUID_RE.test(String(id || ''))) {
+    return send(400, 'Link not recognised', 'This unsubscribe link looks incomplete. Reply to the email and we will take you off the list.');
+  }
+  const KEY = serviceKey();
+  if (!KEY) return send(500, 'Something went wrong', 'Please reply to the email and we will take you off the list.');
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/birthday_list?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ unsubscribed: true }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return send(200, "You're unsubscribed", "You won't get any more birthday reminders from us. Thank you for celebrating with us!");
+  } catch (e) {
+    console.error('Unsubscribe failed:', e);
+    return send(500, 'Something went wrong', 'Please try the link again, or reply to the email and we will take you off the list.');
+  }
+}

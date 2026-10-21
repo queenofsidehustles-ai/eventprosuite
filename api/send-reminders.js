@@ -12,6 +12,7 @@ const env = name => String(process.env[name] || '').trim();
  */
 
 const SUPA_URL = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const engine = require('./_booking-engine');
 
 // This cron reads and updates OTHER people's bookings, which the anon key can
 // never do — row-level security only lets a logged-in owner see their own rows,
@@ -137,13 +138,13 @@ module.exports = async function handler(req, res) {
     `bookings?event_date=in.(${fmt(in7)},${fmt(in14)})&status=in.(deposit-paid,confirmed)&reminder_sent=is.null&select=*`
   );
 
-  if (!Array.isArray(bookings)) {
-    return res.status(500).json({ error: 'Could not fetch bookings', detail: bookings });
-  }
+  // A failure here used to end the whole run. It is now recorded and the
+  // other sections still run.
+  const balanceError = Array.isArray(bookings) ? null : { error: 'Could not fetch bookings', detail: bookings };
 
   const results = [];
 
-  for (const booking of bookings) {
+  for (const booking of (Array.isArray(bookings) ? bookings : [])) {
     // Load owner profile to get business name + Stripe link
     const profiles = await supabaseGet(
       `profiles?id=eq.${booking.owner_id}&select=profile_data&limit=1`
@@ -197,18 +198,440 @@ module.exports = async function handler(req, res) {
   // deposit_due_at 48 hours out. The customer was told plainly that the date
   // is not held until the deposit lands, so releasing it here is not a
   // surprise — but we always nudge first.
-  const deposits = await runDepositHold(today);
+  // Every section below runs on its own: one throwing (or its migration not
+  // being run yet) must never stop the others.
+  const isolated = async (name, fn) => {
+    try { return await fn(); }
+    catch (e) {
+      console.error(`send-reminders: ${name} failed:`, e);
+      return { error: String((e && e.message) || e) };
+    }
+  };
+  const deposits = await isolated('deposit hold', () => runDepositHold(today));
 
   // ── Bundled Hub access: warn, then close ───────────────────────────
-  const hubAccess = await runHubAccessExpiry(today);
+  const hubAccess = await isolated('hub access', async () => await runHubAccessExpiry(today));
+
+  // ── Booking engine: follow-ups, thank-yous, birthdays ──────────────
+  // All three are safe to run several times a day: each send is recorded
+  // (and carries a Resend idempotency key) so it is never picked up twice.
+  const now = new Date();
+  const quoteFollowups = await isolated('quote follow-ups', () => runQuoteFollowups(now));
+  const afterParty = await isolated('after-party', () => runAfterParty(now));
+  const birthdays = await isolated('birthday reminders', () => runBirthdayReminders(now));
 
   return res.json({
     processed: results.length,
+    ...(balanceError ? { balanceError } : {}),
     results,
     deposits,
-    hubAccess
+    hubAccess,
+    quoteFollowups,
+    afterParty,
+    birthdays
   });
 };
+
+
+// ══════════════════════════════════════════════════════════════════════
+// BOOKING ENGINE
+// The rules (timing, eligibility, wording) live in ./_booking-engine.js and
+// are unit-tested there. This part only reads, sends and records.
+// ══════════════════════════════════════════════════════════════════════
+
+const SITE_URL = () => engine.siteUrl(env('PUBLIC_SITE_URL') || 'https://partybizhub.com');
+const BE_FROM = () => env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
+
+// One profile read per owner per run.
+function profileLoader() {
+  const cache = new Map();
+  return async ownerId => {
+    if (cache.has(ownerId)) return cache.get(ownerId);
+    const rows = await supabaseGet(
+      `profiles?id=eq.${encodeURIComponent(ownerId)}&select=id,email,profile_data&limit=1`
+    );
+    const row = Array.isArray(rows) && rows[0] ? rows[0] : null;
+    const value = row ? { email: row.email, pd: { ...(row.profile_data || {}) } } : null;
+    // Twilio creds live in private_settings (owner-only), never in profile_data,
+    // which other signed-in users can read.
+    if (value) {
+      delete value.pd.twilio;
+      try {
+        const sec = await supabaseGet(
+          `private_settings?owner_id=eq.${encodeURIComponent(ownerId)}&select=twilio&limit=1`
+        );
+        if (Array.isArray(sec) && sec[0] && sec[0].twilio) value.pd.twilio = sec[0].twilio;
+      } catch (_) { /* table not created yet: texting simply stays off */ }
+    }
+    cache.set(ownerId, value);
+    return value;
+  };
+}
+
+async function beSendEmail({ to, pd, ownerEmail, subject, html, idempotencyKey, unsubscribe }) {
+  const apiKey = env('RESEND_API_KEY');
+  if (!apiKey) return { ok: false, note: 'no RESEND_API_KEY' };
+  const payload = {
+    from: engine.senderFrom(engine.bizNameOf(pd), BE_FROM()),
+    to,
+    reply_to: engine.replyToOf(pd, ownerEmail),
+    subject,
+    html,
+  };
+  if (unsubscribe) {
+    // Lets Gmail/Apple Mail show their own one-click "Unsubscribe" button.
+    payload.headers = {
+      'List-Unsubscribe': `<${unsubscribe}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    };
+  }
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + apiKey,
+        'Content-Type': 'application/json',
+        // Resend drops a repeat of the same key within 24 hours, so two cron
+        // runs on the same day can never double-send.
+        'Idempotency-Key': idempotencyKey,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      return { ok: false, note: d.message || `Resend ${r.status}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, note: e.message };
+  }
+}
+
+// A text through the OWNER'S Twilio account — never the platform's env vars.
+// Only ever called when she has saved her own credentials.
+async function beSendOwnerText(creds, toRaw, body) {
+  const to = engine.normalisePhone(toRaw);
+  if (!to) return { ok: false, note: 'no usable phone' };
+  try {
+    const auth = Buffer.from(`${creds.sid}:${creds.token}`).toString('base64');
+    const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(creds.sid)}/Messages.json`, {
+      method: 'POST',
+      headers: { Authorization: 'Basic ' + auth, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ To: to, From: creds.from, Body: body }).toString(),
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      return { ok: false, note: d.code === 21610 ? 'recipient opted out' : (d.message || `Twilio ${r.status}`) };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, note: e.message };
+  }
+}
+
+async function beFetchJSON(path, options) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPA_KEY,
+      Authorization: `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json',
+      ...(options && options.headers),
+    },
+  });
+  const body = await r.json().catch(() => null);
+  return { ok: r.ok, status: r.status, body };
+}
+
+
+// ── 1. Quote follow-ups ──────────────────────────────────────────────────
+// A quote that went out and heard nothing back gets up to three short,
+// friendly check-ins: ~1 day, 3 days and 7 days after it was first sent.
+// Stops the moment the customer books, the quote expires, the event date
+// passes, or the owner switches automations.quoteFollowups off.
+async function runQuoteFollowups(now) {
+  const out = { checked: 0, sent: [], texted: 0, skipped: {}, errors: [] };
+  const today = engine.utcDay(now);
+  const skip = reason => { out.skipped[reason] = (out.skipped[reason] || 0) + 1; };
+
+  // Bounded so the query stays small: nothing older than this can still be
+  // inside the follow-up window.
+  const since = new Date(now.getTime() - 60 * engine.DAY_MS).toISOString();
+  const quotes = await supabaseGet(
+    `saved_quotes?or=(status.is.null,status.eq.quote-sent)&followups_sent=lt.${engine.FOLLOWUP_DAYS.length}` +
+    `&created_at=gte.${since}` +
+    `&select=id,user_id,client_name,event_date,event_type,status,quote_data,send_events,followups_sent,last_followup_at` +
+    `&order=created_at.asc&limit=1000`
+  );
+  if (!Array.isArray(quotes)) return { error: 'could not fetch quotes (has migrations/20261021_booking_engine.sql been run?)', detail: quotes };
+  out.checked = quotes.length;
+
+  // Quotes the customer has already acted on.
+  const booked = new Set();
+  const ids = quotes.map(q => q.id);
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const rows = await supabaseGet(
+      `bookings?quote_id=in.(${chunk.join(',')})&status=in.(${engine.BOOKED_STATUSES.join(',')})&select=quote_id`
+    );
+    if (!Array.isArray(rows)) throw new Error('could not check bookings for these quotes');
+    rows.forEach(r => r.quote_id && booked.add(String(r.quote_id)));
+  }
+
+  const loadProfile = profileLoader();
+  for (const q of quotes) {
+    try {
+      const blocker = engine.quoteFollowupBlocker(q, { today, bookedQuoteIds: booked });
+      if (blocker) { skip(blocker); continue; }
+
+      const sends = engine.successfulSends(q.send_events);
+      const due = engine.nextFollowup({
+        sentAt: sends[0], lastSendAt: sends[sends.length - 1],
+        followupsSent: q.followups_sent, lastFollowupAt: q.last_followup_at, now,
+      });
+      if (!due) { skip('not-due'); continue; }
+
+      const owner = await loadProfile(q.user_id);
+      if (!owner) { skip('no-owner'); continue; }
+      const pd = owner.pd;
+      if (!engine.automationOn(pd, 'quoteFollowups')) { skip('switched-off'); continue; }
+
+      const qd = q.quote_data || {};
+      const eventDate = q.event_date || qd.eventDate || null;
+
+      // "Your date is still open" is only said when it is true: nothing
+      // held or booked on her calendar that day.
+      let dateOpen = false;
+      if (engine.parseDateOnly(eventDate)) {
+        const clash = await supabaseGet(
+          `bookings?owner_id=eq.${encodeURIComponent(q.user_id)}&event_date=eq.${String(eventDate).slice(0, 10)}` +
+          `&status=in.(awaiting-deposit,deposit-paid,confirmed)&select=id&limit=1`
+        );
+        dateOpen = Array.isArray(clash) && clash.length === 0;
+      }
+
+      const bizName = engine.bizNameOf(pd);
+      const link = engine.quoteLink(SITE_URL(), q.id);
+      const msg = engine.quoteFollowupMessage({
+        step: due.step, bizName, brand: engine.brandOf(pd),
+        clientName: qd.clientName || q.client_name, eventType: qd.eventType || q.event_type,
+        eventDate, link, dateOpen,
+      });
+
+      const sent = await beSendEmail({
+        to: engine.validEmail(qd.clientEmail), pd, ownerEmail: owner.email,
+        subject: msg.subject, html: msg.html,
+        idempotencyKey: `quote-followup/${q.id}/${due.step}`,
+      });
+      if (!sent.ok) { out.errors.push({ quote_id: q.id, step: due.step, note: sent.note }); continue; }
+
+      const patch = await supabasePatch('saved_quotes', q.id, {
+        followups_sent: due.markAs,
+        last_followup_at: new Date().toISOString(),
+      });
+      if (!patch.ok) out.errors.push({ quote_id: q.id, step: due.step, note: 'sent but not recorded' });
+
+      // Text too, through HER Twilio, when she has connected it.
+      const creds = engine.ownerTwilio(pd);
+      if (creds && qd.clientPhone) {
+        const t = await beSendOwnerText(creds, qd.clientPhone, msg.sms);
+        if (t.ok) out.texted++;
+        else out.errors.push({ quote_id: q.id, step: due.step, text: t.note });
+      }
+      out.sent.push({ quote_id: q.id, step: due.step });
+    } catch (e) {
+      out.errors.push({ quote_id: q.id, note: e.message });
+    }
+  }
+  return out;
+}
+
+
+// ── 2. After the party ───────────────────────────────────────────────────
+// The day after the event: thank you, a review link (if she has one), her
+// referral offer (if she has one), and an invitation to save next year's
+// date. The child goes on her birthday list for next year's reminder.
+async function runAfterParty(now) {
+  const out = { checked: 0, sent: [], addedToBirthdayList: 0, skipped: {}, errors: [] };
+  const today = engine.utcDay(now);
+  const skip = reason => { out.skipped[reason] = (out.skipped[reason] || 0) + 1; };
+  const range = engine.afterPartyRange(today);
+
+  const bookings = await supabaseGet(
+    `bookings?status=in.(${engine.AFTER_PARTY_STATUSES.join(',')})&after_party_sent=is.null` +
+    `&event_date=gte.${range.from}&event_date=lte.${range.to}&select=*&limit=500`
+  );
+  if (!Array.isArray(bookings)) return { error: 'could not fetch bookings (has migrations/20261021_booking_engine.sql been run?)', detail: bookings };
+  out.checked = bookings.length;
+
+  const loadProfile = profileLoader();
+  for (const b of bookings) {
+    try {
+      if (!engine.afterPartyDue(b.event_date, today)) { skip('not-due'); continue; }
+      const owner = await loadProfile(b.owner_id);
+      if (!owner) { skip('no-owner'); continue; }
+      const pd = owner.pd;
+      // Switched off: left unmarked, so turning it back on within the week
+      // still thanks this customer.
+      if (!engine.automationOn(pd, 'afterParty')) { skip('switched-off'); continue; }
+
+      const email = engine.validEmail(b.client_email);
+      if (!email) {
+        // Nothing to send and nobody to remind — record it so it is not
+        // looked at again every day.
+        await supabasePatch('bookings', b.id, { after_party_sent: new Date().toISOString() });
+        skip('no-email');
+        continue;
+      }
+
+      // Birthday list first, so the thank-you can carry a "no thanks" link
+      // for next year's reminder.
+      let birthdayId = null;
+      try {
+        birthdayId = await addBookingToBirthdayList(b, email);
+        if (birthdayId && birthdayId.added) out.addedToBirthdayList++;
+        birthdayId = birthdayId && birthdayId.id;
+      } catch (e) {
+        out.errors.push({ booking_id: b.id, birthday: e.message });
+      }
+
+      const bizName = engine.bizNameOf(pd);
+      const site = SITE_URL();
+      const msg = engine.afterPartyMessage({
+        bizName, brand: engine.brandOf(pd),
+        clientName: b.client_name, childName: b.honoree_name,
+        reviewUrl: pd.googleReviewUrl, referralBonus: pd.referralBonus,
+        bookLink: engine.bookingLink(site, b.owner_id),
+        optOutLink: birthdayId && engine.automationOn(pd, 'birthdayReminders')
+          ? engine.unsubscribeLink(site, birthdayId) : null,
+      });
+      const sent = await beSendEmail({
+        to: email, pd, ownerEmail: owner.email,
+        subject: msg.subject, html: msg.html,
+        idempotencyKey: `after-party/${b.id}`,
+      });
+      if (!sent.ok) { out.errors.push({ booking_id: b.id, note: sent.note }); continue; }
+
+      const patch = await supabasePatch('bookings', b.id, { after_party_sent: new Date().toISOString() });
+      if (!patch.ok) out.errors.push({ booking_id: b.id, note: 'sent but not recorded' });
+      out.sent.push({ booking_id: b.id });
+    } catch (e) {
+      out.errors.push({ booking_id: b.id, note: e.message });
+    }
+  }
+  return out;
+}
+
+// Adds the booked child to the owner's birthday list, once.
+//
+// consent is TRUE here because this is an existing customer the business has
+// just served — the reminder is a relevant follow-up to that relationship,
+// not a cold list sign-up. It is still honest about it: the thank-you email
+// says a reminder will come and carries a "no thanks" link, and every
+// birthday email has a one-click unsubscribe.
+//
+// The birthday itself is approximated from the party date (parties are
+// usually held close to the birthday); bookings hold no better information.
+// For a "save next year's date" reminder the party date is what matters anyway.
+async function addBookingToBirthdayList(b, email) {
+  const ev = engine.parseDateOnly(b.event_date);
+  if (!ev) return null;
+  const lower = email.toLowerCase();
+  const child = String(b.honoree_name || '').trim();
+
+  const existing = await supabaseGet(
+    `birthday_list?owner_id=eq.${encodeURIComponent(b.owner_id)}&email=eq.${encodeURIComponent(lower)}` +
+    `&select=id,child_name`
+  );
+  if (!Array.isArray(existing)) throw new Error('could not read birthday list');
+  const same = existing.find(r => String(r.child_name || '').trim().toLowerCase() === child.toLowerCase());
+  if (same) return { id: same.id, added: false };
+
+  const ins = await beFetchJSON('birthday_list', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({
+      owner_id: b.owner_id,
+      parent_name: b.client_name || null,
+      email: lower,
+      phone: b.client_phone || null,
+      child_name: child || null,
+      birth_month: ev.getUTCMonth() + 1,
+      birth_day: ev.getUTCDate(),
+      source: 'booking',
+      consent: true,
+    }),
+  });
+  if (!ins.ok || !Array.isArray(ins.body) || !ins.body[0]) throw new Error('could not add to birthday list');
+  return { id: ins.body[0].id, added: true };
+}
+
+
+// ── 3. Birthday reminders ────────────────────────────────────────────────
+// About 7 weeks before a child's birthday (any run 42–56 days out, once per
+// birthday): "{Child}'s birthday is coming up!" with her booking link and a
+// one-click unsubscribe.
+async function runBirthdayReminders(now) {
+  const out = { checked: 0, sent: [], skipped: {}, errors: [] };
+  const today = engine.utcDay(now);
+  const skip = reason => { out.skipped[reason] = (out.skipped[reason] || 0) + 1; };
+  const months = engine.birthdayWindowMonths(today);
+
+  const rows = await supabaseGet(
+    `birthday_list?unsubscribed=is.false&consent=is.true&email=not.is.null` +
+    `&birth_month=in.(${months.join(',')})&select=*&limit=2000`
+  );
+  if (!Array.isArray(rows)) return { error: 'could not fetch birthday list (has migrations/20261021_booking_engine.sql been run?)', detail: rows };
+  out.checked = rows.length;
+
+  const loadProfile = profileLoader();
+  for (const row of rows) {
+    try {
+      const due = engine.birthdayReminderDue(row, today);
+      if (!due.due) { skip(due.reason); continue; }
+
+      const owner = await loadProfile(row.owner_id);
+      if (!owner) { skip('no-owner'); continue; }
+      const pd = owner.pd;
+      if (!engine.automationOn(pd, 'birthdayReminders')) { skip('switched-off'); continue; }
+
+      // Already booked an upcoming party with her? Then don't ask.
+      const upcoming = await supabaseGet(
+        `bookings?owner_id=eq.${encodeURIComponent(row.owner_id)}&client_email=ilike.${encodeURIComponent(row.email)}` +
+        `&event_date=gte.${engine.isoDay(today)}&status=in.(awaiting-deposit,deposit-paid,confirmed)&select=id&limit=1`
+      );
+      if (Array.isArray(upcoming) && upcoming.length) {
+        await supabasePatch('birthday_list', row.id, { last_reminded_year: due.year });
+        skip('already-booked');
+        continue;
+      }
+
+      const site = SITE_URL();
+      const unsub = engine.unsubscribeLink(site, row.id);
+      const msg = engine.birthdayMessage({
+        bizName: engine.bizNameOf(pd), brand: engine.brandOf(pd),
+        parentName: row.parent_name, childName: row.child_name,
+        birthdayDate: due.date, days: due.days,
+        bookLink: engine.bookingLink(site, row.owner_id),
+        unsubLink: unsub, source: row.source,
+      });
+      const sent = await beSendEmail({
+        to: row.email, pd, ownerEmail: owner.email,
+        subject: msg.subject, html: msg.html,
+        idempotencyKey: `birthday/${row.id}/${due.year}`,
+        unsubscribe: unsub,
+      });
+      if (!sent.ok) { out.errors.push({ id: row.id, note: sent.note }); continue; }
+
+      const patch = await supabasePatch('birthday_list', row.id, { last_reminded_year: due.year });
+      if (!patch.ok) out.errors.push({ id: row.id, note: 'sent but not recorded' });
+      out.sent.push({ id: row.id, days: due.days });
+    } catch (e) {
+      out.errors.push({ id: row.id, note: e.message });
+    }
+  }
+  return out;
+}
 
 
 // ── THE YEAR THAT WAS PROMISED ──────────────────────────────────────────

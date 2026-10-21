@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="classic-config.js?v=1"></script>
+<script src="quick-answers.js?v=1"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -253,6 +254,7 @@ button{font:inherit;cursor:pointer;border:none;background:none}
     contactWrap.querySelectorAll('script').forEach(old=>{const sc=document.createElement('script');sc.textContent=old.textContent;old.replaceWith(sc)});
 
     showContent();
+    if(window.PBHQuickAnswers)PBHQuickAnswers.init({businessName:bizName,ownerName,brand,phone,email,city,packages:packages_data||[],addons,faqs:faqItems,bookUrl:bookURL});
   }).catch(()=>showError());
 
   /* ══════════════════════════════════════════════════════════════

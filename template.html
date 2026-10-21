@@ -2679,6 +2679,8 @@ bookingForm.addEventListener('submit', async function(e) {
   } catch (err) { if (btn) btn.disabled = false; fail(); }
 });
 </script>
+<script src="quick-answers.js?v=1"></script>
+<script>if(window.PBHQuickAnswers){const c=CONFIG,b=c.business||{};PBHQuickAnswers.init({businessName:b.name,ownerName:(c.about||{}).ownerName,brand:(c.brand||{}).primary||getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),phone:b.phone,email:b.email,city:b.city,area:(c.booking||{}).area||b.serviceArea,packages:(((c.niches||[])[0]||{}).packages||[]).filter(p=>p.note!=='Ask for a quote'),addons:c.addons||[],faqs:c.faqs||[],bookUrl:c.bookUrl||'',bookAnchor:'#booking'})}</script>
 
 </body>
 </html>

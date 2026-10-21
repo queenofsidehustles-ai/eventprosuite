@@ -9,8 +9,13 @@
 (function (root) {
   'use strict';
 
-  const text = v => String(v == null ? '' : v).trim();
+  // The Classic template writes these values as HTML, so markup characters are
+  // neutralized here: no tags, and quotes can't break out of an attribute.
+  const text = v => String(v == null ? '' : v)
+    .replace(/[<>]/g, '').replace(/"/g, '”').replace(/`/g, "'").trim();
   const list = v => (Array.isArray(v) ? v : []);
+  // Images only from data:image or https URLs, with nothing that can end the attribute.
+  const img = v => { const s = String(v || ''); return /^(data:image\/|https:\/\/)/i.test(s) && !/["'<>\s]/.test(s) ? s : null; };
   const first = (...vals) => { for (const v of vals) { const t = text(v); if (t) return t; } return ''; };
 
   function softTint(hex, strength) {
@@ -67,7 +72,7 @@
     });
 
     const reviews = list(wb.reviews_data).filter(r => r && text(r.text)).map(r => ({
-      stars: r.rating || 5,
+      stars: Math.min(5, Math.max(1, parseInt(r.rating, 10) || 5)),
       text: text(r.text),
       name: first(r.name, 'Happy client'),
       meta: first(r.event, 'Client review'),
@@ -146,7 +151,7 @@
         stats: stats,
         ownerName: ownerName,
         yearStarted: yearStarted,
-        photoDataURL: about.photoDataURL || null
+        photoDataURL: img(about.photoDataURL)
       },
       founding: {
         enabled: founding.enabled === true,
@@ -154,7 +159,7 @@
         spots: text(founding.spots) || '5',
         headline: text(founding.headline)
       },
-      brand: { primary: primary, accent: accent, logoDataURL: brand.logoDataURL || pd.logoDataURL || null },
+      brand: { primary: primary, accent: accent, logoDataURL: img(brand.logoDataURL) || img(pd.logoDataURL) },
       socials: {
         instagram: first(brand.socialInstagram, pd.instagram),
         tiktok: first(brand.socialTiktok, pd.tiktok),
@@ -162,8 +167,9 @@
         youtube: text(brand.socialYoutube),
         custom: text(brand.socialCustom)
       },
-      faqs: list((wb.faq_data || {}).items).filter(f => f && text(f.question)),
-      gallery: { heroPhotoDataURL: gallery.heroPhotoDataURL || null, photos: list(gallery.photos).filter(Boolean) }
+      faqs: list((wb.faq_data || {}).items).filter(f => f && text(f.question))
+        .map(f => ({ question: text(f.question), answer: text(f.answer) })),
+      gallery: { heroPhotoDataURL: img(gallery.heroPhotoDataURL), photos: list(gallery.photos).map(img).filter(Boolean) }
     };
   }
 
