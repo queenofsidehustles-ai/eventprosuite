@@ -678,7 +678,7 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
         </div>
 
         <!-- CLASSIC (KPPS Flagship) -->
-        <div class="tpl-tile" role="button" tabindex="0" data-template="classic" style="display:none" onclick="selectTemplate('classic')">
+        <div class="tpl-tile" role="button" tabindex="0" data-template="classic" onclick="selectTemplate('classic')">
           <div class="tpl-preview">
             <div class="tpl-classic-preview">
               <div class="tpl-classic-nav"><div class="tpl-classic-logo"></div><div class="tpl-classic-navbtn"></div></div>
@@ -692,8 +692,8 @@ body:not(.show-advanced) .essential-wide{grid-column:1/-1}
             </div>
           </div>
           <div class="tpl-meta">
-            <div class="tpl-meta-name">Classic ✨</div>
-            <div class="tpl-meta-desc">Warm coral + gold. The original KPPS Flagship look — elegant, feminine, and proven to convert.</div>
+            <div class="tpl-meta-name">Classic ✨ <span style="font-size:.7rem;font-weight:800;color:#fff;background:#C0129F;border-radius:999px;padding:2px 8px;vertical-align:middle">Monica's pick</span></div>
+            <div class="tpl-meta-desc">Warm and feminine with a booking form built in. The look of Monica's own Bear Hug Events site.</div>
             <div class="tpl-meta-tags"><span class="tpl-tag">Warm</span><span class="tpl-tag">Gold Accents</span><span class="tpl-tag">Elegant</span></div>
           </div>
           <div class="tpl-preview-row">
@@ -1883,9 +1883,7 @@ function renderNicheGrid(){
 
 // ─── TEMPLATE PICKER ─────────────────────────────────────────────
 let selectedTemplate='studio';
-// The Classic design only worked as a downloaded ZIP, so it's retired; anyone on it moves to Studio.
 function selectTemplate(tpl,save=true){
-  if(tpl==='classic')tpl='studio';
   selectedTemplate=tpl;
   document.querySelectorAll('.tpl-tile').forEach(t=>{
     t.classList.toggle('selected',t.dataset.template===tpl);
@@ -2218,12 +2216,9 @@ function debouncedSave(){
   saveTimer=setTimeout(saveNow,800);
 }
 
-async function saveNow(){
-  if(!currentUser)return false;
-  // Refresh session token — prevents "Save failed" when token expires mid-session
-  const{data:{session:fresh}}=await sb.auth.getSession();
-  if(!fresh){$('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Session expired — please sign in again';return false;}
-  const payload={
+// The website as it stands in the builder (what saveNow writes, and what previews render).
+function currentBuildPayload(){
+  return {
     user_id:currentUser.id,
     business_name:$('businessName').value||null,
     niche_type:selectedNiche,
@@ -2285,6 +2280,14 @@ async function saveNow(){
     faq_data:{items:faqData},
     updated_at:new Date().toISOString()
   };
+}
+
+async function saveNow(){
+  if(!currentUser)return false;
+  // Refresh session token — prevents "Save failed" when token expires mid-session
+  const{data:{session:fresh}}=await sb.auth.getSession();
+  if(!fresh){$('autosaveBadge').innerHTML='<span class="dot" style="background:var(--danger)"></span>Session expired — please sign in again';return false;}
+  const payload=currentBuildPayload();
 
   try{
     // Ensure profiles row exists first (Supabase v2 returns {error}, does not throw)
@@ -2665,170 +2668,8 @@ async function fetchTemplate(){
 
 // Build the CONFIG object that will be injected into the template
 function buildSiteConfig(){
-  const businessName=$('businessName')?$('businessName').value.trim():'Your Business';
-  const initial=(businessName||'P').charAt(0).toUpperCase();
-  const tagline=$('tagline')?$('tagline').value.trim():'';
-  const phone=$('phone')?$('phone').value.trim():'';
-  const email=$('email')?$('email').value.trim():'';
-  const city=$('city')?$('city').value.trim():'';
-  const niche={
-    icon:$('nicheIcon')?$('nicheIcon').value.trim():'✨',
-    name:$('nicheName')?$('nicheName').value.trim():'Your Service',
-    tagline:$('nicheTagline')?$('nicheTagline').value.trim():'',
-    description:$('nicheDescription')?$('nicheDescription').value.trim():''
-  };
-  const ownerName=$('ownerName')?$('ownerName').value.trim():'';
-  const yearStarted=$('aboutYearStarted')?$('aboutYearStarted').value.trim():'';
-  const bio=$('aboutBio')?$('aboutBio').value.trim():'';
-  const bookingEmail=$('bookingEmail')?$('bookingEmail').value.trim():email;
-  const bookingArea=$('bookingArea')?$('bookingArea').value.trim():'';
-
-  // Map packages — template expects: name, price (raw number), note, includes, footer, popular
-  const packagesForCfg=(packagesData||[]).map((p,idx)=>{
-    const noteParts=[];
-    if(p.kids)noteParts.push(p.kids+' kids');
-    if(p.duration)noteParts.push(p.duration);
-    return {
-      id:'pkg-'+idx,
-      name:p.name||'Package',
-      price:String(p.price||'0').replace(/[^0-9.]/g,''),
-      note:noteParts.join(' · ')||'Per event',
-      includes:(p.included||'').split('\n').map(l=>l.trim()).filter(l=>l),
-      footer:'Tap to add to your package',
-      popular:idx===1 // middle tier featured by convention
-    };
-  });
-
-  // Map add-ons — leave price blank rather than showing "$0" when none is set
-  const addonsForCfg=(addonsData||[]).filter(a=>a&&String(a.name||'').trim()).map(a=>{
-    const raw=a.price==null?'':String(a.price).trim();
-    return{
-      name:String(a.name).trim(),
-      price:raw===''?'':(/^[0-9]+(\.[0-9]+)?$/.test(raw)?'$'+raw:raw)
-    };
-  });
-
-  // Map reviews — template expects stars/text/name/meta/initials
-  const reviewsForCfg=(reviewsData||[]).filter(r=>r.text).map(r=>({
-    stars:r.rating||5,
-    text:r.text,
-    name:r.name||'Happy Client',
-    meta:r.event||'Verified booking',
-    initials:(r.name||'C').split(' ').map(s=>s.charAt(0)).join('').slice(0,2).toUpperCase()
-  }));
-
-  // Build About paragraphs from bio (split by blank lines for multi-para support)
-  const aboutParagraphs=(bio||'').split(/\n\s*\n/).map(p=>p.trim()).filter(p=>p);
-  const aboutStats=[];
-  if(yearStarted){
-    const years=Math.max(1,(new Date().getFullYear()-parseInt(yearStarted))||1);
-    aboutStats.push({number:years+'+',label:'Years experience'});
-  }
-  aboutStats.push({number:'5★',label:'Average rating'});
-  aboutStats.push({number:'100%',label:'Stress-free'});
-
-  // Compute starting price = lowest package price (or 450 default)
-  let startingPrice=450;
-  if(packagesForCfg.length){
-    const prices=packagesForCfg.map(p=>parseInt(p.price)||0).filter(n=>n>0);
-    if(prices.length)startingPrice=Math.min(...prices);
-  }
-
-  // Build hero headline — split tagline on first comma/period if possible
-  const tag=(tagline||niche.tagline||'Memorable parties for unforgettable kids').trim();
-  let heroHeadline=tag,heroAccent='';
-  const splitMatch=tag.match(/^(.+?)[,.]\s*(.+)$/);
-  if(splitMatch){
-    heroHeadline=splitMatch[1].trim();
-    heroAccent=splitMatch[2].trim();
-  }else{
-    // Try splitting on last word
-    const words=tag.split(' ');
-    if(words.length>=2){
-      heroAccent=words.pop();
-      heroHeadline=words.join(' ');
-    }else{
-      heroAccent='moments';
-    }
-  }
-
-  return {
-    business:{
-      name:businessName,
-      initial:initial,
-      tagline:tagline||niche.tagline||'',
-      city:city,
-      serviceArea:city||'Local area',
-      phone:phone||'(555) 123-4567',
-      email:email||'hello@yourbusiness.com',
-      heroScript:'✨ where',
-      heroHeadline:heroHeadline,
-      heroAccent:heroAccent,
-      heroLead:niche.description||'Tap a package below to start designing your celebration.',
-      startingPrice:startingPrice
-    },
-    orgId:(currentUser&&currentUser.id)||'',
-    formEndpoint:'mailto:'+(bookingEmail||email||''),
-    booking:{email:bookingEmail||email,area:bookingArea},
-    policies:{
-      depositPercent:Number($('bookingDepositPct')?.value)||50,
-      balanceDays:Number($('bookingBalanceDays')?.value)||7,
-      rushFee:100,
-      rushDays:7,
-      bundleDiscountPercent:10,
-      policyUrl:'#'
-    },
-    niches:[{
-      id:'main',
-      type:selectedNiche||'custom',
-      icon:niche.icon||'✨',
-      name:niche.name||'Your Service',
-      tagline:niche.tagline||'',
-      description:niche.description||'',
-      packages:packagesForCfg.length?packagesForCfg:[
-        {id:'pkg-0',name:'Package',price:'0',note:'Per event',includes:[],footer:'',popular:false}
-      ],
-      activities:[]
-    }],
-    addons:addonsForCfg,
-    reviews:reviewsForCfg,
-    about:{
-      eyebrow:'Meet your host',
-      headline:ownerName?`Hi, I'm ${ownerName}.`:"Hi, I'm here to make this the easiest party you'll ever throw.",
-      quote:"You relax — we've got this.",
-      paragraphs:aboutParagraphs.length?aboutParagraphs:[
-        "I'm the founder and one of our city's trusted names in unforgettable kids party experiences.",
-        "Every detail is designed to make your day feel effortless and memorable."
-      ],
-      stats:aboutStats,
-      ownerName:ownerName,
-      yearStarted:yearStarted,
-      photoDataURL:ownerPhotoDataURL
-    },
-    founding:{
-      enabled:foundingEnabled,
-      discount:$('foundingDiscount')?$('foundingDiscount').value:'25',
-      spots:$('foundingSpots')?$('foundingSpots').value:'8',
-      headline:$('foundingHeadline')?$('foundingHeadline').value:''
-    },
-    brand:{
-      primary:$('customPrimary')?$('customPrimary').value:'#ff7faf',
-      accent:$('customAccent')?$('customAccent').value:'#d4a840',
-      logoDataURL:logoDataURL
-    },
-    socials:{
-      instagram:$('socialInstagram')?$('socialInstagram').value.trim():'',
-      tiktok:$('socialTiktok')?$('socialTiktok').value.trim():'',
-      facebook:$('socialFacebook')?$('socialFacebook').value.trim():'',
-      youtube:$('socialYoutube')?$('socialYoutube').value.trim():'',
-      custom:$('socialCustom')?$('socialCustom').value.trim():''
-    },
-    faqs:faqData.filter(f=>f.question&&f.question.trim()),
-    gallery:{
-      heroPhotoDataURL:heroPhotoDataURL,
-      photos:galleryPhotos.filter(p=>p)
-    }
-  };
+  // One generator (classic-config.js) for the preview and the published site, so they always match.
+  return PBHClassic.configFromData(hubProfile,currentBuildPayload(),{ownerId:''});
 }
 
 // Compute a soft tint of a hex color (for --primary-soft variable)
@@ -2844,35 +2685,7 @@ function softTint(hex,strength){
 }
 
 // Inject the student's CONFIG + brand colors into the template HTML
-function mergeIntoTemplate(templateHTML,cfg){
-  let out=templateHTML;
-
-  // Replace CONFIG block
-  const configJS='const CONFIG = '+JSON.stringify(cfg,null,2)+';';
-  const configRegex=/\/\/ __CUSTOMIZER_CONFIG_START__[\s\S]*?\/\/ __CUSTOMIZER_CONFIG_END__/;
-  if(!configRegex.test(out)){
-    throw new Error('The preview could not load. Refresh the page and try again.');
-  }
-  out=out.replace(configRegex,
-    '// __CUSTOMIZER_CONFIG_START__\n'+configJS+'\n// __CUSTOMIZER_CONFIG_END__'
-  );
-
-  // Replace brand colors — expanded to cover --primary, --primary-soft, --accent, --soft, --gold, --gold-bright
-  const primary=cfg.brand.primary;
-  const accent=cfg.brand.accent;
-  const colors=`/* __CUSTOMIZER_COLORS_START__ */
-      --primary: ${primary};
-      --primary-soft: ${softTint(primary)};
-      --accent: ${accent};
-      --soft: ${softTint(primary,.92)};
-      --gold: ${accent};
-      --gold-bright: ${shadeColor(accent,15)};
-      /* __CUSTOMIZER_COLORS_END__ */`;
-  const colorsRegex=/\/\* __CUSTOMIZER_COLORS_START__ \*\/[\s\S]*?\/\* __CUSTOMIZER_COLORS_END__ \*\//;
-  out=out.replace(colorsRegex,colors);
-
-  return out;
-}
+function mergeIntoTemplate(templateHTML,cfg){return PBHClassic.merge(templateHTML,cfg)}
 
 // Lighten or darken a hex color by % (positive = lighter, negative = darker)
 function shadeColor(hex,percent){
@@ -2947,9 +2760,7 @@ async function regeneratePreview(){
 // Open live site in new tab
 function openLiveSite(){
   if(!currentUser){showToast('Please sign in first');return}
-  if(selectedTemplate==='classic'){
-    // site.html cannot render Classic — reuse the blob built for the preview,
-    // or build a fresh one if the preview has not run yet.
+  if(selectedTemplate==='classic'&&!(currentBuild&&currentBuild.last_published_at)){
     if(previewBlobURL&&previewBlobURL.indexOf('blob:')===0)window.open(previewBlobURL,'_blank');
     else previewTemplate('classic');
     return;
@@ -3055,11 +2866,6 @@ function createPublishedSnapshot(){
 
 async function publishWebsite(){
   if(!currentUser){showToast('Please sign in first');return}
-  if(selectedTemplate==='classic'){
-    toggleAdvancedWebsite(true);
-    showToast('Classic uses the downloadable website. Choose another design for one-click publishing.');
-    return;
-  }
   applyReadyMadeDefaults();
   const name=$('businessName').value.trim();
   const email=$('email').value.trim();
@@ -3510,6 +3316,7 @@ init();
   </div><!-- /pbh-content -->
 </div><!-- /pbh-layout -->
 
+<script src="classic-config.js?v=1"></script>
 <script src="nav.js?v=6"></script>
 <script src="help-widget.js?v=6"></script>
 </body>

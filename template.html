@@ -365,6 +365,13 @@
       position: relative;
     }
 
+    .cf-fallback { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:24px;
+      background: radial-gradient(circle at 25% 20%, rgba(255,255,255,.75), transparent 45%), radial-gradient(circle at 80% 85%, var(--primary-soft), transparent 55%), linear-gradient(135deg, var(--soft), #fff7ef); }
+    .cf-icon { font-size: clamp(64px, 9vw, 120px); line-height:1; filter: drop-shadow(0 10px 18px rgba(122,83,104,.18)); }
+    .cf-name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(1.4rem, 3vw, 2.2rem); color: var(--text, #2b1d27); }
+    .cf-tag { font-family: 'Caveat', cursive; font-size: clamp(1.2rem, 2.2vw, 1.6rem); color: var(--primary); }
+    .cf-small .cf-icon { font-size: 72px; }
+    .cf-small .cf-name { font-size: 1.4rem; }
     .hero-image-placeholder {
       font-family: "Caveat", cursive;
       font-size: 1.8rem;
@@ -1900,8 +1907,7 @@ const CONFIG = {
         <div class="hero-image">
           <div class="hero-image-inner" id="heroImageInner">
             <div class="hero-image-placeholder">
-              ✨ Replace this placeholder with your styled hero image<br>
-              <span style="font-size: 1rem; opacity: 0.7;">(use the photo upload guide in template-setup.md)</span>
+              ✨
             </div>
           </div>
         </div>
@@ -1982,8 +1988,7 @@ const CONFIG = {
       <div class="about-grid">
         <div class="about-photo" id="aboutPhoto">
           <div style="font-family: 'Caveat', cursive; font-size: 1.4rem; color: rgba(122, 83, 104, 0.55); text-align: center; padding: 20px;">
-            ✨ Replace with your photo<br>
-            <span style="font-size: 0.9rem; opacity: 0.7;">(see template-setup.md)</span>
+            ✨
           </div>
         </div>
         <div class="about-content">
@@ -2109,13 +2114,13 @@ const CONFIG = {
             <div class="policy-strip">
               <strong>Key policies — please read</strong>
               <div class="policy-row"><span><b style="color: var(--text);">Deposits are non-refundable</b> and go directly toward your event total.</span></div>
-              <div class="policy-row"><span><b style="color: var(--text);">Cancellations must be in writing only</b> — verbal cancellations are not accepted.</span></div>
-              <div class="policy-row"><span><b style="color: var(--text);">All sales are final</b> once a deposit is paid.</span></div>
+              <div class="policy-row"><span><b style="color: var(--text);">Your date is held</b> once your deposit is paid and your contract is signed.</span></div>
+              <div class="policy-row"><span><b style="color: var(--text);">This is a request.</b> We'll confirm availability and send your quote.</span></div>
             </div>
 
             <label class="checkbox-wrap">
               <input type="checkbox" required />
-              <span>I agree to the <a href="#" id="policyLink">booking policies &amp; terms</a>. I understand that <b>deposits are non-refundable</b>, cancellations must be submitted <b>in writing only</b>, and all sales are final.</span>
+              <span>I agree to the <a href="#" id="policyLink">booking policies &amp; terms</a>. I understand that <b>deposits are non-refundable</b> and my full terms will be in my contract.</span>
             </label>
 
             <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Booking Request</button>
@@ -2138,7 +2143,7 @@ const CONFIG = {
           </div>
           <div class="deposit-step">
             <span class="num">4</span>
-            <span>Your remaining balance is invoiced <span data-balance-days>7</span> days before your event.</span>
+            <span>Your remaining balance is due <span data-balance-when>7 days before your event</span>.</span>
           </div>
         </div>
       </div>
@@ -2156,14 +2161,13 @@ const CONFIG = {
           <span id="estimateTotal">$0</span>
         </div>
 
-        <p class="estimate-note">Most clients invest between $600 and $1,200. Final total confirmed after we review your details.</p>
+        <p class="estimate-note" id="estimateNote">Final total confirmed after we review your details.</p>
 
         <div class="deposit-box">
           <strong>Quick details</strong>
           <div class="deposit-step"><span class="num">✦</span><span><span data-deposit-pct>50%</span> deposit goes toward your event total</span></div>
-          <div class="deposit-step"><span class="num">✦</span><span>Balance due <span data-balance-days>7</span> days before event</span></div>
-          <div class="deposit-step"><span class="num">✦</span><span>Bundle 2+ experiences — save 10%</span></div>
-          <div class="deposit-step"><span class="num">✦</span><span>Weekend dates book quickly</span></div>
+          <div class="deposit-step"><span class="num">✦</span><span>Balance due <span data-balance-when>7 days before your event</span></span></div>
+          <div class="deposit-step"><span class="num">✦</span><span>We reply within 24 hours with your quote</span></div>
         </div>
       </div>
     </div>
@@ -2182,7 +2186,7 @@ const CONFIG = {
     </div>
     <div class="footer-socials" id="footerSocials"></div>
     <div class="built-by">
-      Built with the <a href="https://partybusinesscoach.com" target="_blank" rel="noopener">KPPS Flagship Template</a> 👑
+
     </div>
   </div>
 </footer>
@@ -2204,7 +2208,8 @@ const CONFIG = {
   // Hero
   document.getElementById('heroHeadline').innerHTML = c.business.heroHeadline + ' <span class="accent-text">' + c.business.heroAccent + '</span>';
   document.getElementById('heroLead').textContent = c.business.heroLead;
-  document.getElementById('heroPrice').textContent = '$' + c.business.startingPrice;
+  if (c.business.startingPrice) document.getElementById('heroPrice').textContent = '$' + c.business.startingPrice;
+  else { const pb = document.querySelector('.price-badge'); if (pb) pb.style.display = 'none'; }
 
   // Founding — accepts the demo `foundingFamilies` shape or the builder's `founding`
   // shape ({enabled, discount, spots, headline}); either may be present.
@@ -2219,7 +2224,7 @@ const CONFIG = {
     const description = founding.description || founding.headline ||
       ("We're launching and looking for our first " + (spotsTotal || 'few') +
        " families to experience the magic. Book as a Founding Family and receive " +
-       (discountLabel || 'a special discount') + " in exchange for photos and a review.");
+       (discountLabel || 'a founding family bonus') + " in exchange for photos and a review.");
     document.getElementById('foundingDescription').innerHTML =
       (discountLabel && description.indexOf(discountLabel) !== -1)
         ? description.split(discountLabel).join('<strong>' + discountLabel + '</strong>')
@@ -2233,8 +2238,10 @@ const CONFIG = {
   }
 
   // Contact
-  document.getElementById('contactPhone').innerHTML = '📞 ' + c.business.phone;
-  document.getElementById('contactPhone').href = 'tel:' + c.business.phone.replace(/\D/g, '');
+  if (c.business.phone) {
+    document.getElementById('contactPhone').innerHTML = '📞 ' + c.business.phone;
+    document.getElementById('contactPhone').href = 'tel:' + c.business.phone.replace(/\D/g, '');
+  } else document.getElementById('contactPhone').style.display = 'none';
   document.getElementById('contactEmail').innerHTML = '✉️ ' + c.business.email;
   document.getElementById('contactEmail').href = 'mailto:' + c.business.email;
   document.getElementById('contactCity').innerHTML = '📍 ' + c.business.serviceArea;
@@ -2274,6 +2281,8 @@ const CONFIG = {
   document.getElementById('aboutHeadline').textContent = c.about.headline;
   document.getElementById('aboutQuote').textContent = '"' + c.about.quote + '"';
   document.getElementById('aboutParagraphs').innerHTML = c.about.paragraphs.map(p => '<p>' + p + '</p>').join('');
+  if (!c.reviews || !c.reviews.length) { const rs = document.getElementById('reviews'); if (rs) rs.style.display = 'none'; }
+  if (!c.about.stats || !c.about.stats.length) document.getElementById('aboutStats').style.display = 'none';
   document.getElementById('aboutStats').innerHTML = c.about.stats.map(s =>
     '<div class="stat"><strong>' + s.number + '</strong><span>' + s.label + '</span></div>'
   ).join('');
@@ -2287,8 +2296,10 @@ const CONFIG = {
   // Footer
   document.getElementById('footerName').textContent = c.business.name;
   document.getElementById('footerCity').textContent = c.business.city;
-  document.getElementById('footerPhone').href = 'tel:' + c.business.phone.replace(/\D/g, '');
-  document.getElementById('footerPhone').textContent = c.business.phone;
+  if (c.business.phone) {
+    document.getElementById('footerPhone').href = 'tel:' + c.business.phone.replace(/\D/g, '');
+    document.getElementById('footerPhone').textContent = c.business.phone;
+  } else document.getElementById('footerPhone').style.display = 'none';
 
   // Form org_id (Hub-ready)
   document.getElementById('orgIdField').value = c.orgId;
@@ -2396,11 +2407,27 @@ const CONFIG = {
 
   // Customizable deposit + booking policy info
   const depositPct = c.policies.depositPercent || 50;
-  const balanceDays = c.policies.balanceDays || 7;
+  const balanceDays = (c.policies.balanceDays === 0 || c.policies.balanceDays) ? Number(c.policies.balanceDays) : 7;
   const depositInfoEls = document.querySelectorAll('[data-deposit-pct]');
   depositInfoEls.forEach(el => el.textContent = depositPct + '%');
   const balanceInfoEls = document.querySelectorAll('[data-balance-days]');
   balanceInfoEls.forEach(el => el.textContent = balanceDays);
+  const whenText = balanceDays === 0 ? 'on the day of your event' : balanceDays === 1 ? '24 hours before your event' : balanceDays === 2 ? '48 hours before your event' : balanceDays + ' days before your event';
+  document.querySelectorAll('[data-balance-when]').forEach(el => el.textContent = whenText);
+  if (c.business.startingPrice) { const en = document.getElementById('estimateNote'); if (en) en.textContent = 'Packages start at $' + c.business.startingPrice + '. Final total confirmed after we review your details.'; }
+  // No photos yet: show her logo or party icon instead of an empty box.
+  const nicheIcon = (c.niches && c.niches[0] && c.niches[0].icon) || '✨';
+  const brandMark = c.brand && c.brand.logoDataURL
+    ? '<img src="' + c.brand.logoDataURL + '" alt="' + (c.business.name || '') + ' logo" style="max-width:46%;max-height:46%;width:auto;height:auto;object-fit:contain;position:static;border-radius:18px">'
+    : '<span class="cf-icon">' + nicheIcon + '</span>';
+  if (!(c.gallery && c.gallery.heroPhotoDataURL)) {
+    const hi = document.getElementById('heroImageInner');
+    if (hi) hi.innerHTML = '<div class="cf-fallback">' + brandMark + '<span class="cf-name">' + (c.business.name || '') + '</span>' + (c.business.tagline ? '<span class="cf-tag">' + c.business.tagline + '</span>' : '') + '</div>';
+  }
+  if (!(c.about && c.about.photoDataURL)) {
+    const ap = document.getElementById('aboutPhoto');
+    if (ap) ap.innerHTML = '<div class="cf-fallback cf-small">' + brandMark + '<span class="cf-name">' + ((c.about && c.about.ownerName) || c.business.name || '') + '</span></div>';
+  }
 })();
 
 function renderNiche(n) {
@@ -2541,7 +2568,7 @@ function updateEstimate() {
   }
 
   // Rush fee
-  if (preferredDate1.value && getDaysUntilEvent() < CONFIG.policies.rushDays) {
+  if (CONFIG.policies.rushFee > 0 && preferredDate1.value && getDaysUntilEvent() < CONFIG.policies.rushDays) {
     lines.push({ label: 'Rush booking fee', amount: CONFIG.policies.rushFee });
     total += CONFIG.policies.rushFee;
   }
@@ -2562,30 +2589,72 @@ bookingForm.addEventListener('submit', async function(e) {
   e.preventDefault();
   const formData = new FormData(this);
   formData.append('estimate_total', estimateTotal.textContent);
-
-  // Phase 1: Formspree submission
-  // Phase 2: Replace this with Hub API endpoint
-  try {
-    const response = await fetch(CONFIG.formEndpoint, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: formData
-    });
-
-    if (response.ok || CONFIG.formEndpoint.includes('YOUR_FORMSPREE_ID')) {
-      // Success (or demo mode)
-      bookingForm.style.display = 'none';
-      successMessage.classList.add('show');
-      successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      alert('Something went wrong. Please call us directly at ' + CONFIG.business.phone);
-    }
-  } catch (err) {
-    // Demo mode fallback
+  const showSuccess = () => {
     bookingForm.style.display = 'none';
     successMessage.classList.add('show');
     successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  const fail = () => alert('Something went wrong sending your request. ' + (CONFIG.business.phone ? 'Please call us at ' + CONFIG.business.phone + '.' : 'Please email us at ' + CONFIG.business.email + '.'));
+  const btn = bookingForm.querySelector('button[type="submit"]');
+  if (btn) btn.disabled = true;
+
+  // Published on Party Biz Hub: the request goes straight to the owner's dashboard.
+  if (CONFIG.hubOwnerId) {
+    const v = n => String(formData.get(n) || '').trim();
+    const details = [
+      v('honoreeName') && ('For: ' + v('honoreeName') + (v('honoreeAge') ? ' (turning ' + v('honoreeAge') + ')' : '')),
+      v('preferredDate2') && ('Backup date: ' + v('preferredDate2')),
+      v('timeSlot') && ('Time: ' + v('timeSlot')),
+      v('activitySelected') && ('Activity: ' + v('activitySelected')),
+      'Estimate shown: ' + estimateTotal.textContent,
+      v('details')
+    ].filter(Boolean).join('\n');
+    const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+    const payload = {
+      id: id,
+      owner_id: CONFIG.hubOwnerId,
+      client_name: v('parentName'),
+      client_email: v('email'),
+      client_phone: v('phone'),
+      event_date: v('preferredDate1') || null,
+      event_address: v('location') || null,
+      num_kids: parseInt(v('guestCount')) || null,
+      honoree_name: v('honoreeName') || null,
+      honoree_age: parseInt(v('honoreeAge')) || null,
+      service_name: (packageSelect && packageSelect.selectedIndex > 0 && packageSelect.options[packageSelect.selectedIndex].dataset.name) || 'Website inquiry',
+      service_price: v('packageSelected') || null,
+      notes: details || null,
+      status: 'inquiry',
+      created_at: new Date().toISOString()
+    };
+    try {
+      const res = await fetch('https://dmqwoddwzpfnmpjtwiee.supabase.co/rest/v1/bookings', {
+        method: 'POST',
+        headers: { apikey: 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8', Authorization: 'Bearer sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8', 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('booking ' + res.status);
+      fetch('/api/send-quote-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        kind: 'booking-confirmation', mode: 'received', clientEmail: payload.client_email, clientName: payload.client_name,
+        bizName: CONFIG.business.name, bizEmail: CONFIG.business.email, bizPhone: CONFIG.business.phone,
+        serviceName: payload.service_name, eventDate: payload.event_date, eventAddress: payload.event_address
+      }) }).catch(() => {});
+      showSuccess();
+    } catch (err) { if (btn) btn.disabled = false; fail(); }
+    return;
   }
+
+  // Downloaded site: Formspree (or demo mode while the placeholder ID is still in place).
+  if (!CONFIG.formEndpoint || CONFIG.formEndpoint.includes('YOUR_FORMSPREE_ID')) { showSuccess(); return; }
+  if (CONFIG.formEndpoint.startsWith('mailto:')) {
+    const body = Array.from(formData.entries()).map(([k, val]) => k + ': ' + val).join('\n');
+    window.location.href = CONFIG.formEndpoint + '?subject=' + encodeURIComponent('Party booking request') + '&body=' + encodeURIComponent(body);
+    showSuccess(); return;
+  }
+  try {
+    const response = await fetch(CONFIG.formEndpoint, { method: 'POST', headers: { 'Accept': 'application/json' }, body: formData });
+    if (response.ok) showSuccess(); else { if (btn) btn.disabled = false; fail(); }
+  } catch (err) { if (btn) btn.disabled = false; fail(); }
 });
 </script>
 
