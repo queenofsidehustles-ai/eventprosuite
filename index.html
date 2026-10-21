@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// A sign-in link from an email can land here (the site's home page). Hand it
+// straight to the login page, which finishes signing in and opens the right
+// place (the 14-Day Launch for students), instead of showing the sales page.
+(function () {
+  var h = location.hash || '', q = location.search || '';
+  if (/access_token=|type=(magiclink|recovery|signup|invite)|error_description=/.test(h) || /[?&](code|token_hash)=/.test(q)) {
+    location.replace('login.html' + q + h);
+  }
+})();
+</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Party Biz Hub | The Back Office Built for Party Business Owners</title>
@@ -35,7 +46,7 @@ a{text-decoration:none;color:inherit}
 .nav-links a:hover{color:var(--plum)}
 .nav-cta{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff!important;padding:10px 22px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 8px 20px rgba(90,52,118,.28);transition:transform .15s,box-shadow .15s}
 .nav-cta:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(90,52,118,.36)}
-@media(max-width:700px){.nav-links a:not(.nav-cta){display:none}.nav-brand img{height:36px}}
+@media(max-width:700px){.nav-links a:not(.nav-cta):not(.nav-signin){display:none}.nav-links .nav-signin{font-weight:700;white-space:nowrap}.nav-links .nav-cta{white-space:nowrap}.nav-brand img{height:36px}}
 
 /* ── HERO ── */
 .hero{padding:72px 24px 80px;background:radial-gradient(ellipse 1000px 600px at 15% -5%,rgba(230,162,190,.2),transparent 55%),radial-gradient(ellipse 800px 500px at 95% 50%,rgba(192,132,252,.14),transparent 55%),var(--cream)}
@@ -256,7 +267,7 @@ a{text-decoration:none;color:inherit}
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#pricing">Pricing</a>
-      <a href="login.html">Sign In</a>
+      <a href="login.html" class="nav-signin">Sign In</a>
       <a href="#pricing" class="nav-cta">Get Started →</a>
     </div>
   </div>
