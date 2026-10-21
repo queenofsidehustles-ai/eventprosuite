@@ -34,7 +34,15 @@
 .cl-body{padding:22px 26px 28px;display:flex;flex-direction:column;gap:22px}
 .cl-why{font-size:16px;line-height:1.65;color:#2A1340}
 .cl-video{border-radius:14px;overflow:hidden;background:#1A1020;aspect-ratio:16/9}
-.cl-video iframe{width:100%;height:100%;border:0;display:block}
+.cl-video iframe,.cl-video video{width:100%;height:100%;border:0;display:block;background:#000}
+.cl-stage-h{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7559D4;padding:12px 12px 4px}
+@media(max-width:860px){.cl-stage-h{display:none}}
+.cl-day-rm{font-weight:700;color:#4C1D95}
+.rm-stages{display:flex;flex-direction:column;gap:10px}
+.rm-stage{display:flex;gap:12px;align-items:flex-start;background:#FBF7FF;border:1.5px solid #EDE5F5;border-radius:14px;padding:12px 14px}
+.rm-num{width:30px;height:30px;border-radius:50%;background:#7559D4;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rm-what{font-size:14px;color:#2A1340;margin-top:3px}
+.rm-why{font-size:13px;color:#6B5F7A;margin-top:3px;font-style:italic}
 .cl-video-soon{aspect-ratio:auto;background:#F3EDFD;border:1.5px dashed #CDBDF0;padding:18px 20px;color:#4C1D95;font-size:14px;line-height:1.6}
 .cl-video-soon b{display:block;font-size:15px;margin-bottom:4px}
 .cl-section-label{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7559D4;margin-bottom:10px}
@@ -220,7 +228,7 @@ const DAYS=[
    bonus:[{key:'mistakes',mode:'deeper'}],
    ai:[{label:'Reframe my money belief',prompt:"I'm starting a kids party business. One belief about money or charging that's holding me back is: [type your belief]. Help me reframe it into a business owner's belief I can say out loud, in 2–3 sentences.",save:'moneyBelief'}],
    why:'How you think about this business decides how you price it, market it and show up for it. Women who treat it like a hobby end up undercharging and burning out. Today is one honest reset before we build anything.',
-   video:'',videoNote:'Your welcome video from Monica is coming soon. For now, read today\'s lesson below — it covers the same thing.',
+   video:'media/course/day-00.mp4',videoNote:'Your welcome video from Monica is coming soon. For now, read today\'s lesson below — it covers the same thing.',
    table:{head:['A hobby thinks…','A business owner thinks…'],rows:[
      ['I hope someone books me','I market consistently so clients find me'],
      ["I don't know what to charge",'I price with math and value'],
@@ -235,7 +243,7 @@ const DAYS=[
    playbooks:true,
    ai:[{label:'Help me choose my party',prompt:"Help me choose one starter party for my kids party business. My time each week: [hours]. My startup budget: $[amount]. What I enjoy: [crafts, spa, sleepovers, rentals…]. Compare my top 2 options in plain words and recommend one."}],
    why:"Starting narrow isn't limiting — it's the fastest way to get booked. One party type means one shopping list, one package and one clear message. You can add more after your first bookings.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-01.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    list:{label:'Choose from your 16 services',items:['<b>Build & Craft:</b> Stuff-A-Bear, DIY Craft, Paint & Sip, Slime / Science','<b>Spa & Glam:</b> Mobile Spa, Face Paint & Balloons','<b>Sleepovers & Movie Nights:</b> Slumber Parties, Teepee Setups, Outdoor Movie Nights','<b>Rentals & Stations:</b> Bounce House, Soft Play, Photo Booth, Food Cart, Candy / Dessert Station','<b>Other:</b> Event Coordinator, or something of your own']},
    callout:'Your Launch Plan already suggested a starter party based on your time and budget. Start there. Thinking about a rental (bounce house, soft play, photo booth)? Check the startup cost against your budget first.',
    time:'about 30 min',
@@ -246,7 +254,7 @@ const DAYS=[
   {n:2,title:'Know Who Pays You',
    ai:[{label:'Describe my ideal client',prompt:"Write one sentence describing my ideal client for my {party} business in {city}. Then list 3 places she spends time, online and locally.",save:'idealClient'},{label:'Questions to ask a mom',prompt:"Give me 5 short, friendly questions to ask a mom about what matters most when she books a kids {party} party."}],
    why:"Your client isn't “everyone with kids.” When you know exactly who books, what she wants and what she fears, your posts and packages speak straight to her. A quick look at your local market shows you where she already hangs out.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-02.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['',''],rows:[
      ['Who she is','A mom, about 28–45, working or at home, who wants a special party without the planning stress'],
      ['What she wants',"A beautiful, stress-free party her child remembers and she's proud to share"],
@@ -259,7 +267,7 @@ const DAYS=[
   {n:3,title:'Name It + Your Promise',
    ai:[{label:'3 business name ideas',prompt:"Give me 3 distinctive business name ideas for a {party} business in {city}. Easy to say and spell, hints at the party, no character or brand names, and not common phrases other party businesses already use. My first name is [your first name], if it helps."},{label:'Write my promise',prompt:"Write 3 one-sentence promises using: I help [who] get [result] without [pain]. My business: {party} in {city}. My ideal client: {client}.",save:'promise'},{label:'Write my social bio',prompt:"Write 3 options for my Instagram bio (under 150 characters each) using my business name {name}, my promise “{promise}” and my city {city}."}],
    why:'A name and one clear sentence turn an idea into a business people can find and remember. Your promise becomes your bio, your website headline and the first line of every quote.',
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-03.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    callout:'<b>The formula:</b> I help <b>[who]</b> get <b>[result]</b> without <b>[pain]</b>.<br><br><i>Example: “I help Orlando moms throw magical teddy bear parties without the stress of planning it themselves.”</i><br><br><b>Your AI brand kit (about 15 minutes):</b> open Canva and use its AI to make a simple logo with your name, then pick 2 brand colors and 1 font. Use them on everything so you look established from day one.<br><br><b>AI rule we live by:</b> AI images are welcome, but always label them <b>“AI-inspired”</b> in the picture or caption, every time. Parents book what\'s real, so your real party photos stay your proof. And no AI characters that look like licensed ones.',
    list:{label:'Choosing your name',items:['Easy to say and easy to spell','Hints at your party','Free on Instagram, TikTok and Facebook — and as a web address — before you commit']},
    nameCheck:true,
@@ -282,7 +290,7 @@ const DAYS=[
   {n:4,myPlaybook:true,title:'Build Your First Package',
    ai:[{label:'Write my package menu',prompt:"Create my first package for a {party} business: 3 original theme name ideas (no characters), a 2-sentence description for 12 kids, what's included, and 3 add-on ideas.",save:'included'},{label:'Invite a practice-party family',prompt:"Write a short, warm text inviting [friend's name] to host a practice {party} party for their child on [date], so I can get photos and practice. Mention that, if they'd like, they can cover supplies and I keep the reusable pieces."}],
    why:"Parents don't want to design a party. They want to pick one. One clear package makes saying yes easy, and it gives you one shopping list. More packages come after your first bookings.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-04.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['Your package','Example: teddy bear party'],rows:[
      ['Guest count','12 kids (supplies come in dozens), plus a set fee for each extra child'],
      ['Party length','2 hours'],
@@ -297,7 +305,7 @@ const DAYS=[
   {n:5,myPlaybook:true,title:'Price It With Math',
    ai:[{label:'Check my price math',prompt:"Check my pricing for a {party} party for 12 kids. Supplies: $[amount]. Gas and helper: $[amount]. Monthly income goal: $[amount] from [number] parties a month. Add about 25% profit, show the math step by step, and suggest a rounded price."},{label:'Plan my venue check',prompt:"What kinds of local places in {city} should I check to compare prices for a 12-kid birthday party, and what should I write down from each? (I know you can't look up live prices.)"},{label:'Behind-the-scenes caption',prompt:"Write a short, humble behind-the-scenes caption about shopping supplies and getting ready to launch my {party} business in {city}."}],
    why:"Guessing leads to undercharging and burnout. Today three quick checks give you a price you can say out loud without flinching.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-05.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['Check','How it works'],rows:[
      ['1. Your costs','Supplies per party, plus gas and any helper'],
      ['2. Pay yourself first','Monthly income goal ÷ parties you want each month = what each party must pay you. Decide how many hours one party may take.'],
@@ -312,7 +320,7 @@ const DAYS=[
   {n:6,title:'Protect Your Time',
    ai:[{label:'Explain my policies kindly',prompt:"Turn my policies into a warm, short text for a parent: 50% non-refundable deposit holds the date, balance due 48 hours before, one free reschedule with 14 days' notice. Keep it friendly, not stiff.",save:'policies'}],
    why:"Deposits and clear rules aren't rude. They're what professionals do. They protect your weekends, and they help parents trust you.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-06.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['Policy','Starter rule (adjust it to you)'],rows:[
      ['Deposit','50%, non-refundable, holds the date'],
      ['Balance','Due 48 hours before the party'],
@@ -328,7 +336,7 @@ const DAYS=[
   {n:7,title:'Get Paid',
    ai:[{label:'What does my state require?',prompt:"I'm starting a {party} business in {city}, [state] as a sole proprietor. Give me a short checklist of what I generally need to be legit (business name/DBA, EIN, local license, insurance), and tell me where to confirm each item.",save:'legit'}],
    why:"Tomorrow you open for bookings, so today parents need a way to pay you. This is quick, and you don't need an LLC to do it.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-07.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    list:{label:"Start simple: you don't need an LLC to throw parties",items:['<b>Sole proprietor:</b> the simplest start. If you work for yourself under your own name, you already are one.','<b>DBA (“doing business as”):</b> lets a sole proprietor use a business name, like “Beary Best Friends Parties.” Many counties or states ask you to register it. It\'s usually quick and low cost.','<b>EIN (tax ID):</b> free at irs.gov in about 10 minutes. Sole proprietors can get one too, so you never hand out your Social Security number. Never pay a website for it.','<b>LLC:</b> keeps business and personal separate. It\'s a smart move as you grow, hire help or add rentals, but you don\'t need one to start.']},
    callout:'<b>Don\'t let paperwork stall you.</b> You can book and throw parties now as a sole proprietor. An LLC can come later when you\'re ready to scale.<br><br>The rest (insurance, license, bank account) lives in your <b>Get Legit tracker</b> below. Each item has a deadline that matches the real risk, and it never blocks your next day.<br><br>Rules vary by state and city. This is general information, not legal or tax advice. A local accountant can tell you what fits.',
    links:[
@@ -351,7 +359,7 @@ const DAYS=[
   {n:8,title:'Publish Your Website',
    ai:[{label:'Write my About section',prompt:"Write a short, warm About section (under 80 words) for my website. Business: {name}, a {party} business in {city}. My promise: {promise}."},{label:'Write my “Now booking” post',prompt:"Write a short, humble “Now booking!” post for {name}, my {party} business in {city}. Include a line about the waitlist and a call to tap the link in my bio."}],
    why:"Today you go from “starting a business” to “now booking.” Your website and booking page give every post, message and QR code somewhere to send parents.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-08.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    list:{label:'Your site needs just 5 things',items:['Your name and one-sentence promise (Day 3)','Your package, what\'s included and your price (Days 4–5)','Photos: your setup, supplies or AI-inspired images labeled “AI-inspired.” Real party photos replace them after Day 10.','Your booking button','Your city and how to reach you']},
    callout:'<b>Done beats perfect.</b> Your site will get better after the practice party. Publish today anyway.<br><br>Your Hub website link works right away. Connecting the domain you bought on Day 3 is optional and can come later.<br><br><b>Waitlist idea:</b> “Booking opens for [month]. Join the waitlist for first pick of dates.” A little scarcity helps parents decide.',
    time:'about 45 min',
@@ -362,7 +370,7 @@ const DAYS=[
   {n:9,title:'Test Your Booking Flow',
    ai:[{label:'My after-booking text',prompt:"Write the text I send a parent right after she books my {party} party: thank her, confirm the date, and tell her what happens next (contract, deposit, and when she'll hear from me)."}],
    why:"Find the broken step before a real parent does. Today you walk through booking exactly as a mom would, from first click to signed contract.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-09.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['Step','What to check'],rows:[
      ['1. Booking page','Loads fast on a phone? Is the price clear?'],
      ['2. Quote','Right package, add-ons and total? Your name and promise at the top?'],
@@ -377,7 +385,7 @@ const DAYS=[
   {n:10,title:'Practice Party',
    ai:[{label:'Ask for a testimonial',prompt:"Write a short, warm text asking the host of my practice {party} party for a 2-sentence testimonial I can share, and for permission to use the photos she approved."},{label:'Turn my party into a week of posts',prompt:"I just hosted a {party} party. Give me 7 short post ideas with captions from one party: setup, details, a happy moment, the testimonial, behind the scenes, a tip for parents, and a booking reminder."}],
    why:"This is where it becomes real. You'll find your rhythm, get real photos and a testimonial, and walk away confident you can do this for a paying family.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-10.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    list:{label:'Party-day game plan',items:['<b>Day before:</b> pack from your Event Checklist and pack by theme, in one bin per theme.','<b>Arrive early:</b> 45–60 minutes to set up calmly.','<b>Photos first:</b> shoot the full setup before guests arrive, then candid moments, only of kids whose parents said yes.','<b>Table sign:</b> a small sign with a QR code to your booking page. “Loved this party? Book yours.”','<b>Before you leave:</b> ask the host for a 2-sentence testimonial while she\'s happy.']},
    callout:'<b>Make a QR code free in Canva</b> (search “QR code” in Apps). Point it to your booking page.<br><br><b>After the party:</b> AI can brighten your phone photos and turn one party into a week of posts. Real photos don\'t need a label; anything AI-made does.<br><br>Did the family cover supplies? Keep your reusable pieces in a labeled bin. That\'s your first theme kit.',
    time:'party + 20 min',
@@ -389,7 +397,7 @@ const DAYS=[
    bonus:[{key:'marketing',mode:'main'}],
    ai:[{label:'Write my founding families post',prompt:"Write a short post for my founding families offer: the first 5 families to book a {party} party with {name} get [free bonus] if they book by [date]. Warm and humble, with a clear way to claim.",save:'offer'},{label:'Note to a well-connected mom',prompt:"Write a personal, text-length note to [her name], a mom who knows lots of families, telling her I launched {name} and inviting her to be one of my founding families."}],
    why:"People book what they can see. With real photos and a testimonial, a small launch offer gives your first families a reason to book now instead of “someday.”",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-11.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['Your offer','Example'],rows:[
      ['Who','The first 5 founding families'],
      ['What they get','A free add-on (like goodie bags), not a price cut. Your price stays your price.'],
@@ -403,7 +411,7 @@ const DAYS=[
   {n:12,title:'Your Circle',
    ai:[{label:'Text to my circle',prompt:"Write a personal, text-length message to a friend letting her know I launched my {party} business, mentioning my founding families bonus, and asking if she knows anyone with a birthday coming up."},{label:'Quick reply for price questions',prompt:"Write a friendly quick reply for when a parent asks “How much is a {party} party?” Price: {price} for 12 kids. Invite her to pick a date."}],
    why:"Your first bookings almost always come from people who already know you. A personal text works better than any ad.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-12.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    callout:'<b>Text it like this (make it yours):</b><br><i>“Hi [name]! I just launched my [party] business 🎉 I\'m offering founding families a free [bonus] this month. Know anyone with a birthday coming up? Here\'s my page: [link]”</i><br><br><b>Speed wins parties.</b> When someone asks about prices, reply within the hour. Save your answer as a text shortcut. Your Party Coach can draft it below.',
    list:{label:'Who to text (aim for 10)',items:['Moms from school, church, work or the gym','Family with young kids or grandkids','Friends who post their kids\' parties','Your hairstylist, nail tech or anyone who talks to lots of moms']},
    time:'about 40 min',
@@ -414,7 +422,7 @@ const DAYS=[
    bonus:[{key:'local',mode:'deeper'},{key:'marketing',mode:'rewatch'}],
    ai:[{label:'Partner pitch',prompt:"Write a short, friendly message to a local [party store / daycare / photographer] in {city} suggesting we share each other's work. My business: {name}, a {party} business. Focus on what's in it for them."},{label:'Value post for a mom group',prompt:"Write a helpful post for a local mom group: 5 easy ways to make an at-home birthday party feel special. Not an ad. End with a soft line that I host {party} parties in {city}."}],
    why:"Moms trust local. Today you show up where parents already are, and you start a birthday list that books parties for years.",
-   video:'',videoNote:'Today\'s video is coming soon. Everything you need is below.',
+   video:'media/course/day-13.mp4',videoNote:'Today\'s video is coming soon. Everything you need is below.',
    table:{head:['Move','How'],rows:[
      ['Google Business Profile','Free. It puts you on Google Maps when locals search “kids party near me.”'],
      ['2 partners','A party store, daycare, toy shop, cake maker or photographer. Offer to share each other\'s work.'],
@@ -433,7 +441,7 @@ const DAYS=[
    bonus:[{key:'marketing',mode:'rewatch'},{key:'scale',mode:'after'}],
    ai:[{label:'Follow-up text',prompt:"Write a short, friendly follow-up text for a parent who asked about a {party} party but hasn't booked. Mention I have a couple of dates open next month."},{label:'Ask for a Google review',prompt:"Write a short thank-you text asking my practice-party family to leave a Google review for {name}, with a line on what to mention."}],
    why:"Most bookings happen on the follow-up, not the first message. Today you close every loop, set a simple 30-day rhythm, and celebrate how far you've come.",
-   video:'',videoNote:'A celebration video from Monica is coming soon. Read today\'s lesson below.',
+   video:'media/course/day-14.mp4',videoNote:'A celebration video from Monica is coming soon. Read today\'s lesson below.',
    table:{head:['Your 30-day rhythm','What to do'],rows:[
      ['Every day (10 min)','Answer messages fast. One small post or story.'],
      ['Every week','Follow up with anyone who asked but didn\'t book. Share one photo or tip in a local group.'],
@@ -508,12 +516,13 @@ function renderProgress(){
 }
 function renderDays(){
   const all=[...DAYS.map(d=>({n:d.n,title:d.title,live:true})),...UPCOMING.map((t,i)=>({n:i+DAYS.length,title:t,live:false}))];
-  document.getElementById('clDays').innerHTML=all.map(d=>{
+  document.getElementById('clDays').innerHTML=`<button class="cl-day cl-day-rm${current===-1?' active':''}" onclick="showRoadmap()"><span class="cl-dot">🗺</span><span>Roadmap: how this works</span></button>`+all.map(d=>{
+    const si=stageOf(d.n);const head=(si>=0&&STAGES[si].days[0]===d.n)?`<div class="cl-stage-h">Stage ${si+1} · ${esc(STAGES[si].name)}</div>`:'';
     const can=d.live&&unlocked(d.n);
     const cls=['cl-day',d.n===current?'active':'',isDone(d.n)?'done':''].join(' ');
     const mark=isDone(d.n)?'✓':d.n;
     const sub=d.live?(can?'':' · after Day '+(d.n-1)):' · coming soon';
-    return `<button class="${cls}" ${can?`onclick="openDay(${d.n})"`:'disabled'} ${d.n===current?'aria-current="step"':''}><span class="cl-dot">${mark}</span><span>Day ${d.n}: ${esc(d.title)}<span class="cl-hint">${sub}</span></span></button>`;
+    return head+`<button class="${cls}" ${can?`onclick="openDay(${d.n})"`:'disabled'} ${d.n===current?'aria-current="step"':''}><span class="cl-dot">${mark}</span><span>Day ${d.n}: ${esc(d.title)}<span class="cl-hint">${sub}</span></span></button>`;
   }).join('');
 }
 function renderLesson(){
@@ -527,7 +536,7 @@ function renderLesson(){
   const afterParts=(d.bonus||[]).filter(x=>x.mode==='after').map(x=>{const b=bonus(x.key);return b&&b.url?`<details class="cl-bonus"><summary>🎬 After your launch: ${esc(b.title)} · ${b.mins} min</summary><div class="cl-hint" style="margin:6px 0 10px">${esc(b.blurb)}</div>${embed(b)}</details>`:''}).join('');
   const mc=mcParts+afterParts;
   const video=d.video
-    ?`<div class="cl-video"><iframe src="${esc(toEmbed(d.video))}" title="Day ${d.n} video" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
+    ?videoHtml(d.video,'Day '+d.n+' video')
     :`<div class="cl-video cl-video-soon"><b>🎬 Video coming soon</b>${esc(d.videoNote)}</div>`;
   const table=d.table?`<table class="cl-table">${d.table.head.some(Boolean)?`<thead><tr>${d.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${d.table.rows.map(r=>`<tr>${r.map((c,i)=>`<td>${i===0&&!d.table.head[0]?'<b>'+esc(c)+'</b>':esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'';
   const list=d.list?`<div><div class="cl-section-label">${esc(d.list.label)}</div><ul class="cl-list">${d.list.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`:'';
@@ -546,7 +555,7 @@ function renderLesson(){
     ?`<button class="cl-btn cl-btn-ghost" onclick="${current<DAYS.length-1?`openDay(${current+1})`:'renderAll()'}">${current<DAYS.length-1?'Go to Day '+(current+1)+' →':'✓ Day complete'}</button>`
     :`<button class="cl-btn cl-btn-done" id="clDoneBtn" ${allChecked?'':'disabled'} onclick="completeDay()">Mark Day ${d.n} complete</button>`;
   document.getElementById('clLesson').innerHTML=`
-    <div class="cl-head"><div class="cl-eyebrow">Day ${d.n} of 14${d.time?' · '+esc(d.time):''}</div><h2 class="cl-title">${esc(d.title)}</h2></div>
+    <div class="cl-head"><div class="cl-eyebrow">${stageOf(d.n)>=0?'Stage '+(stageOf(d.n)+1)+' · '+esc(STAGES[stageOf(d.n)].name)+' · ':''}Day ${d.n} of 14${d.time?' · '+esc(d.time):''}</div><h2 class="cl-title">${esc(d.title)}</h2></div>
     <div class="cl-body">
       <p class="cl-why">${esc(d.why)}</p>
       ${video}${mc}${myPbHtml}${table}${list}${pbHtml}${callout}${nameCheck}${aiHtml}${linksHtml}
@@ -684,6 +693,37 @@ function renderBonus(focus){
 }
 function openBonus(focus){closeCoach();closeNotebook();renderBonus(focus);document.getElementById('bonusDrawer').classList.add('open');document.getElementById('coachScrim').classList.add('show')}
 function closeBonus(){const d=document.getElementById('bonusDrawer');if(d)d.classList.remove('open');if(!document.getElementById('coachDrawer').classList.contains('open')&&!document.getElementById('nbDrawer').classList.contains('open'))document.getElementById('coachScrim').classList.remove('show')}
+
+// Course videos are hosted with the Hub (mp4); bonus trainings can be YouTube links.
+function videoHtml(url,title){
+  if(/\.mp4($|\?)/i.test(url))return `<div class="cl-video"><video controls playsinline preload="metadata" poster="${esc(url.replace(/\.mp4.*/i,'.jpg'))}" title="${esc(title)}"><source src="${esc(url)}" type="video/mp4"></video></div>`;
+  return `<div class="cl-video"><iframe src="${esc(toEmbed(url))}" title="${esc(title)}" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
+}
+// The 4 stages of the launch, shown on the roadmap, the day list and each lesson.
+const STAGES=[
+  {name:'Decide',days:[0,1,2,3],why:"You can't build an offer until you know what you're selling and who it's for.",what:'Mindset, your one party, your ideal client, your name and promise'},
+  {name:'Build your offer',days:[4,5,6,7],why:"You can't market something that isn't priced and protected.",what:'One package, a price you can defend, your policies and a way to get paid'},
+  {name:'Open for bookings',days:[8,9,10],why:'A working booking page and real photos come before you invite people.',what:'Publish your website, test your booking flow, host a practice party'},
+  {name:'Get booked',days:[11,12,13,14],why:'Now you have something real to share.',what:'Founding families offer, your circle, local outreach and follow-up'}];
+const stageOf=n=>STAGES.findIndex(st=>st.days.includes(n));
+const ROADMAP_VIDEO='media/course/roadmap.mp4';
+function showRoadmap(){
+  current=-1;
+  try{localStorage.setItem('pbh_roadmap_seen_'+(currentUser?currentUser.id:'anon'),'1')}catch(_){}
+  renderProgress();renderDays();
+  const firstOpen=DAYS.find(d=>!isDone(d.n));
+  const startN=firstOpen?firstOpen.n:0;
+  document.getElementById('clLesson').innerHTML=`
+    <div class="cl-head"><div class="cl-eyebrow">Start here · about 1 minute</div><h2 class="cl-title">Your 14-Day Roadmap</h2></div>
+    <div class="cl-body">
+      <p class="cl-why">Fourteen small steps, in an order that makes sense. Here's where you're going and how each day works.</p>
+      ${videoHtml(ROADMAP_VIDEO,'Your 14-Day Roadmap')}
+      <div><div class="cl-section-label">By Day 14 you'll have</div><ul class="cl-list"><li>A business name and a one-sentence promise</li><li>One package with a price you can defend</li><li>A contract and a way to get paid</li><li>A published website and booking page</li><li>Real party photos from your practice party</li><li>Your offer in front of at least 10 people</li></ul></div>
+      <div><div class="cl-section-label">The 4 stages</div><div class="rm-stages">${STAGES.map((st,i)=>`<div class="rm-stage"><div class="rm-num">${i+1}</div><div><b>${esc(st.name)}</b> <span class="cl-hint">Days ${st.days[0]}–${st.days[st.days.length-1]}</span><div class="rm-what">${esc(st.what)}</div><div class="rm-why">Why now: ${esc(st.why)}</div></div></div>`).join('')}</div></div>
+      <div class="cl-callout"><b>How every day works:</b> why it matters · a short video · a few boxes to tick · one button that opens the right tool · a small public step most days. Your <b>Party Coach</b> and <b>Notebook</b> are always one tap away.<br><br><b>Time:</b> about 30–45 minutes a day. Busy week? The course waits for you.</div>
+      <div class="cl-actions"><button class="cl-btn cl-btn-done" onclick="openDay(${startN})">${startN===0?'Start Day 0':'Continue: Day '+startN} →</button></div>
+    </div>`;
+}
 let justFinished=null;
 function renderAll(){renderProgress();renderDays();renderLesson()}
 function openDay(n){if(!unlocked(n))return;current=n;try{localStorage.setItem(LAST_KEY(),String(n))}catch(_){}justFinished=null;renderAll();document.getElementById('clLesson').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -733,6 +773,10 @@ async function init(){
   // Come back to the day she was on last time.
   let last=null;try{last=parseInt(localStorage.getItem(LAST_KEY()),10)}catch(_){}
   if(Number.isInteger(last)&&DAYS[last]&&unlocked(last))current=last;
+  // First visit: show the roadmap before Day 0.
+  let seen=false;try{seen=localStorage.getItem('pbh_roadmap_seen_'+currentUser.id)==='1'}catch(_){}
+  const started=Object.keys(progress).some(k=>{const p=progress[k];return p&&(p.completed_at||(p.checklist||[]).some(Boolean))});
+  if(!seen&&!started){showRoadmap();return}
   renderAll();
 }
 init();
