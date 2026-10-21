@@ -371,7 +371,9 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
       method: 'POST',
       headers: adminHeaders,
-      body: JSON.stringify({ type: 'magiclink', email: customerEmail, options: { redirect_to: `https://app.partybizhub.com/${redirectPage}` } }),
+      // A recovery link opens "Create your password" first, so every customer
+      // leaves their first visit with a real login. Sign-in then routes them on.
+      body: JSON.stringify({ type: 'recovery', email: customerEmail, options: { redirect_to: 'https://app.partybizhub.com/login.html' } }),
     });
     const linkData = await linkRes.json();
     if (linkRes.ok && linkData.action_link) loginUrl = linkData.action_link;
@@ -988,7 +990,7 @@ async function handleGrantAccess(res, body) {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
       method: 'POST',
       headers: adminHeaders,
-      body: JSON.stringify({ type: 'magiclink', email, options: { redirect_to: `https://app.partybizhub.com/${redirectPage}` } }),
+      body: JSON.stringify({ type: 'recovery', email, options: { redirect_to: 'https://app.partybizhub.com/login.html' } }),
     });
     const linkData = await linkRes.json();
     if (linkData.action_link) loginUrl = linkData.action_link;
@@ -999,7 +1001,7 @@ async function handleGrantAccess(res, body) {
     const firstName = (customerName || '').split(' ')[0] || 'there';
     const accessLabel = isKPPS ? 'Kids Party Profit System™ (full access)' : 'Party Profit Printables™';
     const steps = isKPPS
-      ? ['Tap the button above to open your 14-Day Launch','Watch the short welcome video and finish Day 0 (about 20 minutes)','Say hi in the Community: your name, your city and the party you are starting','Questions? Email support@partybizhub.com']
+      ? ['Tap the button above and create your password. That is your login from now on.','You will land in your 14-Day Launch. Watch the short welcome video and finish Day 0 (about 20 minutes)','Say hi in the Community: your name, your city and the party you are starting','Next time, sign in at app.partybizhub.com/login.html with this email and your password']
       : ['Click the button above to access your account','Set your store name and payment link','Pick your store design','Add templates from the library','Share your store link and start selling!'];
     // KPPS: the course and the Community both live inside Party Biz Hub now.
     const skoolBlock = '';
@@ -1007,7 +1009,7 @@ async function handleGrantAccess(res, body) {
 <div class="wrap"><div class="top"><h1>Your access is ready!</h1><p>${accessLabel}</p></div>
 <div class="body"><p>Hi ${firstName},</p><p>Your access to <strong>${accessLabel}</strong> has been set up. Here is how to get started:</p>
 ${skoolBlock}
-<a href="${loginUrl}" class="btn">${isKPPS ? 'Start my 14-Day Launch →' : 'Log In to Party Biz Hub →'}</a>
+<a href="${loginUrl}" class="btn">${isKPPS ? 'Create my password &amp; start →' : 'Create my password &amp; log in →'}</a>
 <div class="steps"><p>Here is what to do first:</p><ol>${steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
 <p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div><div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
@@ -1175,16 +1177,16 @@ function kppsWelcomeHtml(firstName, loginUrl, emailStyles) {
 <div class="body">
 <p>Hi ${esc(firstName)},</p>
 <p>You're in! Your 14-Day Launch, Party Coach, website builder, business tools and our student Community are all inside Party Biz Hub.</p>
-<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#D115AE,#7559D4)">Start my 14-Day Launch →</a>
+<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#D115AE,#7559D4)">Create my password &amp; start →</a>
 <div class="steps">
-<p>Your first 3 steps:</p>
+<p>Your first steps:</p>
 <ol>
-<li>Tap the button above and watch the short welcome video.</li>
-<li>Finish Day 0. It takes about 20 minutes.</li>
+<li>Tap the button above and create your password. That's your login from now on.</li>
+<li>You'll land in your 14-Day Launch. Watch the short welcome video and finish Day 0 (about 20 minutes).</li>
 <li>Say hi in the Community: your name, your city and the party you're starting.</li>
 </ol>
 </div>
-<p>To log in anytime, go to <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a>. First time? Tap <strong>Forgot password?</strong> to set your password.</p>
+<p><strong>Next time:</strong> go to <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a> and sign in with this email and your password. Button expired? On that page, tap <strong>Forgot password?</strong> and we'll send a fresh one.</p>
 <p>I'm so glad you're here. Let's build it together.<br/>— Monica</p>
 <p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div>
