@@ -17,8 +17,8 @@
 .cl-bar i{display:block;height:100%;background:linear-gradient(90deg,#D115AE,#7559D4);border-radius:999px;transition:width .4s}
 .cl-grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:1.25rem;align-items:start}
 @media(max-width:860px){.cl-grid{grid-template-columns:1fr}}
-.cl-days{background:#fff;border:1.5px solid #EDE5F5;border-radius:18px;padding:8px;position:sticky;top:16px}
-@media(max-width:860px){.cl-days{position:static;display:flex;overflow-x:auto;gap:6px;padding:8px}}
+.cl-days{background:#fff;border:1.5px solid #EDE5F5;border-radius:18px;padding:8px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+@media(max-width:860px){.cl-days{position:static;display:flex;overflow-x:auto;overflow-y:hidden;max-height:none;gap:6px;padding:8px}}
 .cl-day{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:none;background:none;border-radius:12px;font-family:inherit;font-size:14px;color:#1A1020;text-align:left;cursor:pointer}
 @media(max-width:860px){.cl-day{flex:0 0 auto;width:auto;white-space:nowrap}}
 .cl-day:hover{background:#F7F1FB}
@@ -524,6 +524,13 @@ function renderDays(){
     const sub=d.live?(can?'':' · after Day '+(d.n-1)):' · coming soon';
     return head+`<button class="${cls}" ${can?`onclick="openDay(${d.n})"`:'disabled'} ${d.n===current?'aria-current="step"':''}><span class="cl-dot">${mark}</span><span>Day ${d.n}: ${esc(d.title)}<span class="cl-hint">${sub}</span></span></button>`;
   }).join('');
+  // Keep the current day visible inside the list (it scrolls on its own now).
+  const act=document.querySelector('#clDays .cl-day.active');
+  const box=document.getElementById('clDays');
+  if(act&&box){ // scroll only the list, never the page
+    if(box.scrollHeight>box.clientHeight){const t=act.offsetTop-box.offsetTop;if(t<box.scrollTop||t+act.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTop=t-box.clientHeight/2+act.offsetHeight/2}
+    if(box.scrollWidth>box.clientWidth){const l=act.offsetLeft-box.offsetLeft;if(l<box.scrollLeft||l+act.offsetWidth>box.scrollLeft+box.clientWidth)box.scrollLeft=l-12}
+  }
 }
 function renderLesson(){
   const d=DAYS[current], s=dayState(current);
