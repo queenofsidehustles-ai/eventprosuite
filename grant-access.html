@@ -43,6 +43,7 @@
   <div class="result" id="result"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // Simple admin gate — keeps this page private
 (function() {
@@ -59,7 +60,10 @@
 })();
 
 // The server only accepts this from your signed-in admin account.
-function hubToken() {
+// getSession() refreshes an expired token, so a Hub tab left open still works.
+const sbAdmin = window.supabase ? window.supabase.createClient('https://dmqwoddwzpfnmpjtwiee.supabase.co', 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8') : null;
+async function hubToken() {
+  try { if (sbAdmin) { const { data } = await sbAdmin.auth.getSession(); if (data && data.session) return data.session.access_token; } } catch (_) {}
   try { const t = JSON.parse(localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token') || 'null'); return (t && t.access_token) || ''; } catch (_) { return ''; }
 }
 
@@ -79,7 +83,7 @@ async function grantAccess() {
   try {
     const resp = await fetch('/api/send-purchase-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hubToken() },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (await hubToken()) },
       body: JSON.stringify({ action: 'grant-access', email, accessType, customerName: name }),
     });
     const data = await resp.json();
@@ -97,7 +101,9 @@ async function grantAccess() {
       result.innerHTML = `✅ <strong>Done!</strong> Account set up for <strong>${email}</strong>.${profileWarn}${emailWarn}`;
     } else {
       result.className = 'result error';
-      result.innerHTML = `❌ Something went wrong: ${data.error || JSON.stringify(data)}`;
+      result.innerHTML = resp.status === 401
+        ? `❌ You're not signed in as admin on this page. <a href="login.html" target="_blank">Sign in here</a> with ggkidsspa@gmail.com, then come back and tap Send again.`
+        : `❌ Something went wrong: ${data.error || JSON.stringify(data)}`;
     }
   } catch (err) {
     result.className = 'result error';

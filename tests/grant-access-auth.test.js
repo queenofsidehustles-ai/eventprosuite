@@ -14,7 +14,7 @@ test('grant-access requires a signed-in admin before doing anything', () => {
 });
 
 test('grant-access page sends the admin session token', () => {
-  assert.match(page, /Authorization: 'Bearer ' \+ hubToken\(\)/);
+  assert.match(page, /Authorization: 'Bearer ' \+ \(await hubToken\(\)\)/);
 });
 
 test('unauthenticated grant-access request is refused', async () => {
