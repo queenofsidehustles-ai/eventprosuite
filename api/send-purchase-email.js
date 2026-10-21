@@ -344,7 +344,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
   }
 
   // Generate magic login link — KPPS & CRM subscribers go to dashboard, PPP goes to welcome guide
-  const redirectPage = (isKPPS || isCRMSub) ? 'dashboard.html' : 'welcome.html';
+  const redirectPage = isKPPS ? 'course.html' : (isCRMSub ? 'dashboard.html' : 'welcome.html');
   let loginUrl = '';
   try {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
@@ -369,7 +369,6 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
     const emailStyles = `body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}.top{padding:28px 32px 24px;color:#fff;text-align:center}.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}.top p{margin:0;font-size:.88rem;opacity:.85}.body{padding:28px 32px}.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}.btn{display:block;color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}`;
 
     let subject, html;
-    const SKOOL_LINK = 'https://www.skool.com/queen-of-side-hustles-academy-5720/about';
     if (isCRMSub) {
       subject = 'Welcome to Party Biz Hub — your subscription is active! 🎉';
       html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
@@ -396,34 +395,8 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 <div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
 </div></body></html>`;
     } else if (isKPPS) {
-      subject = 'You\'re in! Your Kids Party Profit System™ access is ready';
-      html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}
-.skool-btn{display:block;background:linear-gradient(135deg,#1a0040,#4C1D95);color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}
-.pbh-box{background:#f5f0ff;border-radius:12px;padding:16px 20px;margin:16px 0;border:1.5px solid rgba(76,29,149,.15)}
-.pbh-box p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}
-.pbh-link{display:block;background:linear-gradient(135deg,#D115AE,#7559D4);color:#fff;text-decoration:none;text-align:center;padding:12px 20px;border-radius:10px;font-weight:700;font-size:.9rem;margin-top:10px}
-</style></head><body>
-<div class="wrap">
-<div class="top" style="background:linear-gradient(135deg,#1a0040,#4C1D95,#7B2A8F)">
-  <h1>Welcome to the Family! 🎉</h1>
-  <p>Kids Party Profit System™ — your access is confirmed</p>
-</div>
-<div class="body">
-<p>Hi ${firstName},</p>
-<p>You are officially in! Here is everything you have access to and exactly how to get started:</p>
-<p style="font-weight:700;color:#1a0040;font-size:.95rem">Step 1 — Join your Skool community (your course lives here)</p>
-<a href="${SKOOL_LINK}" class="skool-btn">Join the Kids Party Profit System™ Community →</a>
-<p style="font-size:.82rem;color:#888;margin-top:-10px">This is where your training, resources, and community are. Click above to join.</p>
-<div class="pbh-box">
-<p>Step 2 — Log in to Party Biz Hub (your business tools)</p>
-<p style="font-size:.83rem;color:#333;font-weight:400;margin:0 0 4px">Party Biz Hub is your all-in-one business dashboard — digital store, quote builder, contracts, profit calculator, and more. Your first year is included with KPPS.</p>
-<a href="${loginUrl}" class="pbh-link">Log In to Party Biz Hub →</a>
-<p style="font-size:.78rem;color:#888;margin-top:8px;margin-bottom:0">Link expired? Go to <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a> to request a new one.</p>
-</div>
-<p style="font-size:.82rem;color:#888">If the Party Biz Hub button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
-</div>
-<div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
-</div></body></html>`;
+      subject = 'You\'re in! Start your 14-Day Launch 🎉';
+      html = kppsWelcomeHtml(firstName, loginUrl, emailStyles);
     } else {
       subject = 'Your Party Profit Printables access is ready!';
       html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
@@ -489,6 +462,11 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
       });
     }
 
+    await alertOwnerOfNewCustomer({
+      RESEND_KEY, FROM_EMAIL, eventId, name: customerName, email: customerEmail,
+      product: isKPPS ? 'Kids Party Profit System' : (isCRMSub ? 'Party Biz Hub subscription' : 'Party Profit Printables'),
+      paid: amountTotal, isKPPS,
+    });
     return res.json({ received: true, eventId, userId, tier: assignedTier, profileWritten, emailSent: true });
   }
 
@@ -983,7 +961,7 @@ async function handleGrantAccess(res, body) {
   }
 
   // Generate magic login link
-  const redirectPage = isKPPS ? 'dashboard.html' : 'welcome.html';
+  const redirectPage = isKPPS ? 'course.html' : 'welcome.html';
   let loginUrl = `https://app.partybizhub.com/${redirectPage}`;
   try {
     const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
@@ -999,21 +977,16 @@ async function handleGrantAccess(res, body) {
   if (RESEND_KEY) {
     const firstName = (customerName || '').split(' ')[0] || 'there';
     const accessLabel = isKPPS ? 'Kids Party Profit System™ (full access)' : 'Party Profit Printables™';
-    const SKOOL_LINK = 'https://www.skool.com/queen-of-side-hustles-academy-5720/about';
     const steps = isKPPS
-      ? ['Join your Skool community using the button above — your course & training live there','Log into Party Biz Hub for your business tools (store, quote builder, contracts, printables)','Use the Quick Start guide inside your dashboard to get set up','Reach out to support@partybizhub.com with any questions']
+      ? ['Tap the button above to open your 14-Day Launch','Watch the short welcome video and finish Day 0 (about 20 minutes)','Say hi in the Community: your name, your city and the party you are starting','Questions? Email support@partybizhub.com']
       : ['Click the button above to access your account','Set your store name and payment link','Pick your store design','Add templates from the library','Share your store link and start selling!'];
-    // KPPS buyers also get their Skool community link — the course lives there
-    const skoolBlock = isKPPS
-      ? `<p style="font-weight:700;color:#1a0040;font-size:.95rem;margin:0 0 4px">Step 1 — Join your Kids Party Profit System™ community (your course lives here)</p>
-<a href="${SKOOL_LINK}" class="btn" style="background:linear-gradient(135deg,#1a0040,#4C1D95)">Join the Skool Community →</a>
-<p style="font-weight:700;color:#4C1D95;font-size:.95rem;margin:0 0 4px">Step 2 — Log into Party Biz Hub (your business tools)</p>`
-      : '';
+    // KPPS: the course and the Community both live inside Party Biz Hub now.
+    const skoolBlock = '';
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}.wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}.top{background:linear-gradient(135deg,${isKPPS?'#1a0040,#4C1D95,#7B2A8F':'#4C1D95,#6D28D9,#D115AE'});padding:28px 32px 24px;color:#fff;text-align:center}.top h1{margin:0 0 6px;font-size:1.35rem;font-weight:800}.top p{margin:0;font-size:.88rem;opacity:.85}.body{padding:28px 32px}.body p{color:#333;line-height:1.7;font-size:.92rem;margin:0 0 14px}.btn{display:block;background:linear-gradient(135deg,${isKPPS?'#4C1D95,#7B2A8F':'#D115AE,#7559D4'});color:#fff;text-decoration:none;text-align:center;padding:16px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin:24px 0}.steps{background:#f5f0ff;border-radius:10px;padding:16px 20px;margin:16px 0}.steps p{font-weight:700;color:#4C1D95;margin:0 0 8px;font-size:.88rem}.steps ol{margin:0;padding-left:18px;color:#333;font-size:.84rem;line-height:1.8}.footer{padding:16px 32px;text-align:center;font-size:.78rem;color:#999;border-top:1px solid #eee}</style></head><body>
 <div class="wrap"><div class="top"><h1>Your access is ready!</h1><p>${accessLabel}</p></div>
 <div class="body"><p>Hi ${firstName},</p><p>Your access to <strong>${accessLabel}</strong> has been set up. Here is how to get started:</p>
 ${skoolBlock}
-<a href="${loginUrl}" class="btn">Log In to Party Biz Hub →</a>
+<a href="${loginUrl}" class="btn">${isKPPS ? 'Start my 14-Day Launch →' : 'Log In to Party Biz Hub →'}</a>
 <div class="steps"><p>Here is what to do first:</p><ol>${steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
 <p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
 </div><div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a> — we respond within 24 hours.</div>
@@ -1166,4 +1139,65 @@ function balanceDueDate(eventDate, profileData, quoteData) {
   ev.setDate(ev.getDate() - days);
   const pad = n => String(n).padStart(2, '0');
   return ev.getFullYear() + '-' + pad(ev.getMonth() + 1) + '-' + pad(ev.getDate());
+}
+
+
+// ── Welcome email for Kids Party Profit System students ─────────────────
+function kppsWelcomeHtml(firstName, loginUrl, emailStyles) {
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${emailStyles}</style></head><body>
+<div class="wrap">
+<div class="top" style="background:linear-gradient(135deg,#1a0040,#4C1D95,#7B2A8F)">
+  <h1>Welcome to the Kids Party Profit System! 🎉</h1>
+  <p>Your 14-Day Launch is ready</p>
+</div>
+<div class="body">
+<p>Hi ${esc(firstName)},</p>
+<p>You're in! Your 14-Day Launch, Party Coach, website builder, business tools and our student Community are all inside Party Biz Hub.</p>
+<a href="${loginUrl}" class="btn" style="background:linear-gradient(135deg,#D115AE,#7559D4)">Start my 14-Day Launch →</a>
+<div class="steps">
+<p>Your first 3 steps:</p>
+<ol>
+<li>Tap the button above and watch the short welcome video.</li>
+<li>Finish Day 0. It takes about 20 minutes.</li>
+<li>Say hi in the Community: your name, your city and the party you're starting.</li>
+</ol>
+</div>
+<p>To log in anytime, go to <a href="https://app.partybizhub.com/login.html" style="color:#7559D4">app.partybizhub.com/login.html</a>. First time? Tap <strong>Forgot password?</strong> to set your password.</p>
+<p>I'm so glad you're here. Let's build it together.<br/>— Monica</p>
+<p style="font-size:.82rem;color:#888">If the button does not work, copy this link:<br/><a href="${loginUrl}" style="color:#7559D4;word-break:break-all">${loginUrl}</a></p>
+</div>
+<div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a></div>
+</div></body></html>`;
+}
+
+// ── New customer alert, so a sale never goes unnoticed ──────────────────
+async function alertOwnerOfNewCustomer({ RESEND_KEY, FROM_EMAIL, eventId, name, email, product, paid, isKPPS }) {
+  if (!RESEND_KEY) return;
+  const to = (env('PBH_ALERT_EMAIL') || 'support@partybizhub.com,queenofsidehustles@gmail.com')
+    .split(',').map(x => x.trim()).filter(Boolean);
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const money = '$' + (Number(paid || 0) / 100).toFixed(2);
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#F5F3F7;font-family:Inter,Arial,sans-serif">
+<div style="max-width:560px;margin:28px auto;background:#fff;border-radius:16px;overflow:hidden">
+  <div style="background:linear-gradient(135deg,#4C1D95,#D115AE);padding:22px 28px;color:#fff">
+    <h1 style="margin:0;font-size:1.2rem;font-weight:800">🎉 New ${isKPPS ? 'student' : 'customer'}: ${esc(name || email)}</h1>
+  </div>
+  <div style="padding:24px 28px;color:#2F1E3B;font-size:.93rem;line-height:1.65">
+    <p style="margin:0 0 12px"><strong>${esc(product)}</strong> · paid ${money}</p>
+    <p style="margin:0 0 12px">Email: <a href="mailto:${esc(email)}">${esc(email)}</a></p>
+    <p style="margin:0 0 12px">Their account is set up and their welcome email has been sent.${isKPPS ? ' Send a personal welcome text and invite them to introduce themselves in the Community.' : ''}</p>
+    <p style="margin:0;font-size:12px;color:#8A7A96">Stripe event ${esc(eventId)}</p>
+  </div>
+</div></body></html>`;
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': `purchase-new/${eventId}` },
+      body: JSON.stringify({ from: FROM_EMAIL, to, subject: `🎉 New ${isKPPS ? 'KPPS student' : 'customer'}: ${name || email}`, html }),
+    });
+  } catch (e) {
+    console.error('Could not send the new-customer alert:', e);
+  }
 }
