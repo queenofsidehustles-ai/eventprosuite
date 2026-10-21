@@ -209,10 +209,10 @@ const ADMIN_EMAIL='ggkidsspa@gmail.com';
 // Monica's bonus trainings. Paste each unlisted YouTube link between the quotes.
 // A training only shows to students once it has a link.
 const BONUS=[
-  {key:'mistakes',  title:'5 Mistakes That Keep Party Business Owners Broke', mins:14, url:'', blurb:'The five traps that keep party businesses stuck, and the fix for each.', day:0},
-  {key:'marketing', title:'Marketing Masterclass: Online + Local', mins:15, url:'', blurb:'How to get visible on TikTok, Instagram, Facebook and Google, and in your community.', day:11},
-  {key:'local',     title:'Advanced Local Marketing', mins:16, url:'', blurb:'Daycares and schools, the fishbowl raffle, birthday emails, sponsorships and referrals.', day:13},
-  {key:'scale',     title:'Delivery + Scale', mins:7, url:'', blurb:'Deliver with confidence, collect reviews, set a weekly routine and grow.', day:14}
+  {key:'mistakes',  title:'5 Mistakes That Keep Party Business Owners Broke', mins:14, url:'media/course/bonus-mistakes.mp4', blurb:'The five traps that keep party businesses stuck, and the fix for each.', day:0},
+  {key:'marketing', title:'Marketing Masterclass: Online + Local', mins:15, url:'media/course/bonus-marketing.mp4', blurb:'How to get visible on TikTok, Instagram, Facebook and Google, and in your community.', day:11},
+  {key:'local',     title:'Advanced Local Marketing', mins:16, url:'media/course/bonus-local.mp4', blurb:'Daycares and schools, the fishbowl raffle, birthday emails, sponsorships and referrals.', day:13},
+  {key:'scale',     title:'Delivery + Scale', mins:7, url:'media/course/bonus-scale.mp4', blurb:'Deliver with confidence, collect reviews, set a weekly routine and grow.', day:14}
 ];
 const bonus=k=>BONUS.find(b=>b.key===k);
 const MARKETING_VIDEO=bonus('marketing').url;
@@ -527,7 +527,7 @@ function renderDays(){
 }
 function renderLesson(){
   const d=DAYS[current], s=dayState(current);
-  const embed=(b)=>`<div class="cl-video"><iframe src="${esc(toEmbed(b.url))}" title="${esc(b.title)}" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
+  const embed=(b)=>videoHtml(b.url,b.title);
   const mcParts=(d.bonus||[]).map(x=>{const b=bonus(x.key);if(!b||!b.url)return '';
     if(x.mode==='main')return `<div><div class="cl-section-label">🎥 Watch first: ${esc(b.title)} (${b.mins} min)</div><div class="cl-hint" style="margin:-4px 0 10px">${esc(b.blurb)} The next days put it into action.</div>${embed(b)}</div>`;
     if(x.mode==='rewatch')return `<div class="cl-mypb">🎥 Want a refresher? <button class="cl-pb-btn" onclick="openBonus('${b.key}')">Rewatch: ${esc(b.title)}</button></div>`;
@@ -688,7 +688,7 @@ function copyNotebook(){
 // ── Bonus trainings drawer ──
 function renderBonus(focus){
   const list=BONUS.filter(b=>b.url||previewAll);
-  document.getElementById('bonusBody').innerHTML=list.length?list.map(b=>`<div class="nb-sec" id="bonus-${b.key}"><div class="nb-h">${esc(b.title)} <span class="cl-hint">${b.mins} min · goes with Day ${b.day}</span></div><div class="cl-hint">${esc(b.blurb)}</div>${b.url?`<div class="cl-video"><iframe ${focus===b.key?'':'loading="lazy"'} src="${esc(toEmbed(b.url))}" title="${esc(b.title)}" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`:'<div class="coach-empty">Admin note: add this video\'s unlisted YouTube link in BONUS to show it to students.</div>'}</div>`).join(''):'<div class="coach-empty">Bonus trainings are coming soon.</div>';
+  document.getElementById('bonusBody').innerHTML=list.length?list.map(b=>`<div class="nb-sec" id="bonus-${b.key}"><div class="nb-h">${esc(b.title)} <span class="cl-hint">${b.mins} min · goes with Day ${b.day}</span></div><div class="cl-hint">${esc(b.blurb)}</div>${b.url?videoHtml(b.url,b.title):'<div class="coach-empty">Admin note: add this video\'s unlisted YouTube link in BONUS to show it to students.</div>'}</div>`).join(''):'<div class="coach-empty">Bonus trainings are coming soon.</div>';
   if(focus){const el=document.getElementById('bonus-'+focus);if(el)el.scrollIntoView({block:'start'})}
 }
 function openBonus(focus){closeCoach();closeNotebook();renderBonus(focus);document.getElementById('bonusDrawer').classList.add('open');document.getElementById('coachScrim').classList.add('show')}
