@@ -58,6 +58,11 @@
   }
 })();
 
+// The server only accepts this from your signed-in admin account.
+function hubToken() {
+  try { const t = JSON.parse(localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token') || 'null'); return (t && t.access_token) || ''; } catch (_) { return ''; }
+}
+
 async function grantAccess() {
   const email = document.getElementById('email').value.trim();
   const name  = document.getElementById('name').value.trim();
@@ -74,7 +79,7 @@ async function grantAccess() {
   try {
     const resp = await fetch('/api/send-purchase-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + hubToken() },
       body: JSON.stringify({ action: 'grant-access', email, accessType, customerName: name }),
     });
     const data = await resp.json();

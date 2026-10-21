@@ -3,6 +3,18 @@
 const env = name => String(process.env[name] || '').trim();
 const crypto = require('crypto');
 
+async function getUser(req) {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return null;
+  try {
+    const u = await fetch('https://dmqwoddwzpfnmpjtwiee.supabase.co/auth/v1/user', {
+      headers: { apikey: 'sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8', Authorization: 'Bearer ' + token },
+    });
+    return u.ok ? await u.json() : null;
+  } catch (_) { return null; }
+}
+
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -15,7 +27,7 @@ function readRawBody(req) {
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, stripe-signature');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, stripe-signature, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -34,7 +46,16 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
   if (body.action === 'generate-copy') return handleGenerateCopy(res, body);
-  if (body.action === 'grant-access') return handleGrantAccess(res, body);
+  if (body.action === 'grant-access') {
+    // Admin only: this creates accounts, unlocks paid access and returns a
+    // sign-in link, so it must never be callable by the public.
+    const user = await getUser(req);
+    const ADMINS = ['ggkidsspa@gmail.com', 'hello@bearhug.events'];
+    if (!user || !ADMINS.includes(String(user.email || '').toLowerCase())) {
+      return res.status(401).json({ error: 'Sign in to Party Biz Hub with your admin account first, then try again.' });
+    }
+    return handleGrantAccess(res, body);
+  }
   return handleSendEmail(res, body);
 };
 
