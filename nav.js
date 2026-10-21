@@ -8,6 +8,7 @@
   // kppsOnly items are hidden for Printables-only customers.
   const PAGES = [
     { id: 'course',    href: 'course.html',    icon: '🚀', label: '14-Day Launch' },
+    { id: 'community', href: 'community.html', icon: '💬', label: 'Community', kppsOnly: true },
     { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
     { id: 'profile',   href: 'profile.html',   icon: '💼', label: 'My Business' },
     { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'Website & Booking', kppsOnly: true },

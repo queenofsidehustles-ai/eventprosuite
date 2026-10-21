@@ -132,6 +132,7 @@
 .cl-hint{font-size:13px;color:#6B5F7A}
 .cl-celebrate{display:none;text-align:center;padding:22px;border-radius:16px;background:linear-gradient(150deg,#D115AE,#7559D4);color:#fff}
 .cl-celebrate.show{display:block;animation:pop .35s ease}
+.cl-share{margin-top:14px;border:none}
 .cl-celebrate h3{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:4px}
 @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
 .cl-locked{text-align:center;padding:40px 24px}
@@ -205,7 +206,6 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const QUIZ_URL='https://partybusinesscoach.com/plan';
 const KPPS_URL='https://partybusinesscoach.com/';
 const ADMIN_EMAIL='ggkidsspa@gmail.com';
-// Until the Hub community opens, introductions happen in Skool.
 // Monica's bonus trainings. Paste each unlisted YouTube link between the quotes.
 // A training only shows to students once it has a link.
 const BONUS=[
@@ -218,7 +218,11 @@ const bonus=k=>BONUS.find(b=>b.key===k);
 const MARKETING_VIDEO=bonus('marketing').url;
 // Accept a normal YouTube link (watch, youtu.be, shorts) and turn it into an embed link.
 const toEmbed=u=>{u=String(u||'').trim();const m=u.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/);return m?'https://www.youtube.com/embed/'+m[1]+'?rel=0':u};
-const COMMUNITY_URL='https://www.skool.com/queen-of-side-hustles-academy-5720';
+// The student community lives in the Hub (community.html). These deep links open its composer.
+const COMMUNITY_URL='community.html';
+const COMMUNITY_INTRO_URL='community.html?space=introductions&compose=1';
+const COMMUNITY_WINS_URL='community.html?space=wins&compose=1';
+const checkinUrl=d=>'community.html?space=checkins&compose=1&day='+d.n+'&text='+encodeURIComponent('Just finished Day '+d.n+' of my 14-Day Launch: '+d.title+'! ');
 
 // ── Course content ─────────────────────────────────────────────────────
 // Days 0–14 are live. Later days show in the list as "coming soon" until written.
@@ -237,7 +241,7 @@ const DAYS=[
    time:'about 20 min',
    checklist:['Watch (or read) today\'s welcome','Answer my 3 mindset questions below','Review my Launch Plan from the quiz (or take it now)','Pick my launch date: the day I\'ll post “now booking” (about 8 days from today)','Tell one person I\'m starting, and when','Introduce myself in the community: name, city, and the party I\'m thinking about'],
    notes:[{key:'hobbyOrBusiness',label:'Right now, am I treating this like a hobby or a business?'},{key:'moneyBelief',label:'One belief about money or charging that\'s holding me back'},{key:'ninetyDays',label:'My business in 90 days, if I fully commit'},{key:'launchDate',label:'My launch date',input:true,type:'date'}],
-   extra:{label:'Introduce yourself in the community',href:COMMUNITY_URL},
+   extra:{label:'Introduce yourself in the community',href:COMMUNITY_INTRO_URL},
    doIt:{label:'Open my Launch Plan',href:QUIZ_URL,newTab:true,hint:'Took the quiz already? Your plan is in your email. If not, it takes 90 seconds.'}},
   {n:1,title:'Pick Your One Party',
    playbooks:true,
@@ -457,7 +461,7 @@ const DAYS=[
    time:'about 30 min',
    checklist:["Watch (or read) today's lesson",'Follow up with every lead and every “maybe”','Put my 30-day rhythm on my calendar','Ask my practice-party family for a Google review','Public step: share my win in the community'],
    notes:[{key:'win',label:'My biggest win from these 14 days'},{key:'next30',label:'My goal for the next 30 days'}],
-   extra:{label:'Share my win in the community',href:COMMUNITY_URL},
+   extra:{label:'Share my win in the community',href:COMMUNITY_WINS_URL},
    doIt:{label:'Open my Dashboard',href:'dashboard.html',hint:'Your Get Legit tracker stays here. Keep checking items off.'}},
 ];
 const UPCOMING=[];
@@ -563,7 +567,7 @@ function renderLesson(){
   const checks=d.checklist.map((t,i)=>{const on=!!s.checklist[i];const pub=t.startsWith('Public step:');const txt=pub?'<b style="color:#C0129F">📣 Public step:</b> '+esc(t.slice(12).trim()):esc(t);return `<label class="cl-item${on?' checked':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleCheck(${i},this.checked)"/><span>${txt}</span></label>`}).join('');
   const notes=d.notes?`<div><div class="cl-section-label">Your notes</div><div class="cl-notes">${d.notes.map(f=>`<label>${esc(f.label)}${f.input?`<input type="${f.type||'text'}" maxlength="160" value="${esc(s.notes[f.key]||'')}" oninput="setNote('${f.key}',this.value)"/>`:`<textarea maxlength="1200" oninput="setNote('${f.key}',this.value)">${esc(s.notes[f.key]||'')}</textarea>`}</label>`).join('')}</div></div>`:'';
   const allChecked=d.checklist.every((_,i)=>s.checklist[i]);
-  const doIt=(d.doIt?`<a class="cl-btn cl-btn-do" href="${esc(d.doIt.href)}" ${d.doIt.newTab?'target="_blank" rel="noopener"':''}>${esc(d.doIt.label)} →</a>`:'')+(d.extra?`<a class="cl-btn cl-btn-ghost" href="${esc(d.extra.href)}" target="_blank" rel="noopener">${esc(d.extra.label)} →</a>`:'');
+  const doIt=(d.doIt?`<a class="cl-btn cl-btn-do" href="${esc(d.doIt.href)}" ${d.doIt.newTab?'target="_blank" rel="noopener"':''}>${esc(d.doIt.label)} →</a>`:'')+(d.extra?`<a class="cl-btn cl-btn-ghost" href="${esc(d.extra.href)}"${d.extra.href.indexOf(COMMUNITY_URL)===0?'':' target="_blank" rel="noopener"'}>${esc(d.extra.label)} →</a>`:'');
   const doneBtn=isDone(current)
     ?`<button class="cl-btn cl-btn-ghost" onclick="${current<DAYS.length-1?`openDay(${current+1})`:'renderAll()'}">${current<DAYS.length-1?'Go to Day '+(current+1)+' →':'✓ Day complete'}</button>`
     :`<button class="cl-btn cl-btn-done" id="clDoneBtn" ${allChecked?'':'disabled'} onclick="completeDay()">Mark Day ${d.n} complete</button>`;
@@ -575,7 +579,7 @@ function renderLesson(){
       <div><div class="cl-section-label">Today's checklist</div><div class="cl-check">${checks}</div></div>
       ${notes}
       <div class="cl-saved" id="clSaved"></div>
-      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished your 14-Day Launch! Share your win in the community. We\'re cheering for you.'}</div></div>
+      <div class="cl-celebrate${isDone(current)&&justFinished===current?' show':''}" id="clCelebrate"><h3>🎉 Day ${d.n} done!</h3><div>${current<DAYS.length-1?'One step closer. Tomorrow: Day '+(current+1)+' — '+esc(DAYS[current+1].title)+'.':'You finished your 14-Day Launch! We\'re cheering for you.'}</div>${d.n===0?`<div style="margin-top:8px">New here? <a href="${COMMUNITY_INTRO_URL}" style="color:#fff;font-weight:800">Introduce yourself in the Community</a></div>`:''}<a class="cl-btn cl-btn-ghost cl-share" href="${esc(checkinUrl(d))}">Share your win in the Community 🚀</a></div>
       <div class="cl-actions">${doIt}${doneBtn}</div>
       ${d.doIt&&d.doIt.hint?`<div class="cl-hint">${esc(d.doIt.hint)}</div>`:''}
       ${!isDone(current)?`<div class="cl-hint" id="clTickHint" ${allChecked?'style="display:none"':''}>Tick every box to finish today.</div>`:''}

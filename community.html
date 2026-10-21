@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Community | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>(function(){try{if(sessionStorage.getItem("pbh_auth")==="1"){document.documentElement.dataset.auth="ok";return;}var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<link rel="stylesheet" href="styles.css?v=6"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4C1D95;--plum-800:#6D28D9;--brand:#6D28D9;--brand-deep:#7C3AED;
+  --mauve:#8B5CF6;--pink:#E6A2BE;--pink-soft:#F4D2DF;--pink-deep:#B8577F;--magenta:#D115AE;
+  --gold:#C9A227;--cream:#FCF8F4;
+  --border:#EAE3ED;--border-strong:#DDD1E5;
+  --ink:#1F1A24;--slate-700:#4A4354;--muted:#6C6473;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --shadow-sm:0 1px 2px rgba(31,20,50,.04);
+  --shadow-lg:0 20px 50px -12px rgba(109,40,217,.18),0 8px 16px -4px rgba(109,40,217,.08);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:1.1rem 1.5rem 1.6rem;color:#fff}
+.page-header-inner{max-width:1080px;margin:0 auto;text-align:center}
+.page-eyebrow{display:block;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.72);margin-bottom:.35rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em}
+.page-sub{font-size:.86rem;color:rgba(255,255,255,.9);line-height:1.6;max-width:520px;margin:.35rem auto 0}
+
+.wrap{max-width:1080px;margin:0 auto;padding:1.4rem 1.5rem 4rem}
+.cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1.25rem;align-items:start}
+.cm-main{min-width:0;display:flex;flex-direction:column;gap:1rem}
+.cm-side{display:flex;flex-direction:column;gap:1rem;position:sticky;top:16px}
+.cm-side-slot:empty{display:none}
+
+/* Space chips */
+.tabs{display:flex;flex-wrap:wrap;gap:.45rem;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:.5rem .9rem;border-radius:999px;border:1.5px solid var(--border-strong);background:#fff;color:var(--slate-700);font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.tab:hover{border-color:var(--mauve);color:var(--plum-900)}
+.tab[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.box{background:#fff;border:1px solid var(--border);border-radius:18px;padding:1.1rem 1.2rem;box-shadow:var(--shadow-sm)}
+.box h2{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--plum-900);letter-spacing:-.01em;margin-bottom:.45rem}
+
+/* First step */
+.first{display:flex;gap:.9rem;align-items:center;padding:1rem 1.15rem;border-radius:18px;background:linear-gradient(135deg,#FDE6F6,#E6DCFD);border:1.5px solid #E4C9F2}
+.first-ico{font-size:1.8rem;line-height:1}
+.first-copy{flex:1;min-width:0;font-size:.88rem;color:var(--plum-900);line-height:1.5}
+.first-copy strong{display:block;font-size:.95rem}
+
+/* Composer */
+.composer{display:flex;flex-direction:column;gap:.65rem}
+.comp-top{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.comp-top label{font-size:.78rem;font-weight:700;color:var(--slate-700)}
+.select{padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.86rem;background:#fff;color:var(--ink);min-height:40px}
+textarea.ta{width:100%;min-height:96px;resize:vertical;padding:.75rem .85rem;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:.92rem;line-height:1.55;color:var(--ink);background:#fff}
+textarea.ta:focus,.select:focus,.cmt-form textarea:focus{border-color:var(--mauve);outline:none;box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.comp-bottom{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.comp-note{font-size:.74rem;color:var(--muted);line-height:1.45}
+.comp-count{font-size:.72rem;color:var(--muted);margin-left:auto}
+.day-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .45rem .3rem .7rem;border-radius:999px;background:rgba(209,21,174,.1);color:#A10E86;font-size:.76rem;font-weight:700}
+.day-chip button{border:none;background:none;color:inherit;cursor:pointer;font-size:.9rem;line-height:1;padding:0 .2rem}
+.preview{position:relative;display:inline-block;max-width:220px}
+.preview img{display:block;max-width:220px;max-height:180px;border-radius:12px;border:1px solid var(--border)}
+.preview button{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(31,20,50,.7);color:#fff;cursor:pointer;font-size:.85rem}
+.file-in{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.btn{padding:.62rem 1.05rem;border:none;border-radius:10px;font-weight:700;font-size:.84rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;text-decoration:none;white-space:nowrap;min-height:40px}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--plum-900)}
+.btn-outline{background:#fff;color:var(--plum-800);border:1.5px solid var(--border-strong)}
+.btn-outline:hover{border-color:var(--mauve);color:var(--plum-900)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:.4rem .7rem;font-size:.76rem;min-height:32px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,.tab:focus-visible,.act:focus-visible,.link-btn:focus-visible{outline:3px solid rgba(139,92,246,.45);outline-offset:2px}
+.link-btn{border:none;background:none;font-family:inherit;font-size:.76rem;font-weight:700;color:var(--muted);cursor:pointer;padding:.25rem .35rem;border-radius:6px}
+.link-btn:hover{color:var(--plum-900);background:#F7F1FB}
+.link-btn.danger:hover{color:var(--danger);background:#FFF7F9}
+
+/* Posts */
+.feed{display:flex;flex-direction:column;gap:.85rem}
+.post{background:#fff;border:1px solid var(--border);border-radius:18px;padding:1rem 1.15rem;box-shadow:var(--shadow-sm)}
+.post.pinned{border:1.5px solid rgba(201,162,39,.55);background:linear-gradient(180deg,#FFFCF2,#fff 70px)}
+.pin-label{font-size:.7rem;font-weight:800;color:#8A6D12;margin-bottom:.55rem;letter-spacing:.02em}
+.post-head{display:flex;gap:.7rem;align-items:flex-start}
+.avatar{width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem}
+.avatar.sm{width:30px;height:30px;flex:0 0 30px;font-size:.8rem}
+.avatar.coach{background:linear-gradient(135deg,var(--magenta),#7559D4);box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(201,162,39,.6)}
+.who{flex:1;min-width:0}
+.who-line{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.who-name{font-weight:800;font-size:.9rem;color:var(--ink)}
+.coach-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:linear-gradient(135deg,var(--magenta),#7559D4);color:#fff;font-size:.68rem;font-weight:800}
+.who-meta{font-size:.74rem;color:var(--muted);margin-top:1px;overflow-wrap:anywhere}
+.space-tag{font-weight:700;color:var(--plum-800)}
+.day-badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:rgba(30,140,90,.1);color:var(--success);font-size:.7rem;font-weight:800;white-space:nowrap}
+.post-body{margin-top:.7rem;font-size:.93rem;line-height:1.6;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere}
+.post-body a,.cmt-body a{color:var(--brand);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.post-img{display:block;margin-top:.75rem;padding:0;border:none;background:none;cursor:zoom-in;max-width:100%}
+.post-img img{display:block;max-width:100%;max-height:440px;border-radius:14px;border:1px solid var(--border);object-fit:cover}
+.post-actions{display:flex;align-items:center;gap:.4rem;margin-top:.8rem;padding-top:.65rem;border-top:1px solid var(--border);flex-wrap:wrap}
+.act{display:inline-flex;align-items:center;gap:.35rem;border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:.38rem .75rem;font-family:inherit;font-size:.8rem;font-weight:700;color:var(--slate-700);cursor:pointer;min-height:34px}
+.act:hover{border-color:var(--mauve)}
+.act.on{background:#FDF0F6;border-color:#F3B4CF;color:var(--pink-deep)}
+.act-spacer{flex:1}
+.confirm{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.6rem;padding:.6rem .75rem;background:#FFF7F9;border:1px solid #F5CBD6;border-radius:12px;font-size:.82rem;color:var(--danger);font-weight:600}
+
+/* Comments */
+.cmts{margin-top:.7rem;display:flex;flex-direction:column;gap:.6rem}
+.cmt{display:flex;gap:.55rem;align-items:flex-start}
+.cmt-bubble{flex:1;min-width:0;background:#F8F4FC;border-radius:12px;padding:.55rem .75rem}
+.cmt-head{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;font-size:.76rem}
+.cmt-head b{color:var(--ink)}
+.cmt-head span{color:var(--muted)}
+.cmt-head .coach-badge{color:#fff}
+.cmt-body{font-size:.86rem;line-height:1.5;margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere}
+.cmt-form{display:flex;gap:.5rem;align-items:flex-end}
+.cmt-form textarea{flex:1;min-width:0;min-height:42px;max-height:160px;resize:vertical;padding:.55rem .7rem;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:.86rem;line-height:1.45}
+.cmt-empty{font-size:.8rem;color:var(--muted)}
+
+.more{display:flex;justify-content:center;margin-top:.4rem}
+.empty{padding:2rem 1.2rem;text-align:center;color:var(--muted);font-size:.88rem;line-height:1.6;background:#fff;border:1px solid var(--border);border-radius:18px}
+.empty h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.2rem;margin-bottom:.3rem}
+.notice{padding:1.8rem 1.3rem;text-align:center;background:linear-gradient(135deg,rgba(109,40,217,.05),rgba(230,162,190,.12));border:1.5px dashed rgba(109,40,217,.25);border-radius:18px;color:var(--slate-700);font-size:.9rem;line-height:1.6}
+.notice h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.25rem;margin-bottom:.35rem}
+.notice .btn{margin-top:1rem}
+.skeleton{height:120px;border-radius:18px;background:linear-gradient(90deg,#F4EFF8,#FBF8FD,#F4EFF8);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* Side cards */
+.rules{list-style:none;display:flex;flex-direction:column;gap:.5rem;font-size:.84rem;color:var(--slate-700);line-height:1.45}
+.rules li{display:flex;gap:.5rem}
+.rules li span:first-child{flex:0 0 1.2rem;text-align:center}
+.live{background:linear-gradient(150deg,var(--magenta),#7559D4);color:#fff;border:none}
+.live h2{color:#fff}
+.live p{font-size:.86rem;line-height:1.55;opacity:.95;margin-bottom:.8rem}
+.live .btn{background:#fff;color:var(--plum-900)}
+details.side-rules summary{list-style:none;cursor:pointer}
+details.side-rules summary::-webkit-details-marker{display:none}
+details.side-rules summary h2{display:flex;justify-content:space-between;align-items:center;margin:0}
+details.side-rules[open] summary h2{margin-bottom:.55rem}
+details.side-rules summary h2::after{content:'▾';font-size:.8rem;color:var(--muted);transition:transform .15s}
+details.side-rules[open] summary h2::after{transform:rotate(180deg)}
+
+/* Lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(20,12,30,.88);display:none;align-items:center;justify-content:center;z-index:1500;padding:1rem;cursor:zoom-out}
+.lightbox.show{display:flex}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.8rem 1.3rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1600;font-size:.86rem;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .cm-grid{grid-template-columns:minmax(0,1fr)}
+  .cm-side{position:static}
+}
+@media(max-width:520px){
+  .wrap{padding:1rem 1rem 3rem}
+  .tabs{flex-wrap:nowrap;margin:0 -1rem;padding:2px 1rem 4px}
+  .post{padding:.9rem .95rem}
+  .first{flex-direction:column;align-items:stretch;text-align:left}
+  .first .btn{width:100%}
+  .comp-bottom .btn-primary{flex:1}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading the community…</div></div>
+
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <span class="page-eyebrow">💬 Kids Party Profit System</span>
+    <h1 class="page-title">Community</h1>
+    <p class="page-sub">Your Kids Party Profit System circle. Share wins, ask questions, cheer each other on.</p>
+  </div>
+</div>
+
+<main class="wrap" id="cmApp">
+  <div class="cm-grid">
+    <div class="cm-main">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Community spaces"></div>
+      <div id="firstStep"></div>
+      <section class="box composer" id="composer" aria-label="Write a post">
+        <div class="comp-top">
+          <label for="cSpace">Post in</label>
+          <select class="select" id="cSpace"></select>
+          <span id="dayChip"></span>
+        </div>
+        <textarea class="ta" id="cBody" maxlength="5000" placeholder="Share a win, ask a question or tell us how today went…" aria-label="Your post"></textarea>
+        <div id="cPreview"></div>
+        <div class="comp-bottom">
+          <label class="btn btn-outline btn-sm" for="cFile" id="photoBtn">📷 Add a photo</label>
+          <input class="file-in" type="file" id="cFile" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"/>
+          <span class="comp-count" id="cCount"></span>
+          <button class="btn btn-primary" type="button" id="postBtn">Post</button>
+        </div>
+        <div class="comp-note">Using an AI photo? Add “AI-inspired” to your post.</div>
+      </section>
+      <div id="sideSlot" class="cm-side-slot"></div>
+      <div class="feed" id="feed"><div class="skeleton"></div><div class="skeleton"></div></div>
+      <div class="more" id="more"></div>
+    </div>
+    <aside class="cm-side" id="side">
+      <details class="box side-rules" id="rulesCard" open>
+        <summary><h2>Community guidelines</h2></summary>
+        <ul class="rules">
+          <li><span>💛</span><span>Be kind. Everyone here is building something new.</span></li>
+          <li><span>🙅🏽‍♀️</span><span>No selling to each other.</span></li>
+          <li><span>🤖</span><span>Label AI photos “AI-inspired.”</span></li>
+          <li><span>💡</span><span>Share what’s working, so others can try it too.</span></li>
+          <li><span>❓</span><span>Questions are welcome. No question is too small.</span></li>
+        </ul>
+      </details>
+      <section class="box live">
+        <h2>Join me live</h2>
+        <p>I go live on TikTok during the week. Bring your questions.</p>
+        <a class="btn" href="https://www.tiktok.com/@kidspartybizcoach" target="_blank" rel="noopener">Follow @kidspartybizcoach ↗</a>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  </div><!-- /pbh-content -->
+</div><!-- /pbh-layout -->
+
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Photo"><img id="lightboxImg" alt=""/></div>
+
+<script src="nav.js?v=6"></script>
+<script src="help-widget.js?v=6"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const ADMIN_EMAILS=['ggkidsspa@gmail.com','hello@bearhug.events'];
+const KPPS_URL='https://partybusinesscoach.com';
+const IMG_PREFIX=SUPABASE_URL+'/storage/v1/object/public/community/';
+const PAGE=20;
+const TAB_KEY='pbh_community_tab';
+const SPACES=[
+  {id:'announcements',icon:'📣',label:'Announcements'},
+  {id:'introductions',icon:'👋',label:'Introduce Yourself'},
+  {id:'checkins',icon:'🚀',label:'Launch Check-ins'},
+  {id:'questions',icon:'❓',label:'Questions'},
+  {id:'wins',icon:'🏆',label:'Wins'}];
+const spaceOf=id=>SPACES.find(s=>s.id===id);
+const INTRO_PLACEHOLDER="Hi everyone! I'm [your name] from [your city]. I'm starting a [party type] business because…";
+const DEFAULT_PLACEHOLDER='Share a win, ask a question or tell us how today went…';
+const WELCOME="Welcome to our Community! 🎉 This is your Kids Party Profit System circle.\n\nHere's how it works: say hi in Introduce Yourself, post in Launch Check-ins each day you finish, ask anything in Questions, and share every booking, big or small, in Wins.\n\nYour first step: introduce yourself (your name, your city and the party you're starting), then finish Day 0 of your 14-Day Launch.\n\nI'll be live on TikTok during the week. Bring your questions!\n\n— Monica";
+
+let me=null,isAdmin=false,tab='all',posts=[],offset=0,hasMore=false,loading=false,tableReady=true;
+let authors={},liked=new Set(),openComments={},comments={},confirming=null,launchDay=null,photo=null,hasIntro=true,totalPosts=null;
+
+/* ── Small helpers ── */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+// Escape first, then turn http(s) links into anchors. Quotes are already &quot;, so a link can't break out of the attribute.
+function linkify(text){
+  return esc(text).replace(/\bhttps?:\/\/[^\s<]+/gi,m=>{
+    let url=m,tail='';
+    while(/[.,!?;:)\]]$/.test(url)||/&#39;$|&quot;$/.test(url)){
+      const t=url.match(/(&#39;|&quot;|[.,!?;:)\]])$/)[0];tail=t+tail;url=url.slice(0,-t.length);
+    }
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer nofollow">${url}</a>${tail}`;
+  });
+}
+function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2800)}
+function isMissingTable(error){
+  if(!error)return false;
+  const code=String(error.code||''),msg=String(error.message||'');
+  return code==='42P01'||code==='PGRST205'||code==='PGRST204'||/does not exist|schema cache|could not find/i.test(msg);
+}
+function ago(iso){
+  const t=new Date(iso).getTime();if(!t)return '';
+  const s=Math.max(0,(Date.now()-t)/1000);
+  if(s<60)return 'just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  if(s<86400*7)return Math.floor(s/86400)+'d ago';
+  const d=new Date(t);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',...(d.getFullYear()!==new Date().getFullYear()?{year:'numeric'}:{})});
+}
+const PALETTE=['#7559D4','#D115AE','#B8577F','#1E8C5A','#C27A12','#2F6FB5','#8B5CF6','#C23B5E'];
+function colorFor(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]}
+function author(id){
+  const a=authors[id]||{};
+  const admin=!!a.is_admin;
+  const name=admin?'Monica':(a.name||(id===me.id?myName():'Member'));
+  return{name,business:a.business||'',admin};
+}
+function myName(){return (me.firstName||'You')}
+function avatarHtml(id,small){
+  const a=author(id);
+  const cls='avatar'+(small?' sm':'')+(a.admin?' coach':'');
+  const style=a.admin?'':` style="background:${colorFor(id)}"`;
+  return `<div class="${cls}"${style} aria-hidden="true">${esc((a.name||'?').charAt(0).toUpperCase())}</div>`;
+}
+function nameHtml(id){
+  const a=author(id);
+  return a.admin?'<span class="coach-badge">Monica · Coach</span>':`<span class="who-name">${esc(a.name)}</span>`;
+}
+function safeImg(u){return typeof u==='string'&&u.indexOf(IMG_PREFIX)===0?u:''}
+
+/* ── Auth + load ── */
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  const user=session.user;
+  const email=String(user.email||'').toLowerCase();
+  isAdmin=ADMIN_EMAILS.includes(email);
+  let p=null;
+  try{({data:p}=await sb.from('profiles').select('has_paid,has_kpps_access,has_printables_access,profile_data,full_name').eq('id',user.id).single())}catch(e){console.error(e)}
+  if(p&&p.has_paid===false){await sb.auth.signOut();window.location.href='login.html';return}
+  const pd=(p&&p.profile_data)||{};
+  const display=pd.businessName||(p&&p.full_name)||email.split('@')[0];
+  if(typeof window.setNavPlan==='function')window.setNavPlan(p&&p.has_printables_access===true&&p.has_kpps_access!==true?'printables':'kpps');
+  setNavUser(display);
+  setTimeout(()=>setNavUser(display),300);
+  initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html'});
+  $('authGate').style.display='none';
+  $('pbhLayout').style.display='flex';
+
+  const member=isAdmin||(p&&p.has_kpps_access===true);
+  if(!member){renderLocked();return}
+  const first=String((p&&p.full_name)||pd.ownerName||'').trim().split(/\s+/)[0]||'';
+  me={id:user.id,email,firstName:first};
+  authors[me.id]={name:first||null,business:pd.businessName||null,is_admin:isAdmin};
+
+  placeSide();
+  readDeepLink();
+  renderTabs();renderSpaceSelect();wireComposer();
+  await Promise.all([loadFeed(true),checkIntro()]);
+  applyDeepLink();
+}
+
+function renderLocked(){
+  $('cmApp').innerHTML=`<div class="notice" style="max-width:620px;margin:1rem auto"><div style="font-size:2.4rem;margin-bottom:.4rem">🔒</div><h3>The community is for Kids Party Profit System students</h3>Share wins, ask questions and get coaching from Monica alongside other women starting their party businesses. Your Party Biz Hub tools keep working either way.<br/><a class="btn btn-primary" href="${KPPS_URL}" target="_blank" rel="noopener">See Kids Party Profit System</a></div>`;
+}
+function renderNotReady(){
+  $('cmApp').innerHTML=`<div class="notice" style="max-width:620px;margin:1rem auto"><div style="font-size:2.4rem;margin-bottom:.4rem">💬</div><h3>The community is almost ready</h3>We're finishing the setup behind the scenes. Check back soon. In the meantime, keep going on your 14-Day Launch.<br/><a class="btn btn-primary" href="course.html">Open my 14-Day Launch</a></div>`;
+}
+
+/* Side cards sit beside the feed on a computer, and between the composer and the feed on a phone. */
+const narrow=window.matchMedia('(max-width:900px)');
+function placeSide(){
+  const side=$('side'),slot=$('sideSlot'),grid=document.querySelector('.cm-grid');
+  if(!side||!slot||!grid)return;
+  if(narrow.matches){if(side.parentElement!==slot)slot.appendChild(side);$('rulesCard').open=false}
+  else{if(side.parentElement!==grid)grid.appendChild(side);$('rulesCard').open=true}
+}
+try{narrow.addEventListener('change',placeSide)}catch(_){narrow.addListener&&narrow.addListener(placeSide)}
+
+/* ── Tabs ── */
+function allowedSpaces(){return SPACES.filter(s=>s.id!=='announcements'||isAdmin)}
+function renderTabs(){
+  try{const saved=localStorage.getItem(TAB_KEY);if(saved&&(saved==='all'||spaceOf(saved)))tab=saved}catch(_){}
+  drawTabs();
+}
+function drawTabs(){
+  const list=[{id:'all',icon:'',label:'All'},...SPACES];
+  $('tabs').innerHTML=list.map(s=>`<button class="tab" role="tab" type="button" aria-selected="${tab===s.id}" data-tab="${s.id}">${s.icon?s.icon+' ':''}${esc(s.label)}</button>`).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+  const sel=$('tabs').querySelector('[aria-selected="true"]');
+  if(sel&&$('tabs').scrollWidth>$('tabs').clientWidth)$('tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('tabs').offsetLeft-16);
+}
+function setTab(id){
+  if(id===tab)return;
+  tab=id;try{localStorage.setItem(TAB_KEY,id)}catch(_){}
+  drawTabs();
+  if(id!=='all'&&allowedSpaces().some(s=>s.id===id)&&!$('cBody').value.trim()){$('cSpace').value=id;onSpaceChange()}
+  loadFeed(true);
+}
+
+/* ── Composer ── */
+function renderSpaceSelect(){
+  $('cSpace').innerHTML=allowedSpaces().map(s=>`<option value="${s.id}">${s.icon} ${esc(s.label)}</option>`).join('');
+  $('cSpace').value=(tab!=='all'&&allowedSpaces().some(s=>s.id===tab))?tab:'questions';
+}
+function wireComposer(){
+  $('cBody').addEventListener('input',updateCount);
+  $('cSpace').addEventListener('change',onSpaceChange);
+  $('cFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)pickPhoto(f)});
+  $('postBtn').addEventListener('click',submitPost);
+  $('cBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))submitPost()});
+  updateCount();
+}
+function updateCount(){
+  const n=$('cBody').value.length;
+  $('cCount').textContent=n>4500?(5000-n)+' left':'';
+}
+function onSpaceChange(){
+  const sp=$('cSpace').value;
+  if(sp!=='checkins')launchDay=null;
+  $('cBody').placeholder=sp==='introductions'?INTRO_PLACEHOLDER:DEFAULT_PLACEHOLDER;
+  renderDayChip();
+}
+function renderDayChip(){
+  $('dayChip').innerHTML=launchDay==null?'':`<span class="day-chip">Day ${launchDay} ✓<button type="button" aria-label="Remove day badge" onclick="launchDay=null;renderDayChip()">×</button></span>`;
+}
+function readDeepLink(){
+  const q=new URLSearchParams(location.search);
+  const sp=q.get('space');
+  readDeepLink.v={space:spaceOf(sp)&&(sp!=='announcements'||isAdmin)?sp:null,compose:q.get('compose')==='1',day:q.get('day'),text:q.get('text')};
+  if(readDeepLink.v.space){tab=readDeepLink.v.space;try{localStorage.setItem(TAB_KEY,tab)}catch(_){}}
+}
+function applyDeepLink(){
+  const v=readDeepLink.v;if(!tableReady||!$('cBody')||!v||(!v.space&&!v.compose))return;
+  if(v.space){$('cSpace').value=v.space;onSpaceChange()}
+  const d=parseInt(v.day,10);
+  if(v.space==='checkins'&&Number.isInteger(d)&&d>=0&&d<=14){launchDay=d;renderDayChip()}
+  if(v.text)$('cBody').value=String(v.text).slice(0,5000);
+  updateCount();
+  if(v.compose)focusComposer();
+}
+function focusComposer(){
+  const box=$('cBody');
+  $('composer').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>{try{box.focus({preventScroll:true});box.setSelectionRange(box.value.length,box.value.length)}catch(_){}},250);
+}
+function startIntro(){
+  $('cSpace').value='introductions';onSpaceChange();
+  focusComposer();
+}
+
+/* Photos: resized in the browser to 1600px max and saved as JPEG (HEIC included, where the browser can open it). */
+function loadImage(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);const img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('decode'))};
+    img.src=url;
+  });
+}
+function toBlob(canvas,q){return new Promise(r=>canvas.toBlob(b=>r(b),'image/jpeg',q))}
+async function shrink(file){
+  const img=await loadImage(file);
+  const max=1600,scale=Math.min(1,max/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+  const w=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),h=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+  const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+  for(const q of [.86,.76,.64,.52]){const b=await toBlob(cv,q);if(b&&b.size<=1.5*1024*1024)return b}
+  throw new Error('too big');
+}
+async function pickPhoto(file){
+  const ok=/^image\/(jpeg|png|webp|heic|heif)$/i.test(file.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name||'');
+  if(!ok){showToast('Pick a JPG, PNG or WebP photo');return}
+  if(file.size>25*1024*1024){showToast('That photo is too large. Try a smaller one.');return}
+  $('photoBtn').textContent='Preparing photo…';
+  try{
+    const blob=await shrink(file);
+    clearPhoto();
+    photo={blob,url:URL.createObjectURL(blob)};
+    $('cPreview').innerHTML=`<div class="preview"><img src="${photo.url}" alt="Your photo"/><button type="button" aria-label="Remove photo" onclick="clearPhoto()">✕</button></div>`;
+  }catch(e){
+    showToast(/heic|heif/i.test(file.type+file.name)?'That iPhone photo type did not open here. Try a screenshot of it, or change your camera to “Most Compatible.”':'That photo did not open. Try a different one.');
+  }finally{$('photoBtn').textContent='📷 Add a photo'}
+}
+function clearPhoto(){if(photo&&photo.url)URL.revokeObjectURL(photo.url);photo=null;$('cPreview').innerHTML=''}
+
+async function uploadPhoto(){
+  const path=`${me.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+  const{error}=await sb.storage.from('community').upload(path,photo.blob,{contentType:'image/jpeg',upsert:false,cacheControl:'31536000'});
+  if(error)throw error;
+  const{data}=sb.storage.from('community').getPublicUrl(path);
+  return data&&data.publicUrl;
+}
+
+async function submitPost(){
+  const body=$('cBody').value.trim();
+  const space=$('cSpace').value;
+  if(!body){showToast(photo?'Add a few words to go with your photo':'Write something first');$('cBody').focus();return}
+  if(space==='announcements'&&!isAdmin)return;
+  const btn=$('postBtn');btn.disabled=true;btn.textContent='Posting…';
+  try{
+    let image_url=null;
+    if(photo){image_url=await uploadPhoto()}
+    const row={author_id:me.id,space,body,image_url,launch_day:space==='checkins'?launchDay:null};
+    const{data,error}=await sb.from('community_posts').insert(row).select().single();
+    if(error){if(isMissingTable(error)){tableReady=false;renderNotReady();return}throw error}
+    $('cBody').value='';clearPhoto();launchDay=null;renderDayChip();updateCount();
+    if(space==='introductions'){hasIntro=true;renderFirstStep()}
+    if(location.search)try{history.replaceState(null,'',location.pathname)}catch(_){}
+    const post=Object.assign({reactions:0,comment_count:0,pinned:false,created_at:new Date().toISOString()},row,data||{});
+    if(tab!=='all'&&tab!==space){tab=space;try{localStorage.setItem(TAB_KEY,tab)}catch(_){};drawTabs();await loadFeed(true)}
+    else{const pins=posts.filter(p=>p.pinned).length;posts.splice(pins,0,post);totalPosts=(totalPosts||0)+1;renderFeed()}
+    showToast(space==='introductions'?'Welcome! 👋 Your introduction is posted':'✓ Posted');
+  }catch(e){console.error(e);showToast('Could not post. Check your connection and try again.')}
+  finally{btn.disabled=false;btn.textContent='Post'}
+}
+
+/* ── First step: introduce yourself ── */
+async function checkIntro(){
+  if(isAdmin){hasIntro=true;return}
+  try{
+    const{data,error}=await sb.from('community_posts').select('id').eq('author_id',me.id).eq('space','introductions').limit(1);
+    if(error)throw error;
+    hasIntro=Array.isArray(data)&&data.length>0;
+  }catch(_){hasIntro=true}
+  renderFirstStep();
+}
+function renderFirstStep(){
+  if(!tableReady||!$('firstStep'))return;
+  $('firstStep').innerHTML=hasIntro?'':`<div class="first"><div class="first-ico">👋</div><div class="first-copy"><strong>Start here: introduce yourself</strong>Your name, your city and the party you're starting.</div><button class="btn btn-primary" type="button" onclick="startIntro()">Introduce myself</button></div>`;
+}
+
+/* ── Feed ── */
+async function loadFeed(reset){
+  if(loading)return;loading=true;
+  if(reset){offset=0;posts=[];$('feed').innerHTML='<div class="skeleton"></div><div class="skeleton"></div>';$('more').innerHTML=''}
+  try{
+    let q=sb.from('community_posts').select('id,author_id,space,body,image_url,launch_day,pinned,created_at,community_comments(count),community_reactions(count)');
+    if(tab!=='all')q=q.eq('space',tab);
+    const{data,error}=await q.order('pinned',{ascending:false}).order('created_at',{ascending:false}).range(offset,offset+PAGE-1);
+    if(error){if(isMissingTable(error)){tableReady=false;renderNotReady();return}throw error}
+    const rows=(Array.isArray(data)?data:[]).map(r=>Object.assign({},r,{
+      comment_count:countOf(r.community_comments),reactions:countOf(r.community_reactions)}));
+    hasMore=rows.length===PAGE;
+    offset+=rows.length;
+    posts=posts.concat(rows);
+    if(reset&&tab==='all')totalPosts=rows.length;
+    await Promise.all([loadAuthors(rows.map(r=>r.author_id)),loadLiked(rows.map(r=>r.id))]);
+    renderFeed();
+  }catch(e){
+    console.error(e);
+    $('feed').innerHTML='<div class="notice"><h3>The community did not load</h3>Check your connection and refresh the page.</div>';
+  }finally{loading=false}
+}
+function countOf(x){if(Array.isArray(x)&&x[0]&&typeof x[0].count==='number')return x[0].count;return 0}
+async function loadAuthors(ids){
+  const need=[...new Set(ids)].filter(id=>id&&!authors[id]);
+  if(!need.length)return;
+  try{
+    const{data,error}=await sb.rpc('community_authors',{ids:need});
+    if(error)throw error;
+    (data||[]).forEach(a=>{authors[a.id]=a});
+  }catch(e){console.warn('authors',e)}
+  need.forEach(id=>{if(!authors[id])authors[id]={name:null,business:null,is_admin:false}});
+}
+async function loadLiked(ids){
+  if(!ids.length)return;
+  try{
+    const{data,error}=await sb.from('community_reactions').select('post_id').eq('user_id',me.id).in('post_id',ids);
+    if(error)throw error;
+    (data||[]).forEach(r=>liked.add(r.post_id));
+  }catch(e){console.warn('reactions',e)}
+}
+
+function renderFeed(){
+  const feed=$('feed');
+  if(!posts.length){
+    const sp=spaceOf(tab);
+    if(tab==='all'&&isAdmin){
+      feed.innerHTML=`<div class="empty"><h3>Your community is ready 🎉</h3>Start it off with a pinned welcome. Members will see it first.<br/><button class="btn btn-primary" type="button" style="margin-top:.9rem" id="seedBtn" onclick="postWelcome()">Post the welcome message</button></div>`;
+    }else if(tab==='all'){
+      feed.innerHTML='<div class="empty"><h3>Be the first to post</h3>Introduce yourself and say hi. Everyone starts somewhere.</div>';
+    }else{
+      feed.innerHTML=`<div class="empty"><h3>Nothing in ${esc(sp?sp.label:'this space')} yet</h3>${tab==='announcements'?'Updates from Monica will show here.':'Start it off. Your post might be exactly what someone else needs today.'}</div>`;
+    }
+    $('more').innerHTML='';return;
+  }
+  feed.innerHTML=posts.map(postHtml).join('');
+  $('more').innerHTML=hasMore?'<button class="btn btn-outline" type="button" onclick="loadFeed(false)">Load more</button>':'';
+}
+function canDelete(authorId){return authorId===me.id||isAdmin}
+function postHtml(p){
+  const a=author(p.author_id);
+  const sp=spaceOf(p.space);
+  const img=safeImg(p.image_url);
+  const mine=liked.has(p.id);
+  const open=!!openComments[p.id];
+  const dayBadge=p.space==='checkins'&&p.launch_day!=null?` <span class="day-badge">Day ${Number(p.launch_day)} ✓</span>`:'';
+  const biz=a.admin?'Kids Party Profit System':a.business;
+  const metaHtml=[biz?esc(biz):'',sp?sp.icon+' <span class="space-tag">'+esc(sp.label)+'</span>':'',esc(ago(p.created_at))].filter(Boolean).join(' · ');
+  const confirmHtml=confirming&&confirming.kind==='post'&&confirming.id===p.id
+    ?`<div class="confirm" role="alert">Delete this post${p.author_id===me.id?'':' by '+esc(a.name)}? This can't be undone. <span class="act-spacer"></span><button class="btn btn-outline btn-sm" type="button" onclick="cancelConfirm()">Cancel</button><button class="btn btn-danger btn-sm" type="button" onclick="deletePost('${esc(p.id)}')">Delete</button></div>`:'';
+  return `<article class="post${p.pinned?' pinned':''}" id="post-${esc(p.id)}">
+    ${p.pinned?'<div class="pin-label">📌 Pinned</div>':''}
+    <div class="post-head">${avatarHtml(p.author_id)}<div class="who"><div class="who-line">${nameHtml(p.author_id)}${dayBadge}</div><div class="who-meta">${metaHtml}</div></div></div>
+    <div class="post-body">${linkify(p.body)}</div>
+    ${img?`<button class="post-img" type="button" onclick="openImage(this)" data-src="${esc(img)}" aria-label="Open photo"><img src="${esc(img)}" alt="Photo shared by ${esc(a.name)}" loading="lazy"/></button>`:''}
+    <div class="post-actions">
+      <button class="act${mine?' on':''}" type="button" aria-pressed="${mine}" onclick="toggleLike('${esc(p.id)}')">${mine?'❤️':'🤍'} <span>${p.reactions||0}</span></button>
+      <button class="act" type="button" aria-expanded="${open}" onclick="toggleComments('${esc(p.id)}')">💬 <span>${p.comment_count||0}</span> ${p.comment_count===1?'comment':'comments'}</button>
+      <span class="act-spacer"></span>
+      ${isAdmin?`<button class="link-btn" type="button" onclick="togglePin('${esc(p.id)}')">${p.pinned?'Unpin':'📌 Pin'}</button>`:''}
+      ${canDelete(p.author_id)?`<button class="link-btn danger" type="button" onclick="askDelete('post','${esc(p.id)}')">Delete</button>`:''}
+    </div>
+    ${confirmHtml}
+    ${open?commentsHtml(p):''}
+  </article>`;
+}
+function rerenderPost(id){
+  const p=posts.find(x=>x.id===id);const el=document.getElementById('post-'+id);
+  if(!p||!el)return;
+  const tmp=document.createElement('div');tmp.innerHTML=postHtml(p);el.replaceWith(tmp.firstElementChild);
+}
+
+/* ── Hearts (optimistic) ── */
+async function toggleLike(id){
+  const p=posts.find(x=>x.id===id);if(!p||toggleLike.busy[id])return;
+  toggleLike.busy[id]=true;
+  const on=!liked.has(id);
+  if(on){liked.add(id);p.reactions=(p.reactions||0)+1}else{liked.delete(id);p.reactions=Math.max(0,(p.reactions||0)-1)}
+  rerenderPost(id);
+  try{
+    const{error}=on
+      ?await sb.from('community_reactions').insert({post_id:id,user_id:me.id})
+      :await sb.from('community_reactions').delete().eq('post_id',id).eq('user_id',me.id);
+    if(error&&!(on&&String(error.code)==='23505'))throw error;
+  }catch(e){
+    console.error(e);
+    if(on){liked.delete(id);p.reactions=Math.max(0,p.reactions-1)}else{liked.add(id);p.reactions+=1}
+    rerenderPost(id);showToast('Could not save that. Try again.');
+  }finally{toggleLike.busy[id]=false}
+}
+toggleLike.busy={};
+
+/* ── Comments ── */
+function commentsHtml(p){
+  const list=comments[p.id];
+  const items=list==null?'<div class="cmt-empty">Loading comments…</div>'
+    :list.length?list.map(c=>{
+      const conf=confirming&&confirming.kind==='comment'&&confirming.id===c.id;
+      return `<div class="cmt">${avatarHtml(c.author_id,true)}<div class="cmt-bubble"><div class="cmt-head">${nameHtml(c.author_id)}<span>· ${esc(ago(c.created_at))}</span>${canDelete(c.author_id)?`<span class="act-spacer"></span><button class="link-btn danger" type="button" onclick="askDelete('comment','${esc(c.id)}','${esc(p.id)}')">Delete</button>`:''}</div><div class="cmt-body">${linkify(c.body)}</div>${conf?`<div class="confirm" role="alert">Delete this comment? <span class="act-spacer"></span><button class="btn btn-outline btn-sm" type="button" onclick="cancelConfirm()">Cancel</button><button class="btn btn-danger btn-sm" type="button" onclick="deleteComment('${esc(c.id)}','${esc(p.id)}')">Delete</button></div>`:''}</div></div>`;
+    }).join(''):'<div class="cmt-empty">No comments yet. Say something kind.</div>';
+  return `<div class="cmts">${items}<form class="cmt-form" onsubmit="addComment(event,'${esc(p.id)}')"><textarea id="cmt-in-${esc(p.id)}" maxlength="3000" rows="1" placeholder="Write a comment…" aria-label="Write a comment" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();this.form.requestSubmit()}"></textarea><button class="btn btn-primary btn-sm" type="submit">Reply</button></form></div>`;
+}
+async function toggleComments(id){
+  openComments[id]=!openComments[id];
+  rerenderPost(id);
+  if(openComments[id]&&comments[id]==null)await loadComments(id);
+}
+async function loadComments(id){
+  try{
+    const{data,error}=await sb.from('community_comments').select('id,post_id,author_id,body,created_at').eq('post_id',id).order('created_at',{ascending:true}).limit(200);
+    if(error)throw error;
+    comments[id]=Array.isArray(data)?data:[];
+    await loadAuthors(comments[id].map(c=>c.author_id));
+    const p=posts.find(x=>x.id===id);if(p)p.comment_count=Math.max(p.comment_count||0,comments[id].length);
+  }catch(e){console.error(e);comments[id]=[];showToast('Comments did not load. Try again.')}
+  rerenderPost(id);
+}
+async function addComment(ev,id){
+  ev.preventDefault();
+  const box=document.getElementById('cmt-in-'+id);const body=(box&&box.value||'').trim();
+  if(!body)return;
+  const btn=ev.target.querySelector('button[type=submit]');btn.disabled=true;
+  try{
+    const{data,error}=await sb.from('community_comments').insert({post_id:id,author_id:me.id,body}).select().single();
+    if(error)throw error;
+    (comments[id]=comments[id]||[]).push(Object.assign({post_id:id,author_id:me.id,body,created_at:new Date().toISOString()},data||{}));
+    const p=posts.find(x=>x.id===id);if(p)p.comment_count=(p.comment_count||0)+1;
+    rerenderPost(id);
+    const again=document.getElementById('cmt-in-'+id);if(again)again.focus();
+  }catch(e){console.error(e);showToast('Could not post your comment. Try again.');btn.disabled=false}
+}
+
+/* ── Delete (in-page confirm) ── */
+function askDelete(kind,id,postId){confirming={kind,id,postId};rerenderPost(kind==='post'?id:postId)}
+function cancelConfirm(){const c=confirming;confirming=null;if(c)rerenderPost(c.kind==='post'?c.id:c.postId)}
+async function deletePost(id){
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  confirming=null;
+  try{
+    const{error}=await sb.from('community_posts').delete().eq('id',id);
+    if(error)throw error;
+    const img=safeImg(p.image_url);
+    if(img&&p.author_id===me.id){const path=decodeURIComponent(img.slice(IMG_PREFIX.length).split('?')[0]);sb.storage.from('community').remove([path]).catch(()=>{})}
+    posts=posts.filter(x=>x.id!==id);offset=Math.max(0,offset-1);
+    if(p.space==='introductions'&&p.author_id===me.id&&!isAdmin)checkIntro();
+    renderFeed();showToast('Post deleted');
+  }catch(e){console.error(e);rerenderPost(id);showToast('Could not delete. Try again.')}
+}
+async function deleteComment(id,postId){
+  confirming=null;
+  try{
+    const{error}=await sb.from('community_comments').delete().eq('id',id);
+    if(error)throw error;
+    comments[postId]=(comments[postId]||[]).filter(c=>c.id!==id);
+    const p=posts.find(x=>x.id===postId);if(p)p.comment_count=Math.max(0,(p.comment_count||0)-1);
+    rerenderPost(postId);showToast('Comment deleted');
+  }catch(e){console.error(e);rerenderPost(postId);showToast('Could not delete. Try again.')}
+}
+
+/* ── Admin ── */
+async function togglePin(id){
+  if(!isAdmin)return;
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  const next=!p.pinned;
+  try{
+    const{error}=await sb.from('community_posts').update({pinned:next}).eq('id',id);
+    if(error)throw error;
+    showToast(next?'📌 Pinned to the top':'Unpinned');
+    await loadFeed(true);
+  }catch(e){console.error(e);showToast('Could not update. Try again.')}
+}
+async function postWelcome(){
+  if(!isAdmin)return;
+  const btn=$('seedBtn');if(btn){btn.disabled=true;btn.textContent='Posting…'}
+  try{
+    const{error}=await sb.from('community_posts').insert({author_id:me.id,space:'announcements',body:WELCOME,pinned:true}).select().single();
+    if(error)throw error;
+    showToast('🎉 Welcome message posted and pinned');
+    await loadFeed(true);
+  }catch(e){console.error(e);showToast('Could not post. Try again.');if(btn){btn.disabled=false;btn.textContent='Post the welcome message'}}
+}
+
+/* ── Photo viewer ── */
+function openImage(el){const src=safeImg(el.dataset.src);if(!src)return;$('lightboxImg').src=src;$('lightbox').classList.add('show')}
+function closeImage(){$('lightbox').classList.remove('show');$('lightboxImg').removeAttribute('src')}
+$('lightbox').addEventListener('click',closeImage);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeImage();if(confirming)cancelConfirm()}});
+
+init();
+</script>
+</body>
+</html>
