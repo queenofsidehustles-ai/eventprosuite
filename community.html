@@ -166,6 +166,7 @@ details.side-rules[open] summary h2::after{transform:rotate(180deg)}
   .comp-bottom .btn-primary{flex:1}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.ai-av{background:linear-gradient(135deg,#D115AE,#7559D4)!important;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}.ai-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#F3E8FF;color:#6D28D9;font-size:11px;font-weight:800;letter-spacing:.04em}.ai-cmt .cmt-bubble{background:#FBF7FF;border:1px solid #EADCFB}.ai-note{margin-top:6px;font-size:12px;color:#8A7A96}.ai-typing{color:#8A7A96;font-style:italic}
 </style>
 </head>
 <body>
@@ -502,6 +503,7 @@ async function submitPost(){
     if(tab!=='all'&&tab!==space){tab=space;try{localStorage.setItem(TAB_KEY,tab)}catch(_){};drawTabs();await loadFeed(true)}
     else{const pins=posts.filter(p=>p.pinned).length;posts.splice(pins,0,post);totalPosts=(totalPosts||0)+1;renderFeed()}
     showToast(space==='introductions'?'Welcome! 👋 Your introduction is posted':'✓ Posted');
+    if(!isAdmin&&space!=='announcements'&&post.id)askCoach(post.id);
   }catch(e){console.error(e);showToast('Could not post. Check your connection and try again.')}
   finally{btn.disabled=false;btn.textContent='Post'}
 }
@@ -633,15 +635,45 @@ async function toggleLike(id){
 }
 toggleLike.busy={};
 
+
+/* ── Party Coach (AI) replies ──
+   After a student posts, the server writes one AI reply as a comment (marked
+   [[ai]], stored under the coach account) and emails Monica about questions. */
+const AI_MARK='[[ai]]';
+const coachTyping={};
+function isAiComment(c){return typeof c.body==='string'&&c.body.startsWith(AI_MARK)&&!!(authors[c.author_id]&&authors[c.author_id].is_admin)}
+function aiCommentHtml(c,p){
+  const body=c.body.slice(AI_MARK.length).trim();
+  const del=isAdmin?`<span class="act-spacer"></span><button class="link-btn danger" type="button" onclick="askDelete('comment','${esc(c.id)}','${esc(p.id)}')">Delete</button>`:'';
+  const conf=confirming&&confirming.kind==='comment'&&confirming.id===c.id;
+  return `<div class="cmt ai-cmt"><div class="avatar sm ai-av" aria-hidden="true">✨</div><div class="cmt-bubble"><div class="cmt-head"><strong>Party Coach</strong><span class="ai-tag">AI</span><span>· ${esc(ago(c.created_at))}</span>${del}</div><div class="cmt-body">${linkify(body)}</div><div class="ai-note">An instant reply from Monica's AI Party Coach. Monica sees every question too.</div>${conf?`<div class="confirm" role="alert">Delete this comment? <span class="act-spacer"></span><button class="btn btn-outline btn-sm" type="button" onclick="cancelConfirm()">Cancel</button><button class="btn btn-danger btn-sm" type="button" onclick="deleteComment('${esc(c.id)}','${esc(p.id)}')">Delete</button></div>`:''}</div></div>`;
+}
+async function askCoach(postId){
+  coachTyping[postId]=true;openComments[postId]=true;
+  if(comments[postId]==null)comments[postId]=[];
+  rerenderPost(postId);
+  try{
+    const{data}=await sb.auth.getSession();
+    const token=data&&data.session&&data.session.access_token;
+    if(token){
+      await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({mode:'community',postId})});
+    }
+  }catch(_){}
+  coachTyping[postId]=false;
+  await loadComments(postId);
+}
+
 /* ── Comments ── */
 function commentsHtml(p){
   const list=comments[p.id];
   const items=list==null?'<div class="cmt-empty">Loading comments…</div>'
     :list.length?list.map(c=>{
       const conf=confirming&&confirming.kind==='comment'&&confirming.id===c.id;
+      if(isAiComment(c))return aiCommentHtml(c,p);
       return `<div class="cmt">${avatarHtml(c.author_id,true)}<div class="cmt-bubble"><div class="cmt-head">${nameHtml(c.author_id)}<span>· ${esc(ago(c.created_at))}</span>${canDelete(c.author_id)?`<span class="act-spacer"></span><button class="link-btn danger" type="button" onclick="askDelete('comment','${esc(c.id)}','${esc(p.id)}')">Delete</button>`:''}</div><div class="cmt-body">${linkify(c.body)}</div>${conf?`<div class="confirm" role="alert">Delete this comment? <span class="act-spacer"></span><button class="btn btn-outline btn-sm" type="button" onclick="cancelConfirm()">Cancel</button><button class="btn btn-danger btn-sm" type="button" onclick="deleteComment('${esc(c.id)}','${esc(p.id)}')">Delete</button></div>`:''}</div></div>`;
-    }).join(''):'<div class="cmt-empty">No comments yet. Say something kind.</div>';
-  return `<div class="cmts">${items}<form class="cmt-form" onsubmit="addComment(event,'${esc(p.id)}')"><textarea id="cmt-in-${esc(p.id)}" maxlength="3000" rows="1" placeholder="Write a comment…" aria-label="Write a comment" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();this.form.requestSubmit()}"></textarea><button class="btn btn-primary btn-sm" type="submit">Reply</button></form></div>`;
+    }).join(''):(coachTyping[p.id]?'':'<div class="cmt-empty">No comments yet. Say something kind.</div>');
+  const typing=coachTyping[p.id]?'<div class="cmt ai-cmt"><div class="avatar sm ai-av" aria-hidden="true">✨</div><div class="cmt-bubble"><div class="cmt-head"><strong>Party Coach</strong><span class="ai-tag">AI</span></div><div class="cmt-body ai-typing">Writing a reply…</div></div></div>':'';
+  return `<div class="cmts">${items}${typing}<form class="cmt-form" onsubmit="addComment(event,'${esc(p.id)}')"><textarea id="cmt-in-${esc(p.id)}" maxlength="3000" rows="1" placeholder="Write a comment…" aria-label="Write a comment" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();this.form.requestSubmit()}"></textarea><button class="btn btn-primary btn-sm" type="submit">Reply</button></form></div>`;
 }
 async function toggleComments(id){
   openComments[id]=!openComments[id];

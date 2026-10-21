@@ -53,3 +53,5 @@ module.exports = async function handler(req, res) {
     return res.status(502).json({ error: 'The coach is busy right now. Try again in a minute.' });
   }
 };
+
+module.exports.SYSTEM = SYSTEM;
