@@ -428,7 +428,7 @@ async function boot() {
       hasPrintables: profile?.has_kpps_access === true || profile?.has_printables_access === true
     };
     currentStoreSlug = profile?.store_slug || '';
-    renderContinueCard(session.user.id, profile?.has_kpps_access === true || session.user.email === 'ggkidsspa@gmail.com');
+    // The 14-Day Launch has its own page (first in the menu), so Home no longer shows a launch banner.
     const bizName = pd.businessName || '';
     const display = bizName || session.user.email.split('@')[0];
 

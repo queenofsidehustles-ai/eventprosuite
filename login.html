@@ -265,16 +265,30 @@ if (hashError) {
 // If arriving from a reset/magic link, show the "set password" form instead of redirecting
 if (isRecovery) showSetPassword();
 
+// Where to land after sign-in. KPPS students start in the 14-Day Launch until
+// they finish Day 14; everyone else goes Home (or to setup if no business name).
+async function landingPage(uid, email) {
+  let profile = null;
+  try {
+    const r = await sb.from('profiles').select('profile_data,has_kpps_access').eq('id', uid).single();
+    profile = r.data;
+  } catch (_) {}
+  const isStudent = (profile && profile.has_kpps_access === true) || email === 'ggkidsspa@gmail.com';
+  if (isStudent) {
+    try {
+      const { data } = await sb.from('course_progress').select('day').eq('user_id', uid)
+        .eq('day', 14).not('completed_at', 'is', null).limit(1);
+      if (!data || !data.length) return 'course.html';
+    } catch (_) { return 'course.html'; }
+  }
+  const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
+  return hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
+}
+
 // Auto-redirect if already logged in
 sb.auth.getSession().then(async ({ data: { session } }) => {
   if (!session || isRecovery) return;
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('profile_data')
-    .eq('id', session.user.id)
-    .single();
-  const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
-  window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
+  window.location.href = await landingPage(session.user.id, session.user.email);
 });
 
 function switchTab(tab) {
@@ -338,8 +352,7 @@ async function handleLogin() {
   }
 
   // Smart routing: incomplete profile → profile.html, complete → app.html
-  const hasBusinessName = profile.profile_data && profile.profile_data.businessName;
-  window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
+  window.location.href = await landingPage(data.user.id, data.user.email);
 }
 
 async function handleSignup() {
@@ -420,19 +433,12 @@ async function handleSetPassword() {
     return;
   }
 
-  showMessage('Password saved! Taking you to your dashboard...', 'success');
+  showMessage('Password saved! Signing you in...', 'success');
 
   // Route the same way a normal login does
   const uid = data.user.id;
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('profile_data')
-    .eq('id', uid)
-    .single();
-  const hasBusinessName = profile && profile.profile_data && profile.profile_data.businessName;
-  setTimeout(() => {
-    window.location.href = hasBusinessName ? 'dashboard.html' : 'profile.html?setup=1';
-  }, 1200);
+  const dest = await landingPage(uid, data.user.email);
+  setTimeout(() => { window.location.href = dest; }, 1200);
 }
 
 function showReset() {

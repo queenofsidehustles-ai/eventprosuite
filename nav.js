@@ -7,8 +7,8 @@
   // Simplified menu: 6 top-level items. Groups open to show their tools.
   // kppsOnly items are hidden for Printables-only customers.
   const PAGES = [
-    { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
     { id: 'course',    href: 'course.html',    icon: '🚀', label: '14-Day Launch' },
+    { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
     { id: 'profile',   href: 'profile.html',   icon: '💼', label: 'My Business' },
     { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'Website & Booking', kppsOnly: true },
     { group: 'clients', icon: '🎉', label: 'Clients & Quotes', kppsOnly: true, children: [
