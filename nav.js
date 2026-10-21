@@ -21,7 +21,8 @@
     ]},
     { group: 'grow', icon: '📈', label: 'Grow', children: [
       { id: 'store',     href: 'store.html',     icon: '🎨', label: 'Party Printables' },
-      { id: 'content',   href: 'content.html',   icon: '📱', label: 'Content Studio', kppsOnly: true },
+      { id: 'birthdays', href: 'birthdays.html', icon: '🎂', label: 'Birthday List', kppsOnly: true },
+      { id: 'content',  href: 'content.html',   icon: '📱', label: 'Content Studio', kppsOnly: true },
       { id: 'assistant', href: 'assistant.html', icon: '🤖', label: 'PartyGenius AI', kppsOnly: true },
     ]},
   ];

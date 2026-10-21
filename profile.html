@@ -120,6 +120,27 @@ input,select,textarea{font:inherit}
 .save-bar-text{font-size:.86rem;color:var(--muted)}
 .save-bar-text strong{color:var(--plum-900);display:block;margin-bottom:2px;font-size:.95rem}
 
+/* AUTOMATIONS */
+.auto-list{display:flex;flex-direction:column;gap:.6rem}
+.auto-row{display:flex;align-items:flex-start;gap:14px;padding:1rem;border:1px solid var(--line);border-radius:12px;background:linear-gradient(135deg,rgba(109,40,217,.03),rgba(230,162,190,.06))}
+.auto-copy{flex:1;min-width:0}
+.auto-copy strong{display:block;font-size:.92rem;color:var(--plum-900);margin-bottom:3px}
+.auto-copy span{display:block;font-size:.8rem;color:var(--muted);line-height:1.5}
+.auto-copy a{color:var(--brand);font-weight:700}
+.auto-switch{position:relative;width:44px;height:24px;flex:0 0 44px;margin-top:2px;border:none;border-radius:12px;background:var(--line);transition:background .2s}
+.auto-switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s}
+.auto-switch[aria-checked="true"]{background:var(--brand)}
+.auto-switch[aria-checked="true"]::after{left:23px}
+.auto-switch:focus-visible{outline:3px solid rgba(139,92,246,.45);outline-offset:2px}
+.texting{margin-top:.4rem;border:1px solid var(--line);border-radius:12px;background:var(--cream)}
+.texting summary{cursor:pointer;padding:.9rem 1rem;font-weight:700;font-size:.9rem;color:var(--plum-900)}
+.texting-body{padding:0 1rem 1rem}
+.texting-note{padding:.8rem .9rem;border-radius:10px;background:rgba(201,162,39,.12);color:#7a5e1a;font-size:.84rem;font-weight:600;margin-bottom:.8rem}
+.texting-saved{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.8rem .9rem;border-radius:10px;background:#EAF8F0;margin-bottom:.4rem}
+.texting-saved strong{display:block;color:#147A4B;font-size:.88rem}
+.texting-saved span{display:block;font-size:.78rem;color:var(--muted);margin-top:2px}
+.btn-slim{padding:.55rem 1rem;font-size:.82rem}
+
 /* TOAST */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.9rem 1.5rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;box-shadow:var(--shadow-lg);font-size:.88rem}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -509,6 +530,80 @@ input,select,textarea{font:inherit}
     </div>
   </section>
 
+  <!-- AUTOMATIONS. The on/off switches, review link and referral bonus live in
+       profile_data (read by the nightly reminder job). Twilio credentials do
+       NOT: they go to private_settings, which only the owner can read. -->
+  <section class="card" id="automations">
+    <div class="card-header">
+      <div>
+        <h2>Automations</h2>
+        <p>Friendly follow-ups that go out for you, from your business name, so no family slips through the cracks. Each one is on until you switch it off.</p>
+      </div>
+      <div class="section-badge">Step 5</div>
+    </div>
+
+    <div class="auto-list">
+      <div class="auto-row">
+        <div class="auto-copy"><strong>Follow up on quotes automatically (1, 3 and 7 days)</strong><span>A short, kind nudge if a family has not booked yet. Stops as soon as they pay a deposit.</span></div>
+        <button type="button" class="auto-switch" role="switch" id="autoQuoteFollowups" aria-checked="true" aria-label="Follow up on quotes automatically" onclick="flipAuto(this)"></button>
+      </div>
+      <div class="auto-row">
+        <div class="auto-copy"><strong>After-party thank-you + review + referral + rebook email</strong><span>Sent the day after the party: a thank-you, your Google review link, your referral bonus, and an invite to book next year.</span></div>
+        <button type="button" class="auto-switch" role="switch" id="autoAfterParty" aria-checked="true" aria-label="After-party thank-you email" onclick="flipAuto(this)"></button>
+      </div>
+      <div class="auto-row">
+        <div class="auto-copy"><strong>Birthday reminders (7 weeks before)</strong><span>For families on your <a href="birthdays.html">Birthday List</a>. One reminder a year, with your booking link.</span></div>
+        <button type="button" class="auto-switch" role="switch" id="autoBirthdayReminders" aria-checked="true" aria-label="Birthday reminders" onclick="flipAuto(this)"></button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1.2rem">
+      <div class="field">
+        <label for="googleReviewUrl">Google review link</label>
+        <input type="url" id="googleReviewUrl" placeholder="https://g.page/r/..."/>
+        <div class="field-help">Goes in your after-party email. <a href="https://support.google.com/business/answer/16816815" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700">How to find your review link ↗</a></div>
+      </div>
+      <div class="field">
+        <label for="referralBonus">Referral bonus for friends</label>
+        <input type="text" id="referralBonus" maxlength="120" placeholder="a free goodie bag upgrade"/>
+        <div class="field-help">What a friend gets when they book because of this family. Leave blank to skip the referral line.</div>
+      </div>
+    </div>
+
+    <details class="texting" id="textingBox">
+      <summary>Texting (optional, uses your own Twilio)</summary>
+      <div class="texting-body">
+        <p class="field-help" style="margin:0 0 .9rem">Add your own Twilio account and the same reminders also go out by text. Texts are billed by Twilio to you, usually a few cents each. US numbers must finish <strong>A2P 10DLC registration</strong> first, or carriers block the texts (<a href="https://www.twilio.com/docs/messaging/compliance/a2p-10dlc" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700">what that is ↗</a>). Step-by-step guide: <a href="course.html" style="color:var(--brand);font-weight:700">14-Day Launch, Day 14</a>.</p>
+        <div id="twilioNotReady" class="texting-note" style="display:none">Texting setup needs a quick database update. Your other automations work now; check back here soon.</div>
+        <div id="twilioSaved" class="texting-saved" style="display:none">
+          <div><strong>Saved ✓ (token hidden)</strong><span id="twilioSavedSub"></span></div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button type="button" class="btn btn-outline btn-slim" onclick="replaceTwilio()">Replace</button>
+            <button type="button" class="btn btn-outline btn-slim" style="color:var(--danger)" onclick="removeTwilio()">Remove</button>
+          </div>
+        </div>
+        <div id="twilioForm">
+          <div class="grid-2">
+            <div class="field">
+              <label for="twilioSid">Account SID</label>
+              <input type="text" id="twilioSid" placeholder="AC…" autocomplete="off" spellcheck="false" style="font-family:monospace;font-size:.84rem"/>
+            </div>
+            <div class="field">
+              <label for="twilioToken">Auth Token</label>
+              <input type="password" id="twilioToken" placeholder="Paste your Auth Token" autocomplete="new-password" spellcheck="false" style="font-family:monospace;font-size:.84rem"/>
+            </div>
+          </div>
+          <div class="field" style="max-width:320px">
+            <label for="twilioFrom">Twilio phone number</label>
+            <input type="tel" id="twilioFrom" placeholder="+14075551234" autocomplete="off"/>
+            <div class="field-help">The number you bought in Twilio, with +1 in front.</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-slim" id="twilioSaveBtn" onclick="saveTwilio()">Save texting setup</button>
+        </div>
+      </div>
+    </details>
+  </section>
+
   <!-- SOCIAL MEDIA CONNECTIONS -->
   <section class="section">
     <div class="section-head">
@@ -627,6 +722,8 @@ async function init(){
     autoContractEnabled=pd.autoContract!==false; // undefined = ON (existing behaviour)
     applyContractToggleUI(autoContractEnabled);
     if(pd.zernioKey){$('zernioKey').value=pd.zernioKey;loadSocialAccounts(pd.zernioKey)}
+    applyAutomationsUI(pd);
+    loadTwilio();
 
     const display=pd.businessName||(p&&p.full_name)||currentUser.email.split('@')[0];
     setNavUser(display);
@@ -961,6 +1058,80 @@ function handleLogoUpload(e){
   reader.readAsDataURL(f);
 }
 
+/* ── Automations ── */
+const AUTO_KEYS={autoQuoteFollowups:'quoteFollowups',autoAfterParty:'afterParty',autoBirthdayReminders:'birthdayReminders'};
+function applyAutomationsUI(pd){
+  const a=(pd&&pd.automations&&typeof pd.automations==='object')?pd.automations:{};
+  Object.entries(AUTO_KEYS).forEach(([id,key])=>{const el=$(id);if(el)el.setAttribute('aria-checked',a[key]===false?'false':'true')});
+  if($('googleReviewUrl'))$('googleReviewUrl').value=(pd&&pd.googleReviewUrl)||'';
+  if($('referralBonus'))$('referralBonus').value=(pd&&pd.referralBonus)||'';
+}
+function flipAuto(el){el.setAttribute('aria-checked',el.getAttribute('aria-checked')==='true'?'false':'true')}
+function collectAutomations(){
+  const out={};
+  Object.entries(AUTO_KEYS).forEach(([id,key])=>{const el=$(id);if(el)out[key]=el.getAttribute('aria-checked')==='true'});
+  return out;
+}
+
+/* ── Texting: the owner's own Twilio, stored in private_settings ── */
+let twilioSaved=null;
+function twilioTableMissing(error){
+  const code=String((error&&error.code)||''),msg=String((error&&error.message)||'');
+  return code==='42P01'||code==='PGRST205'||/does not exist|schema cache|could not find/i.test(msg);
+}
+function showTwilioState(state){
+  $('twilioNotReady').style.display=state==='missing'?'block':'none';
+  $('twilioSaved').style.display=state==='saved'?'flex':'none';
+  $('twilioForm').style.display=state==='missing'||state==='saved'?'none':'block';
+}
+function maskSid(s){s=String(s||'');return s.length>8?s.slice(0,4)+'…'+s.slice(-4):s}
+async function loadTwilio(){
+  try{
+    const{data,error}=await sb.from('private_settings').select('twilio').eq('owner_id',currentUser.id).maybeSingle();
+    if(error){if(twilioTableMissing(error)){showTwilioState('missing');return}throw error}
+    const t=data&&data.twilio;
+    if(t&&t.sid&&t.from){
+      twilioSaved={sid:t.sid,from:t.from};
+      $('twilioSavedSub').textContent='Account '+maskSid(t.sid)+' · texts from '+t.from;
+      showTwilioState('saved');
+    }else showTwilioState('form');
+  }catch(e){console.error('Twilio settings load:',e);showTwilioState('form')}
+}
+function replaceTwilio(){
+  $('twilioSid').value=(twilioSaved&&twilioSaved.sid)||'';
+  $('twilioFrom').value=(twilioSaved&&twilioSaved.from)||'';
+  $('twilioToken').value='';
+  showTwilioState('form');$('twilioToken').focus();
+}
+async function saveTwilio(){
+  const sid=$('twilioSid').value.trim(),token=$('twilioToken').value.trim();
+  let from=$('twilioFrom').value.trim().replace(/[\s().-]/g,'');
+  if(/^\d{10}$/.test(from))from='+1'+from;
+  if(!/^AC[0-9a-fA-F]{32}$/.test(sid)){showToast('The Account SID starts with AC and is 34 characters');$('twilioSid').focus();return}
+  if(token.length<20){showToast('Paste your full Auth Token from the Twilio Console');$('twilioToken').focus();return}
+  if(!/^\+\d{10,15}$/.test(from)){showToast('Add your Twilio number with + and country code, e.g. +14075551234');$('twilioFrom').focus();return}
+  const btn=$('twilioSaveBtn');btn.disabled=true;btn.textContent='Saving…';
+  try{
+    const{error}=await sb.from('private_settings').upsert({owner_id:currentUser.id,twilio:{sid,token,from},updated_at:new Date().toISOString()},{onConflict:'owner_id'});
+    if(error){if(twilioTableMissing(error)){showTwilioState('missing');return}throw error}
+    $('twilioToken').value='';
+    twilioSaved={sid,from};
+    $('twilioSavedSub').textContent='Account '+maskSid(sid)+' · texts from '+from;
+    showTwilioState('saved');
+    showToast('✓ Texting setup saved');
+  }catch(e){console.error(e);showToast('Could not save texting setup — try again')}
+  finally{btn.disabled=false;btn.textContent='Save texting setup'}
+}
+async function removeTwilio(){
+  if(!confirm('Remove your Twilio details? Automatic texts will stop; emails keep going.'))return;
+  try{
+    const{error}=await sb.from('private_settings').upsert({owner_id:currentUser.id,twilio:null,updated_at:new Date().toISOString()},{onConflict:'owner_id'});
+    if(error){if(twilioTableMissing(error)){showTwilioState('missing');return}throw error}
+    twilioSaved=null;['twilioSid','twilioToken','twilioFrom'].forEach(id=>$(id).value='');
+    showTwilioState('form');showToast('Texting setup removed');
+  }catch(e){console.error(e);showToast('Could not remove — try again')}
+}
+
 async function saveProfile(){
   if(!currentUser)return;
   const contactEmail=$('contactEmail')?$('contactEmail').value.trim():'';
@@ -976,6 +1147,12 @@ async function saveProfile(){
       ? 'Use a phone number here, not an email address'
       : 'Add a complete phone number, or leave this field blank');
     $('contactPhone').focus();
+    return;
+  }
+  const reviewUrl=$('googleReviewUrl')?$('googleReviewUrl').value.trim():'';
+  if(reviewUrl&&!/^https:\/\/\S+\.\S+/.test(reviewUrl)){
+    showToast('Paste the full Google review link, starting with https://');
+    $('googleReviewUrl').focus();
     return;
   }
   const btn=$('saveBtn');
@@ -1010,8 +1187,15 @@ async function saveProfile(){
       depositSliding:$('depositSliding')?!!$('depositSliding').checked:false,
       depositLadder:collectDepositLadder(),
       bookingServices:bookingServices,
-      zernioKey:$('zernioKey').value.trim()
+      zernioKey:$('zernioKey').value.trim(),
+      // Missing = ON on the server, so all three are always written explicitly.
+      automations:Object.assign({},(currentPd.automations&&typeof currentPd.automations==='object')?currentPd.automations:{},collectAutomations()),
+      googleReviewUrl:$('googleReviewUrl').value.trim(),
+      referralBonus:$('referralBonus').value.trim()
     };
+    // Twilio credentials never live in profile_data (other signed-in users can
+    // read profile rows). They are kept in private_settings instead.
+    delete pd.twilio;
 
     const{error}=await sb.from('profiles').upsert({
       id:currentUser.id,

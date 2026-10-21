@@ -37,6 +37,24 @@
 .home-shortcut{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#fff;border:1.5px solid var(--border);border-radius:14px;text-decoration:none;color:var(--plum-900);font-weight:700;font-size:.9rem;transition:border-color .15s,transform .15s}
 .home-shortcut span{font-size:1.2rem}
 .home-shortcut:hover{border-color:var(--brand);transform:translateY(-1px)}
+/* This week scorecard */
+.week-card{margin-bottom:18px;background:#fff;border:1.5px solid var(--border);border-radius:16px;overflow:hidden}
+.week-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 18px 0}
+.week-title{font-size:.95rem;font-weight:800;color:var(--plum-900);margin:0}
+.week-range{font-size:.75rem;color:var(--text-muted)}
+.week-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:10px 8px 12px}
+.week-stat{padding:2px 10px;border-left:1px solid var(--border);min-width:0}
+.week-stat:first-child{border-left:none}
+.week-num{display:block;font-size:1.35rem;font-weight:800;color:var(--text-primary);font-variant-numeric:tabular-nums;line-height:1.15}
+.week-num.na{color:var(--text-subtle)}
+.week-lbl{display:block;font-size:.72rem;color:var(--text-muted);line-height:1.3;margin-top:2px}
+.week-next{display:flex;align-items:center;gap:10px;padding:11px 18px;background:rgba(109,40,217,.06);border-top:1px solid var(--border);color:var(--plum-900);text-decoration:none;font-size:.86rem;line-height:1.4}
+.week-next:hover{background:rgba(109,40,217,.1)}
+.week-next b{font-weight:800}
+.week-next .go{margin-left:auto;flex-shrink:0;font-weight:800;color:var(--brand);font-size:.8rem;white-space:nowrap}
+.week-coach{flex-shrink:0;font-size:.68rem;font-weight:800;color:#fff;background:var(--brand);border-radius:999px;padding:3px 8px}
+@media(max-width:760px){.week-stats{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:10px}.week-stat:nth-child(4){border-left:none}}
+@media(max-width:420px){.week-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.week-stat:nth-child(3),.week-stat:nth-child(5){border-left:none}.week-stat:nth-child(4){border-left:1px solid var(--border)}.week-next{flex-wrap:wrap}.week-next .go{margin-left:0}}
 .launch-toggle{width:100%;display:flex;align-items:center;gap:12px;padding:14px 18px;background:none;border:none;font-family:inherit;cursor:pointer;text-align:left}
 .launch-toggle-main{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .launch-toggle .launch-title{margin:0;font-size:.98rem}
@@ -242,6 +260,16 @@
         <a class="home-shortcut" href="prep.html"><span>📋</span>Upcoming Events</a>
         <a class="home-shortcut" href="app.html?quotes=1"><span>📁</span>My Quotes</a>
       </div>
+
+      <!-- This week: real counts from the last 7 days, plus one next step. -->
+      <section class="week-card" id="weekCard" aria-labelledby="weekTitle" style="display:none">
+        <div class="week-head">
+          <h2 class="week-title" id="weekTitle">This week</h2>
+          <span class="week-range" id="weekRange"></span>
+        </div>
+        <div class="week-stats" id="weekStats"></div>
+        <a class="week-next" id="weekNext" href="#"></a>
+      </section>
 
       <!-- Setup checklist: collapsed to one line; open it for the details. Nothing here writes data. -->
       <section id="launchCard" class="launch-card" aria-labelledby="launchTitle">
@@ -494,6 +522,8 @@ async function loadData() {
   lifecyclePrep = prepRes.data || [];
   lifecycleProfit = lifecycleProfitRes.data || [];
   renderStats();
+  renderWeek(bookingRows, quotesRes.data || [], undefined);
+  loadBirthdayCount(session.user.id).then(n => renderWeek(bookingRows, quotesRes.data || [], n));
   renderNextActions();
   renderBookings();
   renderFinancials(profitRes.data || []);
@@ -670,6 +700,83 @@ function renderStats() {
   $('statMonth').textContent    = thisMonth;
   $('statPipeline').textContent = '$' + pipeline.toLocaleString('en-US', { minimumFractionDigits: 0 });
   $('statUpcoming').textContent = upcoming;
+}
+
+/* ── THIS WEEK ──
+   Only counts we can actually back up. Anything we can't know yet (a column
+   or table that isn't set up) shows "—", never a made-up zero. */
+async function loadBirthdayCount(userId) {
+  try {
+    const { data, error } = await sb.from('birthday_list').select('id').eq('owner_id', userId);
+    if (error || !Array.isArray(data)) return null; // table not set up yet
+    return data.length;
+  } catch (_) { return null; }
+}
+
+function renderWeek(bookingRows, quoteRows, birthdayCount) {
+  const card = $('weekCard');
+  if (!card) return;
+  const now = Date.now();
+  const since = now - 7 * 864e5;
+  const inWeek = v => { const t = new Date(v || 0).getTime(); return t >= since && t <= now + 864e5; };
+  const BOOKED = ['deposit-paid', 'confirmed', 'complete'];
+
+  // New inquiries: booking-form requests that arrived this week.
+  const newInquiries = bookingRows.filter(b => inWeek(b.created_at));
+
+  // Quotes sent: a successful send this week. Older quotes without a send
+  // log count by the day they were made.
+  const sentThisWeek = quoteRows.filter(q => Array.isArray(q.send_events)
+    ? q.send_events.some(e => e && e.ok !== false && inWeek(e.at))
+    : inWeek(q.created_at));
+
+  // Automatic follow-ups — only knowable once the follow-up columns exist.
+  const hasFollowupCol = quoteRows.some(q => Object.prototype.hasOwnProperty.call(q, 'followups_sent'));
+  const followedUp = hasFollowupCol
+    ? quoteRows.filter(q => Number(q.followups_sent) > 0 && (!('last_followup_at' in q) || inWeek(q.last_followup_at))).length
+    : null;
+
+  // Booked: of this week's new inquiries and quotes, how many have a deposit
+  // paid now. Status changes carry no date, so this is the honest version.
+  const linked = new Set(bookingRows.map(b => String(b.quote_id || '')).filter(Boolean));
+  const weekItems = [
+    ...newInquiries.map(b => ({ status: statusOf({ _source: 'booking', _raw: b, id: b.id }) })),
+    ...sentThisWeek.filter(q => !linked.has(String(q.id))).map(q => ({ status: statusOf(q) }))
+  ];
+  const booked = weekItems.filter(x => BOOKED.includes(x.status)).length;
+
+  // Waiting for a quote, whenever they arrived.
+  const waiting = bookingRows.filter(b => statusOf({ _source: 'booking', _raw: b, id: b.id }) === 'inquiry').length;
+
+  const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  $('weekRange').textContent = fmt(new Date(since + 864e5)) + ' – ' + fmt(new Date(now));
+
+  const stat = (n, label, note) => `<div class="week-stat"${note ? ` title="${esc(note)}"` : ''}><span class="week-num${n === null || n === undefined ? ' na' : ''}">${n === null || n === undefined ? '—' : n}</span><span class="week-lbl">${label}</span></div>`;
+  $('weekStats').innerHTML = [
+    stat(newInquiries.length, newInquiries.length === 1 ? 'new inquiry' : 'new inquiries'),
+    stat(sentThisWeek.length, sentThisWeek.length === 1 ? 'quote sent' : 'quotes sent'),
+    stat(followedUp, 'followed up for you', followedUp === null ? 'Automatic follow-ups start once setup finishes.' : ''),
+    stat(booked, 'booked with a deposit'),
+    stat(birthdayCount === undefined ? null : birthdayCount, 'on your birthday list', birthdayCount === null ? 'Your birthday list is almost ready.' : '')
+  ].join('');
+
+  // One next step, picked by simple rules, most urgent first.
+  let next;
+  if (waiting > 0) {
+    next = { text: `<b>Reply to ${waiting} new ${waiting === 1 ? 'inquiry' : 'inquiries'}</b> — speed wins parties.`, go: 'Send a quote', href: 'app.html' };
+  } else if (!newInquiries.length && !sentThisWeek.length) {
+    next = { text: '<b>Send 5 personal texts today.</b> Your next party usually comes from someone who already knows you.', go: 'Open message ideas', href: 'content.html' };
+  } else if (sentThisWeek.length && !booked) {
+    next = { text: '<b>Check your price and follow up.</b> Most families book on the second message, not the first.', go: 'My quotes', href: 'app.html?quotes=1' };
+  } else if (birthdayCount === 0) {
+    next = { text: '<b>Start your birthday list.</b> Every name is a party you can remind them about next year.', go: 'Birthday List', href: 'birthdays.html' };
+  } else {
+    next = { text: '<b>Keep your rhythm.</b> Answer messages fast and share one real photo or tip this week.', go: 'Content Studio', href: 'content.html' };
+  }
+  const link = $('weekNext');
+  link.href = next.href;
+  link.innerHTML = `<span class="week-coach">Next step</span><span>${next.text}</span><span class="go">${esc(next.go)} →</span>`;
+  card.style.display = '';
 }
 
 /* ── NEXT ACTIONS + CUSTOMER JOURNEY ── */

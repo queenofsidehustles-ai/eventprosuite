@@ -31,6 +31,7 @@ const PUBLIC_PAGES = [
   { file: 'view-quote.html', varName: 'pd' },
   { file: 'site.html', varName: 'pd' },
   { file: 'book.html', varName: 'profileData' },
+  { file: 'birthday.html', varName: 'pd' },
   { file: 'api/_profile-compat.js', varName: 'profileData' },
   // shopfront names it `d` inside init(), which also collides with DOM
   // variables elsewhere, so only that function is scanned.

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Birthday List | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>(function(){try{if(sessionStorage.getItem("pbh_auth")==="1"){document.documentElement.dataset.auth="ok";return;}var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<link rel="stylesheet" href="styles.css?v=6"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- QR codes are drawn in the browser — no third-party QR service sees the link. -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" integrity="sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4C1D95;--plum-800:#6D28D9;--brand:#6D28D9;--brand-deep:#7C3AED;
+  --mauve:#8B5CF6;--pink:#E6A2BE;--pink-soft:#F4D2DF;--pink-deep:#B8577F;
+  --gold:#C9A227;--cream:#FCF8F4;
+  --border:#EAE3ED;--border-strong:#DDD1E5;
+  --ink:#1F1A24;--slate-700:#4A4354;--muted:#6C6473;
+  --success:#1E8C5A;--danger:#C23B5E;
+  --sign:#6D28D9;--sign-ink:#fff;
+  --shadow-sm:0 1px 2px rgba(31,20,50,.04);
+  --shadow-lg:0 20px 50px -12px rgba(109,40,217,.18),0 8px 16px -4px rgba(109,40,217,.08);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:1.1rem 1.5rem 1.6rem;color:#fff}
+.page-header-inner{max-width:1040px;margin:0 auto;text-align:center}
+.page-eyebrow{display:block;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.72);margin-bottom:.35rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em}
+.page-title .script{font-family:'Dancing Script',cursive;font-size:1.35em;color:#5EEAD4;font-weight:700}
+.page-sub{font-size:.86rem;color:rgba(255,255,255,.9);line-height:1.6;max-width:520px;margin:.35rem auto 0}
+
+.wrap{max-width:1040px;margin:0 auto;padding:1.6rem 1.5rem 4rem}
+
+/* Share: link + QR on the left, the table sign on the right */
+.share{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:1.1rem;margin-bottom:1.1rem;align-items:start}
+.box{background:#fff;border:1px solid var(--border);border-radius:18px;padding:1.3rem 1.4rem;box-shadow:var(--shadow-sm)}
+.box h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--plum-900);letter-spacing:-.01em;margin-bottom:.25rem}
+.box-sub{font-size:.82rem;color:var(--muted);line-height:1.55;margin-bottom:.9rem}
+.linkrow{display:flex;gap:.5rem}
+.linkrow input{flex:1;min-width:0;padding:.62rem .8rem;border:1.5px solid var(--border);border-radius:10px;background:var(--cream);font-size:.82rem;color:var(--slate-700);font-family:inherit}
+.qr-row{display:flex;gap:1rem;align-items:center;margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border-strong)}
+.qr-tile{width:132px;height:132px;flex:0 0 132px;border:1px solid var(--border);border-radius:12px;padding:8px;background:#fff;display:flex;align-items:center;justify-content:center}
+.qr-tile svg{width:100%;height:100%;display:block}
+.qr-copy{font-size:.8rem;color:var(--muted);line-height:1.55}
+.qr-copy strong{display:block;color:var(--plum-900);font-size:.88rem;margin-bottom:.2rem}
+.qr-actions{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem}
+
+.btn{padding:.62rem 1.05rem;border:none;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;text-decoration:none;white-space:nowrap;height:auto}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--plum-900)}
+.btn-outline{background:#fff;color:var(--plum-800);border:1.5px solid var(--border-strong)}
+.btn-outline:hover{border-color:var(--mauve);color:var(--plum-900)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,.icon-btn:focus-visible,.switch:focus-visible{outline:3px solid rgba(139,92,246,.45);outline-offset:2px}
+
+/* The table sign — the one loud thing on the page, in HER colors */
+.sign-wrap{display:flex;flex-direction:column}
+.sign{flex:1;border-radius:18px;background:var(--sign);color:var(--sign-ink);padding:1.4rem 1.3rem 1.2rem;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.sign::before,.sign::after{content:"";position:absolute;border-radius:50%;background:currentColor;opacity:.08}
+.sign::before{width:180px;height:180px;top:-70px;right:-60px}
+.sign::after{width:120px;height:120px;bottom:-50px;left:-40px}
+.sign-biz{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.8rem;opacity:.92;position:relative}
+.sign-biz img{width:26px;height:26px;border-radius:7px;object-fit:contain;background:#fff;padding:2px}
+.sign-head{font-family:'Playfair Display',serif;font-size:1.45rem;line-height:1.15;font-weight:700;margin:.7rem 0 .9rem;max-width:15em;position:relative}
+.sign-qr{background:#fff;border-radius:14px;padding:10px;width:150px;height:150px;position:relative}
+.sign-qr svg{width:100%;height:100%;display:block}
+.sign-scan{font-family:'Dancing Script',cursive;font-size:1.6rem;font-weight:700;margin-top:.45rem;position:relative}
+.sign-note{font-size:.7rem;opacity:.85;margin-top:.15rem;position:relative}
+.sign-actions{display:flex;gap:.45rem;margin-top:.7rem;flex-wrap:wrap}
+
+/* Automatic reminders switch */
+.auto{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:#fff;border:1.5px solid rgba(109,40,217,.18);border-radius:16px;margin-bottom:1.6rem}
+.auto-copy{flex:1;min-width:0}
+.auto-copy strong{display:block;color:var(--plum-900);font-size:.92rem}
+.auto-copy span{display:block;font-size:.8rem;color:var(--muted);line-height:1.5;margin-top:2px}
+.switch{position:relative;width:46px;height:26px;flex:0 0 46px;border-radius:999px;border:none;background:#D9D2E0;cursor:pointer;transition:background .18s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s}
+.switch[aria-checked="true"]{background:var(--success)}
+.switch[aria-checked="true"]::after{left:23px}
+
+/* The list */
+.list-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+.list-head h2{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--plum-900);letter-spacing:-.01em}
+.list-meta{font-size:.82rem;color:var(--muted);margin-top:2px}
+.list-actions{display:flex;gap:.45rem;flex-wrap:wrap}
+.list{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.fam{display:grid;grid-template-columns:62px minmax(0,1.1fr) minmax(0,1.5fr) 96px 168px 36px;gap:.9rem;align-items:center;padding:.8rem 1rem;border-bottom:1px solid var(--border)}
+.fam:last-child{border-bottom:none}
+.fam.muted{opacity:.6}
+.cal{width:60px;border-radius:10px;overflow:hidden;border:1px solid var(--border-strong);text-align:center;background:#fff;line-height:1}
+.cal-m{background:var(--brand);color:#fff;font-size:.62rem;font-weight:800;padding:4px 0 3px;letter-spacing:.04em}
+.cal-d{font-size:1.25rem;font-weight:800;color:var(--ink);padding:5px 0 2px;font-variant-numeric:tabular-nums}
+.cal-in{font-size:.58rem;color:var(--muted);padding:0 2px 5px;white-space:nowrap}
+.fam-child{font-weight:700;color:var(--ink);font-size:.92rem;overflow-wrap:anywhere}
+.fam-parent{font-size:.78rem;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.fam-contact{font-size:.8rem;color:var(--slate-700);line-height:1.5;min-width:0}
+.fam-contact a{color:var(--slate-700);text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fam-contact a:hover{color:var(--brand)}
+.fam-src{font-size:.74rem;color:var(--muted)}
+.fam-status{text-align:right}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700;white-space:nowrap}
+.badge.sent{background:rgba(30,140,90,.1);color:var(--success)}
+.badge.plan{background:rgba(109,40,217,.08);color:var(--brand)}
+.badge.warn{background:rgba(201,162,39,.14);color:#7a5e1a}
+.badge.off{background:#F1EEF4;color:var(--muted)}
+.icon-btn{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;font-size:.95rem}
+.icon-btn:hover{border-color:var(--border);color:var(--danger);background:#FFF7F9}
+.month-break{padding:.45rem 1rem;background:#FAF7FC;border-bottom:1px solid var(--border);font-size:.72rem;font-weight:700;color:var(--muted)}
+
+.empty{padding:2.4rem 1.2rem;text-align:center;color:var(--muted);font-size:.88rem;line-height:1.6}
+.empty h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.25rem;margin-bottom:.3rem}
+.notice{padding:1.6rem 1.3rem;text-align:center;background:linear-gradient(135deg,rgba(109,40,217,.05),rgba(230,162,190,.12));border:1.5px dashed rgba(109,40,217,.25);border-radius:18px;color:var(--slate-700);font-size:.88rem;line-height:1.6}
+.notice h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.2rem;margin-bottom:.3rem}
+
+/* Add-a-family dialog */
+.modal{position:fixed;inset:0;background:rgba(31,20,50,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:500;padding:1rem}
+.modal.show{display:flex}
+.modal-card{background:#fff;border-radius:20px;max-width:480px;width:100%;max-height:92vh;overflow-y:auto;padding:1.6rem;box-shadow:var(--shadow-lg)}
+.modal-card h2{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.35rem;margin-bottom:.2rem}
+.modal-card .box-sub{margin-bottom:1rem}
+.field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.8rem}
+.field label{font-size:.78rem;font-weight:700;color:var(--slate-700)}
+.field input,.field select{padding:.62rem .8rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.9rem;background:#fff;min-height:42px;width:100%}
+.field input:focus,.field select:focus{border-color:var(--mauve);outline:none;box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.consent{display:flex;gap:.6rem;align-items:flex-start;padding:.8rem .9rem;background:var(--cream);border:1px solid var(--border);border-radius:12px;font-size:.82rem;line-height:1.5;color:var(--slate-700);margin:.3rem 0 1rem;cursor:pointer}
+.consent input{width:18px;height:18px;margin-top:1px;flex:0 0 18px;accent-color:var(--brand)}
+.form-err{color:var(--danger);font-size:.8rem;font-weight:600;min-height:1.1em;margin-bottom:.5rem}
+.modal-actions{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.8rem 1.3rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1000;font-size:.86rem;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#printSheet{display:none}
+
+@media(max-width:860px){
+  .share{grid-template-columns:1fr}
+  .fam{grid-template-columns:62px minmax(0,1fr) 36px;row-gap:.35rem}
+  .fam-contact,.fam-src,.fam-status{grid-column:2/3;text-align:left}
+  .fam .icon-btn{grid-column:3;grid-row:1}
+}
+@media(max-width:520px){
+  .wrap{padding:1.2rem 1rem 3rem}
+  .linkrow{flex-wrap:wrap}.linkrow input{flex:1 1 100%}
+  .linkrow .btn{flex:1}
+  .qr-row{flex-direction:column;align-items:flex-start}
+  .two{grid-template-columns:1fr}
+  .auto{align-items:flex-start}
+  .list-actions{width:100%}.list-actions .btn{flex:1}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Printing: only the table sign, full page */
+@media print{
+  @page{size:letter portrait;margin:0.5in}
+  body{background:#fff}
+  body>*:not(#printSheet){display:none!important}
+  #printSheet{display:flex!important;min-height:9.6in;align-items:center;justify-content:center}
+  #printSheet .sign{width:6.6in;min-height:8.6in;padding:.6in .5in;justify-content:center;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printSheet .sign-biz{font-size:16pt}
+  #printSheet .sign-biz img{width:44px;height:44px}
+  #printSheet .sign-head{font-size:34pt;margin:.3in 0}
+  #printSheet .sign-qr{width:3.4in;height:3.4in;padding:.18in}
+  #printSheet .sign-scan{font-size:38pt;margin-top:.2in}
+  #printSheet .sign-note{font-size:12pt}
+}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading your birthday list…</div></div>
+
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <span class="page-eyebrow">🎂 Birthday List</span>
+    <h1 class="page-title">Every birthday is a <span class="script">future</span> party.</h1>
+    <p class="page-sub">Every family on this list gets a friendly reminder from you 7 weeks before their child's birthday — automatically.</p>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="share">
+    <section class="box" aria-labelledby="shareTitle">
+      <h2 id="shareTitle">Your sign-up link</h2>
+      <p class="box-sub">Parents add their child's birthday here. Put it in your bio, your thank-you texts and your website.</p>
+      <div class="linkrow">
+        <input type="text" id="signupLink" readonly aria-label="Your birthday sign-up link"/>
+        <button class="btn btn-primary" type="button" onclick="copyLink()">Copy</button>
+        <a class="btn btn-outline" id="openLink" href="#" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div class="qr-row">
+        <div class="qr-tile" id="qrSmall" aria-label="QR code for your sign-up link" role="img"></div>
+        <div class="qr-copy">
+          <strong>Your QR code</strong>
+          Parents scan it with their phone camera. Use it on flyers, goodie-bag tags and at school fairs.
+          <div class="qr-actions">
+            <button class="btn btn-outline" type="button" onclick="downloadQr()">Download QR (PNG)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sign-wrap" aria-label="Table sign preview">
+      <div class="sign" id="signPreview"></div>
+      <div class="sign-actions">
+        <button class="btn btn-primary" type="button" onclick="printSign()">Print table sign</button>
+        <span class="box-sub" style="margin:0;align-self:center">Set it on your party table or a fair booth.</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="auto">
+    <div class="auto-copy">
+      <strong>Send birthday reminders automatically</strong>
+      <span id="autoNote">One friendly email about 7 weeks before each birthday, with your booking link. Each family gets one reminder a year and can unsubscribe anytime.</span>
+    </div>
+    <button type="button" class="switch" id="autoSwitch" role="switch" aria-checked="true" aria-label="Send birthday reminders automatically" onclick="toggleAuto()"></button>
+  </div>
+
+  <div class="list-head">
+    <div>
+      <h2>Families on your list</h2>
+      <div class="list-meta" id="listMeta">Loading…</div>
+    </div>
+    <div class="list-actions">
+      <button class="btn btn-outline" type="button" id="csvBtn" onclick="exportCsv()">Export CSV</button>
+      <button class="btn btn-primary" type="button" id="addBtn" onclick="openAdd()">+ Add a family</button>
+    </div>
+  </div>
+  <div id="listWrap"><div class="list"><div class="empty">Loading your list…</div></div></div>
+
+</main>
+
+<div class="modal" id="addModal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+  <form class="modal-card" id="addForm" onsubmit="saveFamily(event)" novalidate>
+    <h2 id="addTitle">Add a family</h2>
+    <p class="box-sub">For families who gave you their child's birthday in person, like at a party or a fair.</p>
+    <div class="two">
+      <div class="field"><label for="fChild">Child's first name</label><input id="fChild" maxlength="120" autocomplete="off" required/></div>
+      <div class="field"><label for="fParent">Parent's name</label><input id="fParent" maxlength="120" autocomplete="off"/></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="fMonth">Birthday month</label><select id="fMonth" onchange="fillDays('fDay',this.value)"></select></div>
+      <div class="field"><label for="fDay">Day</label><select id="fDay"></select></div>
+    </div>
+    <div class="field"><label for="fEmail">Parent's email</label><input id="fEmail" type="email" maxlength="200" autocomplete="off" inputmode="email"/></div>
+    <div class="field"><label for="fPhone">Phone (optional)</label><input id="fPhone" type="tel" maxlength="40" autocomplete="off"/></div>
+    <label class="consent"><input type="checkbox" id="fConsent"/><span>This family said yes to birthday reminders from my business. Reminders go by email, so add their email above.</span></label>
+    <div class="form-err" id="formErr" role="alert"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" type="button" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-primary" type="submit" id="saveBtn">Add to my list</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  </div><!-- /pbh-content -->
+</div><!-- /pbh-layout -->
+
+<div id="printSheet"></div>
+
+<script src="nav.js?v=6"></script>
+<script src="help-widget.js?v=6"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const LEAD_DAYS=49; // 7 weeks — matches the reminder engine's target
+let currentUser=null,profileData={},families=[],tableReady=true;
+
+/* ── Small helpers ── */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2600)}
+function validHex(c){return /^#[0-9a-fA-F]{6}$/.test(String(c||''))}
+function inkOn(hex){
+  const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const L=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};
+  const lum=.2126*L(r)+.7152*L(g)+.0722*L(b);
+  return lum>.42?'#1F1A24':'#FFFFFF';
+}
+function daysInMonth(m,y){return new Date(Date.UTC(y,m,0)).getUTCDate()}
+function todayUtc(){const n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())}
+// Same rule as the reminder engine: Feb 29 is celebrated Feb 28 in common years.
+function nextBirthday(m,d){
+  const t=todayUtc();let y=new Date(t).getUTCFullYear();
+  const on=yr=>Date.UTC(yr,m-1,Math.min(d,daysInMonth(m,yr)));
+  let date=on(y);if(date<t){y+=1;date=on(y)}
+  return{date,year:y,days:Math.round((date-t)/864e5)};
+}
+function fmtShort(ms){return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}
+function isMissingTable(error){
+  if(!error)return false;
+  const code=String(error.code||''),msg=String(error.message||'');
+  return code==='42P01'||code==='PGRST205'||code==='PGRST204'||/does not exist|schema cache|could not find/i.test(msg);
+}
+function remindersOn(){const a=profileData.automations;return !(a&&typeof a==='object'&&a.birthdayReminders===false)}
+function signupUrl(src){
+  const base=location.origin+location.pathname.replace(/[^/]*$/,'');
+  return base+'birthday.html?uid='+encodeURIComponent(currentUser.id)+(src?'&src='+encodeURIComponent(src):'');
+}
+
+/* ── Auth + load ── */
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+  let display=(currentUser.email||'user').split('@')[0];
+  try{
+    const{data:p}=await sb.from('profiles').select('has_paid,has_crm_access,has_kpps_access,has_printables_access,crm_access_expires_at,profile_data,full_name').eq('id',currentUser.id).single();
+    if(p&&p.has_paid===false){await sb.auth.signOut();window.location.href='login.html';return}
+    if(p&&((p.has_crm_access!==true&&p.has_kpps_access!==true)||(p.crm_access_expires_at&&new Date(p.crm_access_expires_at)<=new Date()))){window.location.href='store.html';return}
+    profileData=(p&&p.profile_data)||{};
+    display=profileData.businessName||(p&&p.full_name)||display;
+    if(typeof window.setNavPlan==='function')window.setNavPlan(p&&p.has_printables_access===true&&!p.has_kpps_access?'printables':'kpps');
+  }catch(e){console.error(e)}
+  setNavUser(display);
+  initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html'});
+  $('authGate').style.display='none';
+  $('pbhLayout').style.display='flex';
+
+  const link=signupUrl('link');
+  $('signupLink').value=link;
+  $('openLink').href=link;
+  renderAuto();
+  renderQr();
+  renderSign();
+  fillMonths('fMonth');fillDays('fDay',1);
+  await loadFamilies();
+}
+
+/* ── QR ── */
+function qrModel(text){
+  if(typeof window.qrcode!=='function')return null;
+  const q=window.qrcode(0,'M');q.addData(text);q.make();return q;
+}
+function qrSvg(text,dark){
+  const q=qrModel(text);
+  if(!q)return '<div style="font-size:.72rem;color:#6C6473;text-align:center;padding:6px">QR code could not load. Refresh the page to try again.</div>';
+  const n=q.getModuleCount();let d='';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c} ${r}h1v1h-1z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 ${n+4} ${n+4}" shape-rendering="crispEdges" aria-hidden="true"><rect x="-2" y="-2" width="${n+4}" height="${n+4}" fill="#fff"/><path d="${d}" fill="${dark||'#1F1A24'}"/></svg>`;
+}
+function renderQr(){$('qrSmall').innerHTML=qrSvg(signupUrl('qr'))}
+function downloadQr(){
+  const q=qrModel(signupUrl('qr'));
+  if(!q){showToast('QR code could not load — refresh and try again');return}
+  const n=q.getModuleCount(),quiet=4,scale=Math.max(8,Math.floor(1200/(n+quiet*2)));
+  const size=(n+quiet*2)*scale;
+  const cv=document.createElement('canvas');cv.width=size;cv.height=size;
+  const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);ctx.fillStyle='#000';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))ctx.fillRect((c+quiet)*scale,(r+quiet)*scale,scale,scale);
+  const a=document.createElement('a');
+  a.download='birthday-list-qr.png';a.href=cv.toDataURL('image/png');
+  document.body.appendChild(a);a.click();a.remove();
+  showToast('✓ QR code downloaded');
+}
+
+/* ── Table sign ── */
+function signHtml(){
+  const name=profileData.businessName||'Your party business';
+  const logo=profileData.logoDataURL||profileData.logoUrl||profileData.logo||'';
+  return `<div class="sign-biz">${logo?`<img src="${esc(logo)}" alt=""/>`:''}<span>${esc(name)}</span></div>
+    <div class="sign-head">Get a birthday surprise <span style="white-space:nowrap">reminder 🎈</span></div>
+    <div class="sign-qr">${qrSvg(signupUrl('table-sign'))}</div>
+    <div class="sign-scan">scan me</div>
+    <div class="sign-note">No year needed · one friendly email · unsubscribe anytime</div>`;
+}
+function applySignColor(el){
+  const c=validHex(profileData.brandColor)?profileData.brandColor:'#6D28D9';
+  el.style.setProperty('--sign',c);el.style.setProperty('--sign-ink',inkOn(c));
+}
+function renderSign(){const el=$('signPreview');applySignColor(el);el.innerHTML=signHtml()}
+function printSign(){
+  const sheet=$('printSheet');
+  sheet.innerHTML='<div class="sign">'+signHtml()+'</div>';
+  applySignColor(sheet.firstChild);
+  window.print();
+}
+
+function copyLink(){
+  const v=$('signupLink').value;
+  const done=()=>showToast('✓ Link copied');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(done,()=>{$('signupLink').select();document.execCommand('copy');done()});
+  else{$('signupLink').select();document.execCommand('copy');done()}
+}
+
+/* ── Automatic reminders switch (profile_data.automations.birthdayReminders) ── */
+function renderAuto(){
+  const on=remindersOn();
+  $('autoSwitch').setAttribute('aria-checked',on?'true':'false');
+  $('autoNote').textContent=on
+    ?'On. One friendly email about 7 weeks before each birthday, with your booking link. Each family gets one reminder a year and can unsubscribe anytime.'
+    :'Off. Nobody on your list gets a reminder until you turn this back on.';
+}
+async function toggleAuto(){
+  const next=!remindersOn();
+  const btn=$('autoSwitch');btn.disabled=true;
+  try{
+    // Read, merge, write — never replace profile_data wholesale.
+    const{data:existing,error:readErr}=await sb.from('profiles').select('profile_data').eq('id',currentUser.id).maybeSingle();
+    if(readErr)throw readErr;
+    const pd=(existing&&existing.profile_data)||{};
+    const automations=Object.assign({},(pd.automations&&typeof pd.automations==='object')?pd.automations:{},{birthdayReminders:next});
+    const merged=Object.assign({},pd,{automations});
+    const{error}=await sb.from('profiles').update({profile_data:merged,updated_at:new Date().toISOString()}).eq('id',currentUser.id);
+    if(error)throw error;
+    profileData=merged;renderAuto();renderList();
+    showToast(next?'✓ Birthday reminders are on':'Birthday reminders are off');
+  }catch(e){console.error(e);showToast('Could not save — check your connection and try again')}
+  finally{btn.disabled=false}
+}
+
+/* ── List ── */
+async function loadFamilies(){
+  try{
+    const{data,error}=await sb.from('birthday_list').select('*').eq('owner_id',currentUser.id).order('created_at',{ascending:false});
+    if(error){
+      if(isMissingTable(error)){tableReady=false;families=[];renderList();return}
+      throw error;
+    }
+    tableReady=true;families=Array.isArray(data)?data:[];
+  }catch(e){
+    console.error(e);families=[];
+    $('listWrap').innerHTML='<div class="notice"><h3>Your list did not load</h3>Check your connection and refresh the page.</div>';
+    $('listMeta').textContent='';return;
+  }
+  renderList();
+}
+
+function statusFor(f,nb){
+  const thisYear=new Date().getFullYear();
+  const lry=Number(f.last_reminded_year)||0;
+  if(f.unsubscribed)return{cls:'off',text:'Unsubscribed'};
+  if(f.consent!==true)return{cls:'off',text:'No consent yet'};
+  if(lry&&(lry===nb.year||lry===thisYear))return{cls:'sent',text:'✓ Reminder sent '+lry};
+  if(!f.email)return{cls:'warn',text:'Add an email'};
+  if(!remindersOn())return{cls:'off',text:'Reminders off'};
+  // The engine sends 42–56 days ahead. Closer than that, this year's window has passed.
+  if(nb.days<42){
+    const later=Date.UTC(nb.year+1,f.birth_month-1,Math.min(f.birth_day,daysInMonth(f.birth_month,nb.year+1)))-LEAD_DAYS*864e5;
+    return{cls:'plan',text:'Next reminder '+fmtShort(later)+' '+new Date(later).getUTCFullYear()};
+  }
+  return{cls:'plan',text:'Reminder ~'+fmtShort(nb.date-LEAD_DAYS*864e5)};
+}
+
+function renderList(){
+  const wrap=$('listWrap');
+  $('addBtn').disabled=!tableReady;$('csvBtn').disabled=!tableReady||!families.length;
+  if(!tableReady){
+    $('listMeta').textContent='';
+    wrap.innerHTML='<div class="notice"><h3>Your birthday list is almost ready 🎈</h3>We\'re finishing the setup behind the scenes. Your link, QR code and table sign already work for sharing — sign-ups will show here once setup is done. Check back soon.</div>';
+    return;
+  }
+  if(!families.length){
+    $('listMeta').textContent='No families yet';
+    wrap.innerHTML='<div class="list"><div class="empty"><h3>Start with one family</h3>Text your sign-up link to a mom you know, or print your table sign for your next party.<br/><button class="btn btn-primary" type="button" style="margin-top:.9rem" onclick="openAdd()">+ Add a family</button></div></div>';
+    return;
+  }
+  const rows=families.map(f=>({f,nb:nextBirthday(Number(f.birth_month),Number(f.birth_day))}))
+    .sort((a,b)=>a.nb.days-b.nb.days||String(a.f.child_name||'').localeCompare(String(b.f.child_name||'')));
+  const in60=rows.filter(r=>r.nb.days<=60&&!r.f.unsubscribed).length;
+  $('listMeta').textContent=`${families.length} famil${families.length===1?'y':'ies'} · ${in60} birthday${in60===1?'':'s'} in the next 60 days · soonest first`;
+  let lastKey='';
+  wrap.innerHTML='<div class="list">'+rows.map(({f,nb})=>{
+    const st=statusFor(f,nb);
+    const d=new Date(nb.date);
+    const key=nb.year+'-'+d.getUTCMonth();
+    const brk=key!==lastKey?`<div class="month-break">${MONTHS[d.getUTCMonth()]} ${nb.year}</div>`:'';lastKey=key;
+    const when=nb.days===0?'today':nb.days===1?'tomorrow':'in '+nb.days+' days';
+    const contact=[f.email?`<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>`:'',f.phone?`<a href="tel:${esc(String(f.phone).replace(/[^\d+]/g,''))}">${esc(f.phone)}</a>`:''].join('')||'<span class="fam-src">No contact saved</span>';
+    return brk+`<div class="fam${f.unsubscribed?' muted':''}">
+      <div class="cal" aria-label="Birthday ${MONTHS[f.birth_month-1]} ${f.birth_day}"><div class="cal-m">${MONTHS[f.birth_month-1].slice(0,3)}</div><div class="cal-d">${Number(f.birth_day)}</div><div class="cal-in">${when}</div></div>
+      <div><div class="fam-child">${esc(f.child_name||'Unnamed child')}</div><div class="fam-parent">${f.parent_name?'Parent: '+esc(f.parent_name):'Parent not given'}</div></div>
+      <div class="fam-contact">${contact}</div>
+      <div class="fam-src">${esc(sourceLabel(f.source))}</div>
+      <div class="fam-status"><span class="badge ${st.cls}">${esc(st.text)}</span></div>
+      <button class="icon-btn" type="button" title="Remove from list" aria-label="Remove ${esc(f.child_name||'this family')} from your list" onclick="removeFamily('${esc(f.id)}')">🗑</button>
+    </div>`;
+  }).join('')+'</div>';
+}
+function sourceLabel(s){
+  const v=String(s||'').toLowerCase();
+  return({qr:'QR code','table-sign':'Table sign',link:'Sign-up link',website:'Website',manual:'Added by you','added by hand':'Added by you'})[v]||(s?String(s):'Sign-up form');
+}
+
+async function removeFamily(id){
+  const f=families.find(x=>String(x.id)===String(id));if(!f)return;
+  if(!confirm(`Remove ${f.child_name||'this family'} from your birthday list? They will not get a reminder.`))return;
+  const{error}=await sb.from('birthday_list').delete().eq('id',id);
+  if(error){showToast('Could not remove — try again');return}
+  families=families.filter(x=>String(x.id)!==String(id));renderList();showToast('Removed from your list');
+}
+
+/* ── Add a family by hand ── */
+function fillMonths(id){$(id).innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+function fillDays(id,month){
+  const sel=$(id),keep=Number(sel.value)||1,max=daysInMonth(Number(month)||1,2024); // 2024: Feb has 29
+  sel.innerHTML=Array.from({length:max},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+  sel.value=String(Math.min(keep,max));
+}
+function openAdd(){
+  if(!tableReady)return;
+  $('addForm').reset();fillDays('fDay',1);$('formErr').textContent='';
+  $('addModal').classList.add('show');setTimeout(()=>$('fChild').focus(),50);
+}
+function closeAdd(){$('addModal').classList.remove('show')}
+$('addModal').addEventListener('click',e=>{if(e.target.id==='addModal')closeAdd()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAdd()});
+
+async function saveFamily(ev){
+  ev.preventDefault();
+  const child=$('fChild').value.trim(),email=$('fEmail').value.trim(),phone=$('fPhone').value.trim();
+  const err=m=>{$('formErr').textContent=m};
+  if(!child)return err('Add the child\'s first name.');
+  if(email&&!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email))return err('That email does not look right — check for a typo.');
+  if(!email&&!phone)return err('Add an email or phone number so you can reach them.');
+  if(!$('fConsent').checked)return err('Tick the box to confirm this family said yes to reminders.');
+  const btn=$('saveBtn');btn.disabled=true;btn.textContent='Adding…';
+  const row={owner_id:currentUser.id,child_name:child,parent_name:$('fParent').value.trim()||null,email:email?email.toLowerCase():null,phone:phone||null,
+    birth_month:Number($('fMonth').value),birth_day:Number($('fDay').value),source:'manual',consent:true,unsubscribed:false};
+  try{
+    const{data,error}=await sb.from('birthday_list').insert(row).select().single();
+    if(error){if(isMissingTable(error)){tableReady=false;closeAdd();renderList();return}throw error}
+    families.unshift(data&&data.id?data:Object.assign({id:'tmp'+Date.now(),created_at:new Date().toISOString()},row));
+    closeAdd();renderList();showToast('✓ '+child+' is on your list');
+  }catch(e){console.error(e);err('Could not save — check your connection and try again.')}
+  finally{btn.disabled=false;btn.textContent='Add to my list'}
+}
+
+/* ── CSV ── */
+function csvCell(v){
+  let s=v==null?'':String(v);
+  if(/^[=+\-@\t\r]/.test(s))s="'"+s; // keep spreadsheets from running it as a formula
+  return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function exportCsv(){
+  if(!families.length)return;
+  const head=['Child','Birthday month','Birthday day','Parent','Email','Phone','Source','Consent','Unsubscribed','Last reminder year','Added'];
+  const rows=families.map(f=>[f.child_name,MONTHS[f.birth_month-1]||f.birth_month,f.birth_day,f.parent_name,f.email,f.phone,sourceLabel(f.source),f.consent?'yes':'no',f.unsubscribed?'yes':'no',f.last_reminded_year||'',f.created_at?String(f.created_at).slice(0,10):'']);
+  const csv=[head,...rows].map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='birthday-list.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+
+init();
+</script>
+</body>
+</html>
