@@ -20,7 +20,7 @@ const STYLE = {
 };
 
 function svc() {
-  const k = env('SUPABASE_SERVICE_KEY');
+  const k = env('SUPABASE_SERVICE_KEY') || env('SUPABASE_SERVICE_ROLE_KEY');
   return { apikey: k, Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' };
 }
 const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const check = await requireStudent(req);
   if (check.error) return res.status(check.status).json({ error: check.error });
-  if (!env('SUPABASE_SERVICE_KEY') || !env('OPENROUTER_API_KEY')) return res.status(500).json({ error: 'Not set up' });
+  if (!(env('SUPABASE_SERVICE_KEY') || env('SUPABASE_SERVICE_ROLE_KEY')) || !env('OPENROUTER_API_KEY')) return res.status(500).json({ error: 'Not set up' });
 
   const postId = String((req.body || {}).postId || '');
   if (!/^[0-9a-f-]{36}$/i.test(postId)) return res.status(400).json({ error: 'Bad post' });

@@ -21,7 +21,7 @@ const engine = require('./_booking-engine');
 //
 // The service-role key bypasses RLS. It lives only in Vercel's env (server
 // side) and must never appear in browser code.
-const SUPA_KEY = env('SUPABASE_SERVICE_ROLE_KEY');
+const SUPA_KEY = env('SUPABASE_SERVICE_ROLE_KEY') || env('SUPABASE_SERVICE_KEY');
 
 async function supabaseGet(path) {
   const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
@@ -219,6 +219,7 @@ module.exports = async function handler(req, res) {
   const quoteFollowups = await isolated('quote follow-ups', () => runQuoteFollowups(now));
   const afterParty = await isolated('after-party', () => runAfterParty(now));
   const birthdays = await isolated('birthday reminders', () => runBirthdayReminders(now));
+  const communityPosts = await isolated('community calendar', () => runCommunityCalendar(now));
 
   return res.json({
     processed: results.length,
@@ -228,7 +229,8 @@ module.exports = async function handler(req, res) {
     hubAccess,
     quoteFollowups,
     afterParty,
-    birthdays
+    birthdays,
+    communityPosts
   });
 };
 
@@ -945,4 +947,31 @@ function balanceDueDate(eventDate, profileData, quoteData) {
   ev.setDate(ev.getDate() - days);
   const pad = n => String(n).padStart(2, '0');
   return ev.getFullYear() + '-' + pad(ev.getMonth() + 1) + '-' + pad(ev.getDate());
+}
+
+
+// ── Community calendar: Mon/Wed/Fri engagement posts from Monica ─────────
+const COMMUNITY_COACH_ID = '06137daa-c6d7-414b-ba53-54ff2612ec4c';
+async function runCommunityCalendar(now) {
+  const cal = require('./_community-calendar');
+  const today = cal.easternDate(now);
+  const due = cal.postsFor(today);
+  const out = { date: today, due: due.length, posted: 0, skipped: 0 };
+  if (!due.length) return out;
+  const headers = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' };
+  // Never post the same calendar post twice, however many times this runs.
+  const since = new Date(now.getTime() - 3 * 864e5).toISOString();
+  const r = await fetch(`${SUPA_URL}/rest/v1/community_posts?author_id=eq.${COMMUNITY_COACH_ID}&created_at=gte.${encodeURIComponent(since)}&select=body`, { headers });
+  if (!r.ok) throw new Error('community_posts read failed: ' + r.status);
+  const recent = new Set((await r.json()).map(x => x.body));
+  for (const p of due) {
+    if (recent.has(p.body)) { out.skipped++; continue; }
+    const ins = await fetch(`${SUPA_URL}/rest/v1/community_posts`, {
+      method: 'POST', headers: { ...headers, Prefer: 'return=minimal' },
+      body: JSON.stringify({ author_id: COMMUNITY_COACH_ID, space: p.space, body: p.body }),
+    });
+    if (!ins.ok) throw new Error('community post failed: ' + ins.status);
+    out.posted++;
+  }
+  return out;
 }
