@@ -343,6 +343,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(
 <div class="toast" id="toast"></div>
 
 <script>
+async function whToken(){try{if(typeof sb!=='undefined'&&sb&&sb.auth){const{data}=await sb.auth.getSession();if(data&&data.session)return data.session.access_token}}catch(_){}try{const t=JSON.parse(localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token')||'null');return(t&&t.access_token)||''}catch(_){return''}}
+
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
 const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
 const ADMIN_EMAIL = 'ggkidsspa@gmail.com';
@@ -373,7 +375,7 @@ async function grantAccess() {
   try {
     const res = await fetch('/api/send-purchase-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (await whToken()) },
       body: JSON.stringify({ action: 'grant-access', email, customerName: name, accessType }),
     });
     const data = await res.json();
@@ -462,7 +464,7 @@ async function generateWithAI() {
   try {
     const res = await fetch('/api/send-purchase-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (await whToken()) },
       body: JSON.stringify({ action: 'generate-copy', name, theme }),
     });
     const data = await res.json();

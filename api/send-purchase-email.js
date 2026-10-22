@@ -45,7 +45,13 @@ module.exports = async function handler(req, res) {
   } catch (_) {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
-  if (body.action === 'generate-copy') return handleGenerateCopy(res, body);
+  if (body.action === 'generate-copy') {
+    const u = await getUser(req);
+    if (!u || !['ggkidsspa@gmail.com', 'hello@bearhug.events'].includes(String(u.email || '').toLowerCase())) {
+      return res.status(401).json({ error: 'Sign in with your admin account first.' });
+    }
+    return handleGenerateCopy(res, body);
+  }
   if (body.action === 'grant-access') {
     // Admin only: this creates accounts, unlocks paid access and returns a
     // sign-in link, so it must never be callable by the public.
@@ -56,7 +62,7 @@ module.exports = async function handler(req, res) {
     }
     return handleGrantAccess(res, body);
   }
-  return handleSendEmail(res, body);
+  return handleSendEmail(req, res, body);
 };
 
 module.exports.config = { api: { bodyParser: false } };
@@ -1032,17 +1038,50 @@ ${skoolBlock}
   return res.json({ success: true, loginUrl, profileWritten, profileError: profileError || null, emailSent: false, emailError: 'RESEND_API_KEY not set in Vercel env vars' });
 }
 
-async function handleSendEmail(res, body) {
+const DOWNLOAD_HITS = new Map();
+async function handleSendEmail(req, res, body) {
   const RESEND_KEY = env('RESEND_API_KEY');
   // Default to the VERIFIED partybizhub.com sender so emails work even if the env
   // var is unset/misnamed. onboarding@resend.dev is Resend's sandbox and only
   // delivers to the account owner — never use it for real customer email.
   const FROM_EMAIL = env('RESEND_FROM_EMAIL') || 'Party Biz Hub <support@partybizhub.com>';
-  const { customerEmail, customerName, productName, downloadUrl, instructions, sellerName } = body;
-
-  if (!customerEmail || !downloadUrl) {
-    return res.status(400).json({ error: 'customerEmail and downloadUrl are required' });
+  // Only real, active store products can be emailed, and every value in the
+  // email comes from the database, never from the request. That stops anyone
+  // using this endpoint to send their own content from our support address.
+  const customerEmail = String(body.customerEmail || '').trim().slice(0, 200);
+  const productId = String(body.productId || '').trim();
+  if (!/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(customerEmail) || !/^[0-9a-zA-Z-]{8,64}$/.test(productId)) {
+    return res.status(400).json({ error: 'customerEmail and productId are required' });
   }
+  const ip = String((req.headers['x-forwarded-for'] || '').split(',')[0] || 'x').trim();
+  const now = Date.now();
+  const hits = (DOWNLOAD_HITS.get(ip) || []).filter(t => now - t < 3600000);
+  if (hits.length >= 15) return res.status(429).json({ error: 'Too many requests. Try again later.' });
+  hits.push(now); DOWNLOAD_HITS.set(ip, hits);
+
+  const SVC = env('SUPABASE_SERVICE_KEY');
+  if (!SVC) return res.status(500).json({ error: 'Not configured' });
+  const svcHeaders = { apikey: SVC, Authorization: 'Bearer ' + SVC };
+  const SUPA = 'https://dmqwoddwzpfnmpjtwiee.supabase.co';
+  let product = null, seller = null;
+  try {
+    const pr = await fetch(`${SUPA}/rest/v1/products?id=eq.${encodeURIComponent(productId)}&active=is.true&select=name,file_url,instructions,user_id&limit=1`, { headers: svcHeaders });
+    product = pr.ok ? (await pr.json())[0] : null;
+    if (product && product.user_id) {
+      const sr = await fetch(`${SUPA}/rest/v1/profiles?id=eq.${encodeURIComponent(product.user_id)}&select=full_name,profile_data&limit=1`, { headers: svcHeaders });
+      seller = sr.ok ? (await sr.json())[0] : null;
+    }
+  } catch (_) {}
+  if (!product || !/^https:\/\//i.test(String(product.file_url || ''))) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+  const escE = v => String(v == null ? '' : v).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  const spd = (seller && seller.profile_data) || {};
+  const customerName = '';
+  const productName = escE(String(product.name || '').slice(0, 120));
+  const downloadUrl = escE(product.file_url);
+  const instructions = product.instructions ? escE(String(product.instructions).slice(0, 3000)) : '';
+  const sellerName = escE(String(spd.storeName || spd.businessName || '').slice(0, 120));
   if (!RESEND_KEY) {
     return res.status(200).json({ sent: false, note: 'Add RESEND_API_KEY to Vercel env vars to send emails automatically.' });
   }
@@ -1095,7 +1134,7 @@ body{font-family:Inter,Arial,sans-serif;background:#f5f5f7;margin:0;padding:0}
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: customerEmail,
-        subject: 'Your download: ' + (productName || 'Party Printable'),
+        subject: 'Your download: ' + (String(product.name || '').slice(0, 120) || 'Party Printable'),
         html,
       }),
     });

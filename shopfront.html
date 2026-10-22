@@ -846,7 +846,7 @@ async function autoSendEmail(email,p){
   try{
     await fetch('/api/send-purchase-email',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({customerEmail:email,customerName:'',productName:p.name,downloadUrl:p.file_url,instructions:p.instructions||null,sellerName:sellerBizName}),
+      body:JSON.stringify({customerEmail:email,productId:p.id}),
     });
   }catch(_){}
 }

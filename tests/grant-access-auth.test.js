@@ -28,3 +28,29 @@ test('unauthenticated grant-access request is refused', async () => {
   assert.equal(status, 401);
   assert.ok(!payload.loginUrl);
 });
+
+test('download email only accepts a product id, never caller-supplied content', async () => {
+  const handler = require('../api/send-purchase-email.js');
+  const { Readable } = require('stream');
+  const call = async body => {
+    const req = Readable.from([Buffer.from(JSON.stringify(body))]);
+    req.method = 'POST'; req.headers = {};
+    let status = 200, payload;
+    const res = { setHeader() {}, status(c) { status = c; return this; }, json(b) { payload = b; return this; }, end() { return this; } };
+    await handler(req, res);
+    return { status, payload };
+  };
+  const r = await call({ customerEmail: 'victim@example.com', downloadUrl: 'https://evil.example', productName: '<b>spam</b>' });
+  assert.equal(r.status, 400);
+});
+
+test('generate-copy requires the admin account', async () => {
+  const handler = require('../api/send-purchase-email.js');
+  const { Readable } = require('stream');
+  const req = Readable.from([Buffer.from(JSON.stringify({ action: 'generate-copy', name: 'x', theme: 'y' }))]);
+  req.method = 'POST'; req.headers = {};
+  let status = 200;
+  const res = { setHeader() {}, status(c) { status = c; return this; }, json() { return this; }, end() { return this; } };
+  await handler(req, res);
+  assert.equal(status, 401);
+});
