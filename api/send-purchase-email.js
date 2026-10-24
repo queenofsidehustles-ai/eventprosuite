@@ -232,7 +232,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
 
   // KPPS one-time purchases — unlock the full system for life.
   // Check the pre-discount subtotal first so COUPON / discounted purchases still deliver.
-  const KPPS_AMOUNTS = new Set([19700, 40000, 49700, ...envAmounts(env('KPPS_PRICE_CENTS'))]);
+  const KPPS_AMOUNTS = new Set([19700, 40000, 49700, 29700, ...envAmounts(env('KPPS_PRICE_CENTS'))]);
   const isKPPS = !isCRMSub && (
     taggedKpps ||
     looksLikeKppsPlan ||
@@ -496,6 +496,7 @@ async function handleStripeWebhook(res, rawBody, sigHeader) {
       product: isKPPS ? 'Kids Party Profit System' : (isCRMSub ? 'Party Biz Hub subscription' : 'Party Profit Printables'),
       paid: amountTotal, isKPPS,
     });
+    if (isKPPS) await addKppsBuyerToMailerLite({ eventId, name: customerName, email: customerEmail });
     return res.json({ received: true, eventId, userId, tier: assignedTier, profileWritten, emailSent: true });
   }
 
@@ -1231,6 +1232,29 @@ function kppsWelcomeHtml(firstName, loginUrl, emailStyles) {
 </div>
 <div class="footer">Questions? Email <a href="mailto:support@partybizhub.com" style="color:#7559D4">support@partybizhub.com</a></div>
 </div></body></html>`;
+}
+
+// ── KPPS buyer → MailerLite "KPPS Buyers" group ─────────────────────────
+// The Friday business report counts this group, so every KPPS sale (one-time
+// or the first payment of the 3 x $69 plan) shows up there without anyone
+// typing it in. Runs only after access and the welcome email have succeeded,
+// and can never fail the webhook: a MailerLite outage must not make Stripe
+// retry a delivery that already worked.
+async function addKppsBuyerToMailerLite({ eventId, name, email }) {
+  const key = env('MAILER_LITE_API_KEY') || env('MAILERLITE_API_KEY');
+  const groupId = env('KPPS_BUYERS_GROUP_ID') || '184402963087754776';
+  if (!key || !email) return;
+  try {
+    const r = await fetch('https://connect.mailerlite.com/api/subscribers', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email, fields: name ? { name } : {}, groups: [groupId] }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) console.error('MailerLite KPPS Buyers add failed', { eventId, status: r.status });
+  } catch (e) {
+    console.error('MailerLite KPPS Buyers add failed', { eventId, error: e.message });
+  }
 }
 
 // ── New customer alert, so a sale never goes unnoticed ──────────────────
