@@ -214,7 +214,7 @@ const BONUS=[
   {key:'local',     title:'Advanced Local Marketing', mins:16, url:'media/course/bonus-local.mp4', blurb:'Daycares and schools, the fishbowl raffle, birthday emails, sponsorships and referrals.', day:13},
   {key:'scale',     title:'Delivery + Scale', mins:7, url:'media/course/bonus-scale.mp4', blurb:'Deliver with confidence, collect reviews, set a weekly routine and grow.', day:14},
   // Not a video: an interactive guide that opens in a new tab (kind:'link').
-  {key:'scholarship', kind:'link', title:'Scholarship Class Playbook', mins:0, url:'https://claude.ai/artifact/PkeC1wu7fsRgnbnMCYL5ia', blurb:'Many states let families pay for kids\' classes with scholarship funds. Pick your state, see how its program works, and follow 6 steps to turn your parties into weekday classes.', day:14}
+  {key:'scholarship', kind:'link', title:'Scholarship Class Playbook', mins:0, url:'https://claude.ai/artifact/PkeC1wu7fsRgnbnMCYL5ia', video:'media/course/bonus-scholarship.mp4', blurb:'Many states let families pay for kids\' classes with scholarship funds. Pick your state, see how its program works, and follow 6 steps to turn your parties into weekday classes.', day:14}
 ];
 const bonus=k=>BONUS.find(b=>b.key===k);
 const MARKETING_VIDEO=bonus('marketing').url;
@@ -714,7 +714,7 @@ function openBonus(focus){closeCoach();closeNotebook();renderBonus(focus);docume
 function closeBonus(){const d=document.getElementById('bonusDrawer');if(d)d.classList.remove('open');if(!document.getElementById('coachDrawer').classList.contains('open')&&!document.getElementById('nbDrawer').classList.contains('open'))document.getElementById('coachScrim').classList.remove('show')}
 
 // A bonus that is a page, not a video: one clear button that opens it in a new tab.
-function linkHtml(b){return `<div style="margin-top:8px"><a class="cl-pb-btn" style="display:inline-block;text-decoration:none;font-size:14px;padding:10px 16px" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">Open the ${esc(b.title)} ↗</a></div>`}
+function linkHtml(b){return (b.video?`<div class="cl-video" style="aspect-ratio:9/16;max-width:300px;margin-top:8px"><video controls playsinline preload="metadata" poster="${esc(b.video.replace(/\.mp4.*/i,'.jpg'))}" title="${esc(b.title)} intro"><source src="${esc(b.video)}" type="video/mp4"></video></div>`:'')+`<div style="margin-top:10px"><a class="cl-pb-btn" style="display:inline-block;text-decoration:none;font-size:14px;padding:10px 16px" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">Open the ${esc(b.title)} ↗</a></div>`}
 // Course videos are hosted with the Hub (mp4); bonus trainings can be YouTube links.
 function videoHtml(url,title){
   if(/\.mp4($|\?)/i.test(url))return `<div class="cl-video"><video controls playsinline preload="metadata" poster="${esc(url.replace(/\.mp4.*/i,'.jpg'))}" title="${esc(title)}"><source src="${esc(url)}" type="video/mp4"></video></div>`;
