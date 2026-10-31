@@ -212,7 +212,9 @@ const BONUS=[
   {key:'mistakes',  title:'5 Mistakes That Keep Party Business Owners Broke', mins:14, url:'media/course/bonus-mistakes.mp4', blurb:'The five traps that keep party businesses stuck, and the fix for each.', day:0},
   {key:'marketing', title:'Marketing Masterclass: Online + Local', mins:15, url:'media/course/bonus-marketing.mp4', blurb:'How to get visible on TikTok, Instagram, Facebook and Google, and in your community.', day:11},
   {key:'local',     title:'Advanced Local Marketing', mins:16, url:'media/course/bonus-local.mp4', blurb:'Daycares and schools, the fishbowl raffle, birthday emails, sponsorships and referrals.', day:13},
-  {key:'scale',     title:'Delivery + Scale', mins:7, url:'media/course/bonus-scale.mp4', blurb:'Deliver with confidence, collect reviews, set a weekly routine and grow.', day:14}
+  {key:'scale',     title:'Delivery + Scale', mins:7, url:'media/course/bonus-scale.mp4', blurb:'Deliver with confidence, collect reviews, set a weekly routine and grow.', day:14},
+  // Not a video: an interactive guide that opens in a new tab (kind:'link').
+  {key:'scholarship', kind:'link', title:'Scholarship Class Playbook', mins:0, url:'https://claude.ai/artifact/PkeC1wu7fsRgnbnMCYL5ia', blurb:'Many states let families pay for kids\' classes with scholarship funds. Pick your state, see how its program works, and follow 6 steps to turn your parties into weekday classes.', day:14}
 ];
 const bonus=k=>BONUS.find(b=>b.key===k);
 const MARKETING_VIDEO=bonus('marketing').url;
@@ -441,7 +443,7 @@ const DAYS=[
      {label:'Google review link',href:'https://support.google.com/business/answer/16816815',note:'Get the link families use to review you'}]}],
    doIt:{label:'Open my Birthday List',href:'birthdays.html',hint:'Your sign-up link, QR code and printable table sign are all there. For your value post, use the Party Coach above.'}},
   {n:14,title:'Follow Up + Celebrate',
-   bonus:[{key:'marketing',mode:'rewatch'},{key:'scale',mode:'after'}],
+   bonus:[{key:'marketing',mode:'rewatch'},{key:'scale',mode:'after'},{key:'scholarship',mode:'after'}],
    ai:[{label:'Follow-up text',prompt:"Write a short, friendly follow-up text for a parent who asked about a {party} party but hasn't booked. Mention I have a couple of dates open next month."},{label:'Ask for a Google review',prompt:"Write a short thank-you text asking my practice-party family to leave a Google review for {name}, with a line on what to mention."}],
    why:"Most bookings happen on the follow-up, not the first message. Today you close every loop, set a simple 30-day rhythm, and celebrate how far you've come.",
    video:'media/course/day-14.mp4',videoNote:'A celebration video from Monica is coming soon. Read today\'s lesson below.',
@@ -544,13 +546,13 @@ function renderDays(){
 }
 function renderLesson(){
   const d=DAYS[current], s=dayState(current);
-  const embed=(b)=>videoHtml(b.url,b.title);
+  const embed=(b)=>b.kind==='link'?linkHtml(b):videoHtml(b.url,b.title);
   const mcParts=(d.bonus||[]).map(x=>{const b=bonus(x.key);if(!b||!b.url)return '';
     if(x.mode==='main')return `<div><div class="cl-section-label">🎥 Watch first: ${esc(b.title)} (${b.mins} min)</div><div class="cl-hint" style="margin:-4px 0 10px">${esc(b.blurb)} The next days put it into action.</div>${embed(b)}</div>`;
     if(x.mode==='rewatch')return `<div class="cl-mypb">🎥 Want a refresher? <button class="cl-pb-btn" onclick="openBonus('${b.key}')">Rewatch: ${esc(b.title)}</button></div>`;
     if(x.mode==='after')return '';
     return `<details class="cl-bonus"><summary>🎬 Go deeper (optional): ${esc(b.title)} · ${b.mins} min</summary><div class="cl-hint" style="margin:6px 0 10px">${esc(b.blurb)}</div>${embed(b)}</details>`;}).join('');
-  const afterParts=(d.bonus||[]).filter(x=>x.mode==='after').map(x=>{const b=bonus(x.key);return b&&b.url?`<details class="cl-bonus"><summary>🎬 After your launch: ${esc(b.title)} · ${b.mins} min</summary><div class="cl-hint" style="margin:6px 0 10px">${esc(b.blurb)}</div>${embed(b)}</details>`:''}).join('');
+  const afterParts=(d.bonus||[]).filter(x=>x.mode==='after').map(x=>{const b=bonus(x.key);return b&&b.url?`<details class="cl-bonus"><summary>${b.kind==='link'?'🎁 After your launch: '+esc(b.title)+' · interactive guide':'🎬 After your launch: '+esc(b.title)+' · '+b.mins+' min'}</summary><div class="cl-hint" style="margin:6px 0 10px">${esc(b.blurb)}</div>${embed(b)}</details>`:''}).join('');
   const mc=mcParts+afterParts;
   const video=d.video
     ?videoHtml(d.video,'Day '+d.n+' video')
@@ -705,12 +707,14 @@ function copyNotebook(){
 // ── Bonus trainings drawer ──
 function renderBonus(focus){
   const list=BONUS.filter(b=>b.url||previewAll);
-  document.getElementById('bonusBody').innerHTML=list.length?list.map(b=>`<div class="nb-sec" id="bonus-${b.key}"><div class="nb-h">${esc(b.title)} <span class="cl-hint">${b.mins} min · goes with Day ${b.day}</span></div><div class="cl-hint">${esc(b.blurb)}</div>${b.url?videoHtml(b.url,b.title):'<div class="coach-empty">Admin note: add this video\'s unlisted YouTube link in BONUS to show it to students.</div>'}</div>`).join(''):'<div class="coach-empty">Bonus trainings are coming soon.</div>';
+  document.getElementById('bonusBody').innerHTML=list.length?list.map(b=>`<div class="nb-sec" id="bonus-${b.key}"><div class="nb-h">${esc(b.title)} <span class="cl-hint">${b.kind==='link'?'Interactive guide · after your launch':b.mins+' min · goes with Day '+b.day}</span></div><div class="cl-hint">${esc(b.blurb)}</div>${b.url?(b.kind==='link'?linkHtml(b):videoHtml(b.url,b.title)):'<div class="coach-empty">Admin note: add this video\'s unlisted YouTube link in BONUS to show it to students.</div>'}</div>`).join(''):'<div class="coach-empty">Bonus trainings are coming soon.</div>';
   if(focus){const el=document.getElementById('bonus-'+focus);if(el)el.scrollIntoView({block:'start'})}
 }
 function openBonus(focus){closeCoach();closeNotebook();renderBonus(focus);document.getElementById('bonusDrawer').classList.add('open');document.getElementById('coachScrim').classList.add('show')}
 function closeBonus(){const d=document.getElementById('bonusDrawer');if(d)d.classList.remove('open');if(!document.getElementById('coachDrawer').classList.contains('open')&&!document.getElementById('nbDrawer').classList.contains('open'))document.getElementById('coachScrim').classList.remove('show')}
 
+// A bonus that is a page, not a video: one clear button that opens it in a new tab.
+function linkHtml(b){return `<div style="margin-top:8px"><a class="cl-pb-btn" style="display:inline-block;text-decoration:none;font-size:14px;padding:10px 16px" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">Open the ${esc(b.title)} ↗</a></div>`}
 // Course videos are hosted with the Hub (mp4); bonus trainings can be YouTube links.
 function videoHtml(url,title){
   if(/\.mp4($|\?)/i.test(url))return `<div class="cl-video"><video controls playsinline preload="metadata" poster="${esc(url.replace(/\.mp4.*/i,'.jpg'))}" title="${esc(title)}"><source src="${esc(url)}" type="video/mp4"></video></div>`;
