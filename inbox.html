@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Message Monica | Party Biz Hub</title>
+<link rel="icon" type="image/png" href="partybizhub-logo.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script>(function(){try{if(sessionStorage.getItem("pbh_auth")==="1"){document.documentElement.dataset.auth="ok";return;}var s=localStorage.getItem("sb-dmqwoddwzpfnmpjtwiee-auth-token");if(s){var t=JSON.parse(s);if(t&&t.access_token&&(t.expires_at||0)>Date.now()/1000)document.documentElement.dataset.auth="ok";}}catch(e){}})();</script>
+<link rel="stylesheet" href="styles.css?v=6"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --plum-900:#4C1D95;--plum-800:#6D28D9;--brand:#6D28D9;--mauve:#8B5CF6;--magenta:#D115AE;
+  --cream:#FCF8F4;--border:#EAE3ED;--border-strong:#DDD1E5;
+  --ink:#1F1A24;--slate-700:#4A4354;--muted:#6C6473;--danger:#C23B5E;
+  --shadow-sm:0 1px 2px rgba(31,20,50,.04);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(180deg,#FFFDFC 0%,var(--cream) 55%,#FFFDFC 100%);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+.page-header{background:linear-gradient(135deg,var(--plum-900),var(--brand) 60%,var(--mauve));padding:1.1rem 1.5rem 1.6rem;color:#fff}
+.page-header-inner{max-width:1080px;margin:0 auto;text-align:center}
+.page-eyebrow{display:block;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.72);margin-bottom:.35rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:.2rem;line-height:1.15;letter-spacing:-.02em}
+.page-sub{font-size:.86rem;color:rgba(255,255,255,.9);line-height:1.6;max-width:520px;margin:.35rem auto 0}
+.wrap{max-width:1080px;margin:0 auto;padding:1.4rem 1.5rem 4rem}
+
+.box{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-sm)}
+.btn{padding:.62rem 1.05rem;border:none;border-radius:10px;font-weight:700;font-size:.84rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;text-decoration:none;white-space:nowrap;min-height:40px}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--plum-900)}
+.btn-outline{background:#fff;color:var(--plum-800);border:1.5px solid var(--border-strong)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,.thread:focus-visible{outline:3px solid rgba(139,92,246,.45);outline-offset:2px}
+
+/* Layout: one conversation for a student; list + conversation for Monica */
+.ib{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;max-width:760px;margin:0 auto}
+.ib.admin{grid-template-columns:300px minmax(0,1fr);max-width:none}
+.list{display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 220px);min-height:420px}
+.list-head{padding:.9rem 1rem;border-bottom:1px solid var(--border);font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--plum-900);font-weight:700}
+.list-body{overflow-y:auto;flex:1}
+.thread{display:flex;gap:.6rem;width:100%;text-align:left;border:none;border-bottom:1px solid var(--border);background:#fff;padding:.75rem 1rem;cursor:pointer;font-family:inherit}
+.thread:hover{background:#FBF8FD}
+.thread.active{background:#F3ECFC}
+.thread-main{flex:1;min-width:0}
+.thread-top{display:flex;gap:.4rem;align-items:baseline}
+.thread-name{font-weight:800;font-size:.86rem;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thread-time{margin-left:auto;font-size:.7rem;color:var(--muted);white-space:nowrap}
+.thread-prev{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.thread.unread .thread-prev{color:var(--ink);font-weight:600}
+.dot{flex:0 0 auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--magenta);color:#fff;font-size:.68rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+
+.chat{display:flex;flex-direction:column;min-height:420px;max-height:calc(100vh - 220px)}
+.chat-head{display:flex;gap:.7rem;align-items:center;padding:.85rem 1rem;border-bottom:1px solid var(--border)}
+.chat-head .who{flex:1;min-width:0}
+.chat-head b{display:block;font-size:.95rem}
+.chat-head small{display:block;font-size:.75rem;color:var(--muted);overflow-wrap:anywhere}
+.back{display:none;border:none;background:none;font-size:1.2rem;cursor:pointer;color:var(--plum-800);padding:.2rem .4rem}
+.avatar{width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem}
+.avatar.coach{background:linear-gradient(135deg,var(--magenta),#7559D4)}
+.msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.5rem;background:#FDFBFE}
+.msg{max-width:78%;padding:.6rem .85rem;border-radius:16px;font-size:.9rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.them{align-self:flex-start;background:#fff;border:1px solid var(--border);border-bottom-left-radius:6px}
+.msg.me{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:6px}
+.msg.me a{color:#fff}
+.msg a{color:var(--brand);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.msg-time{font-size:.68rem;color:var(--muted);margin:-.2rem .3rem .2rem}
+.msg-time.me{align-self:flex-end}
+.day-sep{align-self:center;font-size:.7rem;font-weight:700;color:var(--muted);background:#F3EEF7;border-radius:999px;padding:3px 10px;margin:.4rem 0}
+.intro{margin:auto;text-align:center;color:var(--slate-700);font-size:.9rem;line-height:1.6;max-width:420px;padding:1.5rem 1rem}
+.intro .big{font-size:2.2rem;margin-bottom:.4rem}
+.intro h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.2rem;margin-bottom:.3rem}
+.compose{display:flex;gap:.5rem;align-items:flex-end;padding:.75rem;border-top:1px solid var(--border)}
+.compose textarea{flex:1;min-width:0;min-height:46px;max-height:180px;resize:vertical;padding:.65rem .8rem;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:.9rem;line-height:1.45}
+.compose textarea:focus{border-color:var(--mauve);outline:none;box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.note{font-size:.74rem;color:var(--muted);padding:0 .9rem .7rem;line-height:1.45}
+.empty-pane{margin:auto;color:var(--muted);font-size:.88rem;text-align:center;padding:2rem}
+.notice{padding:1.8rem 1.3rem;text-align:center;background:linear-gradient(135deg,rgba(109,40,217,.05),rgba(230,162,190,.12));border:1.5px dashed rgba(109,40,217,.25);border-radius:18px;color:var(--slate-700);font-size:.9rem;line-height:1.6;max-width:620px;margin:1rem auto}
+.notice h3{font-family:'Playfair Display',serif;color:var(--plum-900);font-size:1.25rem;margin-bottom:.35rem}
+.notice .btn{margin-top:1rem}
+.skeleton{height:60px;margin:.8rem 1rem;border-radius:12px;background:linear-gradient(90deg,#F4EFF8,#FBF8FD,#F4EFF8);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--plum-900);color:#fff;padding:.8rem 1.3rem;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1600;font-size:.86rem;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .ib.admin{grid-template-columns:minmax(0,1fr)}
+  .ib.admin.viewing .list{display:none}
+  .ib.admin:not(.viewing) .chat{display:none}
+  .ib.admin .back{display:inline-block}
+}
+@media(max-width:520px){
+  .wrap{padding:1rem 1rem 3rem}
+  .msg{max-width:88%}
+  .compose{padding-right:76px}
+  .chat,.list{max-height:calc(100vh - 170px)}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div class="auth-spinner"></div><div class="auth-gate-text">Party Biz Hub</div><div class="auth-gate-sub">Loading your messages…</div></div>
+
+<div class="pbh-overlay" id="pbhOverlay"></div>
+
+<div class="pbh-layout" id="pbhLayout" style="display:none">
+  <aside class="pbh-sidebar" id="pbhSidebar"></aside>
+  <div class="pbh-content">
+
+    <div class="pbh-mobile-bar">
+      <a href="dashboard.html" class="pbh-mobile-logo"><img src="partybizhub-logo.svg" alt="Party Biz Hub"/></a>
+      <button class="pbh-ham" id="pbhHamburger" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <span class="page-eyebrow">💌 Kids Party Profit System</span>
+    <h1 class="page-title" id="pageTitle">Message Monica</h1>
+    <p class="page-sub" id="pageSub">A private line to me. Only you and I can see this conversation.</p>
+  </div>
+</div>
+
+<main class="wrap" id="ibApp">
+  <div class="ib" id="ib">
+    <section class="box chat" id="chat" aria-label="Conversation">
+      <div class="msgs" id="msgs"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  </div><!-- /pbh-content -->
+</div><!-- /pbh-layout -->
+
+<script src="nav.js?v=7"></script>
+<script src="help-widget.js?v=6"></script>
+<script>
+const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFQoTRoat37YdIzPHzbZsQ_rAcubQH8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const ADMIN_EMAILS=['ggkidsspa@gmail.com','hello@bearhug.events'];
+const KPPS_URL='https://partybusinesscoach.com';
+const POLL_MS=30000;
+
+let me=null,isAdmin=false,threads=[],current=null,messages=[],sending=false,pollT=null;
+
+/* ── Helpers ── */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+// Escape first, then turn http(s) links into anchors.
+function linkify(text){
+  return esc(text).replace(/\bhttps?:\/\/[^\s<]+/gi,m=>{
+    let url=m,tail='';
+    while(/[.,!?;:)\]]$/.test(url)||/&#39;$|&quot;$/.test(url)){
+      const t=url.match(/(&#39;|&quot;|[.,!?;:)\]])$/)[0];tail=t+tail;url=url.slice(0,-t.length);
+    }
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer nofollow">${url}</a>${tail}`;
+  });
+}
+function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2800)}
+function isMissingTable(error){
+  if(!error)return false;
+  const code=String(error.code||''),msg=String(error.message||'');
+  return code==='42P01'||code==='PGRST205'||code==='PGRST202'||/does not exist|schema cache|could not find/i.test(msg);
+}
+function ago(iso){
+  const t=new Date(iso).getTime();if(!t)return '';
+  const s=Math.max(0,(Date.now()-t)/1000);
+  if(s<60)return 'now';
+  if(s<3600)return Math.floor(s/60)+'m';
+  if(s<86400)return Math.floor(s/3600)+'h';
+  if(s<86400*7)return Math.floor(s/86400)+'d';
+  return new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function clock(iso){return new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+function dayLabel(iso){
+  const d=new Date(iso),today=new Date();
+  const y=new Date();y.setDate(today.getDate()-1);
+  if(d.toDateString()===today.toDateString())return 'Today';
+  if(d.toDateString()===y.toDateString())return 'Yesterday';
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',...(d.getFullYear()!==today.getFullYear()?{year:'numeric'}:{})});
+}
+const PALETTE=['#7559D4','#D115AE','#B8577F','#1E8C5A','#C27A12','#2F6FB5','#8B5CF6','#C23B5E'];
+function colorFor(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]}
+function threadName(t){return t.name||(t.email?t.email.split('@')[0]:'Student')}
+
+/* ── Auth + load ── */
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  const user=session.user;
+  const email=String(user.email||'').toLowerCase();
+  isAdmin=ADMIN_EMAILS.includes(email);
+  let p=null;
+  try{({data:p}=await sb.from('profiles').select('has_paid,has_kpps_access,has_printables_access,profile_data,full_name').eq('id',user.id).single())}catch(e){console.error(e)}
+  if(p&&p.has_paid===false){await sb.auth.signOut();window.location.href='login.html';return}
+  const pd=(p&&p.profile_data)||{};
+  const display=pd.businessName||(p&&p.full_name)||email.split('@')[0];
+  if(typeof window.setNavPlan==='function')window.setNavPlan(p&&p.has_printables_access===true&&p.has_kpps_access!==true?'printables':'kpps');
+  setNavUser(display);
+  setTimeout(()=>setNavUser(display),300);
+  if(isAdmin&&typeof window.setNavAdmin==='function'){window.setNavAdmin();setTimeout(()=>window.setNavAdmin(),300)}
+  initNavSignout(async()=>{await sb.auth.signOut();window.location.href='login.html'});
+  $('authGate').style.display='none';
+  $('pbhLayout').style.display='flex';
+
+  const member=isAdmin||(p&&p.has_kpps_access===true);
+  if(!member){renderLocked();return}
+  me={id:user.id,email,firstName:String((p&&p.full_name)||pd.ownerName||'').trim().split(/\s+/)[0]||''};
+
+  if(isAdmin){
+    document.title='Student Inbox | Party Biz Hub';
+    $('pageTitle').textContent='Student Inbox';
+    $('pageSub').textContent='Private messages from your students. Only you and each student can see her conversation.';
+    $('ib').classList.add('admin');
+    $('ib').insertAdjacentHTML('afterbegin','<section class="box list" aria-label="Conversations"><div class="list-head">Conversations</div><div class="list-body" id="threadList"><div class="skeleton"></div><div class="skeleton"></div></div></section>');
+    await loadThreads();
+    const want=new URLSearchParams(location.search).get('student');
+    if(want&&/^[0-9a-f-]{36}$/i.test(want))openThread(want);
+    else if(threads.length&&!window.matchMedia('(max-width:900px)').matches)openThread(threads[0].student_id);
+    else renderEmptyPane();
+  }else{
+    current=me.id;
+    await loadMessages(true);
+  }
+  startPolling();
+}
+
+function renderLocked(){
+  $('ibApp').innerHTML=`<div class="notice"><div style="font-size:2.4rem;margin-bottom:.4rem">🔒</div><h3>Private messages are for Kids Party Profit System students</h3>Students can message Monica directly for personal help with their party business.<br/><a class="btn btn-primary" href="${KPPS_URL}" target="_blank" rel="noopener">See Kids Party Profit System</a></div>`;
+}
+function renderNotReady(){
+  $('ibApp').innerHTML=`<div class="notice"><div style="font-size:2.4rem;margin-bottom:.4rem">💌</div><h3>Messages are almost ready</h3>We're finishing the setup behind the scenes. Check back soon. In the meantime, you can ask in the Community.<br/><a class="btn btn-primary" href="community.html">Open the Community</a></div>`;
+  stopPolling();
+}
+
+/* ── Monica: conversation list ── */
+async function loadThreads(){
+  const{data,error}=await sb.rpc('coach_inbox_threads');
+  if(error){if(isMissingTable(error)){renderNotReady();return}console.error(error);return}
+  threads=Array.isArray(data)?data:[];
+  renderThreads();
+}
+function renderThreads(){
+  const el=$('threadList');if(!el)return;
+  if(!threads.length){el.innerHTML='<div class="empty-pane">No messages yet. When a student writes to you, she shows up here and you get an email.</div>';return}
+  el.innerHTML=threads.map(t=>{
+    const name=threadName(t);
+    const prev=(t.last_from_student?'':'You: ')+String(t.last_body||'').replace(/\s+/g,' ');
+    return `<button type="button" class="thread${t.unread?' unread':''}${current===t.student_id?' active':''}" onclick="openThread('${esc(t.student_id)}')">
+      <div class="avatar" style="background:${colorFor(t.student_id)}" aria-hidden="true">${esc(name.charAt(0).toUpperCase())}</div>
+      <div class="thread-main"><div class="thread-top"><span class="thread-name">${esc(name)}</span><span class="thread-time">${esc(ago(t.last_at))}</span></div>
+      <div class="thread-prev">${esc(prev)}</div></div>
+      ${t.unread?`<span class="dot" aria-label="${t.unread} unread">${t.unread}</span>`:''}
+    </button>`;
+  }).join('');
+}
+function renderEmptyPane(){
+  $('chat').innerHTML='<div class="empty-pane">Pick a conversation to read and reply.</div>';
+}
+async function openThread(id){
+  current=id;messages=[];
+  $('ib').classList.add('viewing');
+  renderThreads();
+  $('chat').innerHTML='<div class="msgs" id="msgs"><div class="skeleton"></div></div>';
+  await loadMessages(true);
+}
+function backToList(){
+  current=null;$('ib').classList.remove('viewing');renderThreads();renderEmptyPane();
+  try{history.replaceState(null,'',location.pathname)}catch(_){}
+}
+
+/* ── Conversation ── */
+async function loadMessages(scroll){
+  if(!current)return;
+  const id=current;
+  const{data,error}=await sb.from('coach_messages').select('id,student_id,sender_id,body,created_at,read_at').eq('student_id',id).order('created_at',{ascending:true}).limit(500);
+  if(id!==current)return;
+  if(error){if(isMissingTable(error)){renderNotReady();return}console.error(error);showToast('Messages did not load. Try again.');return}
+  const sig=list=>list.map(m=>m.id+(m.read_at?'r':'')).join();
+  const next=Array.isArray(data)?data:[];
+  const changed=!$('ibBody')||sig(next)!==sig(messages);
+  const grew=next.length!==messages.length;
+  messages=next;
+  if(changed||scroll)renderChat(scroll||grew);
+  markRead(id);
+}
+async function markRead(id){
+  if(!messages.some(m=>m.sender_id!==me.id&&!m.read_at))return;
+  try{await sb.rpc('coach_inbox_mark_read',{p_student:id})}catch(_){}
+  const t=threads.find(x=>x.student_id===id);if(t){t.unread=0;renderThreads()}
+}
+function chatHeadHtml(){
+  if(isAdmin){
+    const t=threads.find(x=>x.student_id===current)||{student_id:current};
+    const name=threadName(t);
+    const sub=[t.business,t.email].filter(Boolean).map(esc).join(' · ');
+    return `<div class="chat-head"><button class="back" type="button" aria-label="Back to conversations" onclick="backToList()">←</button><div class="avatar" style="background:${colorFor(current)}" aria-hidden="true">${esc(name.charAt(0).toUpperCase())}</div><div class="who"><b>${esc(name)}</b><small>${sub||'Student'}</small></div></div>`;
+  }
+  return `<div class="chat-head"><div class="avatar coach" aria-hidden="true">M</div><div class="who"><b>Monica</b><small>Kids Party Profit System coach · replies personally</small></div></div>`;
+}
+function messagesHtml(){
+  if(!messages.length){
+    return isAdmin
+      ?'<div class="intro"><div class="big">💌</div>No messages in this conversation yet.</div>'
+      :`<div class="intro"><div class="big">💌</div><h3>Hi${me.firstName?' '+esc(me.firstName):''}! Need me personally?</h3>Ask me anything about your business here: your pricing, your packages, your next step, or something you'd rather not post in the Community. Only you and I can see this. You'll get an email when I reply.</div>`;
+  }
+  let out='',lastDay='';
+  messages.forEach(m=>{
+    const day=dayLabel(m.created_at);
+    if(day!==lastDay){out+=`<div class="day-sep">${esc(day)}</div>`;lastDay=day}
+    const mine=m.sender_id===me.id;
+    out+=`<div class="msg ${mine?'me':'them'}">${linkify(m.body)}</div><div class="msg-time${mine?' me':''}">${esc(clock(m.created_at))}${mine&&m.read_at?' · Seen':''}</div>`;
+  });
+  return out;
+}
+function renderChat(scroll){
+  const draft=$('ibBody')?$('ibBody').value:'';
+  const hadFocus=document.activeElement&&document.activeElement.id==='ibBody';
+  const prevScroll=$('msgs')?$('msgs').scrollTop:0;
+  $('chat').innerHTML=`${chatHeadHtml()}<div class="msgs" id="msgs">${messagesHtml()}</div>
+    <form class="compose" onsubmit="sendMessage(event)"><textarea id="ibBody" maxlength="5000" rows="2" placeholder="${isAdmin?'Write your reply…':'Write your message to Monica…'}" aria-label="Your message" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();this.form.requestSubmit()}"></textarea><button class="btn btn-primary" type="submit" id="ibSend">Send</button></form>
+    <div class="note">${isAdmin?'She gets an email when you reply.':'Private: only you and Monica can see this. For quick questions, the Community and Party Coach answer faster.'}</div>`;
+  $('ibBody').value=draft;
+  if(hadFocus)$('ibBody').focus();
+  const box=$('msgs');box.scrollTop=scroll?box.scrollHeight:prevScroll;
+}
+async function sendMessage(ev){
+  ev.preventDefault();
+  if(sending||!current)return;
+  const box=$('ibBody');const body=(box.value||'').trim();
+  if(!body){box.focus();return}
+  sending=true;$('ibSend').disabled=true;$('ibSend').textContent='Sending…';
+  try{
+    const{data,error}=await sb.from('coach_messages').insert({student_id:current,sender_id:me.id,body}).select().single();
+    if(error){if(isMissingTable(error)){renderNotReady();return}throw error}
+    box.value='';
+    messages.push(Object.assign({student_id:current,sender_id:me.id,body,created_at:new Date().toISOString(),read_at:null},data||{}));
+    renderChat(true);$('ibBody').focus();
+    if(isAdmin){
+      const t=threads.find(x=>x.student_id===current);
+      if(t){t.last_body=body;t.last_at=new Date().toISOString();t.last_from_student=false;threads.sort((a,b)=>new Date(b.last_at)-new Date(a.last_at));renderThreads()}
+    }
+    if(data&&data.id)notify(data.id);
+  }catch(e){console.error(e);showToast('Could not send. Check your connection and try again.')}
+  finally{sending=false;const b=$('ibSend');if(b){b.disabled=false;b.textContent='Send'}}
+}
+async function notify(messageId){
+  try{
+    const{data}=await sb.auth.getSession();
+    const token=data&&data.session&&data.session.access_token;
+    if(token)await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({mode:'inbox',messageId})});
+  }catch(_){}
+}
+
+/* ── Light polling while the page is open ── */
+function startPolling(){
+  stopPolling();
+  pollT=setInterval(()=>{
+    if(document.hidden||sending)return;
+    if(isAdmin)loadThreads();
+    if(current)loadMessages(false);
+  },POLL_MS);
+}
+function stopPolling(){if(pollT)clearInterval(pollT);pollT=null}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&me&&current)loadMessages(false)});
+
+init();
+</script>
+</body>
+</html>

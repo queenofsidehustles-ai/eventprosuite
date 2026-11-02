@@ -12,15 +12,18 @@ const coachHandler = require('./_coach');
 const { requireStudent } = require('./_course-auth');
 const playbookHandler = require('./_playbook');
 const communityReply = require('./_community-reply');
+const coachInbox = require('./_coach-inbox');
 
 // One function serves three things (Vercel plan limit on function count):
 //   GET  /api/chat?playbook=Name  -> course playbook PDF (students only)
 //   POST /api/chat {mode:'coach'} -> 14-Day Launch Party Coach (students only)
+//   POST /api/chat {mode:'inbox'} -> email heads-up for a private Message Monica note
 //   POST /api/chat {messages}     -> PartyGenius assistant (unchanged)
 module.exports = async function handler(req, res) {
   if (req.method === 'GET' && req.query && req.query.playbook) return playbookHandler(req, res);
   if (req.method === 'POST' && req.body && req.body.mode === 'coach') return coachHandler(req, res);
   if (req.method === 'POST' && req.body && req.body.mode === 'community') return communityReply(req, res);
+  if (req.method === 'POST' && req.body && req.body.mode === 'inbox') return coachInbox(req, res);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

@@ -134,6 +134,7 @@ textarea.ta:focus,.select:focus,.cmt-form textarea:focus{border-color:var(--mauv
 .rules{list-style:none;display:flex;flex-direction:column;gap:.5rem;font-size:.84rem;color:var(--slate-700);line-height:1.45}
 .rules li{display:flex;gap:.5rem}
 .rules li span:first-child{flex:0 0 1.2rem;text-align:center}
+.dm p{font-size:.86rem;line-height:1.55;color:var(--slate-700);margin-bottom:.8rem}
 .live{background:linear-gradient(150deg,var(--magenta),#7559D4);color:#fff;border:none}
 .live h2{color:#fff}
 .live p{font-size:.86rem;line-height:1.55;opacity:.95;margin-bottom:.8rem}
@@ -230,6 +231,11 @@ details.side-rules[open] summary h2::after{transform:rotate(180deg)}
           <li><span>❓</span><span>Questions are welcome. No question is too small.</span></li>
         </ul>
       </details>
+      <section class="box dm">
+        <h2>Need me personally?</h2>
+        <p>Send me a private message. Only you and I can see it, and you'll get an email when I reply.</p>
+        <a class="btn btn-primary" href="inbox.html" id="dmLink">💌 Message Monica</a>
+      </section>
       <section class="box live">
         <h2>Join me live</h2>
         <p>I go live on TikTok during the week. Bring your questions.</p>
@@ -246,7 +252,7 @@ details.side-rules[open] summary h2::after{transform:rotate(180deg)}
 
 <div class="lightbox" id="lightbox" role="dialog" aria-label="Photo"><img id="lightboxImg" alt=""/></div>
 
-<script src="nav.js?v=6"></script>
+<script src="nav.js?v=7"></script>
 <script src="help-widget.js?v=6"></script>
 <script>
 const SUPABASE_URL='https://dmqwoddwzpfnmpjtwiee.supabase.co';
@@ -345,6 +351,7 @@ async function init(){
   me={id:user.id,email,firstName:first};
   authors[me.id]={name:first||null,business:pd.businessName||null,is_admin:isAdmin};
 
+  if(isAdmin){const d=$('dmLink');if(d){d.textContent='💌 Open Student Inbox';const c=d.closest('.dm');c.querySelector('h2').textContent='Private messages';c.querySelector('p').textContent='Students can message you privately. Read and reply here.'}}
   placeSide();
   readDeepLink();
   renderTabs();renderSpaceSelect();wireComposer();

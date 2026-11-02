@@ -13,7 +13,7 @@ const DAYS = ['Start Here: Hobby or Business?', 'Pick Your One Party', 'Know Who
   'Test Your Booking Flow', 'Practice Party', 'Founding Families Offer', 'Your Circle', 'Local Outreach', 'Follow Up + Celebrate'];
 
 const STYLE = {
-  questions: 'She asked a question in the Questions space. Answer it directly and practically in under 120 words. If a day of the 14-Day Launch covers it, point her to that day by number and name. If it truly needs Monica (her personal situation, refunds, account or billing problems), say Monica will follow up.',
+  questions: 'She asked a question in the Questions space. Answer it directly and practically in under 120 words. If a day of the 14-Day Launch covers it, point her to that day by number and name. If it truly needs Monica (her personal situation, refunds, account or billing problems), say Monica will follow up, and that she can also send Monica a private note from Message Monica in the menu.',
   introductions: 'She just introduced herself. Welcome her warmly by first name in 2-3 short sentences, reflect one detail she shared, and give one next step (usually: finish Day 0 of the 14-Day Launch). Under 60 words.',
   wins: 'She shared a win. Celebrate her specifically in 2-3 short sentences, and suggest one small next step that builds on it. Under 60 words.',
   checkins: 'She posted a launch check-in. Cheer her on in 2-3 short sentences and point to her next day if a day number is given. Under 60 words.',

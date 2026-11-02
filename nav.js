@@ -9,6 +9,7 @@
   const PAGES = [
     { id: 'course',    href: 'course.html',    icon: '🚀', label: '14-Day Launch' },
     { id: 'community', href: 'community.html', icon: '💬', label: 'Community', kppsOnly: true },
+    { id: 'inbox',     href: 'inbox.html',     icon: '💌', label: 'Message Monica', kppsOnly: true },
     { id: 'dashboard', href: 'dashboard.html', icon: '🏠', label: 'Home' },
     { id: 'profile',   href: 'profile.html',   icon: '💼', label: 'My Business' },
     { id: 'mywebsite', href: 'mywebsite.html', icon: '🌐', label: 'Website & Booking', kppsOnly: true },
@@ -243,6 +244,9 @@
     link.innerHTML = '<span class="snav-icon">📦</span><span class="snav-label">Template Warehouse</span>';
     nav.appendChild(section);
     nav.appendChild(link);
+    // Monica reads every student's private messages here.
+    const inbox = nav.querySelector('a[href="inbox.html"] .snav-label');
+    if (inbox) inbox.textContent = 'Student Inbox';
   };
 
   window.initNavSignout = function (handler) {
@@ -264,7 +268,13 @@
       const raw = localStorage.getItem('sb-dmqwoddwzpfnmpjtwiee-auth-token');
       if (!raw) return;
       const token = JSON.parse(raw);
-      if ((token?.user?.email || '') === 'ggkidsspa@gmail.com') window.setNavAdmin && window.setNavAdmin();
+      const email = String(token?.user?.email || '').toLowerCase();
+      if (email === 'ggkidsspa@gmail.com') window.setNavAdmin && window.setNavAdmin();
+      // Both coach logins read student messages, so the item reads "Student Inbox" for either.
+      if (email === 'ggkidsspa@gmail.com' || email === 'hello@bearhug.events') {
+        const inbox = document.querySelector('.sidebar-nav a[href="inbox.html"] .snav-label');
+        if (inbox) inbox.textContent = 'Student Inbox';
+      }
     } catch (_) {}
   }
 
