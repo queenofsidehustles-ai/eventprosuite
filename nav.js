@@ -101,6 +101,14 @@
     btn.addEventListener('mouseover', () => { btn.style.background = '#F7F1FB'; });
     btn.addEventListener('mouseout',  () => { btn.style.background = '#fff'; });
     document.body.appendChild(btn);
+    // On narrow screens the pill sat on top of the ☰ menu button. Sign out
+    // is already in the sidebar footer there, so hide the pill.
+    if (document.getElementById('pbhHamburger') && !document.getElementById('pbhSignoutCss')) {
+      const st = document.createElement('style');
+      st.id = 'pbhSignoutCss';
+      st.textContent = '@media(max-width:900px){#pbhFloatingSignout{display:none!important}}';
+      document.head.appendChild(st);
+    }
   }
 
 
